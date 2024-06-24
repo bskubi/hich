@@ -53,7 +53,7 @@ def keydiff (left, right, by, how) {
     }
 }
 
-def sqljoin (left, right, by = null, suffix = "_right", how = "left") {
+def sqljoin (params, left, right) {
     /* Similar to a SQL inner join
 
     Tables are represented as channels emitting LinkedHashMap 'rows'
@@ -75,6 +75,10 @@ def sqljoin (left, right, by = null, suffix = "_right", how = "left") {
     thus distinguished with a suffix) unless their class is the same. One
     way this can be an issue is if their types are GString and String.
     */
+
+    by = params.get("by", null)
+    suffix = params.get("suffix", "_right")
+    how = params.get("how", "left")
 
     // To accommodate left, right and full joins, we add any missing keys
     if (how == "full" || how == "left") {
@@ -143,47 +147,47 @@ def sqljoin (left, right, by = null, suffix = "_right", how = "left") {
     return joined
 }
 
-def getIdx(item, index) {
-    if (item instanceof List) {
-        validIndex = Math.min(index, item.size() - 1)
-        return item[validIndex]
-    }
-    return item
-}
+// def getIdx(item, index) {
+//     if (item instanceof List) {
+//         validIndex = Math.min(index, item.size() - 1)
+//         return item[validIndex]
+//     }
+//     return item
+// }
 
-def JoinProcessResults(proc, channels, input, output, join_by, kwargs = false, new_latest = null) {
-    if(proc == MergeTechrepsToBioreps) {
-        print("kwargs: ${kwargs}")
-        print("new_latest: ${new_latest}")
-    }
-    shout("JoinProcessResults can't handle processes that don't input or output tuples")
-    result_jpr = channels[0]
-        | map {
-            elements = it.subMap(input).values().toList()
-            elements = kwargs ? elements + it : elements
-            tuple(*elements)
-        }
-        | proc
-        | map{
-            result_map = [:];
-            [output, it].transpose().each { k, v -> result_map[k] = v};
-            result_map
-        }
+// def JoinProcessResults(proc, channels, input, output, join_by, kwargs = false, new_latest = null) {
+//     if(proc == MergeTechrepsToBioreps) {
+//         print("kwargs: ${kwargs}")
+//         print("new_latest: ${new_latest}")
+//     }
+//     shout("JoinProcessResults can't handle processes that don't input or output tuples")
+//     result_jpr = channels[0]
+//         | map {
+//             elements = it.subMap(input).values().toList()
+//             elements = kwargs ? elements + it : elements
+//             tuple(*elements)
+//         }
+//         | proc
+//         | map{
+//             result_map = [:];
+//             [output, it].transpose().each { k, v -> result_map[k] = v};
+//             result_map
+//         }
     
-    if (proc == MergeTechrepsToBioreps) {
-        result_jpr | view
-    }
+//     if (proc == MergeTechrepsToBioreps) {
+//         result_jpr | view
+//     }
 
-    allchannels = [result_jpr] + channels
+//     allchannels = [result_jpr] + channels
 
-    channels.eachWithIndex {ch, i ->
-        by = getIdx(join_by, i)
-        channels[i] = sqljoin(channels[i], allchannels[i], by = by, suffix = "")
-        allchannels[i+1] = channels[i]
-    }
+//     channels.eachWithIndex {ch, i ->
+//         by = getIdx(join_by, i)
+//         channels[i] = sqljoin(channels[i], allchannels[i], by = by, suffix = "")
+//         allchannels[i+1] = channels[i]
+//     }
     
-    return channels[-1]
-}
+//     return channels[-1]
+// }
 
 def MakeResourceFile(branched,
                      file_key,
@@ -208,7 +212,7 @@ def MakeResourceFile(branched,
             result_jpr_mrf
         }
     
-    missing = sqljoin(branched.missing, made, by = join_by, suffix = "")
+    missing = sqljoin(branched.missing, made, by: join_by, suffix: "")
 
     result_mfr = branched.exists
         | map{
@@ -221,32 +225,32 @@ def MakeResourceFile(branched,
     return result_mfr
 }
 
-def GroupHashmaps(hashmaps) {
-    grouped = [:]
-    hashmaps.each {
-        hashmap ->
-        hashmap.keySet().each {
-            k ->
-            grouped[k] = []
-        }
-    }
-    hashmaps.each {
-        hashmap ->
-        hashmap.each {
-            k, v ->
-            grouped[k].add(v)
-        }
-    }
-    grouped.each {
-        k, v ->
-        grouped[k] = grouped[k].unique()
-        if (grouped[k].size() == 1) {
-            grouped[k] = grouped[k][0]
-        }
-    }
+// def GroupHashmaps(hashmaps) {
+//     grouped = [:]
+//     hashmaps.each {
+//         hashmap ->
+//         hashmap.keySet().each {
+//             k ->
+//             grouped[k] = []
+//         }
+//     }
+//     hashmaps.each {
+//         hashmap ->
+//         hashmap.each {
+//             k, v ->
+//             grouped[k].add(v)
+//         }
+//     }
+//     grouped.each {
+//         k, v ->
+//         grouped[k] = grouped[k].unique()
+//         if (grouped[k].size() == 1) {
+//             grouped[k] = grouped[k][0]
+//         }
+//     }
 
-    return grouped
-}
+//     return grouped
+// }
 
 process StageReferences {
     input:
@@ -306,6 +310,7 @@ workflow TryDownloadMissingReferences {
         */
         shout("WARNING: StageReferences is commented out in EnsureReferences")
         shout("WARNING: Have not tested ability to recombine branched samples in EnsureReferences")
+        
         samples
             | branch{
                 download: it.get("reference", "").trim().length() == 0
@@ -318,8 +323,7 @@ workflow TryDownloadMissingReferences {
             | map{it.reference = file(it.reference); it}
             | set{exists}
         
-        sqljoin(exists, samples, by = "sample_id", suffix = "")
-            | set{samples}
+        samples = sqljoin(exists, samples, by: "sample_id", suffix: "")
 
         
         branched.download
@@ -330,12 +334,12 @@ workflow TryDownloadMissingReferences {
             | map{["assembly": it[0], "reference":it[1]]}
             | set{remote_refs}
 
-        sqljoin(branched.download, remote_refs, by = "assembly", suffix = "")
-            | set{download}
+        download = sqljoin(branched.download, remote_refs, by: "assembly", suffix: "")
         
-        sqljoin(samples, download, by = "sample_id", suffix = "")
-            | set{samples}
+        samples = sqljoin(samples, download, by: "sample_id", suffix: "")
         
+        
+
     emit:
         samples
 }
@@ -394,373 +398,373 @@ workflow MakeMissingChromsizes {
         samples
 }
 
-process MakeDigest {
-    input:
-    tuple path(reference), val(enzymes), val(fragfile), val(assembly)
+// process MakeDigest {
+//     input:
+//     tuple path(reference), val(enzymes), val(fragfile), val(assembly)
 
-    output:
-    tuple path(reference), val(enzymes), path(fragfile), val(assembly)
+//     output:
+//     tuple path(reference), val(enzymes), path(fragfile), val(assembly)
 
-    script:
-    "redigest --output ${fragfile} ${reference} ${enzymes}"
-}
+//     script:
+//     "redigest --output ${fragfile} ${reference} ${enzymes}"
+// }
 
-workflow MakeMissingDigest {
-    take:
-        samples
+// workflow MakeMissingDigest {
+//     take:
+//         samples
     
-    main:
-        def digestEnzymesDeclared = {it.get("enzymes").trim().length() != 0}
+//     main:
+//         def digestEnzymesDeclared = {it.get("enzymes").trim().length() != 0}
 
-        def hasFragfileName = {it.get("fragfile").trim().length() > 0}
+//         def hasFragfileName = {it.get("fragfile").trim().length() > 0}
         
-        def fragfileExists = {hasFragfileName(it) && file(it.fragfile).exists()}
+//         def fragfileExists = {hasFragfileName(it) && file(it.fragfile).exists()}
 
-        def ensureFragfileName = {
-            if (digestEnzymesDeclared(it) && !hasFragfileName(it)) {
-                it.fragfile = "${it.assembly}_${it.enzymes}.bed"
-            }
-            it;
-        }
+//         def ensureFragfileName = {
+//             if (digestEnzymesDeclared(it) && !hasFragfileName(it)) {
+//                 it.fragfile = "${it.assembly}_${it.enzymes}.bed"
+//             }
+//             it;
+//         }
 
-        samples
-            | map{ensureFragfileName(it)}
-            | branch{
-                exists: digestEnzymesDeclared(it) && fragfileExists(it)
-                missing: digestEnzymesDeclared(it) && !fragfileExists(it)
-                no_change: true
-            }
-            | set{branched}
+//         samples
+//             | map{ensureFragfileName(it)}
+//             | branch{
+//                 exists: digestEnzymesDeclared(it) && fragfileExists(it)
+//                 missing: digestEnzymesDeclared(it) && !fragfileExists(it)
+//                 no_change: true
+//             }
+//             | set{branched}
         
-        samples = MakeResourceFile(
-            branched,
-            "fragfile",
-            MakeDigest,
-            ["reference", "enzymes", "fragfile", "assembly"],
-            ["reference", "enzymes", "fragfile", "assembly"],
-            ["assembly", "enzymes"]
-        )
+//         samples = MakeResourceFile(
+//             branched,
+//             "fragfile",
+//             MakeDigest,
+//             ["reference", "enzymes", "fragfile", "assembly"],
+//             ["reference", "enzymes", "fragfile", "assembly"],
+//             ["assembly", "enzymes"]
+//         )
 
-    emit:
-        samples
-}
+//     emit:
+//         samples
+// }
 
-process BwaMem2Index {
-    publishDir "resources/index/bwa-mem2/", mode: 'move'
-    container "bskubi/bwa-mem2"
+// process BwaMem2Index {
+//     publishDir "resources/index/bwa-mem2/", mode: 'move'
+//     container "bskubi/bwa-mem2"
 
-    input:
-    tuple path(reference), val(prefix)
+//     input:
+//     tuple path(reference), val(prefix)
 
-    output:
-    tuple val(prefix), path("${prefix}.0123"), path("${prefix}.amb"),
-          path("${prefix}.ann"), path("${prefix}.bwt.2bit.64"),
-          path("${prefix}.pac")
+//     output:
+//     tuple val(prefix), path("${prefix}.0123"), path("${prefix}.amb"),
+//           path("${prefix}.ann"), path("${prefix}.bwt.2bit.64"),
+//           path("${prefix}.pac")
 
-    shell:
-    "touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
-    //"bwa-mem2 index -p ${prefix} ${reference}"
+//     shell:
+//     "touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
+//     //"bwa-mem2 index -p ${prefix} ${reference}"
 
-    stub:
-    "touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
-}
+//     stub:
+//     "touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
+// }
 
-workflow MakeMissingIndex {
+// workflow MakeMissingIndex {
 
-    take:
-        samples
+//     take:
+//         samples
     
-    main:
+//     main:
         
 
-        shout("BWA-MEM2 indexing is commented out in 'shell' section")
-        shout("Indexing only works for BWA-MEM2")
+//         shout("BWA-MEM2 indexing is commented out in 'shell' section")
+//         shout("Indexing only works for BWA-MEM2")
 
-        def fileExists = { dir, file -> new File(dir, file).exists() }
+//         def fileExists = { dir, file -> new File(dir, file).exists() }
         
-        samples
-            | filter{it.get("index_dir", "").trim().length() == 0
-                     || it.get("index_prefix").trim().length() == 0
-                     || !fileExists(it.index_dir, "${it.index_prefix}.0123")}
-            | set{no_index}
+//         samples
+//             | filter{it.get("index_dir", "").trim().length() == 0
+//                      || it.get("index_prefix").trim().length() == 0
+//                      || !fileExists(it.index_dir, "${it.index_prefix}.0123")}
+//             | set{no_index}
         
-        no_index
-            | map{it.subMap("reference", "assembly")}
-            | unique
-            | map{it.index_prefix = it.index_prefix?.trim() ? it.index_prefix : it.assembly; it}
-            | map{tuple(it.reference, it.index_prefix)}
-            | BwaMem2Index
-            | map{["index_prefix": it[0], "index_dir": "resources/index/bwa-mem2/"]}
-            | set {new_index}
+//         no_index
+//             | map{it.subMap("reference", "assembly")}
+//             | unique
+//             | map{it.index_prefix = it.index_prefix?.trim() ? it.index_prefix : it.assembly; it}
+//             | map{tuple(it.reference, it.index_prefix)}
+//             | BwaMem2Index
+//             | map{["index_prefix": it[0], "index_dir": "resources/index/bwa-mem2/"]}
+//             | set {new_index}
 
-        sqljoin(no_index, new_index, by = "assembly", suffix = "")
-            | set {new_index}
+//         sqljoin(no_index, new_index, by = "assembly", suffix = "")
+//             | set {new_index}
 
-        sqljoin(samples, new_index, by = "sample_id", suffix = "")
-            | map{it.index_dir = file(it.index_dir); it}
-            | set {samples}
+//         sqljoin(samples, new_index, by = "sample_id", suffix = "")
+//             | map{it.index_dir = file(it.index_dir); it}
+//             | set {samples}
 
-    emit:
-        samples
+//     emit:
+//         samples
 
-}
+// }
 
-process BwaMem2Align {
-    container "bskubi/bwa-mem2"
-    //maxRetries 4
-    //memory {20.GB + 20.GB * task.attempt}
+// process BwaMem2Align {
+//     container "bskubi/bwa-mem2"
+//     //maxRetries 4
+//     //memory {20.GB + 20.GB * task.attempt}
 
-    // NOTE: Alignment speed is trivially parallelizeable and does not benefit
-    // from running alignment in parallel multiple files at once. Each instance
-    // of bwa-mem2 uses about 15 gigs of memory. For these two reasons we 
-    // tell nextflow to run one alignment process at a time with maxForks 1.
-    maxForks 1
+//     // NOTE: Alignment speed is trivially parallelizeable and does not benefit
+//     // from running alignment in parallel multiple files at once. Each instance
+//     // of bwa-mem2 uses about 15 gigs of memory. For these two reasons we 
+//     // tell nextflow to run one alignment process at a time with maxForks 1.
+//     maxForks 1
 
-    input:
-    tuple val(sample_id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2), val(bam)
+//     input:
+//     tuple val(sample_id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2), val(bam)
 
-    output:
-    tuple val(sample_id), path(bam)
+//     output:
+//     tuple val(sample_id), path(bam)
 
-    shell:
-    align = "bwa-mem2 mem -t 10 -SP5M ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
-    tobam = "samtools view -b -o ${bam}"
-    "${align} | ${tobam}"
-}
+//     shell:
+//     align = "bwa-mem2 mem -t 10 -SP5M ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
+//     tobam = "samtools view -b -o ${bam}"
+//     "${align} | ${tobam}"
+// }
 
-workflow Align {
-    take:
-        samples
+// workflow Align {
+//     take:
+//         samples
 
-    main:
-        shout("Only aligns with BWA-MEM2")
-        shout("Add bam squeeze to alignment step")
-        samples
-            | branch {
-                fastq: it.datatype == "fastq"
-                other: true
-            } | set {branched}
+//     main:
+//         shout("Only aligns with BWA-MEM2")
+//         shout("Add bam squeeze to alignment step")
+//         samples
+//             | branch {
+//                 fastq: it.datatype == "fastq"
+//                 other: true
+//             } | set {branched}
         
-        branched.fastq
-            | map{
-                it.data1 = file(it.data1)
-                it.data2 = file(it.data2)
-                it.bam = "${it.sample_id}.bam"
-                it}
-            | set {fastq}
+//         branched.fastq
+//             | map{
+//                 it.data1 = file(it.data1)
+//                 it.data2 = file(it.data2)
+//                 it.bam = "${it.sample_id}.bam"
+//                 it}
+//             | set {fastq}
 
-        samples = JoinProcessResults(BwaMem2Align,
-            [fastq, samples],
-            input = ["sample_id", "index_dir", "index_prefix", "data1", "data2", "bam"],
-            output = ["sample_id", "bam"],
-            join_by = ["sample_id"])
-    emit:
-        samples
+//         samples = JoinProcessResults(BwaMem2Align,
+//             [fastq, samples],
+//             input = ["sample_id", "index_dir", "index_prefix", "data1", "data2", "bam"],
+//             output = ["sample_id", "bam"],
+//             join_by = ["sample_id"])
+//     emit:
+//         samples
 
 
-}
+// }
 
-process PairtoolsParse2 {
-    container "bskubi/pairtools:1.0.4"
+// process PairtoolsParse2 {
+//     container "bskubi/pairtools:1.0.4"
 
-    input:
-    tuple val(sample_id), path(bam), path(chromsizes), val(pairs), val(kwargs)
+//     input:
+//     tuple val(sample_id), path(bam), path(chromsizes), val(pairs), val(kwargs)
 
-    output:
-    tuple val(sample_id), path(pairs)
+//     output:
+//     tuple val(sample_id), path(pairs)
 
-    shell:
-    shout("Numerous flags currently not settable for pairtools parse2")
-    shout("Make sambamba + pairtools dockerfile")
-    // Sort by name with sambamba, then parse, then sort by position
-    cmd = ["pairtools parse2",
-           "--chroms-path ${chromsizes}",
-           "--assembly ${kwargs.assembly}",
-           "--min-mapq 30",
-           "--drop-readid",
-           "--drop-seq",
-           "--drop-sam",
-           "${bam}",
-           "| pairtools sort",
-           "--output ${pairs}"]
-    cmd.join(" ")
-}
+//     shell:
+//     shout("Numerous flags currently not settable for pairtools parse2")
+//     shout("Make sambamba + pairtools dockerfile")
+//     // Sort by name with sambamba, then parse, then sort by position
+//     cmd = ["pairtools parse2",
+//            "--chroms-path ${chromsizes}",
+//            "--assembly ${kwargs.assembly}",
+//            "--min-mapq 30",
+//            "--drop-readid",
+//            "--drop-seq",
+//            "--drop-sam",
+//            "${bam}",
+//            "| pairtools sort",
+//            "--output ${pairs}"]
+//     cmd.join(" ")
+// }
 
-workflow Parse {
-    take:
-    samples
+// workflow Parse {
+//     take:
+//     samples
 
-    main:
-    shout("PairtoolsParse2 doesn't sort by name")
+//     main:
+//     shout("PairtoolsParse2 doesn't sort by name")
 
-    samples
-        | map{it.bam = it.datatype in ["sam", "bam"] ? file(it.data1) : file(it.bam); it}
-        | filter{"bam" in it && it.bam.exists()}
-        | map{it.pairs = "${it.sample_id}.pairs.gz"; it}
-        | set {bam}
+//     samples
+//         | map{it.bam = it.datatype in ["sam", "bam"] ? file(it.data1) : file(it.bam); it}
+//         | filter{"bam" in it && it.bam.exists()}
+//         | map{it.pairs = "${it.sample_id}.pairs.gz"; it}
+//         | set {bam}
     
-    samples = JoinProcessResults(
-        PairtoolsParse2,
-        [bam, samples],
-        input = ["sample_id", "bam", "chromsizes", "pairs"],
-        output = ["sample_id", "pairs"],
-        join_by = ["sample_id"],
-        kwargs = true)
+//     samples = JoinProcessResults(
+//         PairtoolsParse2,
+//         [bam, samples],
+//         input = ["sample_id", "bam", "chromsizes", "pairs"],
+//         output = ["sample_id", "pairs"],
+//         join_by = ["sample_id"],
+//         kwargs = true)
     
-    emit:
-    samples
-}
+//     emit:
+//     samples
+// }
 
-process Fragtag {
-    container "bskubi/pairtools:1.0.4"
-    maxForks 1
+// process Fragtag {
+//     container "bskubi/pairtools:1.0.4"
+//     maxForks 1
 
-    input:
-    tuple val(sample_id), path(pairs), path(fragfile), val(tagged_pairs)
+//     input:
+//     tuple val(sample_id), path(pairs), path(fragfile), val(tagged_pairs)
 
-    output:
-    tuple val(sample_id), path(tagged_pairs)
+//     output:
+//     tuple val(sample_id), path(tagged_pairs)
 
-    shell:
-    ["pairtools restrict",
-     "--frags ${fragfile}",
-     "--output ${tagged_pairs}",
-     "${pairs}"].join(" ")
-}
+//     shell:
+//     ["pairtools restrict",
+//      "--frags ${fragfile}",
+//      "--output ${tagged_pairs}",
+//      "${pairs}"].join(" ")
+// }
 
-workflow OptionalFragtag {
-    take:
-        samples
+// workflow OptionalFragtag {
+//     take:
+//         samples
 
-    main:
-        def hasFragfileName = {
-            it.get("fragfile").toString().trim().length() > 0
-        }
+//     main:
+//         def hasFragfileName = {
+//             it.get("fragfile").toString().trim().length() > 0
+//         }
         
-        def fragfileExists = {
-            hasFragfileName(it) && file(it.fragfile).exists()
-        }
+//         def fragfileExists = {
+//             hasFragfileName(it) && file(it.fragfile).exists()
+//         }
 
-        samples
-            | filter{fragfileExists(it)}
-            | map{it.frag_pairs = "${it.sample_id}_fragtag.pairs.gz"; it}
-            | set{fragtag}
+//         samples
+//             | filter{fragfileExists(it)}
+//             | map{it.frag_pairs = "${it.sample_id}_fragtag.pairs.gz"; it}
+//             | set{fragtag}
         
-        samples = JoinProcessResults(
-        Fragtag,
-        [fragtag, samples],
-        input = ["sample_id", "pairs", "fragfile", "frag_pairs"],
-        output = ["sample_id", "frag_pairs"],
-        join_by = ["sample_id"],
-        kwargs = false)
+//         samples = JoinProcessResults(
+//         Fragtag,
+//         [fragtag, samples],
+//         input = ["sample_id", "pairs", "fragfile", "frag_pairs"],
+//         output = ["sample_id", "frag_pairs"],
+//         join_by = ["sample_id"],
+//         kwargs = false)
     
-    emit:
-        samples
-}
+//     emit:
+//         samples
+// }
 
-process MergeTechrepsToBioreps {
-    container "bskubi/pairtools:1.0.4"
+// process MergeTechrepsToBioreps {
+//     container "bskubi/pairtools:1.0.4"
 
-    input:
-    tuple val(condition), val(biorep), path(samples)
+//     input:
+//     tuple val(condition), val(biorep), path(samples)
 
-    output:
-    tuple val(condition), val(biorep), path("${condition}_${biorep}.pairs.gz")
+//     output:
+//     tuple val(condition), val(biorep), path("${condition}_${biorep}.pairs.gz")
 
-    shell:
-    "pairtools merge --output ${condition}_${biorep}.pairs.gz ${samples.join(" ")}"
-}
+//     shell:
+//     "pairtools merge --output ${condition}_${biorep}.pairs.gz ${samples.join(" ")}"
+// }
 
-workflow TechrepsToBioreps {
-    take:
-        samples
+// workflow TechrepsToBioreps {
+//     take:
+//         samples
 
-    main:
+//     main:
 
-        def isTechrep = {it.get("is_techrep", "").toString().trim() in ["", "true", true, 1]}
-        def hasStructure = {it.get("condition").length() > 0
-                            && it.get("biorep").length() > 0}
-        def ensureStructure = {
-            if (isTechrep(it)) {it.is_techrep = true}
-            if (isTechrep(it) && !hasStructure(it)) {
-                msg = [
-                    "${it.sample_id} listed as techrep, but no biorep and condition given.",
-                    "Treating as a unique condition with biorep=${sample_id} and condition=${sample_id}."
-                ].join(" ")
-                warn(msg)
-                it.biorep = it.sample_id
-                it.condition = it.sample_id
-            }
-            it
-        }
+//         def isTechrep = {it.get("is_techrep", "").toString().trim() in ["", "true", true, 1]}
+//         def hasStructure = {it.get("condition").length() > 0
+//                             && it.get("biorep").length() > 0}
+//         def ensureStructure = {
+//             if (isTechrep(it)) {it.is_techrep = true}
+//             if (isTechrep(it) && !hasStructure(it)) {
+//                 msg = [
+//                     "${it.sample_id} listed as techrep, but no biorep and condition given.",
+//                     "Treating as a unique condition with biorep=${sample_id} and condition=${sample_id}."
+//                 ].join(" ")
+//                 warn(msg)
+//                 it.biorep = it.sample_id
+//                 it.condition = it.sample_id
+//             }
+//             it
+//         }
 
-        samples
-            | filter{isTechrep(it)}
-            | map{ensureStructure(it)}
-            | map{tuple(it.subMap("condition", "biorep"), it)}
-            | groupTuple
-            | map {
-                it[0].latest = []
-                it[1].each {
-                    hashmap ->
-                    keys = ["frag_pairs", "pairs"]
-                    for (k in keys) {
-                        if (k in hashmap.keySet()) {
-                            it[0].latest.add(hashmap[k])
-                            break
-                        }
-                    }
-                }
-                it[0].techreps = it[1]
-                it[0].is_biorep = true
-                it[0]
-            }
-            | set{to_merge}
+//         samples
+//             | filter{isTechrep(it)}
+//             | map{ensureStructure(it)}
+//             | map{tuple(it.subMap("condition", "biorep"), it)}
+//             | groupTuple
+//             | map {
+//                 it[0].latest = []
+//                 it[1].each {
+//                     hashmap ->
+//                     keys = ["frag_pairs", "pairs"]
+//                     for (k in keys) {
+//                         if (k in hashmap.keySet()) {
+//                             it[0].latest.add(hashmap[k])
+//                             break
+//                         }
+//                     }
+//                 }
+//                 it[0].techreps = it[1]
+//                 it[0].is_biorep = true
+//                 it[0]
+//             }
+//             | set{to_merge}
 
 
-        to_merge = JoinProcessResults(
-        MergeTechrepsToBioreps,
-        [to_merge],
-        input = ["condition", "biorep", "latest"],
-        output = ["condition", "biorep", "biorep_merge_pairs"],
-        join_by = [["condition", "biorep"]],
-        new_latest = "biorep_merge_pairs")
+//         to_merge = JoinProcessResults(
+//         MergeTechrepsToBioreps,
+//         [to_merge],
+//         input = ["condition", "biorep", "latest"],
+//         output = ["condition", "biorep", "biorep_merge_pairs"],
+//         join_by = [["condition", "biorep"]],
+//         new_latest = "biorep_merge_pairs")
 
-        to_merge
-            | map{it.latest = it.biorep_merge_pairs; it}
-            | set{to_merge}
+//         to_merge
+//             | map{it.latest = it.biorep_merge_pairs; it}
+//             | set{to_merge}
 
-        samples | concat(to_merge) | set{samples}
+//         samples | concat(to_merge) | set{samples}
 
-    emit:
-        samples
-}
+//     emit:
+//         samples
+// }
 
-process Deduplicate {
-    container "bskubi/pairtools:1.0.4"
+// process Deduplicate {
+//     container "bskubi/pairtools:1.0.4"
 
-    input:
-    tuple path(infile), val(outfile), val(data)
+//     input:
+//     tuple path(infile), val(outfile), val(data)
 
-    output:
-    tuple path(outfile), val(data)
+//     output:
+//     tuple path(outfile), val(data)
 
-    shell:
-    "pairtools dedup --output ${outfile} ${infile}"
-}
+//     shell:
+//     "pairtools dedup --output ${outfile} ${infile}"
+// }
 
-workflow DeduplicateBioreps {
-    take:
-        samples
+// workflow DeduplicateBioreps {
+//     take:
+//         samples
     
-    main:
-        samples
-            | map{it.latest}
-            | view
+//     main:
+//         samples
+//             | map{it.latest}
+//             | view
 
-    emit:
-        samples
-}
+//     emit:
+//         samples
+// }
 
 workflow {
 
@@ -768,13 +772,13 @@ workflow {
         | splitCsv(header: true)
         | TryDownloadMissingReferences
         | MakeMissingChromsizes
-        | MakeMissingIndex
-        | MakeMissingDigest
-        | Align
-        | Parse
-        | OptionalFragtag
-        | TechrepsToBioreps
-        | DeduplicateBioreps
+        // | MakeMissingIndex
+        // | MakeMissingDigest
+        // | Align
+        // | Parse
+        // | OptionalFragtag
+        // | TechrepsToBioreps
+        // | DeduplicateBioreps
 
 }
 

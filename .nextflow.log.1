@@ -1,108 +1,56 @@
-Jun-24 08:51:26.170 [main] DEBUG nextflow.cli.Launcher - $> nextflow run /home/benjamin/Documents/nf-studies/hich.nf -resume
-Jun-24 08:51:26.566 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 24.04.2
-Jun-24 08:51:26.579 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/benjamin/.nextflow/plugins; core-plugins: nf-amazon@2.5.2,nf-azure@1.6.0,nf-cloudcache@0.4.1,nf-codecommit@0.2.0,nf-console@1.1.3,nf-ga4gh@1.3.0,nf-google@1.13.2,nf-tower@1.9.1,nf-wave@1.4.2
-Jun-24 08:51:26.587 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
-Jun-24 08:51:26.588 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
-Jun-24 08:51:26.591 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.10.0 in 'deployment' mode
-Jun-24 08:51:26.603 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
-Jun-24 08:51:26.620 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /home/benjamin/Documents/nf-studies/nextflow.config
-Jun-24 08:51:26.622 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/benjamin/Documents/nf-studies/nextflow.config
-Jun-24 08:51:26.643 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/benjamin/.nextflow/secrets/store.json
-Jun-24 08:51:26.645 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@3bc735b3] - activable => nextflow.secret.LocalSecretsProvider@3bc735b3
-Jun-24 08:51:26.649 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
-Jun-24 08:51:26.964 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 by global default
-Jun-24 08:51:26.981 [main] DEBUG nextflow.cli.CmdRun - Launching `/home/benjamin/Documents/nf-studies/hich.nf` [mad_panini] DSL2 - revision: 233e3258e8
-Jun-24 08:51:26.982 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
-Jun-24 08:51:26.983 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
-Jun-24 08:51:27.021 [main] DEBUG nextflow.Session - Session UUID: 3039526f-5ad3-4a80-9a57-aa9ca3002651
-Jun-24 08:51:27.021 [main] DEBUG nextflow.Session - Run name: mad_panini
-Jun-24 08:51:27.022 [main] DEBUG nextflow.Session - Executor pool size: 20
-Jun-24 08:51:27.028 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
-Jun-24 08:51:27.034 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=60; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
-Jun-24 08:51:27.049 [main] DEBUG nextflow.cli.CmdRun - 
+Jun-24 14:14:12.604 [main] DEBUG nextflow.cli.Launcher - $> nextflow run /home/benjamin/Documents/hich2/hich.nf -resume
+Jun-24 14:14:13.032 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 24.04.2
+Jun-24 14:14:13.045 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/benjamin/.nextflow/plugins; core-plugins: nf-amazon@2.5.2,nf-azure@1.6.0,nf-cloudcache@0.4.1,nf-codecommit@0.2.0,nf-console@1.1.3,nf-ga4gh@1.3.0,nf-google@1.13.2,nf-tower@1.9.1,nf-wave@1.4.2
+Jun-24 14:14:13.053 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Jun-24 14:14:13.054 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Jun-24 14:14:13.056 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.10.0 in 'deployment' mode
+Jun-24 14:14:13.066 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Jun-24 14:14:13.083 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /home/benjamin/Documents/hich2/nextflow.config
+Jun-24 14:14:13.084 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/benjamin/Documents/hich2/nextflow.config
+Jun-24 14:14:13.106 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/benjamin/.nextflow/secrets/store.json
+Jun-24 14:14:13.108 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@3bc735b3] - activable => nextflow.secret.LocalSecretsProvider@3bc735b3
+Jun-24 14:14:13.112 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Jun-24 14:14:13.394 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 by global default
+Jun-24 14:14:13.407 [main] DEBUG nextflow.cli.CmdRun - Launching `/home/benjamin/Documents/hich2/hich.nf` [awesome_descartes] DSL2 - revision: 369b8809f6
+Jun-24 14:14:13.408 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Jun-24 14:14:13.408 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
+Jun-24 14:14:13.445 [main] DEBUG nextflow.Session - Session UUID: 3039526f-5ad3-4a80-9a57-aa9ca3002651
+Jun-24 14:14:13.445 [main] DEBUG nextflow.Session - Run name: awesome_descartes
+Jun-24 14:14:13.446 [main] DEBUG nextflow.Session - Executor pool size: 20
+Jun-24 14:14:13.452 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Jun-24 14:14:13.457 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=60; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+Jun-24 14:14:13.472 [main] DEBUG nextflow.cli.CmdRun - 
   Version: 24.04.2 build 5914
   Created: 29-05-2024 06:19 UTC (28-05-2024 23:19 PDT)
   System: Linux 6.5.0-41-generic
   Runtime: Groovy 4.0.21 on OpenJDK 64-Bit Server VM 20.0.2-internal-adhoc..src
   Encoding: UTF-8 (UTF-8)
-  Process: 1239174@Odysseus [127.0.1.1]
-  CPUs: 20 - Mem: 31.3 GB (14.8 GB) - Swap: 2 GB (2 GB)
-Jun-24 08:51:27.604 [main] DEBUG nextflow.Session - Work-dir: /home/benjamin/Documents/nf-studies/work [ext2/ext3]
-Jun-24 08:51:27.604 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /home/benjamin/Documents/nf-studies/bin
-Jun-24 08:51:27.611 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
-Jun-24 08:51:27.617 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
-Jun-24 08:51:27.632 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
-Jun-24 08:51:27.638 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 21; maxThreads: 1000
-Jun-24 08:51:27.688 [main] DEBUG nextflow.Session - Session start
-Jun-24 08:51:28.907 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
-Jun-24 08:51:29.125 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
-Jun-24 08:51:29.126 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Jun-24 08:51:29.130 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
-Jun-24 08:51:29.134 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=20; memory=31.3 GB; capacity=20; pollInterval=100ms; dumpInterval=5m
-Jun-24 08:51:29.136 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
-Jun-24 08:51:29.202 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
-Jun-24 08:51:29.202 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Jun-24 08:51:29.247 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
-Jun-24 08:51:29.247 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Jun-24 08:51:29.271 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
-Jun-24 08:51:29.271 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Jun-24 08:51:29.333 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
-Jun-24 08:51:29.333 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Jun-24 08:51:29.383 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
-Jun-24 08:51:29.383 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Jun-24 08:51:29.419 [main] INFO  nextflow.script.BaseScript - biorep_merge_pairs
-Jun-24 08:51:29.420 [main] INFO  nextflow.script.BaseScript - null
-Jun-24 08:51:29.423 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
-Jun-24 08:51:29.423 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Jun-24 08:51:29.443 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: MakeMissingIndex:BwaMem2Index, BwaMem2Index, BwaMem2Align, OptionalFragtag:Fragtag, MakeDigest, Fragtag, MakeMissingDigest:MakeDigest, TechrepsToBioreps:MergeTechrepsToBioreps, MakeChromsizes, Deduplicate, PairtoolsParse2, Parse:PairtoolsParse2, Align:BwaMem2Align, MergeTechrepsToBioreps, StageReferences, MakeMissingChromsizes:MakeChromsizes
-Jun-24 08:51:29.443 [main] DEBUG nextflow.Session - Igniting dataflow network (8)
-Jun-24 08:51:29.447 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > MakeMissingChromsizes:MakeChromsizes
-Jun-24 08:51:29.447 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > MakeMissingIndex:BwaMem2Index
-Jun-24 08:51:29.447 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > MakeMissingDigest:MakeDigest
-Jun-24 08:51:29.447 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > Align:BwaMem2Align
-Jun-24 08:51:29.447 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > Parse:PairtoolsParse2
-Jun-24 08:51:29.447 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > OptionalFragtag:Fragtag
-Jun-24 08:51:29.447 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > TechrepsToBioreps:MergeTechrepsToBioreps
-Jun-24 08:51:29.447 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
-  Script_e86d6ad2695d0584: /home/benjamin/Documents/nf-studies/hich.nf
-Jun-24 08:51:29.447 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
-Jun-24 08:51:29.447 [main] DEBUG nextflow.Session - Session await
-Jun-24 08:51:29.582 [Actor Thread 21] DEBUG nextflow.conda.CondaCache - conda found local env for environment=bioconda::ucsc-fasize; path=/home/benjamin/Documents/nf-studies/work/conda/env-7a1dde636df59bcbccc7b54e40479a6f
-Jun-24 08:51:29.648 [Actor Thread 17] INFO  nextflow.processor.TaskProcessor - [7c/160078] Cached process > MakeMissingChromsizes:MakeChromsizes (1)
-Jun-24 08:51:29.673 [Actor Thread 21] INFO  nextflow.processor.TaskProcessor - [91/8dab1a] Cached process > MakeMissingDigest:MakeDigest (1)
-Jun-24 08:51:29.698 [Actor Thread 15] INFO  nextflow.processor.TaskProcessor - [e9/ea6dd6] Cached process > Align:BwaMem2Align (6)
-Jun-24 08:51:29.698 [Actor Thread 9] INFO  nextflow.processor.TaskProcessor - [54/efd778] Cached process > Align:BwaMem2Align (1)
-Jun-24 08:51:29.701 [Actor Thread 20] INFO  nextflow.processor.TaskProcessor - [96/82a5ef] Cached process > Align:BwaMem2Align (2)
-Jun-24 08:51:29.703 [Actor Thread 13] INFO  nextflow.processor.TaskProcessor - [db/923dd0] Cached process > Align:BwaMem2Align (3)
-Jun-24 08:51:29.708 [Actor Thread 21] INFO  nextflow.processor.TaskProcessor - [45/ee89d3] Cached process > Align:BwaMem2Align (7)
-Jun-24 08:51:29.712 [Actor Thread 12] INFO  nextflow.processor.TaskProcessor - [d2/c17598] Cached process > Align:BwaMem2Align (4)
-Jun-24 08:51:29.716 [Actor Thread 18] INFO  nextflow.processor.TaskProcessor - [2d/26c616] Cached process > Align:BwaMem2Align (5)
-Jun-24 08:51:29.718 [Actor Thread 19] INFO  nextflow.processor.TaskProcessor - [a6/e9557c] Cached process > Align:BwaMem2Align (8)
-Jun-24 08:51:29.739 [Actor Thread 18] INFO  nextflow.processor.TaskProcessor - [41/295dcd] Cached process > Parse:PairtoolsParse2 (8)
-Jun-24 08:51:29.744 [Actor Thread 14] INFO  nextflow.processor.TaskProcessor - [03/63cfc8] Cached process > Parse:PairtoolsParse2 (5)
-Jun-24 08:51:29.748 [Actor Thread 8] INFO  nextflow.processor.TaskProcessor - [da/e76762] Cached process > Parse:PairtoolsParse2 (1)
-Jun-24 08:51:29.751 [Actor Thread 12] INFO  nextflow.processor.TaskProcessor - [82/adf6ff] Cached process > Parse:PairtoolsParse2 (6)
-Jun-24 08:51:29.754 [Actor Thread 17] INFO  nextflow.processor.TaskProcessor - [e8/18f4b4] Cached process > Parse:PairtoolsParse2 (7)
-Jun-24 08:51:29.760 [Actor Thread 15] INFO  nextflow.processor.TaskProcessor - [24/0ed884] Cached process > Parse:PairtoolsParse2 (3)
-Jun-24 08:51:29.762 [Actor Thread 19] INFO  nextflow.processor.TaskProcessor - [10/d70925] Cached process > Parse:PairtoolsParse2 (2)
-Jun-24 08:51:29.765 [Actor Thread 9] INFO  nextflow.processor.TaskProcessor - [af/a1153e] Cached process > Parse:PairtoolsParse2 (4)
-Jun-24 08:51:29.785 [Actor Thread 17] INFO  nextflow.processor.TaskProcessor - [95/410738] Cached process > OptionalFragtag:Fragtag (2)
-Jun-24 08:51:29.790 [Actor Thread 10] INFO  nextflow.processor.TaskProcessor - [ee/c2a174] Cached process > OptionalFragtag:Fragtag (8)
-Jun-24 08:51:29.792 [Actor Thread 15] INFO  nextflow.processor.TaskProcessor - [23/f750e9] Cached process > OptionalFragtag:Fragtag (6)
-Jun-24 08:51:29.796 [Actor Thread 16] INFO  nextflow.processor.TaskProcessor - [25/978960] Cached process > OptionalFragtag:Fragtag (7)
-Jun-24 08:51:29.799 [Actor Thread 19] INFO  nextflow.processor.TaskProcessor - [64/90d2ca] Cached process > OptionalFragtag:Fragtag (4)
-Jun-24 08:51:29.801 [Actor Thread 9] INFO  nextflow.processor.TaskProcessor - [0f/6d8787] Cached process > OptionalFragtag:Fragtag (5)
-Jun-24 08:51:29.804 [Actor Thread 8] INFO  nextflow.processor.TaskProcessor - [58/5c11c6] Cached process > OptionalFragtag:Fragtag (3)
-Jun-24 08:51:29.806 [Actor Thread 12] INFO  nextflow.processor.TaskProcessor - [2d/256418] Cached process > OptionalFragtag:Fragtag (1)
-Jun-24 08:51:29.815 [Actor Thread 14] WARN  nextflow.processor.TaskProcessor - Input tuple does not match tuple declaration in process `TechrepsToBioreps:MergeTechrepsToBioreps` -- offending value: [1, 1, [/home/benjamin/Documents/nf-studies/work/23/f750e95597fe9aa5bee49a7d61cb15/sample2_fragtag.pairs.gz, /home/benjamin/Documents/nf-studies/work/25/97896081e6831b4e82bbed77a42493/sample1_fragtag.pairs.gz], [condition:1, biorep:1, latest:[/home/benjamin/Documents/nf-studies/work/23/f750e95597fe9aa5bee49a7d61cb15/sample2_fragtag.pairs.gz, /home/benjamin/Documents/nf-studies/work/25/97896081e6831b4e82bbed77a42493/sample1_fragtag.pairs.gz], techreps:[[sample_id:sample2, datatype:fastq, assembly:hg38, reference:/home/benjamin/Documents/nf-studies/work/91/8dab1a999be61805e160efd5c230c4/hg38.fna, chromsizes:/home/benjamin/Documents/nf-studies/work/7c/16007869f9150f90d8fd13f8fd54b8/hg38.sizes, index_dir:/home/benjamin/Documents/nf-studies/resources/index/bwa-mem2, index_prefix:hg38_noalts, data1:/home/benjamin/Documents/nf-studies/fastq/KO1.fq.gz, data2:/home/benjamin/Documents/nf-studies/fastq/KO2.fq.gz, enzymes:Arima, fragfile:/home/benjamin/Documents/nf-studies/work/91/8dab1a999be61805e160efd5c230c4/hg38_Arima.bed, condition:1, biorep:1, bam:/home/benjamin/Documents/nf-studies/work/96/82a5efe43ea4e5fc844d20e2b78c9b/sample2.bam, pairs:/home/benjamin/Documents/nf-studies/work/24/0ed884496afe95607008fe8e3cd8de/sample2.pairs.gz, frag_pairs:/home/benjamin/Documents/nf-studies/work/23/f750e95597fe9aa5bee49a7d61cb15/sample2_fragtag.pairs.gz, is_techrep:true], [sample_id:sample1, datatype:fastq, assembly:hg38, reference:/home/benjamin/Documents/nf-studies/work/91/8dab1a999be61805e160efd5c230c4/hg38.fna, chromsizes:/home/benjamin/Documents/nf-studies/work/7c/16007869f9150f90d8fd13f8fd54b8/hg38.sizes, index_dir:/home/benjamin/Documents/nf-studies/resources/index/bwa-mem2, index_prefix:hg38_noalts, data1:/home/benjamin/Documents/nf-studies/fastq/KO1.fq.gz, data2:/home/benjamin/Documents/nf-studies/fastq/KO2.fq.gz, enzymes:Arima, fragfile:/home/benjamin/Documents/nf-studies/work/91/8dab1a999be61805e160efd5c230c4/hg38_Arima.bed, condition:1, biorep:1, bam:/home/benjamin/Documents/nf-studies/work/54/efd77849d11c43eff85d6fd75633cb/sample1.bam, pairs:/home/benjamin/Documents/nf-studies/work/10/d7092576501ad2f7c5600c91f8364d/sample1.pairs.gz, frag_pairs:/home/benjamin/Documents/nf-studies/work/25/97896081e6831b4e82bbed77a42493/sample1_fragtag.pairs.gz, is_techrep:true]], is_biorep:true]]
-Jun-24 08:51:29.826 [Actor Thread 12] INFO  nextflow.processor.TaskProcessor - [0f/1c71bb] Cached process > TechrepsToBioreps:MergeTechrepsToBioreps (2)
-Jun-24 08:51:29.827 [Actor Thread 14] INFO  nextflow.processor.TaskProcessor - [da/d3e041] Cached process > TechrepsToBioreps:MergeTechrepsToBioreps (3)
-Jun-24 08:51:29.830 [Actor Thread 16] INFO  nextflow.processor.TaskProcessor - [ee/0ea62e] Cached process > TechrepsToBioreps:MergeTechrepsToBioreps (1)
-Jun-24 08:51:29.833 [Actor Thread 13] INFO  nextflow.processor.TaskProcessor - [da/dabd88] Cached process > TechrepsToBioreps:MergeTechrepsToBioreps (4)
-Jun-24 08:51:29.834 [main] DEBUG nextflow.Session - Session await > all processes finished
-Jun-24 08:51:29.840 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
-Jun-24 08:51:29.840 [main] DEBUG nextflow.Session - Session await > all barriers passed
-Jun-24 08:51:29.845 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=0; failedCount=0; ignoredCount=0; cachedCount=30; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=0ms; failedDuration=0ms; cachedDuration=18m 53s;loadCpus=0; loadMemory=0; peakRunning=0; peakCpus=0; peakMemory=0; ]
-Jun-24 08:51:29.913 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
-Jun-24 08:51:29.983 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'FileTransfer' shutdown completed (hard=false)
-Jun-24 08:51:29.983 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye
+  Process: 1291861@Odysseus [127.0.1.1]
+  CPUs: 20 - Mem: 31.3 GB (17.4 GB) - Swap: 2 GB (2 GB)
+Jun-24 14:14:13.944 [main] DEBUG nextflow.Session - Work-dir: /home/benjamin/Documents/hich2/work [ext2/ext3]
+Jun-24 14:14:13.944 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /home/benjamin/Documents/hich2/bin
+Jun-24 14:14:13.951 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Jun-24 14:14:13.956 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Jun-24 14:14:13.971 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Jun-24 14:14:13.977 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 21; maxThreads: 1000
+Jun-24 14:14:14.015 [main] DEBUG nextflow.Session - Session start
+Jun-24 14:14:14.515 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Jun-24 14:14:14.712 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Jun-24 14:14:14.712 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Jun-24 14:14:14.716 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Jun-24 14:14:14.720 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=20; memory=31.3 GB; capacity=20; pollInterval=100ms; dumpInterval=5m
+Jun-24 14:14:14.722 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
+Jun-24 14:14:14.772 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: StageReferences, MakeMissingChromsizes:MakeChromsizes, MakeChromsizes
+Jun-24 14:14:14.772 [main] DEBUG nextflow.Session - Igniting dataflow network (2)
+Jun-24 14:14:14.776 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > MakeMissingChromsizes:MakeChromsizes
+Jun-24 14:14:14.777 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Script_e9459cc03d96e21b: /home/benjamin/Documents/hich2/hich.nf
+Jun-24 14:14:14.777 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+Jun-24 14:14:14.777 [main] DEBUG nextflow.Session - Session await
+Jun-24 14:14:14.835 [main] DEBUG nextflow.Session - Session await > all processes finished
+Jun-24 14:14:14.926 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
+Jun-24 14:14:14.926 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Jun-24 14:14:14.929 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=0; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=0ms; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=0; peakCpus=0; peakMemory=0; ]
+Jun-24 14:14:15.035 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+Jun-24 14:14:15.104 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'FileTransfer' shutdown completed (hard=false)
+Jun-24 14:14:15.104 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye
