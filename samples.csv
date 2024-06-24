@@ -1,0 +1,9 @@
+sample_id,datatype,assembly,reference,chromsizes,index_dir,index_prefix,data1,data2,enzymes,fragfile,condition,biorep
+sample1,fastq,hg38,hg38.fna,,resources/index/bwa-mem2,hg38_noalts,fastq/KO1.fq.gz,fastq/KO2.fq.gz,Arima,,1,1
+sample2,fastq,hg38,hg38.fna,,resources/index/bwa-mem2,hg38_noalts,fastq/KO1.fq.gz,fastq/KO2.fq.gz,Arima,,1,1
+sample3,fastq,hg38,hg38.fna,,resources/index/bwa-mem2,hg38_noalts,fastq/KO1.fq.gz,fastq/KO2.fq.gz,Arima,,1,2
+sample4,fastq,hg38,hg38.fna,,resources/index/bwa-mem2,hg38_noalts,fastq/KO1.fq.gz,fastq/KO2.fq.gz,Arima,,1,2
+sample5,fastq,hg38,hg38.fna,,resources/index/bwa-mem2,hg38_noalts,fastq/KO1.fq.gz,fastq/KO2.fq.gz,Arima,,2,1
+sample6,fastq,hg38,hg38.fna,,resources/index/bwa-mem2,hg38_noalts,fastq/KO1.fq.gz,fastq/KO2.fq.gz,Arima,,2,1
+sample7,fastq,hg38,hg38.fna,,resources/index/bwa-mem2,hg38_noalts,fastq/KO1.fq.gz,fastq/KO2.fq.gz,Arima,,2,2
+sample8,fastq,hg38,hg38.fna,,resources/index/bwa-mem2,hg38_noalts,fastq/KO1.fq.gz,fastq/KO2.fq.gz,Arima,,2,2

@@ -1,0 +1,7 @@
+work
+.nextflow
+.vscode
+.ipynb_checkpoints
+fastq
+resources
+hg38.fna

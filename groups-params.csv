@@ -1,0 +1,5 @@
+header,group1,group2
+dedup-before-merge,1,0
+dedup-after-merge,0,1
+,sample1,sample3
+,sample2
