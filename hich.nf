@@ -1,29 +1,36 @@
-def shout(message) {
-    stars = "*"*message.length()
-    // print(stars)
-    // print(message)
-    // print(stars)
-}
 
-def warn(message) {
-    print(message)
-}
+workflow keydiff {
+    take:
+        left
+        right
+        by
+        how
 
-def keydiff (left, right, by, how) {
+    main:
     /*
-    Arguments:
-        left -- the left channel treated as a 'table' with LinkedHashMap rows
-        right -- the right channel 'table'
-        by -- key or list of keys
-        how -- 'left' or 'right',
-            'left': returns left - right keyset
-            'right': returns right - left keyset
+        Motivation and implementation logic:
+
+        When Nextflow channel items are LinkedHashMaps ("hashmaps"), they are
+        similar to un-normalized tables. Items are rows, keys represent the
+        column name for that row, and values represent cell entries.
+
+        We can therefore do an SQL-like join on them. A left join, for example,
+        keeps all 'left' rows, adding 'right' rows where there is a matching]
+        key and null or default values where there is no matching 'right' key.
+
+        This workflow is used to determine which key column values are missing
+        in the left table, right table, or in neither table.
+
+        'by': the set of hashmap keys (i.e. table columns) to join on
+        'keyset': the values in the by keys of a particular channel item (i.e. table row)
+        
     */
 
-    // Start by identifying unique keys from each channel
-    // We add true after the key hashmap so that when identifying
-    // missing keys with join, we can distinguish matches from missing
-    // by having true or null in the second position.
+    /* Extract unique keysets from left and right tables.
+
+    This also adds a 'true' value which will be used in the next step to detect
+    unmatched keysets.
+    */
     left_keys = left
         | map{it.subMap(by)}
         | unique
@@ -34,8 +41,16 @@ def keydiff (left, right, by, how) {
         | unique
         | map{[it, true]}
     
-    // Identify which keys in the left are not found in the right
-    // Returns [key, true] if a match or [key, null] if no match
+    /* Determine left ∩ right, left - right, and right - left keysets
+    
+    Nextflow join operator matches on first element of each item (the keyset)
+    The remainder argument keeps unmatched items, regardless of which
+    channel they were in. It adds a null value as a placeholder which is groovy
+    falsey. If the keyset is missing in neither (found in both), the output
+    will be [keyset, true, true] from the true values added in the previous
+    step. If the keyset is missing in the left, [keyset, null, true] will be
+    emitted, or [keyset, true, null] if it is missing in the right.
+    */
     missing =
         left_keys
         | join(right_keys, remainder: true)
@@ -45,15 +60,30 @@ def keydiff (left, right, by, how) {
             left:   !it[1] &&  it[2] //key in right only
         }
 
-    // Get rid of placeholder and keep just the key
+    /*
+        Extract the keyset for rows found only in the left or only in the right
+        depending on the 'how' argument, so that default values can be added
+        where necessary during the join.
+    */
     if (how == "right") {
-        return missing.right | map{it[0]}
+        missing.right | map{it[0]} | set{result}
     } else if (how == "left") {
-        return missing.left | map{it[0]}
+        missing.left | map{it[0]} | set{result}
     }
+
+    emit:
+        result
+
+
 }
 
-def sqljoin (left, right, by = null, suffix = "_right", how = "left") {
+workflow sqljoin {
+    take:
+    left
+    right
+    kwargs
+
+    main:
     /* Similar to a SQL inner join
 
     Tables are represented as channels emitting LinkedHashMap 'rows'
@@ -76,7 +106,71 @@ def sqljoin (left, right, by = null, suffix = "_right", how = "left") {
     way this can be an issue is if their types are GString and String.
     */
 
-    // To accommodate left, right and full joins, we add any missing keys
+    /*
+        Motivation and implementation logic:
+
+        When Nextflow channel items are LinkedHashMaps ("hashmaps"), they are
+        similar to un-normalized tables. Items are rows, keys represent the
+        column name for that row, and values represent cell entries.
+
+        We can therefore do an SQL-like join on them. A left join, for example,
+        keeps all 'left' rows, adding 'right' rows where there is a matching]
+        key and null or default values where there is no matching 'right' key.
+        If two or more 'right' rows match one 'left' row, then multiple
+        rows are produced containing one copy of the 'left' items and one
+        copy of one of the matching 'right' rows' items.
+
+        Nextflow's 'join' is similar but importantly different from an SQL
+        inner join. Other join types are not available. None operate on named
+        keys from hashmaps. We implement a closer approximation to the SQL
+        full, left, right and inner joins on Nextflow channels containing
+        a single LinkedHashMap item here.
+
+        'keyset': the values in the by keys of a particular channel item (i.e. table row)
+
+        The implementation idea is as follows:
+
+        1. Depending on join type, determine missing keysets that would
+        inappropriately lead to rows being dropped and add in empty placeholders.
+        For example, for a left join all left rows should be kept. So any keysets
+        in the left table not present in the right table must be added as
+        placeholders to the right table.
+
+        2. Group the left channel by keyset, giving a [keyset: [list of items]]
+        channel. This is necessary because the Nextflow join operator returns
+        only the first item from the left channel for each specific keyset.
+
+        3. Use Nextflow cross operator to get pairwise combinations of left
+        channel items and right channel items with matching keysets. For example,
+        if there are two left items and two right items with a particular
+        keyset we obtain:
+            [[keyset, [left_1, left_2]], [keyset, right_1]]
+            [[keyset, [left_1, left_2]], [keyset, right_2]]
+
+        4. Reformat to produce hashmap-formatted elements:
+            [left_1 + right_1]
+            [left_1 + right_1]
+            [left_1 + right_1]
+            [left_1 + right_1]
+
+            Note: the matching keyset will be represented once in the
+            resulting hashmaps
+
+            Where there are non-keyset matching columsn in the left and right
+            tables, we add a suffix to avoid a clash or (if a blank suffix
+            is provided) we overwrite.
+    */
+
+    by = kwargs.get("by", null)
+    suffix = kwargs.get("suffix", "_right")
+    how = kwargs.get("how", "left")
+
+    /* 1. Depending on join type, determine missing keysets that would
+       inappropriately lead to rows being dropped and add in empty placeholders.
+       For example, for a left join all left rows should be kept. So any keysets
+       in the left table not present in the right table must be added as
+       placeholders to the right table.
+    */
     if (how == "full" || how == "left") {
         // Add any keys in left that are missing in right to right.
         missing = keydiff(left, right, by, "right")
@@ -88,62 +182,109 @@ def sqljoin (left, right, by = null, suffix = "_right", how = "left") {
         left = left | concat(missing)
     }
 
-    // Nextflow cross operator expects the source (left) to have unique
-    // keys, so after extracting the keys to match on to a [keys, hashmap]
-    // list, we use groupTuple on the left column to get [keys, [hashmaps]]
+    /* 2. Group the left channel by keyset, giving a [keyset: [list of items]]
+       channel. This is necessary because the Nextflow join operator returns
+       only the first item from the left channel for each specific keyset.
+    */
 
     left = left | map{[it.subMap(by), it]} | groupTuple
     right = right | map{[it.subMap(by), it]}
 
-    // cross emits one item of format:
-    // [[[key, [[leftrow1], [leftrow2], ...]],
-    //  [[key, [rightrow]]]
-    // for each matching key in the left and right
-    joined =
-        left
-        | cross(right)
-        | map{
-            result1 = []
-            // Drop the key (which is still preserved in the hashmaps)
-            // and extract the hashmaps to get:
-            // left = [[leftrow1], [leftrow2], ...]
-            // rightrow = rightrow
-            left = it[0].drop(1)[0]
-            rightrow = it[1].drop(1)[0]
+    /* 3. Use Nextflow cross operator to get pairwise combinations of left
+       channel items and right channel items with matching keysets. For example,
+       if there are two left items and two right items with a particular
+       keyset we obtain:
+           [[keyset, [left_1, left_2]], [keyset, right_1]]
+           [[keyset, [left_1, left_2]], [keyset, right_2]]
+    */
 
-            // Iterate through each leftrow and combine with rightrow
-            left.each() {
-                leftrow ->
-                combined = [:]
+    left
+    | cross(right)
+    | map{
+        /* Reformat item format
+           
+           from [[keyset, [left_1, left_2]], [keyset, right]]
 
-                // Put all items (including key) from leftrow into combined
-                combined.putAll(leftrow)
-                
-                // Iterate through each key in rightrow,
-                // appending suffix if needed to avoid clashes with leftrow
-                // and adding it to the combined row.
-                rightrow.each() {
-                    key, value ->
-                    // Don't add keys again as they were added in putAll
-                    if (!by.contains(key)) {
-                        // Add as many suffixes as necessary to avoid clash
-                        while (suffix != "" && combined.containsKey(key)) {
-                            key = key + suffix
-                        }
+           to   [left_1 + right]
+                [left_2 + right]
+
+            These are hashmaps with keyset represented only once
+        */
+        result = []
+
+        /* Drop the key (which is still preserved in the hashmaps)
+           and extract the hashmaps from the [keyset, hashmap] elements to get:
+           left = [leftrow1, leftrow2, ...]
+           rightrow = rightrow
+
+           it[0] = [keyset, [left_1, left_2, ...]]
+           it[1] = [keyset, right]
+           
+           drop(1) means to drop 1 item from the beginning of the list, so it
+           will drop the keyset.
+        */
+
+        /* This is an old implementation. I'm pretty sure it is unnecessary
+        to drop and then extract the first element, but I'm leaving it in
+        case it introduces bugs.
+        */
+        //left = it[0].drop(1)[0]       
+        //rightrow = it[1].drop(1)[0]
+        
+        /* The new version just extracts the desired elements directly*/
+        left = it[0][1]
+        rightrow = it[1][1]
+
+        // Iterate through each leftrow and combine with rightrow
+        left.each() {
+            leftrow ->
+            combined = [:]
+
+            // Put all items (including key) from leftrow into combined
+            combined.putAll(leftrow)
+            
+            // Iterate through each key in rightrow,
+            // appending suffix if needed to avoid clashes with leftrow
+            // and adding it to the combined row.
+            rightrow.each() {
+                key, value ->
+
+                // Add non-keyset keys from right to left.
+                if (!by.contains(key)) {
+
+                    // Add as many suffixes as necessary to avoid clash
+                    while (suffix != "" && combined.containsKey(key)) {
+                        key = key + suffix
+                    }
+
+                    /* Add the right key value if either criterion holds:
+                        - There is no name clash, or
+                        - The left table is not declared dominant
+                    */
+                    if (kwargs.get("dominant") != "left" || !combined.containsKey(key)) {
                         combined[key] = value
                     }
                 }
-                result1.add(combined)
             }
-            result1
+            // Add the new hashmap to the list of hashmaps
+            result.add(combined)
         }
-        | collect
-        | flatMap{it}
+
+        // List of per-keyset joins
+        result
+    }
+    | collect       // Currently, channel items are lists of per-keyset joins.
+    | flatMap{it}   // Collects to a single list of lists, then flattens
+    | set{joined}   // Yielding the desired result of single-hashmap join items.
     
-    return joined
+    emit:
+        joined
 }
 
 def getIdx(item, index) {
+    /* If item is a list, get value at index, where too-large indexes are set
+       to index of final item. If item is not a list, return it.
+    */
     if (item instanceof List) {
         validIndex = Math.min(index, item.size() - 1)
         return item[validIndex]
@@ -151,104 +292,213 @@ def getIdx(item, index) {
     return item
 }
 
-def JoinProcessResults(proc, channels, input, output, join_by, kwargs = false, new_latest = null) {
-    if(proc == MergeTechrepsToBioreps) {
-        print("kwargs: ${kwargs}")
-        print("new_latest: ${new_latest}")
-    }
-    shout("JoinProcessResults can't handle processes that don't input or output tuples")
-    result_jpr = channels[0]
-        | map {
-            elements = it.subMap(input).values().toList()
-            elements = kwargs ? elements + it : elements
-            tuple(*elements)
-        }
-        | proc
-        | map{
-            result_map = [:];
-            [output, it].transpose().each { k, v -> result_map[k] = v};
-            result_map
+workflow JoinProcessResults {
+    /*
+        proc -- the process to call
+        channels -- a list of channels.
+            The first channel contains single-hashmap items that have as a
+            subset of their keys the required process inputs.
+
+            Outputs from the process will be rejoined to channel[0], then
+            channel[0] will be joined to channel[1], channel[1] to channel[1], ...
+            and the result of the final join will be emitted.
+        input -- a list of keys to extract from channel[0] hashmap items and
+            use as inputs to the process
+        output -- a list of keys in the order expected from the process
+        join_by -- either a non-List universal join key or a List of join keys
+               Iterate through the channels pairwise ([ch0, ch1], [ch1, ch2]...)
+               Then join the first channel to the second. The caller has several
+               ways to pass join by parameters:
+                    If a List is passed as the join by parameter, then the ith
+                    pair of channels are joined on the ith element or on the final
+                    join by parameter, whichever is lower.
+
+                    If a non-List is passed, then every pair of channels are
+                    joined by it.
+
+                    If it's desired to use a single List L as the join by parameter
+                    for every pair of channels, simply pass [L] as the join by
+                    parameter (i.e. a single-element list containing only L) 
+        kwargs -- if non-falsey, used to subMap channel[0] and passed as a val
+                  parameter to the process
+        latest -- if non-falsey, sets the 'latest' parameter of the channel items
+                  used as inputs to the process to the specified output
+                  from the process.
+
+            Motivation:
+
+            Using hashmaps to keep track of process inputs and outputs has
+            numerous advantages, but adds complications.
+            
+            First, although Nextflow can accept hashmaps as val() params,
+            it won't stage files stored in them to the work directory, making
+            those files inaccessible to the process.
+
+            Second, any changes to process inputs trigger a rerun of the process.
+            We want to avoid this in cases where changes are made to hashmap
+            keys that are not used by the process.
+
+            This requires extracting the specific desired elements and passing
+            them to the process, but this in turn means that the process can't
+            just emit the full hashmap. We therefore have to have a way of
+            extracting the desired elements, passing them to the process,
+            and rejoining the process outputs to the original hashmap. This
+            is what the JoinProcessResults workflow accomplishes.
+    */
+    take:
+        proc
+        channels
+        input
+        output
+        join_by
+        kwargs
+        latest
+
+    main:
+        result = channels[0]
+            | map {
+                /* Extract needed process inputs in order. Sometimes it is
+                convenient to pass an additional set of arguments as a final
+                value parameter, which is what the second line does. Then
+                format them as a tuple and pass to the process.
+                */
+                elements = it.subMap(input).values().toList()
+                elements = kwargs ? elements + it.subMap(kwargs) : elements
+                tuple(*elements)
+            }
+            | proc  // Call the process
+            | map{
+                /* Collect the outputs from the process and put them into
+                a hashmap, using the order specified in 'output'. The transpose
+                operator is similar to Python's zip operator, generating
+                [[output[0], proc_outputs[0]], [output[1], proc_outputs[1]], ...]
+                which are then combined into a hashmap [output[0]:proc_outputs[0], ...]
+                during the each{} loop.
+
+                If a non-falsey latest parameter is specified, we set one of the
+                process outputs as the value of the latest parameter. This helps
+                keep track of the most recent output to facilitate things like
+                certain samples skipping processing steps.
+                */
+                proc_outputs ->
+                result_map = [:];
+                [output, proc_outputs].transpose().each { k, v -> result_map[k] = v};
+                latest ? (result_map.latest = result_map[latest]) : null
+                result_map
+            }
+
+        /*
+            1. Create an extended list of channels, starting wtih the output
+                hashmaps from the process.
+            
+            2. Iterate through the channels pairwise ([ch0, ch1], [ch1, ch2]...)
+               Then join the first channel to the second. The caller has several
+               ways to pass join by parameters:
+                    If a List is passed as the join by parameter, then the ith
+                    pair of channels are joined on the ith element or on the final
+                    join by parameter, whichever is lower.
+
+                    If a non-List is passed, then every pair of channels are
+                    joined by it.
+
+                    If it's desired to use a single List L as the join by parameter
+                    for every pair of channels, simply pass [L] as the join by
+                    parameter (i.e. a single-element list containing only L) 
+        */
+        allchannels = [result] + channels
+
+        channels.eachWithIndex {ch, i ->
+            by = getIdx(join_by, i)
+            channels[i] = sqljoin(channels[i], allchannels[i], [by: by, suffix: ""])
+            allchannels[i+1] = channels[i]
         }
     
-    if (proc == MergeTechrepsToBioreps) {
-        result_jpr | view
-    }
-
-    allchannels = [result_jpr] + channels
-
-    channels.eachWithIndex {ch, i ->
-        by = getIdx(join_by, i)
-        channels[i] = sqljoin(channels[i], allchannels[i], by = by, suffix = "")
-        allchannels[i+1] = channels[i]
-    }
-    
-    return channels[-1]
+    emit:
+        // The final channel has the complete join specified by the user.
+        channels[-1]
 }
 
-def MakeResourceFile(branched,
-                     file_key,
-                     proc,
-                     input,
-                     output,
-                     join_by,
-                     kwargs = false) {
-    shout("MakeResourceFile is untested")
+workflow MakeResourceFile {
+    /*
+        Motivation:
+        
+        There are several types of common resource files we may wish to download
+        or produce from another resource file. Examples include reference genomes,
+        chromsizes files, and restriction digest .bed files. Often multiple
+        samples will use common reference files. This workflow identifies the
+        set of common references needed by all the samples, uses the given process
+        to obtain them, and then adds the file to all the samples that need it
+        to avoid redundant downloading and processing.
 
-    made = branched.missing
+        If the common resource files are missing, they are created. If they
+        exist no special processing is done but it is inforced that they are
+        of type 'file' rather than type 'string'. If no_change is required they
+        are left as-is.
+
+        exists -- channel of resource files specs that exist and where the values
+        under 'file_key' should be converted to type 'file'
+        missing -- channel of resource file specs that do not exist and need to be made
+        no_change -- channel of resource files that should not be altered
+        file_key -- list of keys where the subMap of hashmaps in 'exists' with these
+        keys will be converted to type 'file'
+        proc -- the Nextflow process to run to make missing files
+        input -- the list of inputs expected by the process
+        output -- the names of the outputs produced by the process
+        join_by -- keys to join the 'made' outputs to the 'missing' items
+    */
+    take:
+        exists
+        missing
+        no_change
+        file_key
+        proc
+        input
+        output
+        join_by
+
+    main:
+        missing
         | map {
+            // Extract input value sfrom hashmap in order required by process
             elements = it.subMap(input).values().toList()
-            elements = kwargs ? elements + it : elements
             tuple(*elements)
         }
-        | unique
-        | proc
+        | unique    // Get unique inputs to avoid redundant processing
+        | proc      // Call process
         | map{
-            result_jpr_mrf = [:];
-            [output, it].transpose().each {k, v -> result_jpr_mrf[k] = v};
-            result_jpr_mrf
+            // Use given output names and process outputs as key:value pairs
+            // in a hashmap
+            proc_outputs ->
+            result = [:]
+            [output, proc_outputs].transpose().each {k, v -> result[k] = v}
+            result
         }
-    
-    missing = sqljoin(branched.missing, made, by = join_by, suffix = "")
+        | set{made}
+        
+        // Join the process outputs
+        missing = sqljoin(missing, made, [by: join_by, suffix: ""])
 
-    result_mfr = branched.exists
-        | map{
-            it[file_key] = file(it[file_key]);
-            it
-        }
-        | concat(branched.no_change)
-        | concat(missing)
-    
-    return result_mfr
-}
-
-def GroupHashmaps(hashmaps) {
-    grouped = [:]
-    hashmaps.each {
-        hashmap ->
-        hashmap.keySet().each {
-            k ->
-            grouped[k] = []
-        }
-    }
-    hashmaps.each {
-        hashmap ->
-        hashmap.each {
-            k, v ->
-            grouped[k].add(v)
-        }
-    }
-    grouped.each {
-        k, v ->
-        grouped[k] = grouped[k].unique()
-        if (grouped[k].size() == 1) {
-            grouped[k] = grouped[k][0]
-        }
-    }
-
-    return grouped
+        // Make files specified by 'file_key' into files in the 'exists' channel
+        // then concatenate with the made and unchanged resource files.
+        result = exists
+            | map{
+                
+                it[file_key] = file(it[file_key]);
+                it
+            }
+            | concat(no_change)
+            | concat(missing)
+        
+    emit:
+        result
 }
 
 process StageReferences {
+    /*  When a URL is passed to a Nextflow function, the resource will be
+        automatically downloaded and staged by Nextflow. This is a dummy
+        function used to download a unique reference and intentionally has
+        no content.
+    */
     input:
     tuple val(assembly), path(url)
 
@@ -304,8 +554,8 @@ workflow TryDownloadMissingReferences {
             5. Download
             6. Set file as output path
         */
-        shout("WARNING: StageReferences is commented out in EnsureReferences")
-        shout("WARNING: Have not tested ability to recombine branched samples in EnsureReferences")
+        
+        // Separate to download from those with existing reference
         samples
             | branch{
                 download: it.get("reference", "").trim().length() == 0
@@ -314,28 +564,30 @@ workflow TryDownloadMissingReferences {
             }
             | set{branched}
         
+        // Convert existing reference to file
         branched.exists
             | map{it.reference = file(it.reference); it}
             | set{exists}
         
-        sqljoin(exists, samples, by = "sample_id", suffix = "")
+        // Map the existing files back to the samples
+        
+        sqljoin(samples, exists, [by: "sample_id", suffix: ""])
             | set{samples}
 
-        
+
         branched.download
             | map{it.subMap("assembly")}
             | map{it.reference = file(urls[synonyms[it.assembly]]); it}
             | unique
-            // | StageReferences
+            | StageReferences
             | map{["assembly": it[0], "reference":it[1]]}
             | set{remote_refs}
 
-        sqljoin(branched.download, remote_refs, by = "assembly", suffix = "")
-            | set{download}
+        download = sqljoin(branched.download, remote_refs, [by: "assembly", suffix: ""])
         
-        sqljoin(samples, download, by = "sample_id", suffix = "")
-            | set{samples}
-        
+        samples = sqljoin(samples, download, [by: "sample_id", suffix: ""])
+
+
     emit:
         samples
 }
@@ -376,13 +628,15 @@ workflow MakeMissingChromsizes {
             | map{ensureChromsizesFilename(it)}
             | branch{
                 exists: chromsizesExists(it)
-                missing: hasChromsizesFilename(it)
+                missing: !chromsizesExists(it) && hasChromsizesFilename(it)
                 no_change: true
             }
             | set{branched}
         
         samples = MakeResourceFile(
-            branched,
+            branched.exists,
+            branched.missing,
+            branched.no_change,
             "chromsizes",
             MakeChromsizes,
             ["reference", "assembly", "chromsizes"],
@@ -392,6 +646,62 @@ workflow MakeMissingChromsizes {
 
     emit:
         samples
+}
+
+process BwaMem2Index {
+    publishDir "resources/index/bwa-mem2/", mode: 'move'
+    container "bskubi/bwa-mem2"
+
+    input:
+    tuple path(reference), val(prefix)
+
+    output:
+    tuple val(prefix), path("${prefix}.0123"), path("${prefix}.amb"),
+          path("${prefix}.ann"), path("${prefix}.bwt.2bit.64"),
+          path("${prefix}.pac")
+
+    shell:
+    "touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
+    //"bwa-mem2 index -p ${prefix} ${reference}"
+
+    stub:
+    "touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
+}
+
+workflow MakeMissingIndex {
+
+    take:
+        samples
+    
+    main:
+
+        def fileExists = { dir, file -> new File(dir, file).exists() }
+        
+        samples
+            | filter{it.get("index_dir", "").trim().length() == 0
+                     || it.get("index_prefix").trim().length() == 0
+                     || !fileExists(it.index_dir, "${it.index_prefix}.0123")}
+            | set{no_index}
+        
+        no_index
+            | map{it.subMap("reference", "assembly")}
+            | unique
+            | map{it.index_prefix = it.index_prefix?.trim() ? it.index_prefix : it.assembly; it}
+            | map{tuple(it.reference, it.index_prefix)}
+            | BwaMem2Index
+            | map{["index_prefix": it[0], "index_dir": "resources/index/bwa-mem2/"]}
+            | set {new_index}
+
+        sqljoin(no_index, new_index, [by: "assembly", suffix: ""])
+            | set {new_index}
+
+        sqljoin(samples, new_index, [by: "sample_id", suffix: ""])
+            | map{it.index_dir = file(it.index_dir); it}
+            | set {samples}
+
+    emit:
+        samples
+
 }
 
 process MakeDigest {
@@ -433,7 +743,9 @@ workflow MakeMissingDigest {
             | set{branched}
         
         samples = MakeResourceFile(
-            branched,
+            branched.exists,
+            branched.missing,
+            branched.no_change,
             "fragfile",
             MakeDigest,
             ["reference", "enzymes", "fragfile", "assembly"],
@@ -445,67 +757,10 @@ workflow MakeMissingDigest {
         samples
 }
 
-process BwaMem2Index {
-    publishDir "resources/index/bwa-mem2/", mode: 'move'
-    container "bskubi/bwa-mem2"
-
-    input:
-    tuple path(reference), val(prefix)
-
-    output:
-    tuple val(prefix), path("${prefix}.0123"), path("${prefix}.amb"),
-          path("${prefix}.ann"), path("${prefix}.bwt.2bit.64"),
-          path("${prefix}.pac")
-
-    shell:
-    "touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
-    //"bwa-mem2 index -p ${prefix} ${reference}"
-
-    stub:
-    "touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
-}
-
-workflow MakeMissingIndex {
-
-    take:
-        samples
-    
-    main:
-        
-
-        shout("BWA-MEM2 indexing is commented out in 'shell' section")
-        shout("Indexing only works for BWA-MEM2")
-
-        def fileExists = { dir, file -> new File(dir, file).exists() }
-        
-        samples
-            | filter{it.get("index_dir", "").trim().length() == 0
-                     || it.get("index_prefix").trim().length() == 0
-                     || !fileExists(it.index_dir, "${it.index_prefix}.0123")}
-            | set{no_index}
-        
-        no_index
-            | map{it.subMap("reference", "assembly")}
-            | unique
-            | map{it.index_prefix = it.index_prefix?.trim() ? it.index_prefix : it.assembly; it}
-            | map{tuple(it.reference, it.index_prefix)}
-            | BwaMem2Index
-            | map{["index_prefix": it[0], "index_dir": "resources/index/bwa-mem2/"]}
-            | set {new_index}
-
-        sqljoin(no_index, new_index, by = "assembly", suffix = "")
-            | set {new_index}
-
-        sqljoin(samples, new_index, by = "sample_id", suffix = "")
-            | map{it.index_dir = file(it.index_dir); it}
-            | set {samples}
-
-    emit:
-        samples
-
-}
-
 process BwaMem2Align {
+    publishDir params.general.publish.bam ? params.general.publish.bam : "results",
+               saveAs: {params.general.publish.bam ? it : null}
+
     container "bskubi/bwa-mem2"
     //maxRetries 4
     //memory {20.GB + 20.GB * task.attempt}
@@ -517,14 +772,14 @@ process BwaMem2Align {
     maxForks 1
 
     input:
-    tuple val(sample_id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2), val(bam)
+    tuple val(sample_id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2)
 
     output:
-    tuple val(sample_id), path(bam)
+    tuple val(sample_id), path("${sample_id}.bam")
 
     shell:
     align = "bwa-mem2 mem -t 10 -SP5M ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
-    tobam = "samtools view -b -o ${bam}"
+    tobam = "samtools view -b -o ${sample_id}.bam"
     "${align} | ${tobam}"
 }
 
@@ -533,27 +788,31 @@ workflow Align {
         samples
 
     main:
-        shout("Only aligns with BWA-MEM2")
-        shout("Add bam squeeze to alignment step")
+       
         samples
-            | branch {
-                fastq: it.datatype == "fastq"
-                other: true
-            } | set {branched}
-        
-        branched.fastq
+            | filter{it.datatype == "fastq"
+                     && it.get("fastq1")
+                     && it.get("fastq2")
+            }
             | map{
-                it.data1 = file(it.data1)
-                it.data2 = file(it.data2)
-                it.bam = "${it.sample_id}.bam"
-                it}
+                it.fastq1 = file(it.fastq1)
+                it.fastq2 = file(it.fastq2)
+                it
+            }
             | set {fastq}
 
-        samples = JoinProcessResults(BwaMem2Align,
+        samples = JoinProcessResults(
+            BwaMem2Align,
             [fastq, samples],
-            input = ["sample_id", "index_dir", "index_prefix", "data1", "data2", "bam"],
-            output = ["sample_id", "bam"],
-            join_by = ["sample_id"])
+            ["sample_id", "index_dir", "index_prefix", "fastq1", "fastq2"],
+            ["sample_id", "sambam"],
+            ["sample_id"],
+            false,
+            "sambam")
+
+        if (params.general.get("last_step") == "align") {
+            channel.empty() | set{samples}
+        }
     emit:
         samples
 
@@ -561,28 +820,29 @@ workflow Align {
 }
 
 process PairtoolsParse2 {
+    publishDir params.general.publish.parse ? params.general.publish.parse : "results",
+               saveAs: {params.general.publish.parse ? it : null}
     container "bskubi/pairtools:1.0.4"
 
     input:
-    tuple val(sample_id), path(bam), path(chromsizes), val(pairs), val(kwargs)
+    tuple val(sample_id), path(sambam), path(chromsizes), val(kwargs)
 
     output:
-    tuple val(sample_id), path(pairs)
+    tuple val(sample_id), path("${sample_id}.pairs.gz")
 
     shell:
-    shout("Numerous flags currently not settable for pairtools parse2")
-    shout("Make sambamba + pairtools dockerfile")
     // Sort by name with sambamba, then parse, then sort by position
     cmd = ["pairtools parse2",
            "--chroms-path ${chromsizes}",
            "--assembly ${kwargs.assembly}",
-           "--min-mapq 30",
+           "--min-mapq ${kwargs.min_mapq}",
            "--drop-readid",
            "--drop-seq",
            "--drop-sam",
-           "${bam}",
-           "| pairtools sort",
-           "--output ${pairs}"]
+           "${sambam}",
+           "| pairtools flip --chroms-path ${chromsizes}",
+           "| pairtools sort --output ${sample_id}.pairs.gz"]
+
     cmd.join(" ")
 }
 
@@ -591,29 +851,84 @@ workflow Parse {
     samples
 
     main:
-    shout("PairtoolsParse2 doesn't sort by name")
 
-    samples
-        | map{it.bam = it.datatype in ["sam", "bam"] ? file(it.data1) : file(it.bam); it}
-        | filter{"bam" in it && it.bam.exists()}
-        | map{it.pairs = "${it.sample_id}.pairs.gz"; it}
-        | set {bam}
+        samples
+        | filter{it.get("sambam") && file(it.sambam).exists()}
+        | map{it.sambam = file(it.sambam); it}
+        | set {sambam}
     
     samples = JoinProcessResults(
         PairtoolsParse2,
-        [bam, samples],
-        input = ["sample_id", "bam", "chromsizes", "pairs"],
-        output = ["sample_id", "pairs"],
-        join_by = ["sample_id"],
-        kwargs = true)
+        [sambam, samples],
+        ["sample_id", "sambam", "chromsizes"],
+        ["sample_id", "pairs"],
+        ["sample_id"],
+        ["assembly", "min_mapq"],
+        "pairs")
     
+    samples | map{it.id = it.sample_id; it} | set{samples}
+
+    if (params.general.get("last_step") == "parse") {
+        channel.empty() | set{samples}
+    }
+
     emit:
-    samples
+        samples
+}
+
+process PairtoolsFlipSort {
+    publishDir params.general.publish.flip_sort ? params.general.publish.flip_sort : "results",
+               saveAs: {params.general.publish.flip_sort ? it : null}
+    container "bskubi/pairtools:1.0.4"
+
+    input:
+    tuple val(sample_id), path(pairs), path(chromsizes)
+
+    output:
+    tuple val(sample_id), path("${sample_id}.pairs.gz")
+
+    shell:
+    cmd = ["pairtools flip --chroms-path ${chromsizes} ${pairs}",
+           "| pairtools sort --output ${sample_id}.pairs.gz"]
+    cmd.removeAll([null])
+    cmd.join(" ")
+}
+
+workflow IngestPairs {
+    take:
+        samples
+
+    main:
+        samples
+            | filter{it.datatype == "pairs" && it.get("pairs") && file(it.get("pairs")).exists()}
+            | map{
+                it.pairs = file(it.pairs);
+                it.id = it.sample_id;
+                it
+            }
+            | set{ingest}
+        
+        samples = JoinProcessResults(
+            PairtoolsFlipSort,
+            [ingest, samples],
+            ["sample_id", "pairs", "chromsizes"],
+            ["sample_id", "pairs"],
+            ["sample_id"],
+            null,
+            "pairs")
+        
+        if (params.general.get("last_step") == "IngestPairs") {
+            channel.empty() | set{samples}
+        }
+
+    emit:
+        samples
 }
 
 process Fragtag {
-    container "bskubi/pairtools:1.0.4"
-    maxForks 1
+    publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
+               saveAs: {params.general.publish.fragtag ? it : null}
+
 
     input:
     tuple val(sample_id), path(pairs), path(fragfile), val(tagged_pairs)
@@ -622,10 +937,13 @@ process Fragtag {
     tuple val(sample_id), path(tagged_pairs)
 
     shell:
-    ["pairtools restrict",
-     "--frags ${fragfile}",
-     "--output ${tagged_pairs}",
-     "${pairs}"].join(" ")
+    // ["pairtools restrict",
+    //  "--frags ${fragfile}",
+    //  "--output ${tagged_pairs}",
+    //  "${pairs}"].join(" ")
+    
+    cmd = "fragtag ${fragfile} ${tagged_pairs} ${pairs}"
+    cmd
 }
 
 workflow OptionalFragtag {
@@ -647,35 +965,39 @@ workflow OptionalFragtag {
             | set{fragtag}
         
         samples = JoinProcessResults(
-        Fragtag,
-        [fragtag, samples],
-        input = ["sample_id", "pairs", "fragfile", "frag_pairs"],
-        output = ["sample_id", "frag_pairs"],
-        join_by = ["sample_id"],
-        kwargs = false)
+            Fragtag,
+            [fragtag, samples],
+            ["sample_id", "pairs", "fragfile", "frag_pairs"],
+            ["sample_id", "frag_pairs"],
+            ["sample_id"],
+            false,
+            "frag_pairs"
+        )
     
     emit:
         samples
 }
 
-process MergeTechrepsToBioreps {
-    container "bskubi/pairtools:1.0.4"
+process Merge {
+    publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
+               saveAs: {params.general.publish.fragtag ? it : null}
 
     input:
-    tuple val(condition), val(biorep), path(samples)
+    tuple val(id), path(samples)
 
     output:
-    tuple val(condition), val(biorep), path("${condition}_${biorep}.pairs.gz")
+    tuple val(id), path("${id}.pairs.gz")
 
     shell:
-    "pairtools merge --output ${condition}_${biorep}.pairs.gz ${samples.join(" ")}"
+    samples = (samples.getClass() == nextflow.processor.TaskPath) ? samples : samples.join(" ")
+    "pairtools merge --output ${id}.pairs.gz ${samples}"
 }
 
 workflow TechrepsToBioreps {
     take:
         samples
 
-    main:
+            main:
 
         def isTechrep = {it.get("is_techrep", "").toString().trim() in ["", "true", true, 1]}
         def hasStructure = {it.get("condition").length() > 0
@@ -683,11 +1005,6 @@ workflow TechrepsToBioreps {
         def ensureStructure = {
             if (isTechrep(it)) {it.is_techrep = true}
             if (isTechrep(it) && !hasStructure(it)) {
-                msg = [
-                    "${it.sample_id} listed as techrep, but no biorep and condition given.",
-                    "Treating as a unique condition with biorep=${sample_id} and condition=${sample_id}."
-                ].join(" ")
-                warn(msg)
                 it.biorep = it.sample_id
                 it.condition = it.sample_id
             }
@@ -703,78 +1020,359 @@ workflow TechrepsToBioreps {
                 it[0].latest = []
                 it[1].each {
                     hashmap ->
-                    keys = ["frag_pairs", "pairs"]
-                    for (k in keys) {
-                        if (k in hashmap.keySet()) {
-                            it[0].latest.add(hashmap[k])
-                            break
-                        }
-                    }
+                    it[0].latest.add(hashmap.latest)
                 }
                 it[0].techreps = it[1]
                 it[0].is_biorep = true
+                it[0].id = "${it[0].condition}_${it[0].biorep}".toString()
+                it[0].reference = it[1].reference.unique()[0]
+                it[0].chromsizes = it[1].chromsizes.unique()[0]
                 it[0]
             }
+            | AssignParams
             | set{to_merge}
-
 
         to_merge = JoinProcessResults(
-        MergeTechrepsToBioreps,
-        [to_merge],
-        input = ["condition", "biorep", "latest"],
-        output = ["condition", "biorep", "biorep_merge_pairs"],
-        join_by = [["condition", "biorep"]],
-        new_latest = "biorep_merge_pairs")
+            Merge,
+            [to_merge],
+            ["id", "latest"],
+            ["id", "biorep_merge_pairs"],
+            ["id"],
+            false,
+            "biorep_merge_pairs"
+        )
 
         to_merge
-            | map{it.latest = it.biorep_merge_pairs; it}
-            | set{to_merge}
-
-        samples | concat(to_merge) | set{samples}
+            | concat(samples)
+            | set {samples}
 
     emit:
         samples
 }
 
-process Deduplicate {
+process PairtoolsDedup {
+    publishDir params.general.publish.dedup ? params.general.publish.dedup : "results",
+               saveAs: {params.general.publish.dedup ? it : null}
     container "bskubi/pairtools:1.0.4"
 
     input:
-    tuple path(infile), val(outfile), val(data)
+    tuple val(id), path(infile)
 
     output:
-    tuple path(outfile), val(data)
+    tuple val(id), path("${id}_dedup.pairs.gz")
 
     shell:
-    "pairtools dedup --output ${outfile} ${infile}"
+    //"cp ${infile} ${id}_dedup.pairs.gz "
+    "pairtools dedup --output ${id}_dedup.pairs.gz ${infile}"
 }
 
-workflow DeduplicateBioreps {
+workflow Deduplicate {
+    take:
+        samples
+    
+    main:
+        
+        samples | filter{it.deduplicate} | set {deduplicate}
+
+        JoinProcessResults(
+            PairtoolsDedup,
+            [deduplicate, samples],
+            ["id", "latest"],
+            ["id", "dedup_pairs"],
+            ["id"],
+            false,
+            "dedup_pairs"
+        ) | set {samples}
+
+    emit:
+        samples
+}
+
+workflow BiorepsToConditions {
+    take:
+        samples
+
+    main:
+
+        def isBiorep = {it.containsKey("is_biorep") && it.is_biorep}
+        def hasStructure = {it.get("condition").length() > 0
+                            && it.get("biorep").length() > 0}
+        def ensureStructure = {
+            if (isBiorep(it)) {it.is_biorep = true}
+            if (isBiorep(it) && !hasStructure(it)) {
+                it.biorep = it.sample_id
+                it.condition = it.sample_id
+            }
+            it
+        }
+
+        samples
+            | filter{isBiorep(it)}
+            | map{ensureStructure(it)}
+            | map{tuple(it.subMap("condition"), it)}
+            | groupTuple
+            | map {
+                it[0].latest = []
+                x = 0
+                it[1].each {
+                    hashmap ->
+                    x += 1
+                    it[0].latest += hashmap.latest instanceof ArrayList ? hashmap.latest : [hashmap.latest]
+                }
+                it[0].reference = it[1].reference.unique()[0]
+                it[0].chromsizes = it[1].chromsizes.unique()[0]
+                it[0].bioreps = it[1]
+                it[0].is_condition = true
+                it[0].id = "${it[0].condition}".toString()
+                it[0]
+            }
+            | AssignParams
+            | set{to_merge}
+
+
+        to_merge = JoinProcessResults(
+            Merge,
+            [to_merge],
+            ["id", "latest"],
+            ["id", "condition_merge_pairs"],
+            ["id"],
+            false,
+            "condition_merge_pairs"
+        )
+
+        to_merge
+            | concat(samples)
+            | set {samples}
+
+    emit:
+        samples
+}
+
+process PairtoolsSelect {
+    publishDir params.general.publish.select ? params.general.publish.select : "results",
+               saveAs: {params.general.publish.select ? it : null}
+    container "bskubi/pairtools:1.0.4"
+
+    input:
+    tuple val(id), path(pairs), val(kwargs)
+
+    output:
+    tuple val(id), path("${id}_select.pairs.gz")
+
+    shell:
+
+    def quote = { List<String> items ->
+    result = items.collect { "'$it'" }.join(", ")
+    "[${result}]"
+
+}
+
+    pair_types = "pair_type in ${quote(kwargs.keep_pair_types)}"
+    
+    cis_trans = kwargs.keep_cis ^ kwargs.keep_trans
+                    ? (kwargs.keep_cis
+                            ? "(chrom1 == chrom2)"
+                            : "(chrom1 != chrom2)")
+                    : null
+
+    min_distances = [:]
+    min_distances += kwargs.min_dist_fr ? ["+-":kwargs.min_dist_fr] : [:]
+    min_distances += kwargs.min_dist_rf ? ["-+":kwargs.min_dist_rf] : [:]
+    min_distances += kwargs.min_dist_ff ? ["++":kwargs.min_dist_ff] : [:]
+    min_distances += kwargs.min_dist_rr ? ["--":kwargs.min_dist_rf] : [:]
+    strand_dist = min_distances.collect {
+        strand, dist ->
+        s1 = strand[0]
+        s2 = strand[1]
+        "(strand1 + strand2 == '${s1}${s2}' and abs(pos2 - pos1) >= ${dist})"
+    }.join(" or ")
+    strand_dist = strand_dist ?: null
+
+    chroms = kwargs.chroms ? "chrom1 in ${quote(kwargs.chroms)} and chrom2 in ${quote(kwargs.chroms)}" : null
+    
+    frags = kwargs.discard_same_frag ? "rfrag1 != rfrag2" : null
+    
+    filters = [pair_types, cis_trans, strand_dist, chroms, frags]
+    
+    filters.removeAll([null])
+    filters = filters.collect {"(${it})"}
+    filters = filters.join(" and ")
+
+    cmd = """pairtools select --output ${id}_select.pairs.gz "${filters}" ${pairs}"""
+    cmd
+    
+}
+
+workflow Select {
+    take:
+        samples
+    
+    main:        
+        JoinProcessResults(
+            PairtoolsSelect,
+            [samples],
+            ["id", "latest", "select"],
+            ["id", "select_pairs"],
+            ["id"],
+            false,
+            "select_pairs"
+        ) | set{samples}
+
+
+    emit:
+        samples
+}
+
+process CoolerZoomify {
+    publishDir params.general.publish.mcool ? params.general.publish.mcool : "results",
+               saveAs: {params.general.publish.mcool ? it : null}
+    conda "cooler"
+    maxForks 2
+
+    input:
+    tuple val(id), path(infile), path(chromsizes), val(pairs_format), val(matrix)
+
+    output:
+    tuple val(id), path("${id}.mcool")
+
+    shell:
+    min_bin = matrix.make_matrix_binsizes.min()
+    bins = matrix.make_matrix_binsizes.join(",")
+
+    balance = matrix.balance.join(" ")
+    balance_args = balance ? "--balance-args '${balance}'" : null
+    cmd = ["cooler cload pairs",
+           "--chrom1 ${pairs_format.chrom1}",
+           "--pos1 ${pairs_format.pos1}",
+           "--chrom2 ${pairs_format.chrom2}",
+           "--pos2 ${pairs_format.pos2}",
+           "${chromsizes}:${min_bin}",
+           "${infile} ${id}.cool",
+           "&& cooler zoomify",
+           "--nproc 10",
+           "--resolutions '${bins}'",
+           "--balance",
+           balance_args,
+           "--out ${id}.mcool",
+           "${id}.cool"]
+    cmd.removeAll([null])
+    cmd = cmd.join(" ")
+    cmd
+}
+
+workflow MakeMcool {
     take:
         samples
     
     main:
         samples
-            | map{it.latest}
-            | view
+            | filter{it.matrix.make_mcool_file_format}
+            | set{mcool}
 
+        JoinProcessResults(
+            CoolerZoomify,
+            [mcool, samples],
+            ["id", "latest", "chromsizes", "pairs_format", "matrix"],
+            ["id", "mcool"],
+            ["id"],
+            false,
+            "mcool"
+        ) | set{samples}
+
+
+    emit:
+        samples
+}
+
+process JuicerToolsPre {
+    publishDir params.general.publish.hic ? params.general.publish.hic : "results",
+               saveAs: {params.general.publish.hic ? it : null}
+    container "bskubi/juicer_tools:1.22.01"
+    maxForks 2
+
+    input:
+    tuple val(id), path(infile), path(chromsizes), val(pairs_format), val(matrix)
+
+    output:
+    tuple val(id), path("${id}.hic")
+
+    shell:
+    outfile = "${id}.hic"
+    min_bin = matrix.make_matrix_binsizes.min()
+    bins = matrix.make_matrix_binsizes.join(",")
+
+    ["java -Xmx20g -jar /app/juicer_tools.jar pre",
+    "${infile} ${outfile} ${chromsizes}"].join(" ")
+}
+
+workflow MakeHic {
+    take:
+        samples
+    
+    main:
+        samples | filter{it.matrix.make_hic_file_format} | set{hic}
+
+        JoinProcessResults(
+            JuicerToolsPre,
+            [hic, samples],
+            ["id", "latest", "chromsizes", "pairs_format", "matrix"],
+            ["id", "hic"],
+            ["id"],
+            false,
+            null
+        ) | set{samples}
+
+    emit:
+        samples
+}
+
+workflow AssignParams {
+    take:
+        samples
+    
+    main:
+        
+        samples
+            | map {
+                sample ->
+                params.defaults.each {
+                    k, v ->
+                    !(k in sample) ? sample += [(k):v] : null
+                }
+                params.each {
+                    k, bundle ->
+                    if (bundle.containsKey("ids") && sample.id in bundle.ids) {
+                        update = bundle.clone()
+                        update.remove("ids")
+                        sample += update
+                    }
+                }
+                sample
+            }
+            | set{samples}
     emit:
         samples
 }
 
 workflow {
 
-    channel.fromPath("samples.csv", checkIfExists: true)
+    channel.fromPath(params.general.samples, checkIfExists: true)
         | splitCsv(header: true)
+        | map{it.id = it.sample_id; it}
+        | AssignParams
         | TryDownloadMissingReferences
         | MakeMissingChromsizes
         | MakeMissingIndex
         | MakeMissingDigest
         | Align
         | Parse
+        | IngestPairs
         | OptionalFragtag
         | TechrepsToBioreps
-        | DeduplicateBioreps
-
+        | Deduplicate
+        | BiorepsToConditions
+        | Select
+        | MakeHic
+        | MakeMcool
 }
 
