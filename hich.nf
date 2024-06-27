@@ -1,15 +1,11 @@
-def shout(message) {
-    stars = "*"*message.length()
-    // print(stars)
-    // print(message)
-    // print(stars)
-}
+workflow keydiff {
+    take:
+        left
+        right
+        by
+        how
 
-def warn(message) {
-    print(message)
-}
-
-def keydiff (left, right, by, how) {
+    main:
     /*
     Arguments:
         left -- the left channel treated as a 'table' with LinkedHashMap rows
@@ -18,7 +14,7 @@ def keydiff (left, right, by, how) {
         how -- 'left' or 'right',
             'left': returns left - right keyset
             'right': returns right - left keyset
-    */
+        */
 
     // Start by identifying unique keys from each channel
     // We add true after the key hashmap so that when identifying
@@ -47,13 +43,24 @@ def keydiff (left, right, by, how) {
 
     // Get rid of placeholder and keep just the key
     if (how == "right") {
-        return missing.right | map{it[0]}
+        missing.right | map{it[0]} | set{result}
     } else if (how == "left") {
-        return missing.left | map{it[0]}
+        missing.left | map{it[0]} | set{result}
     }
+
+    emit:
+        result
+
+
 }
 
-def sqljoin (params, left, right) {
+workflow sqljoin {
+    take:
+    left
+    right
+    kwargs
+
+    main:
     /* Similar to a SQL inner join
 
     Tables are represented as channels emitting LinkedHashMap 'rows'
@@ -76,9 +83,9 @@ def sqljoin (params, left, right) {
     way this can be an issue is if their types are GString and String.
     */
 
-    by = params.get("by", null)
-    suffix = params.get("suffix", "_right")
-    how = params.get("how", "left")
+    by = kwargs.get("by", null)
+    suffix = kwargs.get("suffix", "_right")
+    how = kwargs.get("how", "left")
 
     // To accommodate left, right and full joins, we add any missing keys
     if (how == "full" || how == "left") {
@@ -144,113 +151,97 @@ def sqljoin (params, left, right) {
         | collect
         | flatMap{it}
     
-    return joined
+    emit:
+        joined
 }
 
-// def getIdx(item, index) {
-//     if (item instanceof List) {
-//         validIndex = Math.min(index, item.size() - 1)
-//         return item[validIndex]
-//     }
-//     return item
-// }
-
-// def JoinProcessResults(proc, channels, input, output, join_by, kwargs = false, new_latest = null) {
-//     if(proc == MergeTechrepsToBioreps) {
-//         print("kwargs: ${kwargs}")
-//         print("new_latest: ${new_latest}")
-//     }
-//     shout("JoinProcessResults can't handle processes that don't input or output tuples")
-//     result_jpr = channels[0]
-//         | map {
-//             elements = it.subMap(input).values().toList()
-//             elements = kwargs ? elements + it : elements
-//             tuple(*elements)
-//         }
-//         | proc
-//         | map{
-//             result_map = [:];
-//             [output, it].transpose().each { k, v -> result_map[k] = v};
-//             result_map
-//         }
-    
-//     if (proc == MergeTechrepsToBioreps) {
-//         result_jpr | view
-//     }
-
-//     allchannels = [result_jpr] + channels
-
-//     channels.eachWithIndex {ch, i ->
-//         by = getIdx(join_by, i)
-//         channels[i] = sqljoin(channels[i], allchannels[i], by = by, suffix = "")
-//         allchannels[i+1] = channels[i]
-//     }
-    
-//     return channels[-1]
-// }
-
-def MakeResourceFile(branched,
-                     file_key,
-                     proc,
-                     input,
-                     output,
-                     join_by,
-                     kwargs = false) {
-    shout("MakeResourceFile is untested")
-
-    made = branched.missing
-        | map {
-            elements = it.subMap(input).values().toList()
-            elements = kwargs ? elements + it : elements
-            tuple(*elements)
-        }
-        | unique
-        | proc
-        | map{
-            result_jpr_mrf = [:];
-            [output, it].transpose().each {k, v -> result_jpr_mrf[k] = v};
-            result_jpr_mrf
-        }
-    
-    missing = sqljoin(branched.missing, made, by: join_by, suffix: "")
-
-    result_mfr = branched.exists
-        | map{
-            it[file_key] = file(it[file_key]);
-            it
-        }
-        | concat(branched.no_change)
-        | concat(missing)
-    
-    return result_mfr
+def getIdx(item, index) {
+    if (item instanceof List) {
+        validIndex = Math.min(index, item.size() - 1)
+        return item[validIndex]
+    }
+    return item
 }
 
-// def GroupHashmaps(hashmaps) {
-//     grouped = [:]
-//     hashmaps.each {
-//         hashmap ->
-//         hashmap.keySet().each {
-//             k ->
-//             grouped[k] = []
-//         }
-//     }
-//     hashmaps.each {
-//         hashmap ->
-//         hashmap.each {
-//             k, v ->
-//             grouped[k].add(v)
-//         }
-//     }
-//     grouped.each {
-//         k, v ->
-//         grouped[k] = grouped[k].unique()
-//         if (grouped[k].size() == 1) {
-//             grouped[k] = grouped[k][0]
-//         }
-//     }
+workflow JoinProcessResults {
+    take:
+        proc
+        channels
+        input
+        output
+        join_by
+        kwargs
+        latest
 
-//     return grouped
-// }
+    main:
+        result_jpr = channels[0]
+            | map {
+                elements = it.subMap(input).values().toList()
+                elements = kwargs != false ? elements + it.subMap(kwargs) : elements
+                tuple(*elements)
+            }
+            | proc
+            | map{
+                result_map = [:];
+                [output, it].transpose().each { k, v -> result_map[k] = v};
+                latest ? (result_map.latest = result_map[latest]) : null
+                result_map
+            }
+
+
+        allchannels = [result_jpr] + channels
+
+        channels.eachWithIndex {ch, i ->
+            by = getIdx(join_by, i)
+            channels[i] = sqljoin(channels[i], allchannels[i], [by: by, suffix: ""])
+            allchannels[i+1] = channels[i]
+        }
+    
+    emit:
+        channels[-1]
+}
+
+workflow MakeResourceFile {
+    take:
+        exists
+        missing
+        no_change
+        file_key
+        proc
+        input
+        output
+        join_by
+        pass_hashmap
+
+    main:
+        made = missing
+            | map {
+                elements = it.subMap(input).values().toList()
+                elements = pass_hashmap ? elements + it : elements
+                
+                tuple(*elements)
+            }
+            | unique
+            | proc
+            | map{
+                result_jpr_mrf = [:];
+                [output, it].transpose().each {k, v -> result_jpr_mrf[k] = v};
+                result_jpr_mrf
+            }
+        
+        missing = sqljoin(missing, made, [by: join_by, suffix: ""])
+
+        result_mrf = exists
+            | map{
+                it[file_key] = file(it[file_key]);
+                it
+            }
+            | concat(no_change)
+            | concat(missing)
+        
+    emit:
+        result_mrf
+}
 
 process StageReferences {
     input:
@@ -308,9 +299,8 @@ workflow TryDownloadMissingReferences {
             5. Download
             6. Set file as output path
         */
-        shout("WARNING: StageReferences is commented out in EnsureReferences")
-        shout("WARNING: Have not tested ability to recombine branched samples in EnsureReferences")
         
+        // Separate to download from those with existing reference
         samples
             | branch{
                 download: it.get("reference", "").trim().length() == 0
@@ -319,13 +309,17 @@ workflow TryDownloadMissingReferences {
             }
             | set{branched}
         
+        // Convert existing reference to file
         branched.exists
             | map{it.reference = file(it.reference); it}
             | set{exists}
         
-        samples = sqljoin(exists, samples, by: "sample_id", suffix: "")
-
+        // Map the existing files back to the samples
         
+        sqljoin(samples, exists, [by: "sample_id", suffix: ""])
+            | set{samples}
+
+
         branched.download
             | map{it.subMap("assembly")}
             | map{it.reference = file(urls[synonyms[it.assembly]]); it}
@@ -334,11 +328,10 @@ workflow TryDownloadMissingReferences {
             | map{["assembly": it[0], "reference":it[1]]}
             | set{remote_refs}
 
-        download = sqljoin(branched.download, remote_refs, by: "assembly", suffix: "")
+        download = sqljoin(branched.download, remote_refs, [by: "assembly", suffix: ""])
         
-        samples = sqljoin(samples, download, by: "sample_id", suffix: "")
-        
-        
+        samples = sqljoin(samples, download, [by: "sample_id", suffix: ""])
+
 
     emit:
         samples
@@ -380,405 +373,679 @@ workflow MakeMissingChromsizes {
             | map{ensureChromsizesFilename(it)}
             | branch{
                 exists: chromsizesExists(it)
-                missing: hasChromsizesFilename(it)
+                missing: !chromsizesExists(it) && hasChromsizesFilename(it)
                 no_change: true
             }
             | set{branched}
         
         samples = MakeResourceFile(
-            branched,
+            branched.exists,
+            branched.missing,
+            branched.no_change,
             "chromsizes",
             MakeChromsizes,
             ["reference", "assembly", "chromsizes"],
             ["assembly", "chromsizes"],
-            ["assembly"]
+            ["assembly"],
+            false
         )
 
     emit:
         samples
 }
 
-// process MakeDigest {
-//     input:
-//     tuple path(reference), val(enzymes), val(fragfile), val(assembly)
+process BwaMem2Index {
+    publishDir "resources/index/bwa-mem2/", mode: 'move'
+    container "bskubi/bwa-mem2"
 
-//     output:
-//     tuple path(reference), val(enzymes), path(fragfile), val(assembly)
+    input:
+    tuple path(reference), val(prefix)
 
-//     script:
-//     "redigest --output ${fragfile} ${reference} ${enzymes}"
-// }
+    output:
+    tuple val(prefix), path("${prefix}.0123"), path("${prefix}.amb"),
+          path("${prefix}.ann"), path("${prefix}.bwt.2bit.64"),
+          path("${prefix}.pac")
 
-// workflow MakeMissingDigest {
-//     take:
-//         samples
+    shell:
+    "touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
+    //"bwa-mem2 index -p ${prefix} ${reference}"
+
+    stub:
+    "touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
+}
+
+workflow MakeMissingIndex {
+
+    take:
+        samples
     
-//     main:
-//         def digestEnzymesDeclared = {it.get("enzymes").trim().length() != 0}
+    main:
 
-//         def hasFragfileName = {it.get("fragfile").trim().length() > 0}
+        def fileExists = { dir, file -> new File(dir, file).exists() }
         
-//         def fragfileExists = {hasFragfileName(it) && file(it.fragfile).exists()}
-
-//         def ensureFragfileName = {
-//             if (digestEnzymesDeclared(it) && !hasFragfileName(it)) {
-//                 it.fragfile = "${it.assembly}_${it.enzymes}.bed"
-//             }
-//             it;
-//         }
-
-//         samples
-//             | map{ensureFragfileName(it)}
-//             | branch{
-//                 exists: digestEnzymesDeclared(it) && fragfileExists(it)
-//                 missing: digestEnzymesDeclared(it) && !fragfileExists(it)
-//                 no_change: true
-//             }
-//             | set{branched}
+        samples
+            | filter{it.get("index_dir", "").trim().length() == 0
+                     || it.get("index_prefix").trim().length() == 0
+                     || !fileExists(it.index_dir, "${it.index_prefix}.0123")}
+            | set{no_index}
         
-//         samples = MakeResourceFile(
-//             branched,
-//             "fragfile",
-//             MakeDigest,
-//             ["reference", "enzymes", "fragfile", "assembly"],
-//             ["reference", "enzymes", "fragfile", "assembly"],
-//             ["assembly", "enzymes"]
-//         )
+        no_index
+            | map{it.subMap("reference", "assembly")}
+            | unique
+            | map{it.index_prefix = it.index_prefix?.trim() ? it.index_prefix : it.assembly; it}
+            | map{tuple(it.reference, it.index_prefix)}
+            | BwaMem2Index
+            | map{["index_prefix": it[0], "index_dir": "resources/index/bwa-mem2/"]}
+            | set {new_index}
 
-//     emit:
-//         samples
-// }
+        sqljoin(no_index, new_index, [by: "assembly", suffix: ""])
+            | set {new_index}
 
-// process BwaMem2Index {
-//     publishDir "resources/index/bwa-mem2/", mode: 'move'
-//     container "bskubi/bwa-mem2"
+        sqljoin(samples, new_index, [by: "sample_id", suffix: ""])
+            | map{it.index_dir = file(it.index_dir); it}
+            | set {samples}
 
-//     input:
-//     tuple path(reference), val(prefix)
+    emit:
+        samples
 
-//     output:
-//     tuple val(prefix), path("${prefix}.0123"), path("${prefix}.amb"),
-//           path("${prefix}.ann"), path("${prefix}.bwt.2bit.64"),
-//           path("${prefix}.pac")
+}
 
-//     shell:
-//     "touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
-//     //"bwa-mem2 index -p ${prefix} ${reference}"
+process MakeDigest {
+    input:
+    tuple path(reference), val(enzymes), val(fragfile), val(assembly)
 
-//     stub:
-//     "touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
-// }
+    output:
+    tuple path(reference), val(enzymes), path(fragfile), val(assembly)
 
-// workflow MakeMissingIndex {
+    script:
+    "redigest --output ${fragfile} ${reference} ${enzymes}"
+}
 
-//     take:
-//         samples
+workflow MakeMissingDigest {
+    take:
+        samples
     
-//     main:
+    main:
+        def digestEnzymesDeclared = {it.get("enzymes").trim().length() != 0}
+
+        def hasFragfileName = {it.get("fragfile").trim().length() > 0}
         
+        def fragfileExists = {hasFragfileName(it) && file(it.fragfile).exists()}
 
-//         shout("BWA-MEM2 indexing is commented out in 'shell' section")
-//         shout("Indexing only works for BWA-MEM2")
+        def ensureFragfileName = {
+            if (digestEnzymesDeclared(it) && !hasFragfileName(it)) {
+                it.fragfile = "${it.assembly}_${it.enzymes}.bed"
+            }
+            it;
+        }
 
-//         def fileExists = { dir, file -> new File(dir, file).exists() }
+        samples
+            | map{ensureFragfileName(it)}
+            | branch{
+                exists: digestEnzymesDeclared(it) && fragfileExists(it)
+                missing: digestEnzymesDeclared(it) && !fragfileExists(it)
+                no_change: true
+            }
+            | set{branched}
         
-//         samples
-//             | filter{it.get("index_dir", "").trim().length() == 0
-//                      || it.get("index_prefix").trim().length() == 0
-//                      || !fileExists(it.index_dir, "${it.index_prefix}.0123")}
-//             | set{no_index}
+        samples = MakeResourceFile(
+            branched.exists,
+            branched.missing,
+            branched.no_change,
+            "fragfile",
+            MakeDigest,
+            ["reference", "enzymes", "fragfile", "assembly"],
+            ["reference", "enzymes", "fragfile", "assembly"],
+            ["assembly", "enzymes"],
+            false
+        )
+
+    emit:
+        samples
+}
+
+process BwaMem2Align {
+    container "bskubi/bwa-mem2"
+    //maxRetries 4
+    //memory {20.GB + 20.GB * task.attempt}
+
+    // NOTE: Alignment speed is trivially parallelizeable and does not benefit
+    // from running alignment in parallel multiple files at once. Each instance
+    // of bwa-mem2 uses about 15 gigs of memory. For these two reasons we 
+    // tell nextflow to run one alignment process at a time with maxForks 1.
+    maxForks 1
+
+    input:
+    tuple val(sample_id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2), val(bam)
+
+    output:
+    tuple val(sample_id), path(bam)
+
+    shell:
+    align = "bwa-mem2 mem -t 10 -SP5M ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
+    tobam = "samtools view -b -o ${bam}"
+    "${align} | ${tobam}"
+}
+
+workflow Align {
+    take:
+        samples
+
+    main:
+        samples
+            | branch {
+                fastq: it.datatype == "fastq"
+                other: true
+            } | set {branched}
         
-//         no_index
-//             | map{it.subMap("reference", "assembly")}
-//             | unique
-//             | map{it.index_prefix = it.index_prefix?.trim() ? it.index_prefix : it.assembly; it}
-//             | map{tuple(it.reference, it.index_prefix)}
-//             | BwaMem2Index
-//             | map{["index_prefix": it[0], "index_dir": "resources/index/bwa-mem2/"]}
-//             | set {new_index}
+        branched.fastq
+            | map{
+                it.data1 = file(it.data1)
+                it.data2 = file(it.data2)
+                it.bam = "${it.sample_id}.bam"
+                it}
+            | set {fastq}
 
-//         sqljoin(no_index, new_index, by = "assembly", suffix = "")
-//             | set {new_index}
-
-//         sqljoin(samples, new_index, by = "sample_id", suffix = "")
-//             | map{it.index_dir = file(it.index_dir); it}
-//             | set {samples}
-
-//     emit:
-//         samples
-
-// }
-
-// process BwaMem2Align {
-//     container "bskubi/bwa-mem2"
-//     //maxRetries 4
-//     //memory {20.GB + 20.GB * task.attempt}
-
-//     // NOTE: Alignment speed is trivially parallelizeable and does not benefit
-//     // from running alignment in parallel multiple files at once. Each instance
-//     // of bwa-mem2 uses about 15 gigs of memory. For these two reasons we 
-//     // tell nextflow to run one alignment process at a time with maxForks 1.
-//     maxForks 1
-
-//     input:
-//     tuple val(sample_id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2), val(bam)
-
-//     output:
-//     tuple val(sample_id), path(bam)
-
-//     shell:
-//     align = "bwa-mem2 mem -t 10 -SP5M ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
-//     tobam = "samtools view -b -o ${bam}"
-//     "${align} | ${tobam}"
-// }
-
-// workflow Align {
-//     take:
-//         samples
-
-//     main:
-//         shout("Only aligns with BWA-MEM2")
-//         shout("Add bam squeeze to alignment step")
-//         samples
-//             | branch {
-//                 fastq: it.datatype == "fastq"
-//                 other: true
-//             } | set {branched}
-        
-//         branched.fastq
-//             | map{
-//                 it.data1 = file(it.data1)
-//                 it.data2 = file(it.data2)
-//                 it.bam = "${it.sample_id}.bam"
-//                 it}
-//             | set {fastq}
-
-//         samples = JoinProcessResults(BwaMem2Align,
-//             [fastq, samples],
-//             input = ["sample_id", "index_dir", "index_prefix", "data1", "data2", "bam"],
-//             output = ["sample_id", "bam"],
-//             join_by = ["sample_id"])
-//     emit:
-//         samples
+        samples = JoinProcessResults(
+            BwaMem2Align,
+            [fastq, samples],
+            ["sample_id", "index_dir", "index_prefix", "data1", "data2", "bam"],
+            ["sample_id", "bam"],
+            ["sample_id"],
+            false,
+            "bam")
+    emit:
+        samples
 
 
-// }
+}
 
-// process PairtoolsParse2 {
-//     container "bskubi/pairtools:1.0.4"
+process PairtoolsParse2 {
+    container "bskubi/pairtools:1.0.4"
 
-//     input:
-//     tuple val(sample_id), path(bam), path(chromsizes), val(pairs), val(kwargs)
+    input:
+    tuple val(sample_id), path(bam), path(chromsizes), val(pairs), val(kwargs)
 
-//     output:
-//     tuple val(sample_id), path(pairs)
+    output:
+    tuple val(sample_id), path(pairs)
 
-//     shell:
-//     shout("Numerous flags currently not settable for pairtools parse2")
-//     shout("Make sambamba + pairtools dockerfile")
-//     // Sort by name with sambamba, then parse, then sort by position
-//     cmd = ["pairtools parse2",
-//            "--chroms-path ${chromsizes}",
-//            "--assembly ${kwargs.assembly}",
-//            "--min-mapq 30",
-//            "--drop-readid",
-//            "--drop-seq",
-//            "--drop-sam",
-//            "${bam}",
-//            "| pairtools sort",
-//            "--output ${pairs}"]
-//     cmd.join(" ")
-// }
+    shell:
+    // Sort by name with sambamba, then parse, then sort by position
+    cmd = ["pairtools parse2",
+           "--chroms-path ${chromsizes}",
+           "--assembly ${kwargs.assembly}",
+           "--min-mapq ${kwargs.min_mapq}",
+           "--drop-readid",
+           "--drop-seq",
+           "--drop-sam",
+           "${bam}",
+           "| pairtools flip --chroms-path ${chromsizes}",
+           "| pairtools sort --output ${pairs}"]
 
-// workflow Parse {
-//     take:
-//     samples
+    cmd.join(" ")
+}
 
-//     main:
-//     shout("PairtoolsParse2 doesn't sort by name")
+workflow Parse {
+    take:
+    samples
 
-//     samples
-//         | map{it.bam = it.datatype in ["sam", "bam"] ? file(it.data1) : file(it.bam); it}
-//         | filter{"bam" in it && it.bam.exists()}
-//         | map{it.pairs = "${it.sample_id}.pairs.gz"; it}
-//         | set {bam}
+    main:
+
+        samples
+        | map{it.bam = it.datatype in ["sam", "bam"] ? file(it.data1) : file(it.bam); it}
+        | filter{"bam" in it && it.bam.exists()}
+        | map{it.pairs = "${it.sample_id}.pairs.gz"; it}
+        | set {bam}
     
-//     samples = JoinProcessResults(
-//         PairtoolsParse2,
-//         [bam, samples],
-//         input = ["sample_id", "bam", "chromsizes", "pairs"],
-//         output = ["sample_id", "pairs"],
-//         join_by = ["sample_id"],
-//         kwargs = true)
+    samples = JoinProcessResults(
+        PairtoolsParse2,
+        [bam, samples],
+        ["sample_id", "bam", "chromsizes", "pairs"],
+        ["sample_id", "pairs"],
+        ["sample_id"],
+        ["assembly", "min_mapq"],
+        "pairs")
     
-//     emit:
-//     samples
-// }
+    samples | map{it.id = it.sample_id; it} | set{samples}
 
-// process Fragtag {
-//     container "bskubi/pairtools:1.0.4"
-//     maxForks 1
+    emit:
+        samples
+}
 
-//     input:
-//     tuple val(sample_id), path(pairs), path(fragfile), val(tagged_pairs)
+process Fragtag {
 
-//     output:
-//     tuple val(sample_id), path(tagged_pairs)
+    input:
+    tuple val(sample_id), path(pairs), path(fragfile), val(tagged_pairs)
 
-//     shell:
-//     ["pairtools restrict",
-//      "--frags ${fragfile}",
-//      "--output ${tagged_pairs}",
-//      "${pairs}"].join(" ")
-// }
+    output:
+    tuple val(sample_id), path(tagged_pairs)
 
-// workflow OptionalFragtag {
-//     take:
-//         samples
+    shell:
+    // ["pairtools restrict",
+    //  "--frags ${fragfile}",
+    //  "--output ${tagged_pairs}",
+    //  "${pairs}"].join(" ")
+    
+    cmd = "fragtag ${fragfile} ${tagged_pairs} ${pairs}"
+    cmd
+}
 
-//     main:
-//         def hasFragfileName = {
-//             it.get("fragfile").toString().trim().length() > 0
-//         }
+workflow OptionalFragtag {
+    take:
+        samples
+
+    main:
+        def hasFragfileName = {
+            it.get("fragfile").toString().trim().length() > 0
+        }
         
-//         def fragfileExists = {
-//             hasFragfileName(it) && file(it.fragfile).exists()
-//         }
+        def fragfileExists = {
+            hasFragfileName(it) && file(it.fragfile).exists()
+        }
 
-//         samples
-//             | filter{fragfileExists(it)}
-//             | map{it.frag_pairs = "${it.sample_id}_fragtag.pairs.gz"; it}
-//             | set{fragtag}
+        samples
+            | filter{fragfileExists(it)}
+            | map{it.frag_pairs = "${it.sample_id}_fragtag.pairs.gz"; it}
+            | set{fragtag}
         
-//         samples = JoinProcessResults(
-//         Fragtag,
-//         [fragtag, samples],
-//         input = ["sample_id", "pairs", "fragfile", "frag_pairs"],
-//         output = ["sample_id", "frag_pairs"],
-//         join_by = ["sample_id"],
-//         kwargs = false)
+        samples = JoinProcessResults(
+            Fragtag,
+            [fragtag, samples],
+            ["sample_id", "pairs", "fragfile", "frag_pairs"],
+            ["sample_id", "frag_pairs"],
+            ["sample_id"],
+            false,
+            "frag_pairs"
+        )
     
-//     emit:
-//         samples
-// }
+    emit:
+        samples
+}
 
-// process MergeTechrepsToBioreps {
-//     container "bskubi/pairtools:1.0.4"
+process Merge {
+    //container "bskubi/pairtools:1.0.4"
 
-//     input:
-//     tuple val(condition), val(biorep), path(samples)
+    input:
+    tuple val(id), path(samples)
 
-//     output:
-//     tuple val(condition), val(biorep), path("${condition}_${biorep}.pairs.gz")
+    output:
+    tuple val(id), path("${id}.pairs.gz")
 
-//     shell:
-//     "pairtools merge --output ${condition}_${biorep}.pairs.gz ${samples.join(" ")}"
-// }
+    shell:
+    samples = (samples.getClass() == nextflow.processor.TaskPath) ? samples : samples.join(" ")
+    "pairtools merge --output ${id}.pairs.gz ${samples}"
+}
 
-// workflow TechrepsToBioreps {
-//     take:
-//         samples
+workflow TechrepsToBioreps {
+    take:
+        samples
 
-//     main:
+            main:
 
-//         def isTechrep = {it.get("is_techrep", "").toString().trim() in ["", "true", true, 1]}
-//         def hasStructure = {it.get("condition").length() > 0
-//                             && it.get("biorep").length() > 0}
-//         def ensureStructure = {
-//             if (isTechrep(it)) {it.is_techrep = true}
-//             if (isTechrep(it) && !hasStructure(it)) {
-//                 msg = [
-//                     "${it.sample_id} listed as techrep, but no biorep and condition given.",
-//                     "Treating as a unique condition with biorep=${sample_id} and condition=${sample_id}."
-//                 ].join(" ")
-//                 warn(msg)
-//                 it.biorep = it.sample_id
-//                 it.condition = it.sample_id
-//             }
-//             it
-//         }
+        def isTechrep = {it.get("is_techrep", "").toString().trim() in ["", "true", true, 1]}
+        def hasStructure = {it.get("condition").length() > 0
+                            && it.get("biorep").length() > 0}
+        def ensureStructure = {
+            if (isTechrep(it)) {it.is_techrep = true}
+            if (isTechrep(it) && !hasStructure(it)) {
+                it.biorep = it.sample_id
+                it.condition = it.sample_id
+            }
+            it
+        }
 
-//         samples
-//             | filter{isTechrep(it)}
-//             | map{ensureStructure(it)}
-//             | map{tuple(it.subMap("condition", "biorep"), it)}
-//             | groupTuple
-//             | map {
-//                 it[0].latest = []
-//                 it[1].each {
-//                     hashmap ->
-//                     keys = ["frag_pairs", "pairs"]
-//                     for (k in keys) {
-//                         if (k in hashmap.keySet()) {
-//                             it[0].latest.add(hashmap[k])
-//                             break
-//                         }
-//                     }
-//                 }
-//                 it[0].techreps = it[1]
-//                 it[0].is_biorep = true
-//                 it[0]
-//             }
-//             | set{to_merge}
+        samples
+            | filter{isTechrep(it)}
+            | map{ensureStructure(it)}
+            | map{tuple(it.subMap("condition", "biorep"), it)}
+            | groupTuple
+            | map {
+                it[0].latest = []
+                it[1].each {
+                    hashmap ->
+                    it[0].latest.add(hashmap.latest)
+                }
+                it[0].techreps = it[1]
+                it[0].is_biorep = true
+                it[0].id = "${it[0].condition}_${it[0].biorep}".toString()
+                it[0].reference = it[1].reference.unique()[0]
+                it[0].chromsizes = it[1].chromsizes.unique()[0]
+                it[0]
+            }
+            | AssignParams
+            | set{to_merge}
 
+        to_merge = JoinProcessResults(
+            Merge,
+            [to_merge],
+            ["id", "latest"],
+            ["id", "biorep_merge_pairs"],
+            ["id"],
+            false,
+            "biorep_merge_pairs"
+        )
 
-//         to_merge = JoinProcessResults(
-//         MergeTechrepsToBioreps,
-//         [to_merge],
-//         input = ["condition", "biorep", "latest"],
-//         output = ["condition", "biorep", "biorep_merge_pairs"],
-//         join_by = [["condition", "biorep"]],
-//         new_latest = "biorep_merge_pairs")
+        to_merge
+            | concat(samples)
+            | set {samples}
 
-//         to_merge
-//             | map{it.latest = it.biorep_merge_pairs; it}
-//             | set{to_merge}
+    emit:
+        samples
+}
 
-//         samples | concat(to_merge) | set{samples}
+process PairtoolsDedup {
+    container "bskubi/pairtools:1.0.4"
 
-//     emit:
-//         samples
-// }
+    input:
+    tuple val(id), path(infile)
 
-// process Deduplicate {
-//     container "bskubi/pairtools:1.0.4"
+    output:
+    tuple val(id), path("${id}_dedup.pairs.gz")
 
-//     input:
-//     tuple path(infile), val(outfile), val(data)
+    shell:
+    //"cp ${infile} ${id}_dedup.pairs.gz "
+    "pairtools dedup --output ${id}_dedup.pairs.gz ${infile}"
+}
 
-//     output:
-//     tuple path(outfile), val(data)
-
-//     shell:
-//     "pairtools dedup --output ${outfile} ${infile}"
-// }
-
-// workflow DeduplicateBioreps {
-//     take:
-//         samples
+workflow Deduplicate {
+    take:
+        samples
     
-//     main:
-//         samples
-//             | map{it.latest}
-//             | view
+    main:
+        
+        samples | filter{it.deduplicate} | set {deduplicate}
 
-//     emit:
-//         samples
-// }
+        JoinProcessResults(
+            PairtoolsDedup,
+            [deduplicate, samples],
+            ["id", "latest"],
+            ["id", "dedup_pairs"],
+            ["id"],
+            false,
+            "dedup_pairs"
+        ) | set {samples}
+
+    emit:
+        samples
+}
+
+workflow BiorepsToConditions {
+    take:
+        samples
+
+    main:
+
+        def isBiorep = {it.containsKey("is_biorep") && it.is_biorep}
+        def hasStructure = {it.get("condition").length() > 0
+                            && it.get("biorep").length() > 0}
+        def ensureStructure = {
+            if (isBiorep(it)) {it.is_biorep = true}
+            if (isBiorep(it) && !hasStructure(it)) {
+                it.biorep = it.sample_id
+                it.condition = it.sample_id
+            }
+            it
+        }
+
+        samples
+            | filter{isBiorep(it)}
+            | map{ensureStructure(it)}
+            | map{tuple(it.subMap("condition"), it)}
+            | groupTuple
+            | map {
+                it[0].latest = []
+                x = 0
+                it[1].each {
+                    hashmap ->
+                    x += 1
+                    it[0].latest += hashmap.latest instanceof ArrayList ? hashmap.latest : [hashmap.latest]
+                }
+                it[0].reference = it[1].reference.unique()[0]
+                it[0].chromsizes = it[1].chromsizes.unique()[0]
+                it[0].bioreps = it[1]
+                it[0].is_condition = true
+                it[0].id = "${it[0].condition}".toString()
+                it[0]
+            }
+            | AssignParams
+            | set{to_merge}
+
+
+        to_merge = JoinProcessResults(
+            Merge,
+            [to_merge],
+            ["id", "latest"],
+            ["id", "condition_merge_pairs"],
+            ["id"],
+            false,
+            "condition_merge_pairs"
+        )
+
+        to_merge
+            | concat(samples)
+            | set {samples}
+
+    emit:
+        samples
+}
+
+process PairtoolsSelect {
+    container "bskubi/pairtools:1.0.4"
+
+    input:
+    tuple val(id), path(pairs), val(kwargs)
+
+    output:
+    tuple val(id), path("${id}_select.pairs.gz")
+
+    shell:
+
+    def quote = { List<String> items ->
+    result = items.collect { "'$it'" }.join(", ")
+    "[${result}]"
+
+}
+
+    pair_types = "pair_type in ${quote(kwargs.keep_pair_types)}"
+    
+    cis_trans = kwargs.keep_cis ^ kwargs.keep_trans
+                    ? (kwargs.keep_cis
+                            ? "(chrom1 == chrom2)"
+                            : "(chrom1 != chrom2)")
+                    : null
+
+    min_distances = [:]
+    min_distances += kwargs.min_dist_fr ? ["+-":kwargs.min_dist_fr] : [:]
+    min_distances += kwargs.min_dist_rf ? ["-+":kwargs.min_dist_rf] : [:]
+    min_distances += kwargs.min_dist_ff ? ["++":kwargs.min_dist_ff] : [:]
+    min_distances += kwargs.min_dist_rr ? ["--":kwargs.min_dist_rf] : [:]
+    strand_dist = min_distances.collect {
+        strand, dist ->
+        s1 = strand[0]
+        s2 = strand[1]
+        "(strand1 + strand2 == '${s1}${s2}' and abs(pos2 - pos1) >= ${dist})"
+    }.join(" or ")
+    strand_dist = strand_dist ?: null
+
+    chroms = kwargs.chroms ? "chrom1 in ${quote(kwargs.chroms)} and chrom2 in ${quote(kwargs.chroms)}" : null
+    
+    frags = kwargs.discard_same_frag ? "rfrag1 != rfrag2" : null
+    
+    filters = [pair_types, cis_trans, strand_dist, chroms, frags]
+    
+    filters.removeAll([null])
+    filters = filters.collect {"(${it})"}
+    filters = filters.join(" and ")
+
+    cmd = """pairtools select --output ${id}_select.pairs.gz "${filters}" ${pairs}"""
+    cmd
+    
+}
+
+workflow Select {
+    take:
+        samples
+    
+    main:        
+        JoinProcessResults(
+            PairtoolsSelect,
+            [samples],
+            ["id", "latest", "select"],
+            ["id", "select_pairs"],
+            ["id"],
+            false,
+            "select_pairs"
+        ) | set{samples}
+
+
+    emit:
+        samples
+}
+
+process CoolerZoomify {
+    conda "cooler"
+    maxForks 2
+
+    input:
+    tuple val(id), path(infile), path(chromsizes), val(pairs_format), val(matrix)
+
+    output:
+    tuple val(id), path("${id}.mcool")
+
+    shell:
+    min_bin = matrix.make_matrix_binsizes.min()
+    bins = matrix.make_matrix_binsizes.join(",")
+
+    balance = matrix.balance.join(" ")
+    balance_args = balance ? "--balance-args '${balance}'" : null
+    cmd = ["cooler cload pairs",
+           "--chrom1 ${pairs_format.chrom1}",
+           "--pos1 ${pairs_format.pos1}",
+           "--chrom2 ${pairs_format.chrom2}",
+           "--pos2 ${pairs_format.pos2}",
+           "${chromsizes}:${min_bin}",
+           "${infile} ${id}.cool",
+           "&& cooler zoomify",
+           "--nproc 10",
+           "--resolutions '${bins}'",
+           "--balance",
+           balance_args,
+           "--out ${id}.mcool",
+           "${id}.cool"]
+    cmd.removeAll([null])
+    cmd = cmd.join(" ")
+    cmd
+}
+
+workflow MakeMcool {
+    take:
+        samples
+    
+    main:
+        samples
+            | filter{it.matrix.make_mcool_file_format}
+            | set{mcool}
+
+        JoinProcessResults(
+            CoolerZoomify,
+            [mcool, samples],
+            ["id", "latest", "chromsizes", "pairs_format", "matrix"],
+            ["id", "mcool"],
+            ["id"],
+            false,
+            "mcool"
+        ) | set{samples}
+
+
+    emit:
+        samples
+}
+
+process JuicerToolsPre {
+    container "bskubi/juicer_tools:1.22.01"
+    maxForks 2
+
+    input:
+    tuple val(id), path(infile), path(chromsizes), val(pairs_format), val(matrix)
+
+    output:
+    tuple val(id), path("${id}.hic")
+
+    shell:
+    outfile = "${id}.hic"
+    min_bin = matrix.make_matrix_binsizes.min()
+    bins = matrix.make_matrix_binsizes.join(",")
+
+    ["java -Xmx20g -jar /app/juicer_tools.jar pre",
+    "${infile} ${outfile} ${chromsizes}"].join(" ")
+}
+
+workflow MakeHic {
+    take:
+        samples
+    
+    main:
+        samples | filter{it.matrix.make_hic_file_format} | set{hic}
+
+        JoinProcessResults(
+            JuicerToolsPre,
+            [hic, samples],
+            ["id", "latest", "chromsizes", "pairs_format", "matrix"],
+            ["id", "hic"],
+            ["id"],
+            false,
+            null
+        ) | set{samples}
+
+    emit:
+        samples
+}
+
+workflow AssignParams {
+    take:
+        samples
+    
+    main:
+        
+        samples
+            | map {
+                sample ->
+                params.defaults.each {
+                    k, v ->
+                    !(k in sample) ? sample += [(k):v] : null
+                }
+                params.each {
+                    k, bundle ->
+                    if (bundle.containsKey("ids") && sample.id in bundle.ids) {
+                        update = bundle.clone()
+                        update.remove("ids")
+                        sample += update
+                    }
+                }
+                sample
+            }
+            | set{samples}
+    emit:
+        samples
+}
 
 workflow {
-
     channel.fromPath("samples.csv", checkIfExists: true)
         | splitCsv(header: true)
+        | map{it.id = it.sample_id; it}
+        | AssignParams
         | TryDownloadMissingReferences
         | MakeMissingChromsizes
-        // | MakeMissingIndex
-        // | MakeMissingDigest
-        // | Align
-        // | Parse
-        // | OptionalFragtag
-        // | TechrepsToBioreps
-        // | DeduplicateBioreps
-
+        | MakeMissingIndex
+        | MakeMissingDigest
+        | Align
+        | Parse
+        | OptionalFragtag
+        | TechrepsToBioreps
+        | Deduplicate
+        | BiorepsToConditions
+        | Select
+        | MakeHic
+        | MakeMcool
 }
 
