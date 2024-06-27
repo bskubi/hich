@@ -1,3 +1,0 @@
-sample_id,datatype,assembly,reference,chromsizes,index_dir,index_prefix,data1,data2,enzymes,fragfile,condition,biorep
-KO_1_1,fastq,hg38,hg38.fna,,resources/index/bwa-mem2,hg38_noalts,fastq/LIB231010TB_EZH2_1_S4_R1_001.fastq.gz,fastq/LIB231010TB_EZH2_1_S4_R2_001.fastq.gz,Arima,,KO,1
-KO_2_1,fastq,hg38,hg38.fna,,resources/index/bwa-mem2,hg38_noalts,fastq/LIB231010TB_EZH2_2_S5_R1_001.fastq.gz,fastq/LIB231010TB_EZH2_2_S5_R2_001.fastq.gz,Arima,,KO,2
