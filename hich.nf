@@ -81,7 +81,7 @@ workflow sqljoin {
     take:
     left
     right
-    kwargs
+    condition
 
     main:
     /* Similar to a SQL inner join
@@ -161,9 +161,9 @@ workflow sqljoin {
             is provided) we overwrite.
     */
 
-    by = kwargs.get("by", null)
-    suffix = kwargs.get("suffix", "_right")
-    how = kwargs.get("how", "left")
+    by = condition.get("by", null)
+    suffix = condition.get("suffix", "_right")
+    how = condition.get("how", "left")
 
     /* 1. Depending on join type, determine missing keysets that would
        inappropriately lead to rows being dropped and add in empty placeholders.
@@ -261,7 +261,7 @@ workflow sqljoin {
                         - There is no name clash, or
                         - The left table is not declared dominant
                     */
-                    if (kwargs.get("dominant") != "left" || !combined.containsKey(key)) {
+                    if (condition.get("dominant") != "left" || !combined.containsKey(key)) {
                         combined[key] = value
                     }
                 }
@@ -319,7 +319,7 @@ workflow JoinProcessResults {
                     If it's desired to use a single List L as the join by parameter
                     for every pair of channels, simply pass [L] as the join by
                     parameter (i.e. a single-element list containing only L) 
-        kwargs -- if non-falsey, used to subMap channel[0] and passed as a val
+        condition -- if non-falsey, used to subMap channel[0] and passed as a val
                   parameter to the process
         latest -- if non-falsey, sets the 'latest' parameter of the channel items
                   used as inputs to the process to the specified output
@@ -351,7 +351,7 @@ workflow JoinProcessResults {
         input
         output
         join_by
-        kwargs
+        condition
         latest
 
     main:
@@ -363,7 +363,7 @@ workflow JoinProcessResults {
                 format them as a tuple and pass to the process.
                 */
                 elements = it.subMap(input).values().toList()
-                elements = kwargs ? elements + it.subMap(kwargs) : elements
+                elements = condition ? elements + it.subMap(condition) : elements
                 tuple(*elements)
             }
             | proc  // Call the process
@@ -491,6 +491,100 @@ workflow MakeResourceFile {
         
     emit:
         result
+}
+
+workflow AssignParams {
+    take:
+        samples
+    
+    main:
+        
+        samples
+            | map {
+                sample ->
+                params.defaults.each {
+                    k, v ->
+                    !(k in sample) ? sample += [(k):v] : null
+                }
+                params.each {
+                    k, bundle ->
+                    if (bundle.containsKey("ids") && sample.id in bundle.ids) {
+                        update = bundle.clone()
+                        update.remove("ids")
+                        sample += update
+                    }
+                }
+                sample
+            }
+            | set{samples}
+    emit:
+        samples
+}
+
+process PairtoolsStats {
+    publishDir params.general.publish.pair_stats ? params.general.publish.pair_stats : "results",
+               saveAs: {params.general.publish.pair_stats ? it : null}
+    container "bskubi/pairtools:1.0.4"
+
+    input:
+    tuple val(id), val(pairs_id), path(pairs)
+
+    output:
+    tuple val(id), val(pairs_id), path("${id}.${pairs_id}.stats.txt")
+
+    shell:
+    "pairtools stats --output ${id}.${pairs_id}.stats.txt ${pairs}"
+}
+
+process MultiQC {
+    publishDir params.general.publish.qc ? params.general.publish.qc : "results",
+               saveAs: {params.general.publish.qc ? it : null}
+    conda "multiqc.yaml"
+
+    input:
+    tuple val(report_name), path(stats)
+
+    output:
+    path("${report_name}.multiqc_report.html")
+
+    shell:
+    "multiqc --force --filename ${report_name}.multiqc_report.html --module pairtools ."
+}
+
+workflow QCReads {
+    take:
+    samples
+    report_name
+    
+    main:
+    samples
+    | map{
+        sample ->
+        pairs = ["pairs",
+                  "frag_pairs",
+                  "dedup_pairs",
+                  "select_pairs",
+                  "biorep_merge_pairs",
+                  "condition_merge_pairs"]
+        
+        emit = pairs.collect{
+            pairfile ->
+            sample.containsKey(pairfile) ? [sample.id, pairfile, sample[pairfile]] : null
+        }.findAll{it != null}
+        emit
+    }
+    | collect
+    | flatMap
+    | PairtoolsStats
+    | map{it[2]}
+    | collect
+    | map{[report_name, it]}
+    | MultiQC
+    
+
+    emit:
+    samples
+
 }
 
 process StageReferences {
@@ -825,23 +919,18 @@ process PairtoolsParse2 {
     container "bskubi/pairtools:1.0.4"
 
     input:
-    tuple val(sample_id), path(sambam), path(chromsizes), val(kwargs)
+    tuple val(sample_id), path(sambam), path(chromsizes), val(assembly), val(parse_params)
 
     output:
     tuple val(sample_id), path("${sample_id}.pairs.gz")
 
     shell:
-    // Sort by name with sambamba, then parse, then sort by position
     cmd = ["pairtools parse2",
-           "--chroms-path ${chromsizes}",
-           "--assembly ${kwargs.assembly}",
-           "--min-mapq ${kwargs.min_mapq}",
-           "--drop-readid",
-           "--drop-seq",
-           "--drop-sam",
-           "${sambam}",
-           "| pairtools flip --chroms-path ${chromsizes}",
-           "| pairtools sort --output ${sample_id}.pairs.gz"]
+           "--assembly ${assembly}",
+           "--chroms-path ${chromsizes}"] +
+           parse_params +
+          ["${sambam} | pairtools sort --output ${sample_id}.pairs.gz"]
+    cmd.removeAll([null])
 
     cmd.join(" ")
 }
@@ -860,13 +949,17 @@ workflow Parse {
     samples = JoinProcessResults(
         PairtoolsParse2,
         [sambam, samples],
-        ["sample_id", "sambam", "chromsizes"],
+        ["sample_id", "sambam", "chromsizes", "assembly", "parse_params"],
         ["sample_id", "pairs"],
         ["sample_id"],
-        ["assembly", "min_mapq"],
+        null,
         "pairs")
     
     samples | map{it.id = it.sample_id; it} | set{samples}
+
+    if ("Parse" in params.general.get("qc_after")) {
+        QCReads(samples, "Parse")
+    }
 
     if (params.general.get("last_step") == "parse") {
         channel.empty() | set{samples}
@@ -921,6 +1014,10 @@ workflow IngestPairs {
             channel.empty() | set{samples}
         }
 
+        if ("IngestPairs" in params.general.get("qc_after")) {
+            QCReads(samples, "IngestPairs")
+        }
+
     emit:
         samples
 }
@@ -973,7 +1070,11 @@ workflow OptionalFragtag {
             false,
             "frag_pairs"
         )
-    
+
+        if ("OptionalFragtag" in params.general.get("qc_after")) {
+            QCReads(samples, "OptionalFragtag")
+        }
+
     emit:
         samples
 }
@@ -1017,17 +1118,12 @@ workflow TechrepsToBioreps {
             | map{tuple(it.subMap("condition", "biorep"), it)}
             | groupTuple
             | map {
-                it[0].latest = []
-                it[1].each {
-                    hashmap ->
-                    it[0].latest.add(hashmap.latest)
-                }
-                it[0].techreps = it[1]
-                it[0].is_biorep = true
-                it[0].id = "${it[0].condition}_${it[0].biorep}".toString()
-                it[0].reference = it[1].reference.unique()[0]
-                it[0].chromsizes = it[1].chromsizes.unique()[0]
-                it[0]
+                biorep, techreps ->
+                biorep += techreps[0].findAll{entry -> techreps.every {map -> map[entry.key] == entry.value}}
+                biorep.latest = techreps.collect{it.latest}
+                biorep.is_biorep = true
+                biorep.id = "${biorep.condition}_${biorep.biorep}"
+                biorep
             }
             | AssignParams
             | set{to_merge}
@@ -1046,6 +1142,10 @@ workflow TechrepsToBioreps {
             | concat(samples)
             | set {samples}
 
+        if ("TechrepsToBioreps" in params.general.get("qc_after")) {
+            QCReads(samples, "TechrepsToBioreps")
+        }
+
     emit:
         samples
 }
@@ -1056,14 +1156,25 @@ process PairtoolsDedup {
     container "bskubi/pairtools:1.0.4"
 
     input:
-    tuple val(id), path(infile)
+    tuple val(id), path(infile), val(dedup_params)
 
     output:
     tuple val(id), path("${id}_dedup.pairs.gz")
 
     shell:
-    //"cp ${infile} ${id}_dedup.pairs.gz "
-    "pairtools dedup --output ${id}_dedup.pairs.gz ${infile}"
+    dedup_params = dedup_params ? dedup_params.collect
+        {
+            item ->
+            return [
+                "--output-stats": "--output-stats ${id}_dedup.stats.txt",
+                "--output-dups": "--output-dups ${id}_dedup.dups.pairs.gz",
+                "--output-unmapped": "--output-unmapped ${id}_dedup.unmapped.pairs.gz",
+                "--output-bytile-stats": "--output-bytile-stats ${id}_dedup.bytile_stats.pairs.gz"
+            ].get(item, item)
+        }.join(" ") : ""
+    
+    cmd = "pairtools dedup --output ${id}_dedup.pairs.gz ${dedup_params} ${infile}"
+    cmd
 }
 
 workflow Deduplicate {
@@ -1077,12 +1188,16 @@ workflow Deduplicate {
         JoinProcessResults(
             PairtoolsDedup,
             [deduplicate, samples],
-            ["id", "latest"],
+            ["id", "latest", "dedup_params"],
             ["id", "dedup_pairs"],
             ["id"],
             false,
             "dedup_pairs"
         ) | set {samples}
+
+        if (params.general.get("last_step") == "Deduplicate") {
+            channel.empty() | set{samples}
+        }
 
     emit:
         samples
@@ -1112,19 +1227,12 @@ workflow BiorepsToConditions {
             | map{tuple(it.subMap("condition"), it)}
             | groupTuple
             | map {
-                it[0].latest = []
-                x = 0
-                it[1].each {
-                    hashmap ->
-                    x += 1
-                    it[0].latest += hashmap.latest instanceof ArrayList ? hashmap.latest : [hashmap.latest]
-                }
-                it[0].reference = it[1].reference.unique()[0]
-                it[0].chromsizes = it[1].chromsizes.unique()[0]
-                it[0].bioreps = it[1]
-                it[0].is_condition = true
-                it[0].id = "${it[0].condition}".toString()
-                it[0]
+                condition, bioreps ->
+                condition += bioreps[0].findAll{entry -> bioreps.every {map -> map[entry.key] == entry.value}}
+                condition.latest = bioreps.collect{it.latest}
+                condition.id = "${condition.condition}"
+                condition.is_condition = true
+                condition
             }
             | AssignParams
             | set{to_merge}
@@ -1144,6 +1252,10 @@ workflow BiorepsToConditions {
             | concat(samples)
             | set {samples}
 
+        if ("BiorepsToConditions" in params.general.get("qc_after")) {
+            QCReads(samples, "BiorepsToConditions")
+        }
+
     emit:
         samples
 }
@@ -1154,53 +1266,57 @@ process PairtoolsSelect {
     container "bskubi/pairtools:1.0.4"
 
     input:
-    tuple val(id), path(pairs), val(kwargs)
+    tuple val(id), path(pairs), val(select_params), val(condition)
 
     output:
     tuple val(id), path("${id}_select.pairs.gz")
 
     shell:
-
     def quote = { List<String> items ->
     result = items.collect { "'$it'" }.join(", ")
-    "[${result}]"
+    "[${result}]"}
 
-}
-
-    pair_types = "pair_type in ${quote(kwargs.keep_pair_types)}"
+    pair_types = "pair_type in ${quote(condition.keep_pair_types)}"
     
-    cis_trans = kwargs.keep_cis ^ kwargs.keep_trans
-                    ? (kwargs.keep_cis
+    cis_trans = condition.keep_cis ^ condition.keep_trans
+                    ? (condition.keep_cis
                             ? "(chrom1 == chrom2)"
                             : "(chrom1 != chrom2)")
                     : null
 
     min_distances = [:]
-    min_distances += kwargs.min_dist_fr ? ["+-":kwargs.min_dist_fr] : [:]
-    min_distances += kwargs.min_dist_rf ? ["-+":kwargs.min_dist_rf] : [:]
-    min_distances += kwargs.min_dist_ff ? ["++":kwargs.min_dist_ff] : [:]
-    min_distances += kwargs.min_dist_rr ? ["--":kwargs.min_dist_rf] : [:]
+    min_distances += condition.min_dist_fr != null ? ["+-":condition.min_dist_fr] : [:]
+    min_distances += condition.min_dist_rf != null ? ["-+":condition.min_dist_rf] : [:]
+    min_distances += condition.min_dist_ff != null ? ["++":condition.min_dist_ff] : [:]
+    min_distances += condition.min_dist_rr != null ? ["--":condition.min_dist_rf] : [:]
     strand_dist = min_distances.collect {
         strand, dist ->
         s1 = strand[0]
         s2 = strand[1]
         "(strand1 + strand2 == '${s1}${s2}' and abs(pos2 - pos1) >= ${dist})"
     }.join(" or ")
-    strand_dist = strand_dist ?: null
 
-    chroms = kwargs.chroms ? "chrom1 in ${quote(kwargs.chroms)} and chrom2 in ${quote(kwargs.chroms)}" : null
+    strand_dist = strand_dist ?: null
     
-    frags = kwargs.discard_same_frag ? "rfrag1 != rfrag2" : null
+    frags = condition.discard_same_frag ? "rfrag1 != rfrag2" : null
     
-    filters = [pair_types, cis_trans, strand_dist, chroms, frags]
+    filters = [pair_types, cis_trans, strand_dist, frags]
     
     filters.removeAll([null])
     filters = filters.collect {"(${it})"}
     filters = filters.join(" and ")
 
-    cmd = """pairtools select --output ${id}_select.pairs.gz "${filters}" ${pairs}"""
-    cmd
+    select_params = select_params ? select_params.collect {
+        item ->
+        ["--output-rest": "--output-rest ${id}_select.rest.pairs.gz"].get(item, item)
+    }.join(" ") : ""
+
+    write_chroms = condition.chroms ? "echo '${condition.chroms.join('\n')}' > __chroms__.bed &&" : ""
+    chroms_file = condition.chroms ? "--chrom-subset __chroms__.bed" : ""
+
+    cmd = """${write_chroms} pairtools select --output ${id}_select.pairs.gz ${chroms_file} ${select_params} "${filters}" ${pairs}"""
     
+    cmd
 }
 
 workflow Select {
@@ -1211,14 +1327,42 @@ workflow Select {
         JoinProcessResults(
             PairtoolsSelect,
             [samples],
-            ["id", "latest", "select"],
+            ["id", "latest", "select_params", "select_condition"],
             ["id", "select_pairs"],
             ["id"],
             false,
             "select_pairs"
         ) | set{samples}
 
+        
+        if ("Select" in params.general.get("qc_after")) {
+            QCReads(samples, "Select")
+        }
 
+        if (params.general.get("last_step") == "Select") {
+            channel.empty() | set{samples}
+        }
+
+
+
+
+    emit:
+        samples
+}
+
+
+workflow Downsample {
+    take:
+        samples
+    
+    main:
+        /* Not currently in use
+        */
+        samples
+            | map{tuple(it.subMap("is_biorep", "is_condition"), it.id)}
+            | groupTuple()
+            | view
+    
     emit:
         samples
 }
@@ -1230,29 +1374,25 @@ process CoolerZoomify {
     maxForks 2
 
     input:
-    tuple val(id), path(infile), path(chromsizes), val(pairs_format), val(matrix)
+    tuple val(id), path(infile), path(chromsizes), val(pairs_format), val(assembly), val(matrix), val(make_cool), val(make_mcool)
 
     output:
     tuple val(id), path("${id}.mcool")
 
     shell:
-    min_bin = matrix.make_matrix_binsizes.min()
-    bins = matrix.make_matrix_binsizes.join(",")
+    min_bin = matrix.resolutions.min()
+    bins = matrix.resolutions.join(",")
 
-    balance = matrix.balance.join(" ")
-    balance_args = balance ? "--balance-args '${balance}'" : null
-    cmd = ["cooler cload pairs",
+    cmd = ["cooler cload pairs"] + make_cool +
+           ["--assembly ${assembly}",
            "--chrom1 ${pairs_format.chrom1}",
            "--pos1 ${pairs_format.pos1}",
            "--chrom2 ${pairs_format.chrom2}",
            "--pos2 ${pairs_format.pos2}",
            "${chromsizes}:${min_bin}",
            "${infile} ${id}.cool",
-           "&& cooler zoomify",
-           "--nproc 10",
-           "--resolutions '${bins}'",
-           "--balance",
-           balance_args,
+           "&& cooler zoomify"] + make_mcool +
+           ["--resolutions '${bins}'",
            "--out ${id}.mcool",
            "${id}.cool"]
     cmd.removeAll([null])
@@ -1272,7 +1412,7 @@ workflow MakeMcool {
         JoinProcessResults(
             CoolerZoomify,
             [mcool, samples],
-            ["id", "latest", "chromsizes", "pairs_format", "matrix"],
+            ["id", "latest", "chromsizes", "pairs_format", "assembly", "matrix", "make_cool", "make_mcool"],
             ["id", "mcool"],
             ["id"],
             false,
@@ -1285,6 +1425,12 @@ workflow MakeMcool {
 }
 
 process JuicerToolsPre {
+    /*
+        Juicer Tools Pre documentation: https://github.com/aidenlab/juicer/wiki/Pre
+
+        We use version 1.22.01 as 2.0+ versions are in development and certain
+        features available in version 1 are unavailable in 2.
+    */
     publishDir params.general.publish.hic ? params.general.publish.hic : "results",
                saveAs: {params.general.publish.hic ? it : null}
     container "bskubi/juicer_tools:1.22.01"
@@ -1298,11 +1444,14 @@ process JuicerToolsPre {
 
     shell:
     outfile = "${id}.hic"
-    min_bin = matrix.make_matrix_binsizes.min()
-    bins = matrix.make_matrix_binsizes.join(",")
+    min_bin = matrix.resolutions.min()
+    bins = matrix.resolutions ? "-r ${matrix.resolutions.join(',')}" : ""
 
-    ["java -Xmx20g -jar /app/juicer_tools.jar pre",
-    "${infile} ${outfile} ${chromsizes}"].join(" ")
+    cmd = ["java -Xmx20g -jar /app/juicer_tools.jar pre",
+            bins,
+           "${infile} ${outfile} ${chromsizes}"]
+    cmd.removeAll([null])
+    cmd.join(" ")
 }
 
 workflow MakeHic {
@@ -1326,32 +1475,66 @@ workflow MakeHic {
         samples
 }
 
-workflow AssignParams {
+process MustacheDiffloops{
+    publishDir "results/loops"
+    container "bskubi/mustache"
+
+    input:
+    tuple val(prefix), val(id1), path(mx1), val(id2), path(mx2), val(mustache_params)
+
+    output:
+    tuple val(id1), val(id2), path("${prefix}.loop1"), path("${prefix}.loop2"), path("${prefix}.diffloop1"), path("${prefix}.diffloop2")
+
+    shell:
+    cmd = ["/bin/bash -c 'source ~/.bashrc && python mustache/mustache/diff_mustache.py",
+           "-f1 ${mx1} -f2 ${mx2}",
+           "-o ${prefix}"] + mustache_params
+    cmd = cmd.join(" ")
+    cmd += "'"
+    cmd = "/bin/bash -c 'source ~/.bashrc && python mustache/mustache/diff_mustache.py --help'"
+    print(cmd)
+    ""
+}
+
+workflow CallLoops {
     take:
-        samples
-    
+    samples
+
     main:
-        
-        samples
-            | map {
-                sample ->
-                params.defaults.each {
-                    k, v ->
-                    !(k in sample) ? sample += [(k):v] : null
+    // For feature calling, we have to segregate by merge (techrep/biorep/condition)
+    // and by whether or not it is downsampled
+
+    samples
+        | filter {
+            sample ->
+            (sample.is_condition && "is_condition" in sample.loops.call_on) ||
+            (!sample.is_condition && sample.is_biorep && "is_biorep" in sample.loops.call_on) ||
+            (!sample.is_condition && !sample.is_biorep && sample.is_techrep && "is_techrep" in sample.loops.call_on)
+        }
+        | map{sample -> sample.subMap("id", "mcool", "hic", "is_techrep", "is_biorep", "is_condition", "loops")}
+        | map{[[it.subMap("is_techrep", "is_biorep", "is_condition")], it]}
+        | groupTuple
+        | map{it[1]}
+        | map {
+            comparison_set ->
+            comparisons = []
+            comparison_set.eachWithIndex {
+                sample1, idx1->
+                sub_list = idx1 + 1 < comparison_set.size() ? comparison_set[(idx1+1)..-1] : []
+                sub_list.each {
+                    sample2 ->
+                    comparisons += [[sample1, sample2]]
                 }
-                params.each {
-                    k, bundle ->
-                    if (bundle.containsKey("ids") && sample.id in bundle.ids) {
-                        update = bundle.clone()
-                        update.remove("ids")
-                        sample += update
-                    }
-                }
-                sample
             }
-            | set{samples}
+            comparisons
+        }
+        | flatMap
+        | map{["${it[0].id}_${it[1].id}", it[0].id, it[0].mcool, it[1].id, it[1].mcool, it[0].loops.mustache_params]}
+        | MustacheDiffloops
+        | view
+
     emit:
-        samples
+    samples
 }
 
 workflow {
@@ -1374,5 +1557,6 @@ workflow {
         | Select
         | MakeHic
         | MakeMcool
+        //| CallLoops
 }
 
