@@ -1,5 +1,5 @@
 work
-.nextflow
+.nextflow*
 .vscode
 .ipynb_checkpoints
 fastq
