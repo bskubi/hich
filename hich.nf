@@ -508,7 +508,10 @@ workflow AssignParams {
                 }
                 params.each {
                     k, bundle ->
-                    if (bundle.containsKey("ids") && sample.id in bundle.ids) {
+                    sample_id = sample.id.toString()
+                    bundle_ids = bundle.ids.collect{it.toString()}
+
+                    if (bundle.containsKey("ids") && sample_id in bundle_ids) {
                         update = bundle.clone()
                         update.remove("ids")
                         sample += update
@@ -1477,7 +1480,7 @@ workflow MakeHic {
 
 process MustacheDiffloops{
     publishDir "results/loops"
-    container "bskubi/mustache"
+    container "mustache"
 
     input:
     tuple val(prefix), val(id1), path(mx1), val(id2), path(mx2), val(mustache_params)
@@ -1486,14 +1489,11 @@ process MustacheDiffloops{
     tuple val(id1), val(id2), path("${prefix}.loop1"), path("${prefix}.loop2"), path("${prefix}.diffloop1"), path("${prefix}.diffloop2")
 
     shell:
-    cmd = ["/bin/bash -c 'source ~/.bashrc && python mustache/mustache/diff_mustache.py",
+    cmd = ["python /mustache/mustache/diff_mustache.py",
            "-f1 ${mx1} -f2 ${mx2}",
            "-o ${prefix}"] + mustache_params
     cmd = cmd.join(" ")
-    cmd += "'"
-    cmd = "/bin/bash -c 'source ~/.bashrc && python mustache/mustache/diff_mustache.py --help'"
-    print(cmd)
-    ""
+    cmd
 }
 
 workflow CallLoops {
@@ -1531,7 +1531,72 @@ workflow CallLoops {
         | flatMap
         | map{["${it[0].id}_${it[1].id}", it[0].id, it[0].mcool, it[1].id, it[1].mcool, it[0].loops.mustache_params]}
         | MustacheDiffloops
-        | view
+
+    emit:
+    samples
+}
+
+process CooltoolsEigsCis {
+    publishDir "results/compartments"
+    container "cooltools"
+
+    input:
+    tuple val(id), path(mcool), val(resolution), val(cooltools_ciseigs_params)
+
+    output:
+    tuple val(id), path("${id}.cis.bw"), path("${id}.cis.lam.txt"), path("${id}.cis.vecs.tsv")
+
+    shell:
+    cmd = ["cooltools eigs-cis", 
+           "--out-prefix ${id}"] +
+          cooltools_ciseigs_params +
+          ["${mcool}::/resolutions/${resolution}"]
+    cmd = cmd.join(" ")
+    cmd
+}
+
+workflow CallCompartments {
+    take:
+    samples
+
+    main:
+    samples
+        | filter {it.get("compartments") != null && it.get("mcool") != null}
+        | map{tuple(it.id, it.mcool, it.compartments.resolution, it.compartments.cooltools_eigs_cis_params)}
+        | CooltoolsEigsCis
+
+    emit:
+    samples
+}
+
+process CooltoolsInsulation {
+    publishDir "results/insulation"
+    container "cooltools"
+
+    input:
+    tuple val(id), path(mcool), val(resolution), val(cooltools_insulation_params)
+
+    output:
+    tuple val(id), path("${id}_insulation.tsv"), path("${id}_insulation.tsv.${resolution}.bw")
+
+    shell:
+    cmd = ["cooltools insulation", 
+           "--output ${id}_insulation.tsv"] +
+          cooltools_insulation_params +
+          ["${mcool}::/resolutions/${resolution} 100000"]
+    cmd = cmd.join(" ")
+    cmd
+}
+
+workflow CallInsulation {
+    take:
+    samples
+
+    main:
+    samples
+        | filter {it.get("insulation") != null && it.get("mcool") != null}
+        | map{tuple(it.id, it.mcool, it.insulation.resolution, it.insulation.cooltools_insulation_params)}
+        | CooltoolsInsulation
 
     emit:
     samples
@@ -1557,6 +1622,9 @@ workflow {
         | Select
         | MakeHic
         | MakeMcool
-        //| CallLoops
+        | CallCompartments
+        | CallLoops
+        | CallInsulation
+        
 }
 
