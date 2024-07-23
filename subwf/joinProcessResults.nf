@@ -5,7 +5,7 @@ def getIdx(item, index) {
        to index of final item. If item is not a list, return it.
     */
     if (item instanceof List) {
-        validIndex = Math.min(index, item.size() - 1)
+        def validIndex = Math.min(index, item.size() - 1)
         return item[validIndex]
     }
     return item

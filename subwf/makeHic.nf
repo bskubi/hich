@@ -9,7 +9,7 @@ process JuicerToolsPre {
     */
     publishDir params.general.publish.hic ? params.general.publish.hic : "results",
                saveAs: {params.general.publish.hic ? it : null}
-    container "bskubi/juicer_tools:1.22.01"
+    container "juicertools"
     maxForks 2
 
     input:

@@ -46,7 +46,8 @@ workflow QCReads {
         
         emit = pairs.collect{
             pairfile ->
-            sample.containsKey(pairfile) ? [sample.id, pairfile, sample[pairfile]] : null
+            
+            sample.containsKey(pairfile) && sample.get(pairfile).getClass() == sun.nio.fs.UnixPath ? [sample.id, pairfile, sample[pairfile]] : null
         }.findAll{it != null}
         emit
     }
