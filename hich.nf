@@ -802,6 +802,8 @@ workflow MakeMissingIndex {
 }
 
 process MakeDigest {
+    container "redigest"
+    
     input:
     tuple path(reference), val(enzymes), val(fragfile), val(assembly)
 
@@ -1353,7 +1355,6 @@ workflow Select {
         samples
 }
 
-
 workflow Downsample {
     take:
         samples
@@ -1625,6 +1626,5 @@ workflow {
         | CallCompartments
         | CallLoops
         | CallInsulation
-        
 }
 
