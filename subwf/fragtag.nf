@@ -1,0 +1,59 @@
+include {JoinProcessResults} from './joinProcessResults.nf'
+include {QCReads} from './qcHicReads.nf'
+
+process Fragtag {
+    publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
+               saveAs: {params.general.publish.fragtag ? it : null}
+
+
+    input:
+    tuple val(sample_id), path(pairs), path(fragfile), val(tagged_pairs)
+
+    output:
+    tuple val(sample_id), path(tagged_pairs)
+
+    shell:
+    // ["pairtools restrict",
+    //  "--frags ${fragfile}",
+    //  "--output ${tagged_pairs}",
+    //  "${pairs}"].join(" ")
+    
+    cmd = "fragtag ${fragfile} ${tagged_pairs} ${pairs}"
+    cmd
+}
+
+workflow OptionalFragtag {
+    take:
+        samples
+
+    main:
+        def hasFragfileName = {
+            it.get("fragfile").toString().trim().length() > 0
+        }
+        
+        def fragfileExists = {
+            hasFragfileName(it) && file(it.fragfile).exists()
+        }
+
+        samples
+            | filter{fragfileExists(it)}
+            | map{it.frag_pairs = "${it.sample_id}_fragtag.pairs.gz"; it}
+            | set{fragtag}
+        
+        samples = JoinProcessResults(
+            Fragtag,
+            [fragtag, samples],
+            ["sample_id", "pairs", "fragfile", "frag_pairs"],
+            ["sample_id", "frag_pairs"],
+            ["sample_id"],
+            false,
+            "frag_pairs"
+        )
+
+        if ("OptionalFragtag" in params.general.get("qc_after")) {
+            QCReads(samples, "OptionalFragtag")
+        }
+
+    emit:
+        samples
+}
