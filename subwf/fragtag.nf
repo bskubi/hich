@@ -4,7 +4,7 @@ include {QCReads} from './qcHicReads.nf'
 process Fragtag {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
                saveAs: {params.general.publish.fragtag ? it : null}
-    container "bskubi/fragtag:latest"
+    //container "bskubi/fragtag:latest"
 
     input:
     tuple val(sample_id), path(pairs), path(fragfile), val(tagged_pairs)
