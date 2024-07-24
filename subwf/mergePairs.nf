@@ -5,6 +5,8 @@ include {AssignParams} from './assignParams.nf'
 process Merge {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
                saveAs: {params.general.publish.fragtag ? it : null}
+            
+    conda "pairtools"
 
     input:
     tuple val(id), path(samples)
