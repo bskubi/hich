@@ -47,7 +47,7 @@ workflow IngestPairs {
         }
 
         if ("IngestPairs" in params.general.get("qc_after")) {
-            QCReads(samples, "IngestPairs")
+            samples = QCReads(samples, "IngestPairs")
         }
 
     emit:

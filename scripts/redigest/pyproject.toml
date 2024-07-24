@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "redigest"
+version = "0.1.0"
+description = ""
+authors = ["Ben Skubi <bskubi@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+biopython = "^1.83"
+click = "^8.1.7"
+
+[tool.poetry.scripts]
+redigest = "redigest.__main__:redigest"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

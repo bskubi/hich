@@ -51,7 +51,7 @@ workflow OptionalFragtag {
         )
 
         if ("OptionalFragtag" in params.general.get("qc_after")) {
-            QCReads(samples, "OptionalFragtag")
+            samples = QCReads(samples, "OptionalFragtag")
         }
 
     emit:
