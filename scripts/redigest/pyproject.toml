@@ -9,6 +9,8 @@ readme = "README.md"
 python = "^3.12"
 biopython = "^1.83"
 click = "^8.1.7"
+smart-open = "^7.0.4"
+polars = "^1.2.1"
 
 [tool.poetry.scripts]
 redigest = "redigest.__main__:redigest"

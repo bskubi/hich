@@ -4,7 +4,8 @@ include {QCReads} from './qcHicReads.nf'
 process Fragtag {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
                saveAs: {params.general.publish.fragtag ? it : null}
-    container "bskubi/pairtools:1.1.0"
+    //container "bskubi/pairtools:1.1.0"
+    //container "fragtag"
 
     input:
     tuple val(sample_id), path(pairs), path(fragfile), val(tagged_pairs)
@@ -13,13 +14,13 @@ process Fragtag {
     tuple val(sample_id), path(tagged_pairs)
 
     shell:
-    ["pairtools restrict",
-     "--frags ${fragfile}",
-     "--output ${tagged_pairs}",
-     "${pairs}"].join(" ")
+    // ["pairtools restrict",
+    //  "--frags ${fragfile}",
+    //  "--output ${tagged_pairs}",
+    //  "${pairs}"].join(" ")
     
-    //cmd = "fragtag ${fragfile} ${tagged_pairs} ${pairs}"
-    //cmd
+    cmd = "fragtag ${fragfile} ${tagged_pairs} ${pairs}"
+    cmd
 }
 
 workflow OptionalFragtag {

@@ -1,5 +1,8 @@
 import polars as pl
 import smart_open
+import warnings
+from .pbgzip import *
+
 
 class PairsParser:
     def __init__(self, filename):
@@ -72,8 +75,11 @@ class PairsParser:
                     yield df
 
     def write_append(self, filename, df = None, header_end = None):
+        warnings.filterwarnings("ignore", message="Polars found a filename")
+
         if self.write_file is None:
-            self.write_file = smart_open.open(filename, "w")
+            
+            self.write_file = smart_open.open(filename, "w", compression = compression(filename))
             header_no_columns = self.header()[:-1]
             final_header_line_fields = header_no_columns[-1].split()
             
@@ -97,5 +103,8 @@ class PairsParser:
 
     def close(self):
         if self.write_file is not None:
+            filename = self.write_file.name
             self.write_file.close()
             self.write_file = None
+            if filename.endswith(".gz") or filename.endswith(".gzip"):
+                pbgzip_compress(filename)

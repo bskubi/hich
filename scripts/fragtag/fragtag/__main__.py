@@ -5,11 +5,8 @@ import time
 import warnings
 import sys
 from .pairs_parser import PairsParser
-from .pairs_tagger import *
 from .frag_index import FragIndex
 from .bedpe_pairs import BedpePairs
-from .bedpe_id_pairs import BedpeIDPairs
-from .bedpe_id_ends import BedpeIDEnds
 from .samheader_fragtag import SamheaderFragtag
 
 def tag_batch(pairs_batch_df, frag_index):
@@ -35,19 +32,7 @@ def tag_restriction_fragments(frags_filename: str,
     pairs_parser = PairsParser(input_pairs_filename)
 
     for df in pairs_parser.batch_iter(batch_size):  
-        columns = df.columns + ["rfrag1",
-                                "rfrag_start1",
-                                "rfrag_end1",
-                                "rfrag2",
-                                "rfrag_start2",
-                                "rfrag_end2"]
-        df = BedpePairs(df).reformat(BedpeIDPairs) \
-                           .reformat(BedpeIDEnds) \
-                           .fragtag(frag_index) \
-                           .reformat(BedpeIDPairs) \
-                           .reformat(BedpePairs) \
-                           .df \
-                           .select(columns)
+        df = BedpePairs(df).fragtag(frag_index)
 
         pairs_parser.write_append(output_pairs_filename,
                                   df,
