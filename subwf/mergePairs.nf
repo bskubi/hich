@@ -6,7 +6,7 @@ process Merge {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
                saveAs: {params.general.publish.fragtag ? it : null}
             
-    conda "pairtools"
+    container "bskubi/pairtools:1.1.0"
 
     input:
     tuple val(id), path(samples)
@@ -16,7 +16,7 @@ process Merge {
 
     shell:
     samples = (samples.getClass() == nextflow.processor.TaskPath) ? samples : samples.join(" ")
-    "pairtools merge --output ${id}.pairs.gz ${samples}"
+    "pairtools --version > version.txt && pairtools merge --output ${id}.pairs.gz ${samples}"
 }
 
 workflow TechrepsToBioreps {
