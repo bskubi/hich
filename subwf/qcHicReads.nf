@@ -16,7 +16,7 @@ process PairtoolsStats {
 process MultiQC {
     publishDir params.general.publish.qc ? params.general.publish.qc : "results",
                saveAs: {params.general.publish.qc ? it : null}
-    conda "multiqc.yaml"
+    conda "pairtools"
 
     input:
     tuple val(report_name), path(stats)
