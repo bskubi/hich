@@ -1,4 +1,0 @@
-sample_id,datatype,assembly,reference,chromsizes,index_dir,index_prefix,fastq1,fastq2,enzymes,fragfile,condition,biorep,techrep
-KO_1_1,fastq,hg38,resources/hg38.fna,resources/hg38.sizes,resources/index/bwa-mem2,hg38_noalts,fastq/LIB231010TB_EZH2_1_S4_R1_001.fastq.gz,fastq/LIB231010TB_EZH2_1_S4_R2_001.fastq.gz,Arima,resources/hg38_Arima.bed,KO,1,1
-KO_2_1,fastq,hg38,resources/hg38.fna,resources/hg38.sizes,resources/index/bwa-mem2,hg38_noalts,fastq/LIB231010TB_EZH2_2_S5_R1_001.fastq.gz,fastq/LIB231010TB_EZH2_2_S5_R2_001.fastq.gz,Arima,resources/hg38_Arima.bed,KO,2,1
-KO_3_1,fastq,hg38,resources/hg38.fna,resources/hg38.sizes,resources/index/bwa-mem2,hg38_noalts,fastq/LIB231010TB_EZH2_3_S6_R1_001.fastq.gz,fastq/LIB231010TB_EZH2_3_S6_R2_001.fastq.gz,Arima,resources/hg38_Arima.bed,KO,3,1
