@@ -12,9 +12,11 @@ class FragIndex:
                                             separator = '\t',
                                             has_header = False,
                                             new_columns = bedcols) \
+                                 .sort(by=['chrom', 'start', 'end']) \
                                  .partition_by(['chrom'],
                                                as_dict = True,
                                                include_key = False)
+
         self.chrom_ends_sorted = {chrom:
                                   sorted(self.ends(chrom).to_list())
                                   for chrom

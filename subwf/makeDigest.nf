@@ -1,7 +1,7 @@
 include {MakeResourceFile} from "./makeResourceFile.nf"
 
 process MakeDigest {
-    container "bskubi/redigest:latest"
+    container "redigest"
     
     input:
     tuple path(reference), val(enzymes), val(fragfile), val(assembly)
