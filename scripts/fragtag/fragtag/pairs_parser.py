@@ -71,17 +71,29 @@ class PairsParser:
                 if not df.is_empty():
                     yield df
 
-    def write_append(self, df, filename):
+    def write_append(self, filename, df = None, header_end = None):
         if self.write_file is None:
             self.write_file = smart_open.open(filename, "w")
-            header_no_columns = "".join(self.header()[:-1])
+            header_no_columns = self.header()[:-1]
+            final_header_line_fields = header_no_columns[-1].split()
+            
+            if header_end:
+                pn_field = [field[3:]
+                    for field in final_header_line_fields
+                    if field.startswith("PN:")]
+                
+                header_end.PP = pn_field[0] if pn_field else "null"
+                
+            header_no_columns = "".join(header_no_columns)
             columns = " ".join(["#columns:"] + df.columns) + "\n"
-            header = header_no_columns + columns
+            header_end = str(header_end)
+            header = header_no_columns + header_end + columns
             self.write_file.write(header)
 
-        df.write_csv(self.write_file,
-                     include_header = False,
-                     separator = '\t')
+        if df is not None:
+            df.write_csv(self.write_file,
+                        include_header = False,
+                        separator = '\t')
 
     def close(self):
         if self.write_file is not None:

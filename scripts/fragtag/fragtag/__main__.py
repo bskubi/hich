@@ -3,31 +3,58 @@ import numpy as np
 import polars as pl
 import time
 import warnings
-from .pairsParser import PairsParser
-from .pairsTagger import *
+import sys
+from .pairs_parser import PairsParser
+from .pairs_tagger import *
+from .frag_index import FragIndex
+from .bedpe_pairs import BedpePairs
+from .bedpe_id_pairs import BedpeIDPairs
+from .bedpe_id_ends import BedpeIDEnds
+from .samheader_fragtag import SamheaderFragtag
+
+def tag_batch(pairs_batch_df, frag_index):
+    pairs_batch_df = tag_with_pair_id(pairs_batch_df)
+    ends = ends_format(pairs_batch_df)
+    chroms_dict = partition_by_chrom(ends)
+
+    for chrom, chrom_df in chroms_dict.items():
+        frag_columns = format_frag_columns(frag_index,
+                                            chrom,
+                                            chrom_df)
+        chroms_dict[chrom] = chroms_dict[chrom].with_columns(frag_columns)
+    
+    return pairs_format(pairs_batch_df, chroms_dict)
 
 def tag_restriction_fragments(frags_filename: str,
                               input_pairs_filename: str,
                               output_pairs_filename: str,
                               batch_size: int = 1000000):
     
-    frags, frag_ends_dict = readFrags(frags_filename)
+    frag_index = FragIndex(frags_filename)
 
-    pp = PairsParser(input_pairs_filename)
+    pairs_parser = PairsParser(input_pairs_filename)
 
-    for df in pp.batch_iter(batch_size):  
-        df = tagWithPairID(df)
-        ends = columnsPairIDChromPosEndFrags(df)
-        chroms_dict = partitionEndsByChrom(ends)
+    for df in pairs_parser.batch_iter(batch_size):  
+        columns = df.columns + ["rfrag1",
+                                "rfrag_start1",
+                                "rfrag_end1",
+                                "rfrag2",
+                                "rfrag_start2",
+                                "rfrag_end2"]
+        df = BedpePairs(df).reformat(BedpeIDPairs) \
+                           .reformat(BedpeIDEnds) \
+                           .fragtag(frag_index) \
+                           .reformat(BedpeIDPairs) \
+                           .reformat(BedpePairs) \
+                           .df \
+                           .select(columns)
 
-        for chrom, chrom_df in chroms_dict.items():
-            if chrom in frag_ends_dict:
-                chroms_dict = labelFragments(frags, frag_ends_dict, chrom, chroms_dict, chrom_df)
-        
-        df = toPairsFormatDF(df, chroms_dict, chrom_df)
+        pairs_parser.write_append(output_pairs_filename,
+                                  df,
+                                  header_end = SamheaderFragtag())
 
-        pp.write_append(df, output_pairs_filename)
-    pp.close()
+
+    pairs_parser.close()
 
 @click.command()
 @click.option("--batch_size", default = 1000000)

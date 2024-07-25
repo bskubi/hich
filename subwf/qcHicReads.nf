@@ -1,7 +1,7 @@
 process PairtoolsStats {
     publishDir params.general.publish.pair_stats ? params.general.publish.pair_stats : "results",
                saveAs: {params.general.publish.pair_stats ? it : null}
-    container "bskubi/pairtools:1.0.4"
+    container "bskubi/pairtools:1.1.0"
 
     input:
     tuple val(id), val(pairs_id), path(pairs)
