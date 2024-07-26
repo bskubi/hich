@@ -1,6 +1,3 @@
-include {keydiff; sqljoin} from './subwf/sqljoin.nf'
-include {JoinProcessResults} from './subwf/joinProcessResults.nf'
-include {MakeResourceFile} from './subwf/makeResourceFile.nf'
 include {AssignParams} from './subwf/assignParams.nf'
 include {TryDownloadMissingReferences} from './subwf/genomeReferences.nf'
 include {MakeMissingChromsizes} from './subwf/chromsizes.nf'
