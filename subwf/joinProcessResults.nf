@@ -13,56 +13,44 @@ def getIdx(item, index) {
 
 workflow JoinProcessResults {
     /*
-        proc -- the process to call
-        channels -- a list of channels.
-            The first channel contains single-hashmap items that have as a
-            subset of their keys the required process inputs.
-
-            Outputs from the process will be rejoined to channel[0], then
-            channel[0] will be joined to channel[1], channel[1] to channel[1], ...
-            and the result of the final join will be emitted.
-        input -- a list of keys to extract from channel[0] hashmap items and
-            use as inputs to the process
-        output -- a list of keys in the order expected from the process
-        join_by -- either a non-List universal join key or a List of join keys
-               Iterate through the channels pairwise ([ch0, ch1], [ch1, ch2]...)
-               Then join the first channel to the second. The caller has several
-               ways to pass join by parameters:
-                    If a List is passed as the join by parameter, then the ith
-                    pair of channels are joined on the ith element or on the final
-                    join by parameter, whichever is lower.
-
-                    If a non-List is passed, then every pair of channels are
-                    joined by it.
-
-                    If it's desired to use a single List L as the join by parameter
-                    for every pair of channels, simply pass [L] as the join by
-                    parameter (i.e. a single-element list containing only L) 
-        condition -- if non-falsey, used to subMap channel[0] and passed as a val
-                  parameter to the process
-        latest -- if non-falsey, sets the 'latest' parameter of the channel items
-                  used as inputs to the process to the specified output
-                  from the process.
-
-            Motivation:
-
-            Using hashmaps to keep track of process inputs and outputs has
-            numerous advantages, but adds complications.
+            Explanation:
             
-            First, although Nextflow can accept hashmaps as val() params,
-            it won't stage files stored in them to the work directory, making
-            those files inaccessible to the process.
+            In Hich, think of each sample as a bundle of data and params.
+            Pipeline processes add new data to the bundle. We have to decide
+            what bundles to pass to which processes, pull just the needed data
+            and params out of the bundles, and then put the process outputs
+            back into the appropriate bundle. In Hich, bundles can be joined
+            across channels using a key of choice, such as "id" or "sample_id".
+            
+            This is what JoinProcessResults accomplishes.
 
-            Second, any changes to process inputs trigger a rerun of the process.
-            We want to avoid this in cases where changes are made to hashmap
-            keys that are not used by the process.
+            The "bundles" in Hich are hashmaps. The workflow calling
+            JoinProcessResults has already prefiltered the "bundles" and
+            potentially extracted a submap (or a submap of a submap...) from
+            the per-sample hashmaps.
 
-            This requires extracting the specific desired elements and passing
-            them to the process, but this in turn means that the process can't
-            just emit the full hashmap. We therefore have to have a way of
-            extracting the desired elements, passing them to the process,
-            and rejoining the process outputs to the original hashmap. This
-            is what the JoinProcessResults workflow accomplishes.
+            In JoinProcessResults, the per-sample hashmaps are submapped by
+            "input" keys and submitted to the given "proc". The process outputs
+            are assigned to "output" keys in a new hashmap. Typically, processes
+            accept an "id" as an input and output the same "id", allowing the
+            outputs to be rejoined to the original hashmap bearing the same id.
+
+            Since there may have been multiple submapping steps to yield the
+            hashmap from which process inputs are extracted, JoinProcessResults
+            implements a sort of iterative join. The immediate process outputs
+            are joined to the first channel in "channels", and the result is
+            then joined to the second channel in "channels", and so on. The
+            "join_by" param specifies the key(s) to use for each join.
+
+            It is often useful to know the data files produced by the most
+            recent process call. If "latest" is specified, then the process
+            output it refers to is stored under the "latest" key in the output
+            hashmap.
+
+            JoinProcessResults allows the user to optionally extract additional
+            params as process inputs via the "condition" input. If non-falsey,
+            it is used to additionally submap the input hashmap and these
+            values are submitted as the final inputs to the process.
     */
     take:
         proc
