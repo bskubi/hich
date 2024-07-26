@@ -1,5 +1,6 @@
 include {JoinProcessResults} from './joinProcessResults.nf'
 include {QCReads} from './qcHicReads.nf'
+include {transpack; hashmapdiff} from './extraops.nf'
 
 process PairtoolsParse2 {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",
@@ -22,6 +23,9 @@ process PairtoolsParse2 {
     cmd.removeAll([null])
 
     cmd.join(" ")
+
+    stub:
+    "touch ${sample_id}.pairs.gz"
 }
 
 workflow Parse {
@@ -30,19 +34,21 @@ workflow Parse {
 
     main:
 
-        samples
+    samples
         | filter{it.get("sambam") && file(it.sambam).exists()}
         | map{it.sambam = file(it.sambam); it}
         | set {sambam}
-    
-    samples = JoinProcessResults(
+
+
+
+    samples = transpack(
         PairtoolsParse2,
         [sambam, samples],
         ["sample_id", "sambam", "chromsizes", "assembly", "parse_params"],
         ["sample_id", "pairs"],
-        ["sample_id"],
-        null,
-        "pairs")
+        ["latest":"pairs"],
+        "sample_id"
+        )
     
     samples | map{it.id = it.sample_id; it} | set{samples}
 

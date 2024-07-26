@@ -72,8 +72,6 @@ workflow keydiff {
 
     emit:
         result
-
-
 }
 
 workflow sqljoin {
@@ -160,7 +158,8 @@ workflow sqljoin {
             is provided) we overwrite.
     */
 
-    by = condition.get("by", null)
+    by = condition.get("by")
+    by = by instanceof List ? by : [by]
     suffix = condition.get("suffix", "_right")
     how = condition.get("how", "left")
 
@@ -241,7 +240,7 @@ workflow sqljoin {
 
             // Put all items (including key) from leftrow into combined
             combined.putAll(leftrow)
-            
+
             // Iterate through each key in rightrow,
             // appending suffix if needed to avoid clashes with leftrow
             // and adding it to the combined row.
@@ -250,7 +249,7 @@ workflow sqljoin {
 
                 // Add non-keyset keys from right to left.
                 if (!by.contains(key)) {
-
+                    
                     // Add as many suffixes as necessary to avoid clash
                     while (suffix != "" && combined.containsKey(key)) {
                         key = key + suffix
