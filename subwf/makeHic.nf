@@ -1,5 +1,4 @@
-include {JoinProcessResults} from './joinProcessResults.nf'
-include {transpack; hashmapdiff} from './extraops.nf'
+include {transpack} from './extraops.nf'
 
 process JuicerToolsPre {
     /*

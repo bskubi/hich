@@ -1,7 +1,6 @@
-include {JoinProcessResults} from './joinProcessResults.nf'
 include {QCReads} from './qcHicReads.nf'
 include {AssignParams} from './assignParams.nf'
-include {transpack; hashmapdiff} from './extraops.nf'
+include {transpack} from './extraops.nf'
 
 process Merge {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",

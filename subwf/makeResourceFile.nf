@@ -1,4 +1,4 @@
-include {keydiff; sqljoin} from './sqljoin.nf'
+include {sqljoin} from './extraops.nf'
 
 workflow MakeResourceFile {
     /*

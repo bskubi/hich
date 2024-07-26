@@ -1,6 +1,5 @@
-include {JoinProcessResults} from './joinProcessResults.nf'
 include {QCReads} from './qcHicReads.nf'
-include {transpack; hashmapdiff} from './extraops.nf'
+include {transpack} from './extraops.nf'
 
 process PairtoolsParse2 {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",

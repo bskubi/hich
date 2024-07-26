@@ -1,5 +1,4 @@
-include {JoinProcessResults} from './joinProcessResults.nf'
-include {transpack; hashmapdiff} from './extraops.nf'
+include {transpack} from './extraops.nf'
 
 process BwaMem2Align {
     publishDir params.general.publish.bam ? params.general.publish.bam : "results",

@@ -1,4 +1,4 @@
-include {keydiff; sqljoin} from './sqljoin.nf'
+include {sqljoin} from './extraops.nf'
 
 process BwaMem2Index {
     publishDir "resources/index/bwa-mem2/", mode: 'move'

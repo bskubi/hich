@@ -1,6 +1,5 @@
-include {JoinProcessResults} from './joinProcessResults.nf'
 include {QCReads} from './qcHicReads.nf'
-include {transpack; hashmapdiff} from './extraops.nf'
+include {transpack} from './extraops.nf'
 
 process Fragtag {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
