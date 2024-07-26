@@ -76,16 +76,6 @@ workflow Select {
             ["id", "select_pairs"],
             ["latest":"select_pairs"]
         ) | set{samples}
-        // JoinProcessResults(
-        //     PairtoolsSelect,
-        //     [samples],
-        //     ["id", "latest", "select_params", "select_condition"],
-        //     ["id", "select_pairs"],
-        //     ["id"],
-        //     false,
-        //     "select_pairs"
-        // ) | set{samples}
-
         
         if ("Select" in params.general.get("qc_after")) {
             QCReads(samples, "Select")

@@ -101,18 +101,7 @@ workflow TechrepsToBioreps {
             ["id", "biorep_merge_pairs"],
             ["latest":"biorep_merge_pairs"]
         )
-
-
-        // to_merge = JoinProcessResults(
-        //     Merge,
-        //     [to_merge],
-        //     ["id", "latest"],
-        //     ["id", "biorep_merge_pairs"],
-        //     ["id"],
-        //     false,
-        //     "biorep_merge_pairs"
-        // )
-
+        
         to_merge
             | concat(samples)
             | set {samples}
@@ -159,11 +148,6 @@ workflow BiorepsToConditions {
             | AssignParams
             | set{to_merge}
 
-        // s1 = jpr(to_merge)
-        // s2 = tp(to_merge)
-        
-        // hashmapdiff(s1, s2, "id") | view
-
         to_merge = transpack(
             Merge,
             [to_merge],
@@ -171,16 +155,6 @@ workflow BiorepsToConditions {
             ["id", "condition_merge_pairs"],
             ["latest":"condition_merge_pairs"]
         )
-
-        // to_merge = JoinProcessResults(
-        //     Merge,
-        //     [to_merge],
-        //     ["id", "latest"],
-        //     ["id", "condition_merge_pairs"],
-        //     ["id"],
-        //     false,
-        //     "condition_merge_pairs"
-        // )
 
         to_merge
             | concat(samples)

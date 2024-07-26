@@ -36,9 +36,9 @@ workflow IngestPairs {
 
         samples = transpack(
             PairtoolsFlipSort,
-                [ingest, samples],
-                ["sample_id", "pairs", "chromsizes"],
-                ["sample_id", "pairs"],
+            [ingest, samples],
+            ["sample_id", "pairs", "chromsizes"],
+            ["sample_id", "pairs"],
             ["latest":"pairs"],
             "sample_id"
         )

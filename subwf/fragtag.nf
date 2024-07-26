@@ -47,22 +47,12 @@ workflow OptionalFragtag {
 
         samples = transpack(
             Fragtag,
-                [fragtag, samples],
-                ["sample_id", "pairs", "fragfile", "frag_pairs"],
-                ["sample_id", "frag_pairs"],
+            [fragtag, samples],
+            ["sample_id", "pairs", "fragfile", "frag_pairs"],
+            ["sample_id", "frag_pairs"],
             ["latest":"frag_pairs"],
             "sample_id"
         )
-
-        // samples = JoinProcessResults(
-        //     Fragtag,
-        //     [fragtag, samples],
-        //     ["sample_id", "pairs", "fragfile", "frag_pairs"],
-        //     ["sample_id", "frag_pairs"],
-        //     ["sample_id"],
-        //     false,
-        //     "frag_pairs"
-        // )
 
         if ("OptionalFragtag" in params.general.get("qc_after")) {
             samples = QCReads(samples, "OptionalFragtag")

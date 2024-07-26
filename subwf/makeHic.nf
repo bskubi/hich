@@ -49,16 +49,6 @@ workflow MakeHic {
             ["latest_matrix":"hic"]
         ) | set{samples}
 
-        // JoinProcessResults(
-        //     JuicerToolsPre,
-        //     [hic, samples],
-        //     ["id", "latest", "chromsizes", "pairs_format", "matrix"],
-        //     ["id", "hic"],
-        //     ["id"],
-        //     false,
-        //     null
-        // ) | set{samples}
-
     emit:
         samples
 }

@@ -87,16 +87,6 @@ workflow Deduplicate {
             ["latest":"dedup_pairs"]
         )
 
-        // JoinProcessResults(
-        //     PairtoolsDedup,
-        //     [deduplicate, samples],
-        //     ["id", "latest", "dedup_params"],
-        //     ["id", "dedup_pairs"],
-        //     ["id"],
-        //     false,
-        //     "dedup_pairs"
-        // ) | set {samples}
-
         if (params.general.get("last_step") == "Deduplicate") {
             channel.empty() | set{samples}
         }

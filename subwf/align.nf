@@ -30,44 +30,6 @@ process BwaMem2Align {
     "touch ${sample_id}.bam"
 }
 
-workflow jpr {
-    take:
-    fastq
-    samples
-
-    main:
-    samples = JoinProcessResults(
-        BwaMem2Align,
-        [fastq, samples],
-        ["sample_id", "index_dir", "index_prefix", "fastq1", "fastq2"],
-        ["sample_id", "sambam"],
-        ["sample_id"],
-        false,
-        "sambam")
-    
-    emit:
-    samples
-}
-
-workflow tp {
-    take:
-    fastq
-    samples
-
-    main:
-    samples = transpack(
-        BwaMem2Align,
-        [fastq, samples],
-        ["sample_id", "index_dir", "index_prefix", "fastq1", "fastq2"],
-        ["sample_id", "sambam"],
-        ["latest":"sambam"],
-        "sample_id"
-    )
-
-    emit:
-    samples
-}
-
 workflow Align {
     take:
     samples

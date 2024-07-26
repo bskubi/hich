@@ -55,17 +55,6 @@ workflow MakeMcool {
             ["latest_matrix":"mcool"]
         ) | set{samples}
 
-        // JoinProcessResults(
-        //     CoolerZoomify,
-        //     [mcool, samples],
-        //     ["id", "latest", "chromsizes", "pairs_format", "assembly", "matrix", "make_cool", "make_mcool"],
-        //     ["id", "mcool"],
-        //     ["id"],
-        //     false,
-        //     "mcool"
-        // ) | set{samples}
-
-
     emit:
         samples
 }
