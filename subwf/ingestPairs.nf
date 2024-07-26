@@ -1,5 +1,6 @@
 include {JoinProcessResults} from './joinProcessResults.nf'
 include {QCReads} from './qcHicReads.nf'
+include {transpack; hashmapdiff} from './extraops.nf'
 
 process PairtoolsFlipSort {
     publishDir params.general.publish.flip_sort ? params.general.publish.flip_sort : "results",
@@ -32,15 +33,15 @@ workflow IngestPairs {
                 it
             }
             | set{ingest}
-        
-        samples = JoinProcessResults(
+
+        samples = transpack(
             PairtoolsFlipSort,
-            [ingest, samples],
-            ["sample_id", "pairs", "chromsizes"],
-            ["sample_id", "pairs"],
-            ["sample_id"],
-            null,
-            "pairs")
+                [ingest, samples],
+                ["sample_id", "pairs", "chromsizes"],
+                ["sample_id", "pairs"],
+            ["latest":"pairs"],
+            "sample_id"
+        )
         
         if (params.general.get("last_step") == "IngestPairs") {
             channel.empty() | set{samples}

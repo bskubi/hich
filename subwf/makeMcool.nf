@@ -1,4 +1,5 @@
 include {JoinProcessResults} from './joinProcessResults.nf'
+include {transpack; hashmapdiff} from './extraops.nf'
 
 
 process CoolerZoomify {
@@ -32,6 +33,9 @@ process CoolerZoomify {
     cmd.removeAll([null])
     cmd = cmd.join(" ")
     cmd
+
+    stub:
+    "touch ${id}.mcool"
 }
 
 workflow MakeMcool {
@@ -43,15 +47,23 @@ workflow MakeMcool {
             | filter{it.matrix.make_mcool_file_format}
             | set{mcool}
 
-        JoinProcessResults(
+        transpack (
             CoolerZoomify,
             [mcool, samples],
             ["id", "latest", "chromsizes", "pairs_format", "assembly", "matrix", "make_cool", "make_mcool"],
             ["id", "mcool"],
-            ["id"],
-            false,
-            "mcool"
+            ["latest_matrix":"mcool"]
         ) | set{samples}
+
+        // JoinProcessResults(
+        //     CoolerZoomify,
+        //     [mcool, samples],
+        //     ["id", "latest", "chromsizes", "pairs_format", "assembly", "matrix", "make_cool", "make_mcool"],
+        //     ["id", "mcool"],
+        //     ["id"],
+        //     false,
+        //     "mcool"
+        // ) | set{samples}
 
 
     emit:

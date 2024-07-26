@@ -33,16 +33,16 @@ workflow {
         | MakeMissingDigest
         | Align
         | Parse
-        // | IngestPairs
-        // | OptionalFragtag
-        // | TechrepsToBioreps
-        // | Deduplicate
-        // | BiorepsToConditions
-        // | Select
-        // | MakeHic
-        // | MakeMcool
-        // | CallCompartments
-        // | CallLoops
-        // | CallInsulation
+        | IngestPairs
+        | OptionalFragtag
+        | TechrepsToBioreps
+        | Deduplicate
+        | BiorepsToConditions
+        | Select
+        | MakeHic
+        | MakeMcool
+        | CallCompartments
+        | CallLoops
+        | CallInsulation
 }
 

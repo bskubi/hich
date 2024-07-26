@@ -14,6 +14,9 @@ process MustacheDiffloops{
            "-o ${prefix}"] + mustache_params
     cmd = cmd.join(" ")
     cmd
+
+    stub:
+    "touch ${prefix}.loop1 ${prefix}.loop2 ${prefix}.diffloop1 ${prefix}.diffloop2"
 }
 
 workflow CallLoops {

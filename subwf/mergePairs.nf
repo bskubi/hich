@@ -1,6 +1,7 @@
 include {JoinProcessResults} from './joinProcessResults.nf'
 include {QCReads} from './qcHicReads.nf'
 include {AssignParams} from './assignParams.nf'
+include {transpack; hashmapdiff} from './extraops.nf'
 
 process Merge {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
@@ -17,6 +18,45 @@ process Merge {
     shell:
     samples = (samples.getClass() == nextflow.processor.TaskPath) ? samples : samples.join(" ")
     "pairtools --version > version.txt && pairtools merge --output ${id}.pairs.gz ${samples}"
+
+    stub:
+    "touch ${id}.pairs.gz"
+}
+
+workflow jpr {
+    take:
+    to_merge
+
+    main:
+        samples = JoinProcessResults(
+            Merge,
+            [to_merge],
+            ["id", "latest"],
+            ["id", "condition_merge_pairs"],
+            ["id"],
+            false,
+            "condition_merge_pairs"
+        )
+    
+    emit:
+    samples
+}
+
+workflow tp {
+    take:
+    to_merge
+
+    main:
+    samples = transpack(
+            Merge,
+            [to_merge],
+            ["id", "latest"],
+            ["id", "condition_merge_pairs"],
+            ["latest":"condition_merge_pairs"]
+        )
+
+    emit:
+    samples
 }
 
 workflow TechrepsToBioreps {
@@ -53,15 +93,25 @@ workflow TechrepsToBioreps {
             | AssignParams
             | set{to_merge}
 
-        to_merge = JoinProcessResults(
+
+        to_merge = transpack(
             Merge,
             [to_merge],
             ["id", "latest"],
             ["id", "biorep_merge_pairs"],
-            ["id"],
-            false,
-            "biorep_merge_pairs"
+            ["latest":"biorep_merge_pairs"]
         )
+
+
+        // to_merge = JoinProcessResults(
+        //     Merge,
+        //     [to_merge],
+        //     ["id", "latest"],
+        //     ["id", "biorep_merge_pairs"],
+        //     ["id"],
+        //     false,
+        //     "biorep_merge_pairs"
+        // )
 
         to_merge
             | concat(samples)
@@ -109,16 +159,28 @@ workflow BiorepsToConditions {
             | AssignParams
             | set{to_merge}
 
+        // s1 = jpr(to_merge)
+        // s2 = tp(to_merge)
+        
+        // hashmapdiff(s1, s2, "id") | view
 
-        to_merge = JoinProcessResults(
+        to_merge = transpack(
             Merge,
             [to_merge],
             ["id", "latest"],
             ["id", "condition_merge_pairs"],
-            ["id"],
-            false,
-            "condition_merge_pairs"
+            ["latest":"condition_merge_pairs"]
         )
+
+        // to_merge = JoinProcessResults(
+        //     Merge,
+        //     [to_merge],
+        //     ["id", "latest"],
+        //     ["id", "condition_merge_pairs"],
+        //     ["id"],
+        //     false,
+        //     "condition_merge_pairs"
+        // )
 
         to_merge
             | concat(samples)

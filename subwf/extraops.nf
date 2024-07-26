@@ -63,8 +63,7 @@ def transpack (proc, channels, input, output, tags = [:], by = "id") {
     // Convenience function to call transact followed by pack.
     def channels_list = channels instanceof List ? channels : [channels]
     def obtained = transact(proc, channels_list[0], input, output, tags)
-    def result = channels_list.size() == 1 ? obtained : pack([obtained] + channels_list, by)
-    return result
+    return pack([obtained] + channels_list, by)
 }
 
 import java.nio.file.Path
@@ -101,3 +100,44 @@ def hashmapdiff(ch1, ch2, by, how = "left", suffix = "__joindiff__") {
         diff
     }
 }
+
+// workflow jpr {
+//     take:
+//     sambam
+//     samples
+
+//     main:
+//     samples = JoinProcessResults(
+//         PairtoolsParse2,
+//         [sambam, samples],
+//         ["sample_id", "sambam", "chromsizes", "assembly", "parse_params"],
+//         ["sample_id", "pairs"],
+//         ["sample_id"],
+//         null,
+//         "pairs")
+    
+//     emit:
+//     samples
+// }
+
+// workflow tp {
+//     take:
+//     sambam
+//     samples
+
+//     main:
+//     samples = transpack(
+//         PairtoolsParse2,
+//         [sambam, samples],
+//         ["sample_id", "sambam", "chromsizes", "assembly", "parse_params"],
+//         ["sample_id", "pairs"],
+//         ["latest":"pairs"],
+//         "sample_id"
+//         )
+
+//     emit:
+//     samples
+// }
+// s1 = jpr(sambam, samples)
+// s2 = tp(sambam, samples)
+// hashmapdiff(s1, s2, "sample_id") | view

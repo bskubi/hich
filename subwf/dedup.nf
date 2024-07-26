@@ -1,5 +1,6 @@
 include {JoinProcessResults} from './joinProcessResults.nf'
 include {QCReads} from './qcHicReads.nf'
+include {transpack; hashmapdiff} from './extraops.nf'
 
 process PairtoolsDedup {
     publishDir params.general.publish.dedup ? params.general.publish.dedup : "results",
@@ -26,7 +27,49 @@ process PairtoolsDedup {
     
     cmd = "pairtools dedup --output ${id}_dedup.pairs.gz ${dedup_params} ${infile}"
     cmd
+
+    stub:
+    "touch ${id}_dedup.pairs.gz"
 }
+
+workflow jpr {
+    take:
+    deduplicate
+    samples
+
+    main:
+        samples = JoinProcessResults(
+            PairtoolsDedup,
+            [deduplicate, samples],
+            ["id", "latest", "dedup_params"],
+            ["id", "dedup_pairs"],
+            ["id"],
+            false,
+            "dedup_pairs"
+        )
+    
+    emit:
+    samples
+}
+
+workflow tp {
+    take:
+    deduplicate
+    samples
+
+    main:
+    samples = transpack(
+            PairtoolsDedup,
+            [deduplicate, samples],
+            ["id", "latest", "dedup_params"],
+            ["id", "dedup_pairs"],
+            ["latest":"dedup_pairs"]
+        )
+
+    emit:
+    samples
+}
+
 
 workflow Deduplicate {
     take:
@@ -36,15 +79,23 @@ workflow Deduplicate {
         
         samples | filter{it.deduplicate} | set {deduplicate}
 
-        JoinProcessResults(
+        samples = transpack(
             PairtoolsDedup,
             [deduplicate, samples],
             ["id", "latest", "dedup_params"],
             ["id", "dedup_pairs"],
-            ["id"],
-            false,
-            "dedup_pairs"
-        ) | set {samples}
+            ["latest":"dedup_pairs"]
+        )
+
+        // JoinProcessResults(
+        //     PairtoolsDedup,
+        //     [deduplicate, samples],
+        //     ["id", "latest", "dedup_params"],
+        //     ["id", "dedup_pairs"],
+        //     ["id"],
+        //     false,
+        //     "dedup_pairs"
+        // ) | set {samples}
 
         if (params.general.get("last_step") == "Deduplicate") {
             channel.empty() | set{samples}

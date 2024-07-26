@@ -15,6 +15,9 @@ process CooltoolsEigsCis {
           ["${mcool}::/resolutions/${resolution}"]
     cmd = cmd.join(" ")
     cmd
+
+    stub:
+    "touch ${id}.cis.bw ${id}.cis.lam.txt ${id}.cis.vecs.tsv"
 }
 
 workflow CallCompartments {

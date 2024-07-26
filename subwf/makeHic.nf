@@ -1,4 +1,5 @@
 include {JoinProcessResults} from './joinProcessResults.nf'
+include {transpack; hashmapdiff} from './extraops.nf'
 
 process JuicerToolsPre {
     /*
@@ -28,6 +29,9 @@ process JuicerToolsPre {
            "${infile} ${outfile} ${chromsizes}"]
     cmd.removeAll([null])
     cmd.join(" ")
+
+    stub:
+    "touch ${id}.hic"
 }
 
 workflow MakeHic {
@@ -37,15 +41,23 @@ workflow MakeHic {
     main:
         samples | filter{it.matrix.make_hic_file_format} | set{hic}
 
-        JoinProcessResults(
+        transpack (
             JuicerToolsPre,
             [hic, samples],
             ["id", "latest", "chromsizes", "pairs_format", "matrix"],
             ["id", "hic"],
-            ["id"],
-            false,
-            null
+            ["latest_matrix":"hic"]
         ) | set{samples}
+
+        // JoinProcessResults(
+        //     JuicerToolsPre,
+        //     [hic, samples],
+        //     ["id", "latest", "chromsizes", "pairs_format", "matrix"],
+        //     ["id", "hic"],
+        //     ["id"],
+        //     false,
+        //     null
+        // ) | set{samples}
 
     emit:
         samples
