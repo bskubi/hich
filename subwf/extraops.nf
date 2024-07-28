@@ -383,7 +383,7 @@ def hashmapdiff(ch1, ch2, by, how = "left", suffix = "__joindiff__") {
     }
 }
 
-def source (produceProc, ch, key, input, output, namer, by, needsTest = {it -> true}) {
+def source (produceProc, ch, key, input, output, namer, by, needsTest) {
     // Identify channel items that need the singleton
     def needs = ch
         | branch {

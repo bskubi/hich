@@ -28,18 +28,18 @@ workflow {
         | MakeMissingChromsizes
         | MakeMissingIndex
         | MakeMissingDigest
-        | Align
-        | Parse
-        | IngestPairs
-        | OptionalFragtag
-        | TechrepsToBioreps
-        | Deduplicate
-        | BiorepsToConditions
-        | Select
-        | MakeHic
-        | MakeMcool
-        | CallCompartments
-        | CallLoops
-        | CallInsulation
+        // | Align
+        // | Parse
+        // | IngestPairs
+        // | OptionalFragtag
+        // | TechrepsToBioreps
+        // | Deduplicate
+        // | BiorepsToConditions
+        // | Select
+        // | MakeHic
+        // | MakeMcool
+        // | CallCompartments
+        // | CallLoops
+        // | CallInsulation
 }
 

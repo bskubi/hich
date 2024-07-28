@@ -29,7 +29,8 @@ workflow MakeMissingChromsizes {
            ["reference", "assembly", "chromsizes"],
            ["assembly", "chromsizes"],
            {"${it.assembly}.sizes"},
-           "assembly") | set{result}
+           "assembly",
+            {true}) | set{result}
 
     emit:
     result
