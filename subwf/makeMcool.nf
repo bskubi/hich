@@ -51,7 +51,9 @@ workflow MakeMcool {
             [mcool, samples],
             ["id", "latest", "chromsizes", "pairs_format", "assembly", "matrix", "make_cool", "make_mcool"],
             ["id", "mcool"],
-            ["latest_matrix":"mcool"]
+            ["latest_matrix":"mcool"],
+            "id",
+            ["nullOk":"make_cool"]
         ) | set{samples}
 
     emit:

@@ -35,19 +35,19 @@ process JuicerToolsPre {
 
 workflow MakeHic {
     take:
-        samples
+    samples
     
     main:
-        samples | filter{it.matrix.make_hic_file_format} | set{hic}
+    samples | filter{it.matrix.make_hic_file_format} | set{hic}
 
-        transpack (
-            JuicerToolsPre,
-            [hic, samples],
-            ["id", "latest", "chromsizes", "pairs_format", "matrix"],
-            ["id", "hic"],
-            ["latest_matrix":"hic"]
-        ) | set{samples}
+    transpack (
+        JuicerToolsPre,
+        [hic, samples],
+        ["id", "latest", "chromsizes", "pairs_format", "matrix"],
+        ["id", "hic"],
+        ["latest_matrix":"hic"]
+    ) | set{samples}
 
     emit:
-        samples
+    samples
 }

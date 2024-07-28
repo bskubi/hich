@@ -287,21 +287,36 @@ def toHashMap(keys, vals) {
                        .collectEntries { [it[0], it[1]] }
 }
 
-def transact (proc, ch, input, output, tags = [:], filter_unique = false) {
+def transact (proc, ch, input, output, tags, options) {
     /* Extract process inputs from hashmap channel items, call the process,
     and rebuild a hashmap with process outputs. "Tag" some outputs by assigning
     them to a second key.
     */
     
-    
     extracted = ch
         | map {
             hashmap ->
-            def proc_inputs = input.collect{key -> hashmap.get(key)}
+            def proc_inputs = input.collect{
+                key ->
+                
+                err = [
+                    "In ${proc} with tags ${tags} and options ${options}, ${key} is required but is '${hashmap.get(key)}' for:",
+                    "${hashmap}",
+                    "\nOne possible cause is a mismatched resource file or processing parameters for a biological replicate or condition produced by a merge.",
+                    "If so, you can fix this either by making all resource files and processing parameters identical for all input samples for the condition or",
+                    "by specifying specific resource files and processing parameters for the biological replicate or condition in nextflow.config"
+                ].join("\n")
+                nullOk = options.get("nullOk")
+                            ? hashmap.get(key) in options.get("nullOk") || key == options.get("nullOk")
+                            : false
+                assert nullOk || hashmap.get(key), err
+                hashmap.get(key)
+            }
+
             proc_inputs.size() == 1 ? proc_inputs[0] : tuple(*proc_inputs)
         }
     
-    extracted = filter_unique ? extracted | unique : extracted
+    extracted = options.get("filter_unique") ? extracted | unique : extracted
 
     return extracted
         | proc
@@ -344,11 +359,10 @@ def pack(channels, joinBy = "id") {
     )
 }
 
-def transpack (proc, channels, input, output, tags = [:], by = "id", filter_unique = false) {
-    
+def transpack (proc, channels, input, output, tags = [:], by = "id", options = [:]) {
     // Convenience function to call transact followed by pack.
     def channelsList = channels instanceof List ? channels : [channels]
-    def obtained = transact(proc, channelsList[0], input, output, tags, filter_unique)
+    def obtained = transact(proc, channelsList[0], input, output, tags, options)
     return pack([obtained] + channelsList, by)
 }
 
@@ -400,23 +414,22 @@ def source (produceProc, ch, key, input, output, namer, by, needsTest) {
         | map {
             hashmap ->
             
-            hashmap += hashmap.get(key) ? [(key):hashmap.get(key)] : [(key):namer(hashmap)]
             def filename = hashmap.get(key)
-            def err = "In singleton, a hashmap needs a filename but one could not be created at '${key}' by namer function for:\n${hashmap}"
-            assert filename?.length() > 0, err
+            hashmap += filename ? [(key):file(filename)] : [(key):namer(hashmap)]
+            def err = "In singleton, a hashmap needs a filename but filename is '${filename}' at '${key}' by namer function for:\n${hashmap}"
+            assert file(hashmap.get(key))?.name.length() > 0, err
             hashmap
         }
         | branch {
             hashmap ->
 
-            yes: !file(hashmap.get(key)).exists()
+            yes: !file(hashmap.get(key)).exists() || file(hashmap.get(key)).getClass() == nextflow.file.http.XPath
             no: true
         }
 
     // Create the needed singleton file and pack it into all the hashmaps that
     // were missing it.
-    def made = transpack(produceProc, missing.yes, input, output, tags = [:], by = by, filter_unique = true)
-
+    def made = transpack(produceProc, missing.yes, input, output, tags = [:], by = by, [filter_unique: true])
 
     // Concatenate the channels containing the made singletons, those that
     // needed it but were not missing, and those that did not need it.

@@ -73,7 +73,9 @@ workflow Select {
             samples,
             ["id", "latest", "select_params", "select_condition"],
             ["id", "select_pairs"],
-            ["latest":"select_pairs"]
+            ["latest":"select_pairs"],
+            "id",
+            ["nullOk":"select_params"]
         ) | set{samples}
         
         if ("Select" in params.general.get("qc_after")) {

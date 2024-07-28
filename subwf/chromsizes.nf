@@ -30,8 +30,8 @@ workflow MakeMissingChromsizes {
            ["assembly", "chromsizes"],
            {"${it.assembly}.sizes"},
            "assembly",
-            {true}) | set{result}
+            {true}) | set{samples}
 
     emit:
-    result
+    samples
 }

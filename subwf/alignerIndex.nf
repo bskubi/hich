@@ -30,9 +30,10 @@ workflow MakeMissingIndex {
         def fileExists = { dir, file -> new File(dir, file).exists() }
         
         samples
-            | filter{it.get("index_dir", "").trim().length() == 0
+            | filter{it.get("index_dir").getClass() != file("helloWorld").getClass()
+                     && (it.get("index_dir", "").trim().length() == 0
                      || it.get("index_prefix").trim().length() == 0
-                     || !fileExists(it.index_dir, "${it.index_prefix}.0123")}
+                     || !fileExists(it.index_dir, "${it.index_prefix}.0123"))}
             | set{no_index}
         
         no_index

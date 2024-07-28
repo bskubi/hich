@@ -22,42 +22,6 @@ process Merge {
     "touch ${id}.pairs.gz"
 }
 
-workflow jpr {
-    take:
-    to_merge
-
-    main:
-        samples = JoinProcessResults(
-            Merge,
-            [to_merge],
-            ["id", "latest"],
-            ["id", "condition_merge_pairs"],
-            ["id"],
-            false,
-            "condition_merge_pairs"
-        )
-    
-    emit:
-    samples
-}
-
-workflow tp {
-    take:
-    to_merge
-
-    main:
-    samples = transpack(
-            Merge,
-            [to_merge],
-            ["id", "latest"],
-            ["id", "condition_merge_pairs"],
-            ["latest":"condition_merge_pairs"]
-        )
-
-    emit:
-    samples
-}
-
 workflow TechrepsToBioreps {
     take:
         samples

@@ -1,8 +1,4 @@
 include {AssignParams} from './subwf/assignParams.nf'
-include {TryDownloadMissingReferences} from './subwf/genomeReferences.nf'
-include {MakeMissingChromsizes} from './subwf/chromsizes.nf'
-include {MakeMissingIndex} from './subwf/alignerIndex.nf'
-include {MakeMissingDigest} from './subwf/makeDigest.nf'
 include {Align} from './subwf/align.nf'
 include {Parse} from './subwf/parseToContacts.nf'
 include {OptionalFragtag} from './subwf/fragtag.nf'
@@ -23,23 +19,19 @@ workflow {
     channel.fromPath(params.general.samples, checkIfExists: true)
         | splitCsv(header: true)
         | map{it.id = it.sample_id; it}
-        | AssignParams
-        | TryDownloadMissingReferences
-        | MakeMissingChromsizes
-        | MakeMissingIndex
-        | MakeMissingDigest
-        // | Align
-        // | Parse
-        // | IngestPairs
-        // | OptionalFragtag
-        // | TechrepsToBioreps
-        // | Deduplicate
-        // | BiorepsToConditions
-        // | Select
-        // | MakeHic
-        // | MakeMcool
-        // | CallCompartments
-        // | CallLoops
-        // | CallInsulation
+        | AssignParams      
+        | Align
+        | Parse
+        | IngestPairs
+        | OptionalFragtag
+        | TechrepsToBioreps
+        | Deduplicate
+        | BiorepsToConditions
+        | Select
+        | MakeHic
+        | MakeMcool
+        | CallCompartments
+        | CallLoops
+        | CallInsulation
 }
 
