@@ -287,28 +287,34 @@ def toHashMap(keys, vals) {
                        .collectEntries { [it[0], it[1]] }
 }
 
-def transact (proc, ch, input, output, tags = [:]) {
+def transact (proc, ch, input, output, tags = [:], filter_unique = false) {
     /* Extract process inputs from hashmap channel items, call the process,
     and rebuild a hashmap with process outputs. "Tag" some outputs by assigning
     them to a second key.
     */
-    return ch
-            | map {
-                hashmap ->
-                def proc_inputs = input.collect{key -> hashmap.get(key)}
-                proc_inputs.size() == 1 ? proc_inputs[0] : tuple(*proc_inputs)
+    
+    
+    extracted = ch
+        | map {
+            hashmap ->
+            def proc_inputs = input.collect{key -> hashmap.get(key)}
+            proc_inputs.size() == 1 ? proc_inputs[0] : tuple(*proc_inputs)
+        }
+    
+    extracted = filter_unique ? extracted | unique : extracted
+
+    return extracted
+        | proc
+        | map{
+            proc_outputs ->
+            def result_map = toHashMap(output, proc_outputs)
+            tags.each {
+                tag, orig ->
+                result_map[tag] = result_map[orig]
             }
-            | proc
-            | map{
-                proc_outputs ->
-                def result_map = toHashMap(output, proc_outputs)
-                tags.each {
-                    tag, orig ->
-                    result_map[tag] = result_map[orig]
-                }
-                
-                result_map
-            }
+            
+            result_map
+        }
 }
 
 def pack(channels, joinBy = "id") {
@@ -328,7 +334,7 @@ def pack(channels, joinBy = "id") {
             addMe, addTo ->
             // Get the key to join on
             idxOfAddMe = channels.indexOf(addMe)
-            def by = joinBy instanceof List ? joinBy[idxOfAddMe] : joinBy
+            def by = joinBy instanceof List ? joinBy[idxOfAddMe] : joinBy            
 
             // Join the previous results (addMe) to the new (presumably larger)
             // hashmaps in addTo. On overlapping columns for a given
@@ -338,16 +344,13 @@ def pack(channels, joinBy = "id") {
     )
 }
 
-def transpack (proc, channels, input, output, tags = [:], by = "id") {
+def transpack (proc, channels, input, output, tags = [:], by = "id", filter_unique = false) {
+    
     // Convenience function to call transact followed by pack.
-    def channels_list = channels instanceof List ? channels : [channels]
-    def obtained = transact(proc, channels_list[0], input, output, tags)
-    return pack([obtained] + channels_list, by)
+    def channelsList = channels instanceof List ? channels : [channels]
+    def obtained = transact(proc, channelsList[0], input, output, tags, filter_unique)
+    return pack([obtained] + channelsList, by)
 }
-
-import java.nio.file.Path
-import java.nio.file.Paths
-
 
 def hashmapdiff(ch1, ch2, by, how = "left", suffix = "__joindiff__") {
     def joined = sqljoin(ch1, ch2, [by: by, how:how, suffix:"__joindiff__"])
@@ -378,4 +381,44 @@ def hashmapdiff(ch1, ch2, by, how = "left", suffix = "__joindiff__") {
         }
         diff
     }
+}
+
+def source (produceProc, ch, key, input, output, namer, by, needsTest = {it -> true}) {
+    // Identify channel items that need the singleton
+    def needs = ch
+        | branch {
+            hashmap ->
+
+            yes: needsTest(hashmap)
+            no: true
+        }
+    
+    // Give a default filename to channel items that need the singleton but
+    // do not have a filename already. Then filter for those having no
+    // existing filename.
+    def missing = needs.yes
+        | map {
+            hashmap ->
+            
+            hashmap += hashmap.get(key) ? [(key):hashmap.get(key)] : [(key):namer(hashmap)]
+            def filename = hashmap.get(key)
+            def err = "In singleton, a hashmap needs a filename but one could not be created at '${key}' by namer function for:\n${hashmap}"
+            assert filename?.length() > 0, err
+            hashmap
+        }
+        | branch {
+            hashmap ->
+
+            yes: !file(hashmap.get(key)).exists()
+            no: true
+        }
+
+    // Create the needed singleton file and pack it into all the hashmaps that
+    // were missing it.
+    def made = transpack(produceProc, missing.yes, input, output, tags = [:], by = by, filter_unique = true)
+
+
+    // Concatenate the channels containing the made singletons, those that
+    // needed it but were not missing, and those that did not need it.
+    return made | concat(missing.no) | concat(needs.no)
 }
