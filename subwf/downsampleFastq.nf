@@ -8,8 +8,9 @@ process ZcatHeadFastq {
     tuple val(sample_id), path("${sample_id}_R1.fastq.gz"), path("${sample_id}_R2.fastq.gz")
 
     shell:
-    lines = n_reads * 4
-    "zcat ${fastq1} | head -n ${lines} > ${sample_id}_R1.fastq.gz && zcat ${fastq2} | head -n ${lines} > ${sample_id}_R2.fastq.gz"
+    lines = (n_reads as Integer) * 4
+
+    "zcat ${fastq1} | head -n ${lines} | gzip -c > ${sample_id}_R1.fastq.gz && zcat ${fastq2} | head -n ${lines} | gzip -c > ${sample_id}_R2.fastq.gz"
 
     stub:
     "touch ${sample_id}_R1.fastq.gz ${sample_id}_R2.fastq.gz"
