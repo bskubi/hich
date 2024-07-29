@@ -20,18 +20,18 @@ workflow {
         | map{it.id = it.sample_id; it}
         | AssignParams
         | HeadReads
-        // | Align
-        // | Parse
-        // | IngestPairs
-        // | OptionalFragtag
-        // | TechrepsToBioreps
-        // | Deduplicate
-        // | BiorepsToConditions
-        // | Select
-        // | MakeHic
-        // | MakeMcool
-        // | CallCompartments
-        // | CallLoops
-        // | CallInsulation
+        | Align
+        | Parse
+        | IngestPairs
+        | OptionalFragtag
+        | TechrepsToBioreps
+        | Deduplicate
+        | BiorepsToConditions
+        | Select
+        | MakeHic
+        | MakeMcool
+        | CallCompartments
+        | CallLoops
+        | CallInsulation
 }
 
