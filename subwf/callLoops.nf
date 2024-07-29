@@ -1,6 +1,6 @@
 process MustacheDiffloops{
     publishDir "results/loops"
-    container "mustache"
+    container "bskubi/mustache:latest"
 
     input:
     tuple val(prefix), val(id1), path(mx1), val(id2), path(mx2), val(mustache_params)

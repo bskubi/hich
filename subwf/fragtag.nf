@@ -5,7 +5,7 @@ process Fragtag {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
                saveAs: {params.general.publish.fragtag ? it : null}
     //container "bskubi/pairtools:1.1.0"
-    //container "fragtag"
+    container "bskubi/fragtag:latest"
 
     input:
     tuple val(sample_id), path(pairs), path(fragfile), val(tagged_pairs)
