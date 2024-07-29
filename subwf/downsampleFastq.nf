@@ -19,7 +19,6 @@ workflow HeadReads {
     main:
     samples
         | filter{it.datatype == "fastq" && it.get("n_reads") && it.get("n_reads").toString() != "all"}
-        | map{print(it.get("fastq1").getClass()); it}
         | set{head}
 
     samples = transpack(
