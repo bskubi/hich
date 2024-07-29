@@ -12,14 +12,12 @@ include {CallLoops} from './subwf/callLoops.nf'
 include {CallCompartments} from './subwf/callCompartments.nf'
 include {CallInsulation} from './subwf/callInsulation.nf'
 
-
-
 workflow {
 
     channel.fromPath(params.general.samples, checkIfExists: true)
         | splitCsv(header: true)
         | map{it.id = it.sample_id; it}
-        | AssignParams      
+        | AssignParams
         | Align
         | Parse
         | IngestPairs

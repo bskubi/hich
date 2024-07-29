@@ -279,6 +279,37 @@ workflow sqljoin {
         joined
 }
 
+def hashmapdiff(ch1, ch2, by, how = "left", suffix = "__joindiff__") {
+    def joined = sqljoin(ch1, ch2, [by: by, how:how, suffix:"__joindiff__"])
+    def keyIsInBy = {k -> by instanceof List ? k in by : k == by}
+
+    return joined.collect {
+        hashmap ->
+
+        def diff = [:]
+        hashmap.each {
+            k1, v1 ->
+            if (!k1.endsWith("__joindiff__") && !keyIsInBy(k1)) {
+                def k2 = k1 + "__joindiff__"
+                if (!k2 in hashmap.keySet()) {
+                    diff[k1] = [v1]
+                } else if (hashmap[k2] != v1) {
+                    v2 = hashmap[k2]
+                    if (v1 instanceof Path && v2 instanceof Path) {
+                        if (v1.getFileName().toString() != v2.getFileName().toString()) {
+                            diff[k1] = [v1, hashmap[k2]]
+                        }
+                    } else {
+                        diff[k1] = [v1, hashmap[k2]]
+                    }
+                    
+                }
+            }
+        }
+        diff
+    }
+}
+
 def toHashMap(keys, vals) {
     if (!(vals instanceof ArrayList) || vals.size() == 1) {
         return [keys:vals]
@@ -323,6 +354,10 @@ def transact (proc, ch, input, output, tags, options) {
         | map{
             proc_outputs ->
             def result_map = toHashMap(output, proc_outputs)
+            
+            options.get("keep") ? result_map = result_map.subMap(options.get("keep")) : null
+            options.get("remove") ? result_map -= options.get("remove") : null
+
             tags.each {
                 tag, orig ->
                 result_map[tag] = result_map[orig]
@@ -337,13 +372,15 @@ def pack(channels, joinBy = "id") {
     def first = channels[0]
     def rest = channels[1..-1]
 
+    
+
     // Iteratively join the channels from first to last.
     // If joinBy is a list, join on the joinBy element corresponding to each
     // item. Otherwise, join on joinBy every time.
     sizeMatch = !(joinBy instanceof List)
                 || joinBy.size() == channels.size() - 1
     assert sizeMatch, "In extraops.nf, there must be a single non-list joinBy or one joinBy for every join"
-    return rest.inject(
+    result = rest.inject(
         first,
         {
             addMe, addTo ->
@@ -357,6 +394,7 @@ def pack(channels, joinBy = "id") {
             sqljoin(addTo, addMe, [by: by, suffix: ""])
         }
     )
+    return result
 }
 
 def transpack (proc, channels, input, output, tags = [:], by = "id", options = [:]) {
@@ -366,39 +404,8 @@ def transpack (proc, channels, input, output, tags = [:], by = "id", options = [
     return pack([obtained] + channelsList, by)
 }
 
-def hashmapdiff(ch1, ch2, by, how = "left", suffix = "__joindiff__") {
-    def joined = sqljoin(ch1, ch2, [by: by, how:how, suffix:"__joindiff__"])
-    def keyIsInBy = {k -> by instanceof List ? k in by : k == by}
-
-    return joined.collect {
-        hashmap ->
-
-        def diff = [:]
-        hashmap.each {
-            k1, v1 ->
-            if (!k1.endsWith("__joindiff__") && !keyIsInBy(k1)) {
-                def k2 = k1 + "__joindiff__"
-                if (!k2 in hashmap.keySet()) {
-                    diff[k1] = [v1]
-                } else if (hashmap[k2] != v1) {
-                    v2 = hashmap[k2]
-                    if (v1 instanceof Path && v2 instanceof Path) {
-                        if (v1.getFileName().toString() != v2.getFileName().toString()) {
-                            diff[k1] = [v1, hashmap[k2]]
-                        }
-                    } else {
-                        diff[k1] = [v1, hashmap[k2]]
-                    }
-                    
-                }
-            }
-        }
-        diff
-    }
-}
-
 def source (produceProc, ch, key, input, output, namer, by, needsTest) {
-    // Identify channel items that need the singleton
+    // Identify channel items that need the resource file
     def needs = ch
         | branch {
             hashmap ->
@@ -407,7 +414,7 @@ def source (produceProc, ch, key, input, output, namer, by, needsTest) {
             no: true
         }
     
-    // Give a default filename to channel items that need the singleton but
+    // Give a default filename to channel items that need the resource but
     // do not have a filename already. Then filter for those having no
     // existing filename.
     def missing = needs.yes
@@ -416,7 +423,7 @@ def source (produceProc, ch, key, input, output, namer, by, needsTest) {
             
             def filename = hashmap.get(key)
             hashmap += filename ? [(key):file(filename)] : [(key):namer(hashmap)]
-            def err = "In singleton, a hashmap needs a filename but filename is '${filename}' at '${key}' by namer function for:\n${hashmap}"
+            def err = "During source, a hashmap needed a filename but filename given by namer function was '${filename}' at '${key}' for:\n${hashmap}"
             assert file(hashmap.get(key))?.name.length() > 0, err
             hashmap
         }
@@ -427,11 +434,50 @@ def source (produceProc, ch, key, input, output, namer, by, needsTest) {
             no: true
         }
 
-    // Create the needed singleton file and pack it into all the hashmaps that
+    // Create the needed resource file and pack it into all the hashmaps that
     // were missing it.
     def made = transpack(produceProc, missing.yes, input, output, tags = [:], by = by, [filter_unique: true])
 
-    // Concatenate the channels containing the made singletons, those that
+    // Concatenate the channels containing the made resources, those that
+    // needed it but were not missing, and those that did not need it.
+    return made | concat(missing.no) | concat(needs.no)
+}
+
+def sourcePrefix (produceProc, ch, dir, prefix, input, output, namer, by, needsTest, options = [:]) {
+    // Identify channel items that need the resource file
+    def needs = ch
+        | branch {
+            hashmap ->
+
+            yes: needsTest(hashmap)
+            no: true
+        }
+    
+    // Give a default filename to channel items that need the resource but
+    // do not have a filename already. Then filter for those having no
+    // existing filename.
+    def missing = needs.yes
+        | map {
+            hashmap ->
+            
+            hashmap += hashmap.get(dir) ? [(dir):file(hashmap.get(dir))] : [:]
+            hashmap += hashmap.get(prefix) ? [:] : namer(hashmap)
+            def err = "During sourcePrefix, ${hashmap.subMap(dir, prefix)} in:\n${hashmap}"
+            assert hashmap.get(prefix), err
+            hashmap
+        }
+        | branch {
+            hashmap ->
+
+            yes: !hashmap.get(dir) || !file(hashmap.get(dir)).exists()
+            no: true
+        }
+
+    // Create the needed resource file and pack it into all the hashmaps that
+    // were missing it.
+    def made = transpack(produceProc, missing.yes, input, output, tags = [:], by = by, options + [filter_unique: true])
+    
+    // Concatenate the channels containing the made resources, those that
     // needed it but were not missing, and those that did not need it.
     return made | concat(missing.no) | concat(needs.no)
 }
