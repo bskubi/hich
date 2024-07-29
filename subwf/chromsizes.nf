@@ -1,4 +1,5 @@
 include {MakeResourceFile} from './makeResourceFile.nf'
+include {source} from './extraops.nf'
 
 process MakeChromsizes {
     conda 'bioconda::ucsc-fasize'
@@ -11,47 +12,26 @@ process MakeChromsizes {
 
     shell:
     "faSize -detailed -tab ${reference} > ${chromsizes}"
+
+    stub:
+    "touch ${chromsizes}"
 }
 
 workflow MakeMissingChromsizes {
     take:
-        samples
-    
+    samples
+
     main:
-        def hasChromsizesFilename = {
-            it.get("chromsizes", "").toString().trim().length() > 0
-            && it.get("chromsizes") != "NULL"}
 
-        def chromsizesExists = {hasChromsizesFilename(it)
-                                && file(it.chromsizes).exists()}
-        
-        def ensureChromsizesFilename = {
-            if (!hasChromsizesFilename(it)) {
-                it.chromsizes = "${it.assembly}.sizes"
-            }
-            it
-        }
-
-        samples
-            | map{ensureChromsizesFilename(it)}
-            | branch{
-                exists: chromsizesExists(it)
-                missing: !chromsizesExists(it) && hasChromsizesFilename(it)
-                no_change: true
-            }
-            | set{branched}
-        
-        samples = MakeResourceFile(
-            branched.exists,
-            branched.missing,
-            branched.no_change,
-            "chromsizes",
-            MakeChromsizes,
-            ["reference", "assembly", "chromsizes"],
-            ["assembly", "chromsizes"],
-            ["assembly"]
-        )
+    source(MakeChromsizes,
+           samples,
+           "chromsizes",
+           ["reference", "assembly", "chromsizes"],
+           ["assembly", "chromsizes"],
+           {"${it.assembly}.sizes"},
+           "assembly",
+            {true}) | set{samples}
 
     emit:
-        samples
+    samples
 }

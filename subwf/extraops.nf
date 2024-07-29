@@ -72,8 +72,6 @@ workflow keydiff {
 
     emit:
         result
-
-
 }
 
 workflow sqljoin {
@@ -160,7 +158,8 @@ workflow sqljoin {
             is provided) we overwrite.
     */
 
-    by = condition.get("by", null)
+    by = condition.get("by")
+    by = by instanceof List ? by : [by]
     suffix = condition.get("suffix", "_right")
     how = condition.get("how", "left")
 
@@ -241,7 +240,7 @@ workflow sqljoin {
 
             // Put all items (including key) from leftrow into combined
             combined.putAll(leftrow)
-            
+
             // Iterate through each key in rightrow,
             // appending suffix if needed to avoid clashes with leftrow
             // and adding it to the combined row.
@@ -250,7 +249,7 @@ workflow sqljoin {
 
                 // Add non-keyset keys from right to left.
                 if (!by.contains(key)) {
-
+                    
                     // Add as many suffixes as necessary to avoid clash
                     while (suffix != "" && combined.containsKey(key)) {
                         key = key + suffix
@@ -278,4 +277,207 @@ workflow sqljoin {
     
     emit:
         joined
+}
+
+def hashmapdiff(ch1, ch2, by, how = "left", suffix = "__joindiff__") {
+    def joined = sqljoin(ch1, ch2, [by: by, how:how, suffix:"__joindiff__"])
+    def keyIsInBy = {k -> by instanceof List ? k in by : k == by}
+
+    return joined.collect {
+        hashmap ->
+
+        def diff = [:]
+        hashmap.each {
+            k1, v1 ->
+            if (!k1.endsWith("__joindiff__") && !keyIsInBy(k1)) {
+                def k2 = k1 + "__joindiff__"
+                if (!k2 in hashmap.keySet()) {
+                    diff[k1] = [v1]
+                } else if (hashmap[k2] != v1) {
+                    v2 = hashmap[k2]
+                    if (v1 instanceof Path && v2 instanceof Path) {
+                        if (v1.getFileName().toString() != v2.getFileName().toString()) {
+                            diff[k1] = [v1, hashmap[k2]]
+                        }
+                    } else {
+                        diff[k1] = [v1, hashmap[k2]]
+                    }
+                    
+                }
+            }
+        }
+        diff
+    }
+}
+
+def toHashMap(keys, vals) {
+    if (!(vals instanceof ArrayList) || vals.size() == 1) {
+        return [keys:vals]
+    }
+    return [keys, vals].transpose()
+                       .collectEntries { [it[0], it[1]] }
+}
+
+def transact (proc, ch, input, output, tags, options) {
+    /* Extract process inputs from hashmap channel items, call the process,
+    and rebuild a hashmap with process outputs. "Tag" some outputs by assigning
+    them to a second key.
+    */
+    
+    extracted = ch
+        | map {
+            hashmap ->
+            def proc_inputs = input.collect{
+                key ->
+                
+                err = [
+                    "In ${proc} with tags ${tags} and options ${options}, ${key} is required but is '${hashmap.get(key)}' for:",
+                    "${hashmap}",
+                    "\nOne possible cause is a mismatched resource file or processing parameters for a biological replicate or condition produced by a merge.",
+                    "If so, you can fix this either by making all resource files and processing parameters identical for all input samples for the condition or",
+                    "by specifying specific resource files and processing parameters for the biological replicate or condition in nextflow.config"
+                ].join("\n")
+                nullOk = options.get("nullOk")
+                            ? hashmap.get(key) in options.get("nullOk") || key == options.get("nullOk")
+                            : false
+                assert nullOk || hashmap.get(key), err
+                hashmap.get(key)
+            }
+
+            proc_inputs.size() == 1 ? proc_inputs[0] : tuple(*proc_inputs)
+        }
+    
+    extracted = options.get("filter_unique") ? extracted | unique : extracted
+
+    return extracted
+        | proc
+        | map{
+            proc_outputs ->
+            def result_map = toHashMap(output, proc_outputs)
+            
+            options.get("keep") ? result_map = result_map.subMap(options.get("keep")) : null
+            options.get("remove") ? result_map -= options.get("remove") : null
+
+            tags.each {
+                tag, orig ->
+                result_map[tag] = result_map[orig]
+            }
+            
+            result_map
+        }
+}
+
+def pack(channels, joinBy = "id") {
+    // Extract first and remaining channels
+    def first = channels[0]
+    def rest = channels[1..-1]
+
+    
+
+    // Iteratively join the channels from first to last.
+    // If joinBy is a list, join on the joinBy element corresponding to each
+    // item. Otherwise, join on joinBy every time.
+    sizeMatch = !(joinBy instanceof List)
+                || joinBy.size() == channels.size() - 1
+    assert sizeMatch, "In extraops.nf, there must be a single non-list joinBy or one joinBy for every join"
+    result = rest.inject(
+        first,
+        {
+            addMe, addTo ->
+            // Get the key to join on
+            idxOfAddMe = channels.indexOf(addMe)
+            def by = joinBy instanceof List ? joinBy[idxOfAddMe] : joinBy            
+
+            // Join the previous results (addMe) to the new (presumably larger)
+            // hashmaps in addTo. On overlapping columns for a given
+            // channel item, addMe's values replace addTo's values.
+            sqljoin(addTo, addMe, [by: by, suffix: ""])
+        }
+    )
+    return result
+}
+
+def transpack (proc, channels, input, output, tags = [:], by = "id", options = [:]) {
+    // Convenience function to call transact followed by pack.
+    def channelsList = channels instanceof List ? channels : [channels]
+    def obtained = transact(proc, channelsList[0], input, output, tags, options)
+    return pack([obtained] + channelsList, by)
+}
+
+def source (produceProc, ch, key, input, output, namer, by, needsTest) {
+    // Identify channel items that need the resource file
+    def needs = ch
+        | branch {
+            hashmap ->
+
+            yes: needsTest(hashmap)
+            no: true
+        }
+    
+    // Give a default filename to channel items that need the resource but
+    // do not have a filename already. Then filter for those having no
+    // existing filename.
+    def missing = needs.yes
+        | map {
+            hashmap ->
+            
+            def filename = hashmap.get(key)
+            hashmap += filename ? [(key):file(filename)] : [(key):namer(hashmap)]
+            def err = "During source, a hashmap needed a filename but filename given by namer function was '${filename}' at '${key}' for:\n${hashmap}"
+            assert file(hashmap.get(key))?.name.length() > 0, err
+            hashmap
+        }
+        | branch {
+            hashmap ->
+
+            yes: !file(hashmap.get(key)).exists() || file(hashmap.get(key)).getClass() == nextflow.file.http.XPath
+            no: true
+        }
+
+    // Create the needed resource file and pack it into all the hashmaps that
+    // were missing it.
+    def made = transpack(produceProc, missing.yes, input, output, tags = [:], by = by, [filter_unique: true])
+
+    // Concatenate the channels containing the made resources, those that
+    // needed it but were not missing, and those that did not need it.
+    return made | concat(missing.no) | concat(needs.no)
+}
+
+def sourcePrefix (produceProc, ch, dir, prefix, input, output, namer, by, needsTest, options = [:]) {
+    // Identify channel items that need the resource file
+    def needs = ch
+        | branch {
+            hashmap ->
+
+            yes: needsTest(hashmap)
+            no: true
+        }
+    
+    // Give a default filename to channel items that need the resource but
+    // do not have a filename already. Then filter for those having no
+    // existing filename.
+    def missing = needs.yes
+        | map {
+            hashmap ->
+            
+            hashmap += hashmap.get(dir) ? [(dir):file(hashmap.get(dir))] : [:]
+            hashmap += hashmap.get(prefix) ? [:] : namer(hashmap)
+            def err = "During sourcePrefix, ${hashmap.subMap(dir, prefix)} in:\n${hashmap}"
+            assert hashmap.get(prefix), err
+            hashmap
+        }
+        | branch {
+            hashmap ->
+
+            yes: !hashmap.get(dir) || !file(hashmap.get(dir)).exists()
+            no: true
+        }
+
+    // Create the needed resource file and pack it into all the hashmaps that
+    // were missing it.
+    def made = transpack(produceProc, missing.yes, input, output, tags = [:], by = by, options + [filter_unique: true])
+    
+    // Concatenate the channels containing the made resources, those that
+    // needed it but were not missing, and those that did not need it.
+    return made | concat(missing.no) | concat(needs.no)
 }

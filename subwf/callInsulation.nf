@@ -15,6 +15,9 @@ process CooltoolsInsulation {
           ["${mcool}::/resolutions/${resolution} 100000"]
     cmd = cmd.join(" ")
     cmd
+
+    stub:
+    "touch ${id}_insulation.tsv ${id}_insulation.tsv.${resolution}.bw"
 }
 
 workflow CallInsulation {

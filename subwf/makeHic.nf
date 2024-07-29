@@ -1,4 +1,4 @@
-include {JoinProcessResults} from './joinProcessResults.nf'
+include {transpack} from './extraops.nf'
 
 process JuicerToolsPre {
     /*
@@ -28,25 +28,26 @@ process JuicerToolsPre {
            "${infile} ${outfile} ${chromsizes}"]
     cmd.removeAll([null])
     cmd.join(" ")
+
+    stub:
+    "touch ${id}.hic"
 }
 
 workflow MakeHic {
     take:
-        samples
+    samples
     
     main:
-        samples | filter{it.matrix.make_hic_file_format} | set{hic}
+    samples | filter{it.matrix.make_hic_file_format} | set{hic}
 
-        JoinProcessResults(
-            JuicerToolsPre,
-            [hic, samples],
-            ["id", "latest", "chromsizes", "pairs_format", "matrix"],
-            ["id", "hic"],
-            ["id"],
-            false,
-            null
-        ) | set{samples}
+    transpack (
+        JuicerToolsPre,
+        [hic, samples],
+        ["id", "latest", "chromsizes", "pairs_format", "matrix"],
+        ["id", "hic"],
+        ["latest_matrix":"hic"]
+    ) | set{samples}
 
     emit:
-        samples
+    samples
 }

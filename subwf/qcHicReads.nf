@@ -11,6 +11,9 @@ process PairtoolsStats {
 
     shell:
     "pairtools stats --output ${id}.${pairs_id}.stats.txt ${pairs}"
+
+    stub:
+    "touch ${id}.${pairs_id}.stats.txt"
 }
 
 process MultiQC {
@@ -26,6 +29,9 @@ process MultiQC {
 
     shell:
     "multiqc --force --filename ${report_name}.multiqc_report.html --module pairtools ."
+
+    stub:
+    "touch ${report_name}.multiqc_report.html"
 }
 
 workflow QCReads {

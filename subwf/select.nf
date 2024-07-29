@@ -1,5 +1,5 @@
-include {JoinProcessResults} from './joinProcessResults.nf'
 include {QCReads} from './qcHicReads.nf'
+include {transpack} from './extraops.nf'
 
 process PairtoolsSelect {
     publishDir params.general.publish.select ? params.general.publish.select : "results",
@@ -58,6 +58,9 @@ process PairtoolsSelect {
     cmd = """${write_chroms} pairtools select --output ${id}_select.pairs.gz ${chroms_file} ${select_params} "${filters}" ${pairs}"""
     
     cmd
+
+    stub:
+    "touch ${id}_select.pairs.gz"
 }
 
 workflow Select {
@@ -65,16 +68,15 @@ workflow Select {
         samples
     
     main:        
-        JoinProcessResults(
+        transpack (
             PairtoolsSelect,
-            [samples],
+            samples,
             ["id", "latest", "select_params", "select_condition"],
             ["id", "select_pairs"],
-            ["id"],
-            false,
-            "select_pairs"
+            ["latest":"select_pairs"],
+            "id",
+            ["nullOk":"select_params"]
         ) | set{samples}
-
         
         if ("Select" in params.general.get("qc_after")) {
             QCReads(samples, "Select")

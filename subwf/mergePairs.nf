@@ -1,6 +1,6 @@
-include {JoinProcessResults} from './joinProcessResults.nf'
 include {QCReads} from './qcHicReads.nf'
 include {AssignParams} from './assignParams.nf'
+include {transpack} from './extraops.nf'
 
 process Merge {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
@@ -17,6 +17,9 @@ process Merge {
     shell:
     samples = (samples.getClass() == nextflow.processor.TaskPath) ? samples : samples.join(" ")
     "pairtools --version > version.txt && pairtools merge --output ${id}.pairs.gz ${samples}"
+
+    stub:
+    "touch ${id}.pairs.gz"
 }
 
 workflow TechrepsToBioreps {
@@ -53,16 +56,15 @@ workflow TechrepsToBioreps {
             | AssignParams
             | set{to_merge}
 
-        to_merge = JoinProcessResults(
+
+        to_merge = transpack(
             Merge,
             [to_merge],
             ["id", "latest"],
             ["id", "biorep_merge_pairs"],
-            ["id"],
-            false,
-            "biorep_merge_pairs"
+            ["latest":"biorep_merge_pairs"]
         )
-
+        
         to_merge
             | concat(samples)
             | set {samples}
@@ -109,15 +111,12 @@ workflow BiorepsToConditions {
             | AssignParams
             | set{to_merge}
 
-
-        to_merge = JoinProcessResults(
+        to_merge = transpack(
             Merge,
             [to_merge],
             ["id", "latest"],
             ["id", "condition_merge_pairs"],
-            ["id"],
-            false,
-            "condition_merge_pairs"
+            ["latest":"condition_merge_pairs"]
         )
 
         to_merge

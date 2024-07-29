@@ -1,4 +1,4 @@
-include {JoinProcessResults} from './joinProcessResults.nf'
+include {transpack} from './extraops.nf'
 
 process BwaMem2Align {
     publishDir params.general.publish.bam ? params.general.publish.bam : "results",
@@ -24,40 +24,42 @@ process BwaMem2Align {
     align = "bwa-mem2 mem -t 10 -SP5M ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
     tobam = "samtools view -b -o ${sample_id}.bam"
     "${align} | ${tobam}"
+
+    stub:
+    "touch ${sample_id}.bam"
 }
 
 workflow Align {
     take:
-        samples
+    samples
 
     main:
        
-        samples
-            | filter{it.datatype == "fastq"
-                     && it.get("fastq1")
-                     && it.get("fastq2")
-            }
-            | map{
-                it.fastq1 = file(it.fastq1)
-                it.fastq2 = file(it.fastq2)
-                it
-            }
-            | set {fastq}
-
-        samples = JoinProcessResults(
-            BwaMem2Align,
-            [fastq, samples],
-            ["sample_id", "index_dir", "index_prefix", "fastq1", "fastq2"],
-            ["sample_id", "sambam"],
-            ["sample_id"],
-            false,
-            "sambam")
-
-        if (params.general.get("last_step") == "align") {
-            channel.empty() | set{samples}
+    samples
+        | filter{it.datatype == "fastq"
+                    && it.get("fastq1")
+                    && it.get("fastq2")
         }
+        | map{
+            it.fastq1 = file(it.fastq1)
+            it.fastq2 = file(it.fastq2)
+            it
+        }
+        | set {fastq}
+
+    samples = transpack(
+        BwaMem2Align,
+        [fastq, samples],
+        ["sample_id", "index_dir", "index_prefix", "fastq1", "fastq2"],
+        ["sample_id", "sambam"],
+        ["latest":"sambam"],
+        "sample_id"
+    )
+
+    if (params.general.get("last_step") == "align") {
+        channel.empty() | set{samples}
+    }
+
     emit:
-        samples
-
-
+    samples
 }

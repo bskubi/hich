@@ -1,5 +1,5 @@
-include {keydiff; sqljoin} from './sqljoin.nf'
-
+include {sqljoin} from './extraops.nf'
+include {transact; pack; transpack} from './extraops.nf'
 workflow MakeResourceFile {
     /*
         Motivation:
@@ -41,7 +41,7 @@ workflow MakeResourceFile {
     main:
         missing
         | map {
-            // Extract input value sfrom hashmap in order required by process
+            // Extract input values from hashmap in order required by process
             elements = it.subMap(input).values().toList()
             tuple(*elements)
         }
