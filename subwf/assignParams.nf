@@ -36,6 +36,14 @@ workflow AssignParams {
                 }
                 sample
             }
+            | map {
+                sample ->
+                
+                ["fastq1", "fastq2", "bam", "pairs"].each {
+                    it in sample ? sample[it] = file(sample[it]) : null
+                }
+                sample
+            }
             | TryDownloadMissingReferences
             | MakeMissingChromsizes
             | MakeMissingIndex
