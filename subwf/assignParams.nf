@@ -14,7 +14,7 @@ workflow AssignParams {
             | map {
                 sample ->
                 
-                if (params.humid && !sample.get("n_reads")) {
+                if (params.get("humid") && !sample.get("n_reads")) {
                     sample += ["n_reads": params.general.humid.n_reads]
                 }
 
