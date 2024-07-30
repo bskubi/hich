@@ -6,7 +6,7 @@ process Merge {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
                saveAs: {params.general.publish.fragtag ? it : null}
             
-    container "bskubi/open2c:latest"
+    container "bskubi/hich:latest"
 
     input:
     tuple val(id), path(samples)

@@ -1,6 +1,6 @@
 process CooltoolsEigsCis {
     publishDir "results/compartments"
-    container "bskubi/open2c:latest"
+    container "bskubi/hich:latest"
 
     input:
     tuple val(id), path(mcool), val(resolution), val(cooltools_ciseigs_params)

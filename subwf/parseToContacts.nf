@@ -4,7 +4,7 @@ include {transpack} from './extraops.nf'
 process PairtoolsParse2 {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",
                saveAs: {params.general.publish.parse ? it : null}
-    container "bskubi/open2c:latest"
+    container "bskubi/hich:latest"
 
     input:
     tuple val(sample_id), path(sambam), path(chromsizes), val(assembly), val(parse_params)

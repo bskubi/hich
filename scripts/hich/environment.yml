@@ -1,0 +1,21 @@
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - git
+  - python
+  - pip
+  - polars
+  - numpy
+  - poetry
+  - pbgzip
+  - click
+  - cooler
+  - pairtools=1.1.0
+  - smart-open
+  - biopython
+  - ucsc-bedgraphtobigwig
+  - pip:
+    - hicrep
+    - cooltools
+    - git+https://github.com/open2c/MultiQC.git

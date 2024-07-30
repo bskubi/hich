@@ -4,7 +4,7 @@ include {transpack} from './extraops.nf'
 process PairtoolsFlipSort {
     publishDir params.general.publish.flip_sort ? params.general.publish.flip_sort : "results",
                saveAs: {params.general.publish.flip_sort ? it : null}
-    container "bskubi/open2c:latest"
+    container "bskubi/hich:latest"
 
     input:
     tuple val(sample_id), path(pairs), path(chromsizes)
