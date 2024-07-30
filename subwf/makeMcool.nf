@@ -4,7 +4,7 @@ include {transpack} from './extraops.nf'
 process CoolerZoomify {
     publishDir params.general.publish.mcool ? params.general.publish.mcool : "results",
                saveAs: {params.general.publish.mcool ? it : null}
-    conda "cooler"
+    container "bskubi/open2c:latest"
     maxForks 2
 
     input:

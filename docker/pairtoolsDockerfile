@@ -1,7 +1,0 @@
-FROM condaforge/mambaforge:24.3.0-0
-
-USER root
-
-RUN mamba install pairtools=1.1.0 -c conda-forge -c bioconda
-RUN mamba install multiqc -c conda-forge -c bioconda
-RUN pip install git+https://github.com/open2c/MultiQC.git

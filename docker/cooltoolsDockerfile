@@ -1,8 +1,0 @@
-FROM mambaorg/micromamba:latest
-
-
-RUN micromamba install -c conda-forge -c bioconda -n base cooltools ucsc-bedgraphtobigwig
-
-USER root
-
-CMD ["bash"]

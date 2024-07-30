@@ -6,6 +6,9 @@ process StageReferences {
         function used to download a unique reference and intentionally has
         no content.
     */
+    publishDir params.general.publish.genome ? params.general.publish.genome : "results",
+               saveAs: {params.general.publish.genome ? it : null}
+    
     input:
     tuple val(assembly), path(url)
 
