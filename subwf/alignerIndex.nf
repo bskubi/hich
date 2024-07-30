@@ -14,8 +14,8 @@ process BwaMem2Index {
           path("bwa-mem2/index/${prefix}.pac")
 
     shell:
-    "mkdir -p bwa-mem2/index && cd bwa-mem2/index && touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
-    //"bwa-mem2 index -p ${prefix} ${reference}"
+    //"mkdir -p bwa-mem2/index && cd bwa-mem2/index && touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
+    "bwa-mem2 index -p ${prefix} ${reference}"
 
     stub:
     "mkdir -p bwa-mem2/index && cd bwa-mem2/index && touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
