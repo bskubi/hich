@@ -4,7 +4,7 @@ include {transpack} from './extraops.nf'
 process PairtoolsDedup {
     publishDir params.general.publish.dedup ? params.general.publish.dedup : "results",
                saveAs: {params.general.publish.dedup ? it : null}
-        container "bskubi/open2c:latest"
+    container "bskubi/hich:latest"
 
     input:
     tuple val(id), path(infile), val(dedup_params)

@@ -1,6 +1,6 @@
 process CooltoolsInsulation {
     publishDir "results/insulation"
-    container "bskubi/open2c:latest"
+    container "bskubi/hich:latest"
 
     input:
     tuple val(id), path(mcool), val(resolution), val(cooltools_insulation_params)

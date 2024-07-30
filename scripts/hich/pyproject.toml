@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "hich"
+version = "0.1.0"
+description = ""
+authors = ["Ben Skubi <bskubi@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+hich = "hich.__main__:hich"
+
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
