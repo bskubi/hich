@@ -1,6 +1,6 @@
 process HicrepCombos{
     publishDir "results/hicrep", mode:"copy"
-    container "hich"
+    container "bskubi/hich:latest"
 
     input:
     tuple path(mcools), val(resolutions), val(chroms), val(exclude), val(chrom_filter), val(h), val(dBPMax), val(bDownSample)
