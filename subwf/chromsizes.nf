@@ -5,7 +5,7 @@ process MakeChromsizes {
     publishDir params.general.publish.chromsizes ? params.general.publish.chromsizes : "results",
                saveAs: {params.general.publish.chromsizes ? it : null}
 
-    conda 'bioconda::ucsc-fasize'
+    container 'quay.io/biocontainers/ucsc-fasize:332--0'
 
     input:
     tuple path(reference), val(assembly), val(chromsizes)
