@@ -4,7 +4,7 @@ include {transpack} from './extraops.nf'
 process PairtoolsSelect {
     publishDir params.general.publish.select ? params.general.publish.select : "results",
                saveAs: {params.general.publish.select ? it : null}
-    container "bskubi/pairtools:1.1.0"
+    container "bskubi/open2c:latest"
 
     input:
     tuple val(id), path(pairs), val(select_params), val(condition)

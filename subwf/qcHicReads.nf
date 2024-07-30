@@ -1,7 +1,7 @@
 process PairtoolsStats {
     publishDir params.general.publish.pair_stats ? params.general.publish.pair_stats : "results",
                saveAs: {params.general.publish.pair_stats ? it : null}
-    container "bskubi/pairtools:1.1.0"
+    container "bskubi/open2c:latest"
 
     input:
     tuple val(id), val(pairs_id), path(pairs)
@@ -19,7 +19,7 @@ process PairtoolsStats {
 process MultiQC {
     publishDir params.general.publish.qc ? params.general.publish.qc : "results",
                saveAs: {params.general.publish.qc ? it : null}
-    container "bskubi/pairtools:1.1.0"
+    container "bskubi/open2c:latest"
 
     input:
     tuple val(report_name), path(stats)
@@ -28,7 +28,7 @@ process MultiQC {
     path("${report_name}.multiqc_report.html")
 
     shell:
-    "multiqc --force --filename ${report_name}.multiqc_report.html --module pairtools ."
+    "multiqc --force --filename ${report_name}.multiqc_report.html --module pairtools . && chmod -R a+w ."
 
     stub:
     "touch ${report_name}.multiqc_report.html"

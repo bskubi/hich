@@ -13,6 +13,10 @@ workflow AssignParams {
         samples
             | map {
                 sample ->
+                
+                if (params.humid && !sample.get("n_reads")) {
+                    sample += ["n_reads": params.general.humid.n_reads]
+                }
 
                 params.defaults.each {
                     k, v ->
@@ -25,13 +29,15 @@ workflow AssignParams {
 
                     // Overwrite previous params with id-specific params
                     // Priority is to later-specified params in nextflow.config
-                    sample_id = sample.id.toString()
-                    bundle_ids = bundle.ids.collect{it.toString()}
+                    if (bundle && bundle.getClass() == nextflow.config.ConfigMap && bundle.get("ids")) {
+                        sample_id = sample.id.toString()
+                        bundle_ids = bundle.ids.collect{it.toString()}
 
-                    if (bundle.containsKey("ids") && sample_id in bundle_ids) {
-                        update = bundle.clone()
-                        update.remove("ids")
-                        sample += update
+                        if (bundle.containsKey("ids") && sample_id in bundle_ids) {
+                            update = bundle.clone()
+                            update.remove("ids")
+                            sample += update
+                        }
                     }
                 }
                 sample

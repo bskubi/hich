@@ -2,6 +2,8 @@ include {MakeResourceFile} from "./makeResourceFile.nf"
 include {source} from "./extraops.nf"
 
 process MakeDigest {
+    publishDir params.general.publish.digest ? params.general.publish.digest : "results",
+               saveAs: {params.general.publish.digest ? it : null}
     container "bskubi/redigest:latest"
     
     input:
