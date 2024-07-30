@@ -12,6 +12,7 @@ include {MakeHic} from './subwf/makeHic.nf'
 include {CallLoops} from './subwf/callLoops.nf'
 include {CallCompartments} from './subwf/callCompartments.nf'
 include {CallInsulation} from './subwf/callInsulation.nf'
+include {Hicrep} from './subwf/hicrep.nf'
 
 workflow {
 
@@ -30,8 +31,10 @@ workflow {
         | Select
         | MakeHic
         | MakeMcool
+        | Hicrep
         | CallCompartments
         | CallLoops
         | CallInsulation
+        
 }
 

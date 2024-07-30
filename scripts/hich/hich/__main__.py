@@ -56,8 +56,8 @@ def fragtag(batch_size, fragfile, out_pairs, in_pairs):
 
 @hich.command
 @click.option("--resolutions", type = IntList, default = 10000)
-@click.option("--chroms", "--include_chroms", type = str, default = None)
-@click.option("--exclude", "--exclude_chroms", type = str, default = None)
+@click.option("--chroms", "--include_chroms", type = StrList, default = None)
+@click.option("--exclude", "--exclude_chroms", type = StrList, default = None)
 @click.option("--chrom_filter", type=str, default = "chrom if size > 5000000 else None")
 @click.option("--h", type = IntList, default = "1")
 @click.option("--d_bp_max", type = IntList, default = "-1")
