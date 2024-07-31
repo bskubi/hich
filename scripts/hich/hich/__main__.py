@@ -3,10 +3,19 @@ from hich.cli import BooleanList, IntList, PathList, StrList
 import hich.digest as _digest
 from hich.fragtag import tag_restriction_fragments
 from hich.hicrep_combos import hicrep_combos
+import hich.coverage as _coverage
 
 @click.group
 def hich():
     pass
+
+@hich.command()
+@click.argument("filenames", nargs = -1)
+def coverage(filenames):
+    mx1 = _coverage.strata(filenames[0], [100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000])
+    mx2 = _coverage.strata(filenames[1], [100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000])
+    print(_coverage.combine_strata([mx1, mx2]))
+
 
 @hich.command()
 @click.option("--output", default = None, show_default = True, help = "Output file. Compression autodetected by file extension. If None, prints to stdout.")
