@@ -32,6 +32,7 @@ workflow Parse {
 
     main:
 
+    // This should give an error if the file does not exist
     samples
         | filter{it.get("sambam") && file(it.sambam).exists()}
         | map{it.sambam = file(it.sambam); it}
@@ -50,6 +51,8 @@ workflow Parse {
     
     samples | map{it.id = it.sample_id; it} | set{samples}
 
+    // It might be good to simplify these workflow control steps since they
+    // are repeated frequently.
     if ("Parse" in params.general.get("qc_after")) {
         QCReads(samples, "Parse")
     }

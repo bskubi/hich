@@ -31,45 +31,6 @@ process PairtoolsDedup {
     "touch ${id}_dedup.pairs.gz"
 }
 
-workflow jpr {
-    take:
-    deduplicate
-    samples
-
-    main:
-        samples = JoinProcessResults(
-            PairtoolsDedup,
-            [deduplicate, samples],
-            ["id", "latest", "dedup_params"],
-            ["id", "dedup_pairs"],
-            ["id"],
-            false,
-            "dedup_pairs"
-        )
-    
-    emit:
-    samples
-}
-
-workflow tp {
-    take:
-    deduplicate
-    samples
-
-    main:
-    samples = transpack(
-            PairtoolsDedup,
-            [deduplicate, samples],
-            ["id", "latest", "dedup_params"],
-            ["id", "dedup_pairs"],
-            ["latest":"dedup_pairs"]
-        )
-
-    emit:
-    samples
-}
-
-
 workflow Deduplicate {
     take:
         samples

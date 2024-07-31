@@ -21,6 +21,9 @@ workflow HeadReads {
     samples
 
     main:
+    // We should get a feature to downsample ingested bam and pairs files as well
+    // to facilitate the --humid parameter
+    
     samples
         | filter{it.datatype == "fastq" && it.get("n_reads") && it.get("n_reads").toString() != "all"}
         | set{head}

@@ -24,6 +24,7 @@ workflow IngestPairs {
         samples
 
     main:
+        // Maybe there is an easier and more general way we can do ingestion?
         samples
             | filter{it.datatype == "pairs" && it.get("pairs") && file(it.get("pairs")).exists()}
             | map{

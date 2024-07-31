@@ -28,6 +28,8 @@ workflow TechrepsToBioreps {
 
             main:
 
+        // This is the hairiest part of the code currently and should probably
+        // get restructured
         def isTechrep = {it.get("is_techrep", "").toString().trim() in ["", "true", true, 1]}
         def hasStructure = {it.get("condition").length() > 0
                             && it.get("biorep").length() > 0}

@@ -46,6 +46,8 @@ workflow AssignParams {
                 sample ->
                 
                 ["fastq1", "fastq2", "sambam", "pairs"].each {
+                    // This should give an error if the file does not exist
+                    // or if there is no sample in the file.
                     it in sample ? sample[it] = file(sample[it]) : null
                 }
                 sample

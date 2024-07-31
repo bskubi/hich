@@ -1,4 +1,3 @@
-include {MakeResourceFile} from "./makeResourceFile.nf"
 include {source} from "./extraops.nf"
 
 process MakeDigest {
