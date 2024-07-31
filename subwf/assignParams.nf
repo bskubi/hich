@@ -45,7 +45,7 @@ workflow AssignParams {
             | map {
                 sample ->
                 
-                ["fastq1", "fastq2", "bam", "pairs"].each {
+                ["fastq1", "fastq2", "sambam", "pairs"].each {
                     it in sample ? sample[it] = file(sample[it]) : null
                 }
                 sample

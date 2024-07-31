@@ -6,7 +6,9 @@ class _ParamList(click.ParamType, ABC):
 
     def convert(self, value, param, ctx):
         try:
-            return [value] if isinstance(value, self.value_type()) else [self.to_type(item) for item in value.split(self.separator())]
+            result = [value] if isinstance(value, self.value_type()) else [self.to_type(item) for item in value.split(self.separator())]
+            result = [r for r in result if r is not None]
+            return result
         except ValueError as e:
             self.fail(f"Invalid {self.value_type()} value in list: {e}")
     
@@ -43,9 +45,9 @@ class _IntList(_ParamList):
 
     def to_type(self, value):
         try:
-            return int(value)
+            return int(value) if value else None
         except:
-            raise ValueError(f"{value} is not a valid integer")
+            raise ValueError(f"'{value}' is not a valid integer")
 
 class _PathList(_ParamList):
     name = "path_list"

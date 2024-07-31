@@ -41,7 +41,7 @@ workflow TechrepsToBioreps {
         }
 
         samples
-            | filter{isTechrep(it)}
+            | filter{it.containsKey(["techrep", "biorep"]) && isTechrep(it)}
             | map{ensureStructure(it)}
             | map{tuple(it.subMap("condition", "biorep"), it)}
             | groupTuple
@@ -96,7 +96,7 @@ workflow BiorepsToConditions {
         }
 
         samples
-            | filter{isBiorep(it)}
+            | filter{it.containsKey(["biorep", "condition"]) && isBiorep(it)}
             | map{ensureStructure(it)}
             | map{tuple(it.subMap("condition"), it)}
             | groupTuple
