@@ -4,10 +4,10 @@ import polars as pl
 import time
 import warnings
 import sys
-from .pairs_parser import PairsParser
-from .frag_index import FragIndex
-from .bedpe_pairs import BedpePairs
-from .samheader_fragtag import SamheaderFragtag
+from hich.parse.pairs_parser import PairsParser
+from hich.fragtag.frag_index import FragIndex
+from hich.fragtag.bedpe_pairs import BedpePairs
+from hich.fragtag.samheader_fragtag import SamheaderFragtag
 
 def tag_batch(pairs_batch_df, frag_index):
     pairs_batch_df = tag_with_pair_id(pairs_batch_df)

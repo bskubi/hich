@@ -3,10 +3,24 @@ from hich.cli import BooleanList, IntList, PathList, StrList
 import hich.digest as _digest
 from hich.fragtag import tag_restriction_fragments
 from hich.hicrep_combos import hicrep_combos
+import hich.coverage as _coverage
+import polars as pl
 
 @click.group
 def hich():
     pass
+
+@hich.command()
+@click.option("--strata", type = IntList, default = "0")
+@click.option("--fraction", type = float, default = 1.0)
+@click.argument("filenames", nargs = -1)
+def coverage(strata, fraction, filenames):
+    strata = [0] if not strata else strata
+    stratum_counts = _coverage.strata(filenames[0], strata)
+    stratum_counts = stratum_counts.rename({filenames[0]:"N"})
+    
+    stratum_counts = stratum_counts.with_columns((pl.col("N")*fraction).cast(pl.Int64).alias("n"))
+    _coverage.selection_sample(filenames[0], "output.pairs", strata, stratum_counts, ["chrom1", "chrom2", "stratum"], "N", "n")
 
 @hich.command()
 @click.option("--output", default = None, show_default = True, help = "Output file. Compression autodetected by file extension. If None, prints to stdout.")
@@ -56,8 +70,8 @@ def fragtag(batch_size, fragfile, out_pairs, in_pairs):
 
 @hich.command
 @click.option("--resolutions", type = IntList, default = 10000)
-@click.option("--chroms", "--include_chroms", type = str, default = None)
-@click.option("--exclude", "--exclude_chroms", type = str, default = None)
+@click.option("--chroms", "--include_chroms", type = StrList, default = None)
+@click.option("--exclude", "--exclude_chroms", type = StrList, default = None)
 @click.option("--chrom_filter", type=str, default = "chrom if size > 5000000 else None")
 @click.option("--h", type = IntList, default = "1")
 @click.option("--d_bp_max", type = IntList, default = "-1")

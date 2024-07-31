@@ -1,7 +1,7 @@
 import polars as pl
 import smart_open
 import warnings
-from .pbgzip import *
+from hich.parse.pbgzip import *
 
 
 class PairsParser:
