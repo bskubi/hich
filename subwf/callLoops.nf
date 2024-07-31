@@ -1,5 +1,6 @@
 process MustacheDiffloops{
-    publishDir "results/loops", mode:"copy"
+    publishDir "results/loops",
+               mode: params.general.publish.mode
     container "bskubi/mustache:latest"
 
     input:

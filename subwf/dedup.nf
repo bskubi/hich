@@ -3,7 +3,8 @@ include {transpack} from './extraops.nf'
 
 process PairtoolsDedup {
     publishDir params.general.publish.dedup ? params.general.publish.dedup : "results",
-               saveAs: {params.general.publish.dedup ? it : null}
+               saveAs: {params.general.publish.dedup ? it : null},
+               mode: params.general.publish.mode
     container "bskubi/hich:latest"
 
     input:

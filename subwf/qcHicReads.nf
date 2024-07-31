@@ -1,6 +1,7 @@
 process PairtoolsStats {
     publishDir params.general.publish.pair_stats ? params.general.publish.pair_stats : "results",
-               saveAs: {params.general.publish.pair_stats ? it : null}
+               saveAs: {params.general.publish.pair_stats ? it : null},
+               mode: params.general.publish.mode
     container "bskubi/hich:latest"
 
     input:
@@ -18,7 +19,8 @@ process PairtoolsStats {
 
 process MultiQC {
     publishDir params.general.publish.qc ? params.general.publish.qc : "results",
-               saveAs: {params.general.publish.qc ? it : null}
+               saveAs: {params.general.publish.qc ? it : null},
+               mode: params.general.publish.mode
     container "bskubi/hich:latest"
 
     input:

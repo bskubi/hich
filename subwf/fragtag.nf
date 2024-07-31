@@ -3,7 +3,8 @@ include {transpack} from './extraops.nf'
 
 process Fragtag {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
-               saveAs: {params.general.publish.fragtag ? it : null}
+               saveAs: {params.general.publish.fragtag ? it : null},
+               mode: params.general.publish.mode
     //container "bskubi/pairtools:1.1.0"
     container "bskubi/hich:latest"
 

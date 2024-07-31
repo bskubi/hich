@@ -3,7 +3,8 @@ include {sqljoin; sourcePrefix} from './extraops.nf'
 process BwaMem2Index {
     container "bskubi/bwa-mem2"
     publishDir params.general.publish.bwa_mem2_index ? params.general.publish.bwa_mem2_index : "results",
-               saveAs: {params.general.publish.bwa_mem2_index ? it : null}
+               saveAs: {params.general.publish.bwa_mem2_index ? it : null},
+               mode: params.general.publish.mode
 
     input:
     tuple path(reference), val(prefix)

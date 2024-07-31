@@ -2,7 +2,8 @@ include {source} from "./extraops.nf"
 
 process MakeDigest {
     publishDir params.general.publish.digest ? params.general.publish.digest : "results",
-               saveAs: {params.general.publish.digest ? it : null}
+               saveAs: {params.general.publish.digest ? it : null},
+               mode: params.general.publish.mode
     container "bskubi/hich:latest"
     
     input:

@@ -4,7 +4,8 @@ include {transpack} from './extraops.nf'
 
 process Merge {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
-               saveAs: {params.general.publish.fragtag ? it : null}
+               saveAs: {params.general.publish.fragtag ? it : null},
+               mode: params.general.publish.mode
             
     container "bskubi/hich:latest"
 

@@ -8,7 +8,8 @@ process JuicerToolsPre {
         features available in version 1 are unavailable in 2.
     */
     publishDir params.general.publish.hic ? params.general.publish.hic : "results",
-               saveAs: {params.general.publish.hic ? it : null}
+               saveAs: {params.general.publish.hic ? it : null},
+               mode: params.general.publish.mode
     container "bskubi/juicer_tools:1.22.01"
     maxForks 2
 

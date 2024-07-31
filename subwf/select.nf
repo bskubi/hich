@@ -3,7 +3,8 @@ include {transpack} from './extraops.nf'
 
 process PairtoolsSelect {
     publishDir params.general.publish.select ? params.general.publish.select : "results",
-               saveAs: {params.general.publish.select ? it : null}
+               saveAs: {params.general.publish.select ? it : null},
+               mode: params.general.publish.mode
     container "bskubi/hich:latest"
 
     input:

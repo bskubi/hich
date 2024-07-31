@@ -16,8 +16,10 @@ include {Hicrep} from './subwf/hicrep.nf'
 
 workflow {
     // publishDir mode should be easier to switch from "move" to "copy"
+    
     // we need to give a conda-based option for all workflow steps if possible
     // add read downsample step after select (can also be used for ingestion)
+
     // is there a way to clean up SLURM output from Nextflow?
     sampleCSV = params.general.sampleCSV
     channel.fromPath(sampleCSV.filename, checkIfExists: true)

@@ -1,5 +1,6 @@
 process CooltoolsEigsCis {
-    publishDir "results/compartments", mode:"copy"
+    publishDir "results/compartments",
+               mode: params.general.publish.mode
     container "bskubi/hich:latest"
 
     input:

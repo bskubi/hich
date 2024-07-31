@@ -2,7 +2,8 @@ include {transpack} from './extraops.nf'
 
 process BwaMem2Align {
     publishDir params.general.publish.bam ? params.general.publish.bam : "results",
-               saveAs: {params.general.publish.bam ? it : null}
+               saveAs: {params.general.publish.bam ? it : null},
+               mode: params.general.publish.mode
 
     container "bskubi/bwa-mem2"
     //maxRetries 4

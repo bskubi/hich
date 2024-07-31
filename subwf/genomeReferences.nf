@@ -7,7 +7,8 @@ process StageReferences {
         no content.
     */
     publishDir params.general.publish.genome ? params.general.publish.genome : "results",
-               saveAs: {params.general.publish.genome ? it : null}
+               saveAs: {params.general.publish.genome ? it : null},
+               mode: params.general.publish.mode
     
     input:
     tuple val(assembly), path(url)

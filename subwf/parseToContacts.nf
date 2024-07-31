@@ -3,7 +3,8 @@ include {transpack} from './extraops.nf'
 
 process PairtoolsParse2 {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",
-               saveAs: {params.general.publish.parse ? it : null}
+               saveAs: {params.general.publish.parse ? it : null},
+               mode: params.general.publish.mode
     container "bskubi/hich:latest"
 
     input:

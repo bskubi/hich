@@ -1,5 +1,6 @@
 process CooltoolsInsulation {
-    publishDir "results/insulation", mode:"copy"
+    publishDir "results/insulation",
+               mode: params.general.publish.mode
     container "bskubi/hich:latest"
 
     input:
