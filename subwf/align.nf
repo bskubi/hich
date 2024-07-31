@@ -35,7 +35,12 @@ workflow Align {
     samples
 
     main:
-       
+    // Give options for BWA-MEM (for lower indexing requirements)
+    // and BSBolt (for methylation + hi-c alignment)
+
+    // Give option to modify number of threads to use for alignment
+    // Give option for single-end reads
+
     samples
         | filter{it.datatype == "fastq"
                     && it.get("fastq1")

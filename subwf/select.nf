@@ -30,7 +30,7 @@ process PairtoolsSelect {
     min_distances += condition.min_dist_fr != null ? ["+-":condition.min_dist_fr] : [:]
     min_distances += condition.min_dist_rf != null ? ["-+":condition.min_dist_rf] : [:]
     min_distances += condition.min_dist_ff != null ? ["++":condition.min_dist_ff] : [:]
-    min_distances += condition.min_dist_rr != null ? ["--":condition.min_dist_rf] : [:]
+    min_distances += condition.min_dist_rr != null ? ["--":condition.min_dist_rr] : [:]
     strand_dist = min_distances.collect {
         strand, dist ->
         s1 = strand[0]

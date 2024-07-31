@@ -15,8 +15,6 @@ include {CallInsulation} from './subwf/callInsulation.nf'
 include {Hicrep} from './subwf/hicrep.nf'
 
 workflow {
-    // publishDir mode should be easier to switch from "move" to "copy"
-    
     // we need to give a conda-based option for all workflow steps if possible
     // add read downsample step after select (can also be used for ingestion)
 
