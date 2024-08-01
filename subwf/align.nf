@@ -6,8 +6,8 @@ process BwaMem2Align {
                mode: params.general.publish.mode
 
     container "bskubi/hich:latest"
-    maxRetries 4
-    memory {20.GB + 20.GB * task.attempt}
+    maxRetries 6
+    memory {20.GB + 10.GB * (task.attempt-1)}
 
     // NOTE: Alignment speed is trivially parallelizeable and does not benefit
     // from running alignment in parallel multiple files at once. Each instance
@@ -40,8 +40,8 @@ process BwaMemAlign {
                mode: params.general.publish.mode
 
     container "bskubi/hich:latest"
-    maxRetries 4
-    memory {20.GB + 20.GB * task.attempt}
+    maxRetries 6
+    memory {20.GB + 10.GB * (task.attempt-1)}
 
     // NOTE: Alignment speed is trivially parallelizeable and does not benefit
     // from running alignment in parallel multiple files at once. Each instance
@@ -97,7 +97,7 @@ workflow Align {
             bwamem: it.aligner == "bwa-mem"
             bsbolt: it.aligner == "bsbolt"
             error: true
-        }
+        } | set{fastq}
     
 
     samples = transpack(
