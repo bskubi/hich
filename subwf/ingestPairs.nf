@@ -3,7 +3,9 @@ include {transpack} from './extraops.nf'
 
 process PairtoolsFlipSort {
     publishDir params.general.publish.flip_sort ? params.general.publish.flip_sort : "results",
-               saveAs: {params.general.publish.flip_sort ? it : null}
+               saveAs: {params.general.publish.flip_sort ? it : null},
+               mode: params.general.publish.mode
+    conda "pairtools"
     container "bskubi/hich:latest"
 
     input:
@@ -24,6 +26,7 @@ workflow IngestPairs {
         samples
 
     main:
+        // Maybe there is an easier and more general way we can do ingestion?
         samples
             | filter{it.datatype == "pairs" && it.get("pairs") && file(it.get("pairs")).exists()}
             | map{
@@ -41,13 +44,13 @@ workflow IngestPairs {
             ["latest":"pairs"],
             "sample_id"
         )
-        
-        if (params.general.get("last_step") == "IngestPairs") {
-            channel.empty() | set{samples}
-        }
 
         if ("IngestPairs" in params.general.get("qc_after")) {
             samples = QCReads(samples, "IngestPairs")
+        }
+
+        if (params.general.get("last_step") == "ingestpairs") {
+            channel.empty() | set{samples}
         }
 
     emit:

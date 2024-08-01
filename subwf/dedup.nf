@@ -3,7 +3,9 @@ include {transpack} from './extraops.nf'
 
 process PairtoolsDedup {
     publishDir params.general.publish.dedup ? params.general.publish.dedup : "results",
-               saveAs: {params.general.publish.dedup ? it : null}
+               saveAs: {params.general.publish.dedup ? it : null},
+               mode: params.general.publish.mode
+    conda "pairtools"
     container "bskubi/hich:latest"
 
     input:
@@ -31,45 +33,6 @@ process PairtoolsDedup {
     "touch ${id}_dedup.pairs.gz"
 }
 
-workflow jpr {
-    take:
-    deduplicate
-    samples
-
-    main:
-        samples = JoinProcessResults(
-            PairtoolsDedup,
-            [deduplicate, samples],
-            ["id", "latest", "dedup_params"],
-            ["id", "dedup_pairs"],
-            ["id"],
-            false,
-            "dedup_pairs"
-        )
-    
-    emit:
-    samples
-}
-
-workflow tp {
-    take:
-    deduplicate
-    samples
-
-    main:
-    samples = transpack(
-            PairtoolsDedup,
-            [deduplicate, samples],
-            ["id", "latest", "dedup_params"],
-            ["id", "dedup_pairs"],
-            ["latest":"dedup_pairs"]
-        )
-
-    emit:
-    samples
-}
-
-
 workflow Deduplicate {
     take:
         samples
@@ -86,7 +49,7 @@ workflow Deduplicate {
             ["latest":"dedup_pairs"]
         )
 
-        if (params.general.get("last_step") == "Deduplicate") {
+        if (params.general.get("last_step") == "dedup") {
             channel.empty() | set{samples}
         }
 

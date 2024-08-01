@@ -3,7 +3,9 @@ include {transpack} from './extraops.nf'
 
 process PairtoolsSelect {
     publishDir params.general.publish.select ? params.general.publish.select : "results",
-               saveAs: {params.general.publish.select ? it : null}
+               saveAs: {params.general.publish.select ? it : null},
+               mode: params.general.publish.mode
+    conda "pairtools"
     container "bskubi/hich:latest"
 
     input:
@@ -29,7 +31,7 @@ process PairtoolsSelect {
     min_distances += condition.min_dist_fr != null ? ["+-":condition.min_dist_fr] : [:]
     min_distances += condition.min_dist_rf != null ? ["-+":condition.min_dist_rf] : [:]
     min_distances += condition.min_dist_ff != null ? ["++":condition.min_dist_ff] : [:]
-    min_distances += condition.min_dist_rr != null ? ["--":condition.min_dist_rf] : [:]
+    min_distances += condition.min_dist_rr != null ? ["--":condition.min_dist_rr] : [:]
     strand_dist = min_distances.collect {
         strand, dist ->
         s1 = strand[0]
@@ -82,7 +84,7 @@ workflow Select {
             QCReads(samples, "Select")
         }
 
-        if (params.general.get("last_step") == "Select") {
+        if (params.general.get("last_step") == "select") {
             channel.empty() | set{samples}
         }
 

@@ -1,5 +1,6 @@
 process HicrepCombos{
-    publishDir "results/hicrep", mode:"copy"
+    publishDir "results/hicrep",
+               mode: params.general.publish.mode
     container "bskubi/hich:latest"
 
     input:

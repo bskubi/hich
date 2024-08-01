@@ -8,7 +8,8 @@ process JuicerToolsPre {
         features available in version 1 are unavailable in 2.
     */
     publishDir params.general.publish.hic ? params.general.publish.hic : "results",
-               saveAs: {params.general.publish.hic ? it : null}
+               saveAs: {params.general.publish.hic ? it : null},
+               mode: params.general.publish.mode
     container "bskubi/juicer_tools:1.22.01"
     maxForks 2
 
@@ -23,7 +24,7 @@ process JuicerToolsPre {
     min_bin = matrix.resolutions.min()
     bins = matrix.resolutions ? "-r ${matrix.resolutions.join(',')}" : ""
 
-    cmd = ["java -Xmx20g -jar /app/juicer_tools.jar pre",
+    cmd = ["java -Xmx20g -jar juicer_tools_1.22.01.jar pre",
             bins,
            "${infile} ${outfile} ${chromsizes}"]
     cmd.removeAll([null])

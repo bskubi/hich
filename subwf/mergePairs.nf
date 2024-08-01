@@ -4,8 +4,9 @@ include {transpack} from './extraops.nf'
 
 process Merge {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
-               saveAs: {params.general.publish.fragtag ? it : null}
-            
+               saveAs: {params.general.publish.fragtag ? it : null},
+               mode: params.general.publish.mode
+    conda "pairtools"
     container "bskubi/hich:latest"
 
     input:
@@ -28,6 +29,8 @@ workflow TechrepsToBioreps {
 
             main:
 
+        // This is the hairiest part of the code currently and should probably
+        // get restructured
         def isTechrep = {it.get("is_techrep", "").toString().trim() in ["", "true", true, 1]}
         def hasStructure = {it.get("condition").length() > 0
                             && it.get("biorep").length() > 0}

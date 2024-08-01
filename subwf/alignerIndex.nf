@@ -1,9 +1,11 @@
 include {sqljoin; sourcePrefix} from './extraops.nf'
 
 process BwaMem2Index {
-    container "bskubi/bwa-mem2"
+    conda "bwa-mem2"
+    container "bskubi/hich:latest"
     publishDir params.general.publish.bwa_mem2_index ? params.general.publish.bwa_mem2_index : "results",
-               saveAs: {params.general.publish.bwa_mem2_index ? it : null}
+               saveAs: {params.general.publish.bwa_mem2_index ? it : null},
+               mode: params.general.publish.mode
 
     input:
     tuple path(reference), val(prefix)
@@ -20,6 +22,29 @@ process BwaMem2Index {
     stub:
     "mkdir -p bwa-mem2/index && cd bwa-mem2/index && touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
 }
+
+process BwaMemIndex {
+    conda "bwa"
+    container "bskubi/hich:latest"
+    publishDir params.general.publish.bwa_mem_index ? params.general.publish.bwa_mem2_index : "results",
+               saveAs: {params.general.publish.bwa_mem_index ? it : null},
+               mode: params.general.publish.mode
+
+    input:
+    tuple path(reference), val(prefix)
+
+    output:
+    tuple path("bwa/index"), val(prefix), path("bwa/index/${prefix}.ann"), path("bwa/index/${prefix}.amb"),
+          path("bwa/index/${prefix}.pac"), path("bwa/index/${prefix}.bwt"), path("bwa/index/${prefix}.sa"),
+
+    shell:
+    //"mkdir -p bwa-mem2/index && cd bwa-mem2/index && touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
+    "bwa index -p ${prefix} ${reference} && mkdir -p bwa/index && mv ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa bwa/index"
+
+    stub:
+    "mkdir -p bwa/index && cd bwa/index && touch ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa"
+}
+
 
 workflow MakeMissingIndex {
 

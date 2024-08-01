@@ -3,7 +3,8 @@ include {transpack} from './extraops.nf'
 
 process Fragtag {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
-               saveAs: {params.general.publish.fragtag ? it : null}
+               saveAs: {params.general.publish.fragtag ? it : null},
+               mode: params.general.publish.mode
     //container "bskubi/pairtools:1.1.0"
     container "bskubi/hich:latest"
 
@@ -31,6 +32,7 @@ workflow OptionalFragtag {
         samples
 
     main:
+        // I think this is cruft and can be removed
         def hasFragfileName = {
             it.get("fragfile").toString().trim().length() > 0
         }
@@ -38,6 +40,7 @@ workflow OptionalFragtag {
         def fragfileExists = {
             hasFragfileName(it) && file(it.fragfile).exists()
         }
+        // End cruft
 
         samples
             | filter{fragfileExists(it)}
@@ -55,6 +58,10 @@ workflow OptionalFragtag {
 
         if ("OptionalFragtag" in params.general.get("qc_after")) {
             samples = QCReads(samples, "OptionalFragtag")
+        }
+
+        if (params.general.get("last_step") == "fragtag") {
+            channel.empty() | set{samples}
         }
 
     emit:

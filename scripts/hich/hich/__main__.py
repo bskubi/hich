@@ -15,6 +15,9 @@ def hich():
 @click.option("--fraction", type = float, default = 1.0)
 @click.argument("filenames", nargs = -1)
 def coverage(strata, fraction, filenames):
+    import warnings
+    warnings.warn("Coverage not fully implemented yet.", UserWarning)
+
     strata = [0] if not strata else strata
     stratum_counts = _coverage.strata(filenames[0], strata)
     stratum_counts = stratum_counts.rename({filenames[0]:"N"})

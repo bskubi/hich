@@ -1,27 +1,38 @@
 include {transpack} from './extraops.nf'
 
-process BwaMem2Align {
+process BwaAlign {
     publishDir params.general.publish.bam ? params.general.publish.bam : "results",
-               saveAs: {params.general.publish.bam ? it : null}
+               saveAs: {params.general.publish.bam ? it : null},
+               mode: params.general.publish.mode
 
-    container "bskubi/bwa-mem2"
-    //maxRetries 4
-    //memory {20.GB + 20.GB * task.attempt}
+    conda "bwa bwa-mem2 samtools"
+    container "bskubi/hich:latest"
+    
+    maxRetries 6
+    memory {20.GB + 10.GB * (task.attempt-1)}
 
     // NOTE: Alignment speed is trivially parallelizeable and does not benefit
     // from running alignment in parallel multiple files at once. Each instance
     // of bwa-mem2 uses about 15 gigs of memory. For these two reasons we 
     // tell nextflow to run one alignment process at a time with maxForks 1.
+
+    // NOTE 2: I need to decide on how to work with the possibility that users
+    // will run multiple aligners (bwa-mem2, bwa, bsbolt, etc). We should still
+    // only run one at a time.
     maxForks 1
 
     input:
-    tuple val(sample_id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2)
+    tuple val(sample_id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2), val(aligner), val(threads), val(bwa_flags)
 
     output:
     tuple val(sample_id), path("${sample_id}.bam")
 
     shell:
-    align = "bwa-mem2 mem -t 10 -SP5M ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
+    align = ""
+    if (aligner in ["bwa-mem2", "bwa"]) {
+        align = "${aligner} mem -t ${threads} ${bwa_flags} ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
+    }
+    
     tobam = "samtools view -b -o ${sample_id}.bam"
     "${align} | ${tobam}"
 
@@ -34,7 +45,8 @@ workflow Align {
     samples
 
     main:
-       
+    // and BSBolt (for methylation + hi-c alignment)
+
     samples
         | filter{it.datatype == "fastq"
                     && it.get("fastq1")
@@ -45,12 +57,12 @@ workflow Align {
             it.fastq2 = file(it.fastq2)
             it
         }
-        | set {fastq}
+        | set {fastq}    
 
     samples = transpack(
-        BwaMem2Align,
+        BwaAlign,
         [fastq, samples],
-        ["sample_id", "index_dir", "index_prefix", "fastq1", "fastq2"],
+        ["sample_id", "index_dir", "index_prefix", "fastq1", "fastq2", "aligner", "aligner_threads", "bwa_flags"],
         ["sample_id", "sambam"],
         ["latest":"sambam"],
         "sample_id"
