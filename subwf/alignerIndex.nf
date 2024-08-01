@@ -33,14 +33,14 @@ process BwaMemIndex {
 
     output:
     tuple path("bwa/index"), val(prefix), path("bwa/index/${prefix}.ann"), path("bwa/index/${prefix}.amb"),
-          path("bwa/index/${prefix}.pac")
+          path("bwa/index/${prefix}.pac"), path("bwa/index/${prefix}.bwt"), path("bwa/index/${prefix}.sa"),
 
     shell:
     //"mkdir -p bwa-mem2/index && cd bwa-mem2/index && touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
-    "bwa index -p ${prefix} ${reference} && mkdir -p bwa/index && mv ${prefix}.amb ${prefix}.ann ${prefix}.pac bwa/index"
+    "bwa index -p ${prefix} ${reference} && mkdir -p bwa/index && mv ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa bwa/index"
 
     stub:
-    "mkdir -p bwa/index && cd bwa/index && touch ${prefix}.amb ${prefix}.ann ${prefix}.pac"
+    "mkdir -p bwa/index && cd bwa/index && touch ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa"
 }
 
 
