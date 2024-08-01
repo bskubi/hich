@@ -5,7 +5,7 @@ process BwaMem2Align {
                saveAs: {params.general.publish.bam ? it : null},
                mode: params.general.publish.mode
 
-    container "hich"
+    container "bskubi/hich:latest"
     maxRetries 4
     memory {20.GB + 20.GB * task.attempt}
 
@@ -39,7 +39,7 @@ process BwaMemAlign {
                saveAs: {params.general.publish.bam ? it : null},
                mode: params.general.publish.mode
 
-    container "hich"
+    container "bskubi/hich:latest"
     maxRetries 4
     memory {20.GB + 20.GB * task.attempt}
 

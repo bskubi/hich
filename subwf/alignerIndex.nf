@@ -1,7 +1,7 @@
 include {sqljoin; sourcePrefix} from './extraops.nf'
 
 process BwaMem2Index {
-    container "hich"
+    container "bskubi/hich:latest"
     publishDir params.general.publish.bwa_mem2_index ? params.general.publish.bwa_mem2_index : "results",
                saveAs: {params.general.publish.bwa_mem2_index ? it : null},
                mode: params.general.publish.mode
@@ -23,7 +23,7 @@ process BwaMem2Index {
 }
 
 process BwaMemIndex {
-    container "hich"
+    container "bskubi/hich:latest"
     publishDir params.general.publish.bwa_mem_index ? params.general.publish.bwa_mem2_index : "results",
                saveAs: {params.general.publish.bwa_mem_index ? it : null},
                mode: params.general.publish.mode
