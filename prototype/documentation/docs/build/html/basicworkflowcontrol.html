@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Basic Workflow Control &#8212; Hich 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=c058f7c8" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Hich: An Intelligent 3D Genome Workflow" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="basic-workflow-control">
+<h1><strong>Basic Workflow Control</strong><a class="headerlink" href="#basic-workflow-control" title="Link to this heading">¶</a></h1>
+<section id="test-pause-resume-and-rerun">
+<h2><em>Test, pause, resume and rerun</em><a class="headerlink" href="#test-pause-resume-and-rerun" title="Link to this heading">¶</a></h2>
+</section>
+<section id="install-nextflow-package-manager-and-hich">
+<h2>Install Nextflow, package manager, and Hich<a class="headerlink" href="#install-nextflow-package-manager-and-hich" title="Link to this heading">¶</a></h2>
+<p>If not already installed, install <a class="reference external" href="https://www.nextflow.io/docs/latest/install.html">Nextflow</a> and one of the following dependency managers <a class="reference external" href="https://docs.sylabs.io/guides/3.0/user-guide/installation.html">Singularity</a>, <a class="reference external" href="https://docs.docker.com/engine/install/">Docker</a>, <a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/install/index.html">Conda</a>, or <a class="reference external" href="https://www.google.com/search?q=mamba+install&amp;oq=mamba+install&amp;gs_lcrp=EgZjaHJvbWUyFAgAEEUYORhDGIMBGLEDGIAEGIoFMgwIARAAGEMYgAQYigUyDAgCEAAYQxiABBiKBTIMCAMQABhDGIAEGIoFMgwIBBAAGEMYgAQYigUyBggFEEUYPDIGCAYQRRg8MgYIBxBFGDzSAQc5NjZqMGo3qAIAsAIA&amp;sourceid=chrome&amp;ie=UTF-8">Mamba</a></p>
+</section>
+<section id="clone-hich-into-your-home-directory">
+<h2>Clone Hich into your home directory<a class="headerlink" href="#clone-hich-into-your-home-directory" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">~</span></code> character is for your home directory. Change it to the path where you’d like to download Hich.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">git clone https://github.com/bskubi/hich.git ~ &amp;&amp; cd ~/hich</span>
+</pre></div>
+</div>
+</section>
+<section id="stub-humid-partial-and-full-runs">
+<h2>Stub, humid, partial and full runs<a class="headerlink" href="#stub-humid-partial-and-full-runs" title="Link to this heading">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This vignette shows how to run Hich using any of four dependency management solutions:
+Singularity, Docker, Conda or Mamba. Choose the version that fits your setup.</p>
+<p>If running on an HPC such as SLURM, you may need to create a batch file to run the following commands.</p>
+</div>
+<p>A <strong>stub run</strong> is a Nextflow built-in feature to check that the intended processes will be called in the correct order, but does no actual processing. It takes a few seconds to run and produces empty files as outputs in the <cite>hich/resources</cite> and <cite>hich/results</cite> directories.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">nextflow run hich.nf --singularity.enabled -stub-run</span>
+<span class="go">nextflow run hich.nf --docker.enabled -stub-run</span>
+<span class="go">nextflow run hich.nf --conda.enabled -stub-run</span>
+<span class="go">nextflow run hich.nf --conda.enabled --conda.useMamba --humid</span>
+</pre></div>
+</div>
+<p>A <strong>humid run</strong> is a Hich feature to quickly check that the processing works as intended. Hich downsamples the input data, then runs the workflow on the downsampled data. If no stub or humid option is given, Hich runs on the complete dataset.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">nextflow run hich.nf --singularity.enabled --humid</span>
+<span class="go">nextflow run hich.nf --docker.enabled --humid</span>
+<span class="go">nextflow run hich.nf --conda.enabled --humid</span>
+<span class="go">nextflow run hich.nf --conda.enabled --conda.useMamba --humid</span>
+</pre></div>
+</div>
+<p>A <strong>last step</strong> option inserts a pause point in the Hich workflow, which can be useful to QC the data before a more time-intensive processing step. It can be used with stub and humid runs.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">nextflow run hich.nf --singularity.enabled --general.last_step select</span>
+<span class="go">nextflow run hich.nf --docker.enabled --general.last_step select</span>
+<span class="go">nextflow run hich.nf --conda.enabled --general.last_step select</span>
+<span class="go">nextflow run hich.nf --conda.enabled --conda.useMamba --general.last_step select</span>
+</pre></div>
+</div>
+<p>A <strong>resume</strong> option picks up where the previous run left off, using files cached in the <code class="docutils literal notranslate"><span class="pre">work</span></code> directory. It can be used with stub and humid runs, and will use the appropriate stub or humid run generated cached data.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">nextflow run hich.nf --singularity.enabled -resume</span>
+<span class="go">nextflow run hich.nf --docker.enabled -resume</span>
+<span class="go">nextflow run hich.nf --conda.enabled -resume</span>
+<span class="go">nextflow run hich.nf --conda.enabled --conda.useMamba -resume</span>
+</pre></div>
+</div>
+<p>If none of the above options are used, Hich runs on the complete dataset from start to finish, reprocessing even if cached previous results exist.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">nextflow run hich.nf --singularity.enabled</span>
+<span class="go">nextflow run hich.nf --docker.enabled</span>
+<span class="go">nextflow run hich.nf --conda.enabled</span>
+<span class="go">nextflow run hich.nf --conda.enabled --conda.useMamba</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Hich</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><strong>Basic Workflow Control</strong></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#test-pause-resume-and-rerun"><em>Test, pause, resume and rerun</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-nextflow-package-manager-and-hich">Install Nextflow, package manager, and Hich</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#clone-hich-into-your-home-directory">Clone Hich into your home directory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stub-humid-partial-and-full-runs">Stub, humid, partial and full runs</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Hich: An Intelligent 3D Genome Workflow</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Benjamin Skubi, Andrew Adey, Galip Gürkan Yardımcı.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.0.2</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/basicworkflowcontrol.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
