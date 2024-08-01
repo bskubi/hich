@@ -19,6 +19,13 @@ workflow {
     // add read downsample step after select (can also be used for ingestion)
 
     // is there a way to clean up SLURM output from Nextflow?
+
+    // compute the md5hash for the samples.csv and nextflow.config and save
+    // as that hash in something like "runs" as a record of the analysis
+    // actually it would be better to save a snapshot of params when nextflow
+    // is launched, since its value is the result of aggregating several
+    // places where param values can be set.
+
     sampleCSV = params.general.sampleCSV
     channel.fromPath(sampleCSV.filename, checkIfExists: true)
         | splitCsv(header: true, sep: sampleCSV.sep)

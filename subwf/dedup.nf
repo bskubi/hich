@@ -48,7 +48,7 @@ workflow Deduplicate {
             ["latest":"dedup_pairs"]
         )
 
-        if (params.general.get("last_step") == "Deduplicate") {
+        if (params.general.get("last_step") == "dedup") {
             channel.empty() | set{samples}
         }
 

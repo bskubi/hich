@@ -14,4 +14,4 @@ COPY . /hich
 RUN poetry config virtualenvs.create false \
    && poetry install --no-interaction --no-ansi
 
-
+RUN mamba install bzip2 samtools bwa bwa-mem2 -c conda-forge -c bioconda -y

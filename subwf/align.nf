@@ -5,14 +5,18 @@ process BwaMem2Align {
                saveAs: {params.general.publish.bam ? it : null},
                mode: params.general.publish.mode
 
-    container "bskubi/bwa-mem2"
-    //maxRetries 4
-    //memory {20.GB + 20.GB * task.attempt}
+    container "hich"
+    maxRetries 4
+    memory {20.GB + 20.GB * task.attempt}
 
     // NOTE: Alignment speed is trivially parallelizeable and does not benefit
     // from running alignment in parallel multiple files at once. Each instance
     // of bwa-mem2 uses about 15 gigs of memory. For these two reasons we 
     // tell nextflow to run one alignment process at a time with maxForks 1.
+
+    // NOTE 2: I need to decide on how to work with the possibility that users
+    // will run multiple aligners (bwa-mem2, bwa, bsbolt, etc). We should still
+    // only run one at a time.
     maxForks 1
 
     input:
@@ -23,6 +27,40 @@ process BwaMem2Align {
 
     shell:
     align = "bwa-mem2 mem -t 10 -SP5M ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
+    tobam = "samtools view -b -o ${sample_id}.bam"
+    "${align} | ${tobam}"
+
+    stub:
+    "touch ${sample_id}.bam"
+}
+
+process BwaMemAlign {
+    publishDir params.general.publish.bam ? params.general.publish.bam : "results",
+               saveAs: {params.general.publish.bam ? it : null},
+               mode: params.general.publish.mode
+
+    container "hich"
+    maxRetries 4
+    memory {20.GB + 20.GB * task.attempt}
+
+    // NOTE: Alignment speed is trivially parallelizeable and does not benefit
+    // from running alignment in parallel multiple files at once. Each instance
+    // of bwa-mem2 uses about 15 gigs of memory. For these two reasons we 
+    // tell nextflow to run one alignment process at a time with maxForks 1.
+
+    // NOTE 2: I need to decide on how to work with the possibility that users
+    // will run multiple aligners (bwa-mem2, bwa, bsbolt, etc). We should still
+    // only run one at a time.
+    maxForks 1
+
+    input:
+    tuple val(sample_id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2)
+
+    output:
+    tuple val(sample_id), path("${sample_id}.bam")
+
+    shell:
+    align = "bwa mem -t 10 -SP5M ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
     tobam = "samtools view -b -o ${sample_id}.bam"
     "${align} | ${tobam}"
 
@@ -52,15 +90,34 @@ workflow Align {
             it
         }
         | set {fastq}
+    
+    fastq
+        | branch {
+            bwamem2: it.aligner == "bwa-mem2"
+            bwamem: it.aligner == "bwa-mem"
+            bsbolt: it.aligner == "bsbolt"
+            error: true
+        }
+    
 
     samples = transpack(
         BwaMem2Align,
-        [fastq, samples],
+        [fastq.bwamem2, samples],
         ["sample_id", "index_dir", "index_prefix", "fastq1", "fastq2"],
         ["sample_id", "sambam"],
         ["latest":"sambam"],
         "sample_id"
     )
+
+    samples = transpack(
+        BwaMemAlign,
+        [fastq.bwamem, samples],
+        ["sample_id", "index_dir", "index_prefix", "fastq1", "fastq2"],
+        ["sample_id", "sambam"],
+        ["latest":"sambam"],
+        "sample_id"
+    )
+
 
     if (params.general.get("last_step") == "align") {
         channel.empty() | set{samples}

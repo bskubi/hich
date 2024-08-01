@@ -43,13 +43,13 @@ workflow IngestPairs {
             ["latest":"pairs"],
             "sample_id"
         )
-        
-        if (params.general.get("last_step") == "IngestPairs") {
-            channel.empty() | set{samples}
-        }
 
         if ("IngestPairs" in params.general.get("qc_after")) {
             samples = QCReads(samples, "IngestPairs")
+        }
+
+        if (params.general.get("last_step") == "ingestpairs") {
+            channel.empty() | set{samples}
         }
 
     emit:

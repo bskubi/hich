@@ -60,6 +60,10 @@ workflow OptionalFragtag {
             samples = QCReads(samples, "OptionalFragtag")
         }
 
+        if (params.general.get("last_step") == "fragtag") {
+            channel.empty() | set{samples}
+        }
+
     emit:
         samples
 }
