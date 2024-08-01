@@ -28,6 +28,8 @@ workflow CallLoops {
     // For feature calling, we have to segregate by merge (techrep/biorep/condition)
     // and by whether or not it is downsampled
 
+    // If there are no comparisons, call mustache loops on individual files
+
     samples
         | filter {
             sample ->

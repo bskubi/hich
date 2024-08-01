@@ -5,7 +5,9 @@ process BwaAlign {
                saveAs: {params.general.publish.bam ? it : null},
                mode: params.general.publish.mode
 
+    conda "bwa bwa-mem2 samtools"
     container "bskubi/hich:latest"
+    
     maxRetries 6
     memory {20.GB + 10.GB * (task.attempt-1)}
 

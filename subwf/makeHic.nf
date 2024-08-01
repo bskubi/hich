@@ -24,7 +24,7 @@ process JuicerToolsPre {
     min_bin = matrix.resolutions.min()
     bins = matrix.resolutions ? "-r ${matrix.resolutions.join(',')}" : ""
 
-    cmd = ["java -Xmx20g -jar /app/juicer_tools.jar pre",
+    cmd = ["java -Xmx20g -jar juicer_tools_1.22.01.jar pre",
             bins,
            "${infile} ${outfile} ${chromsizes}"]
     cmd.removeAll([null])

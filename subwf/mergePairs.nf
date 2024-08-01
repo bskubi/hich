@@ -6,7 +6,7 @@ process Merge {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
                saveAs: {params.general.publish.fragtag ? it : null},
                mode: params.general.publish.mode
-            
+    conda "pairtools"
     container "bskubi/hich:latest"
 
     input:

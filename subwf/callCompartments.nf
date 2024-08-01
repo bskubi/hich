@@ -1,6 +1,7 @@
 process CooltoolsEigsCis {
     publishDir "results/compartments",
                mode: params.general.publish.mode
+    conda "cooltools"
     container "bskubi/hich:latest"
 
     input:

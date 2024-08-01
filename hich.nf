@@ -26,6 +26,10 @@ workflow {
     // is launched, since its value is the result of aggregating several
     // places where param values can be set.
 
+    // ingest .mcool/.hic files and interconvert between them using hictk
+
+    // Think more carefully about .id vs .sample_id
+
     sampleCSV = params.general.sampleCSV
     channel.fromPath(sampleCSV.filename, checkIfExists: true)
         | splitCsv(header: true, sep: sampleCSV.sep)
