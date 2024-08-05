@@ -2,7 +2,7 @@ include {QCReads} from './qcHicReads.nf'
 include {AssignParams} from './assignParams.nf'
 include {transpack} from './extraops.nf'
 
-process Merge {
+process PairtoolsMerge {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
                saveAs: {params.general.publish.fragtag ? it : null},
                mode: params.general.publish.mode
@@ -17,137 +17,120 @@ process Merge {
 
     shell:
     samples = (samples.getClass() == nextflow.processor.TaskPath) ? samples : samples.join(" ")
-    "pairtools --version > version.txt && pairtools merge --output ${id}.pairs.gz ${samples}"
+    "pairtools merge --output ${id}.pairs.gz ${samples}"
 
     stub:
     "touch ${id}.pairs.gz"
 }
 
-workflow TechrepsToBioreps {
-    take:
-        samples
+def label(hashmap, label) {
+    hashmap.containsKey(label) && hashmap.get(label) != null && hashmap.get(label).toString().length() >= 1
+}
 
-            main:
+def isTechrep = {map -> label(map, "techrep") && label(map, "biorep") && label(map, "condition")}
+def isBiorep = {map -> !label(map, "techrep") && label(map, "biorep") && label(map, "condition")}
+def isCondition = {map -> !label(map, "techrep") && !label(map, "biorep") && label(map, "condition")}
 
-        // This is the hairiest part of the code currently and should probably
-        // get restructured
-        def isTechrep = {it.get("is_techrep", "").toString().trim() in ["", "true", true, 1]}
-        def hasStructure = {it.get("condition").length() > 0
-                            && it.get("biorep").length() > 0}
-        def ensureStructure = {
-            if (isTechrep(it)) {it.is_techrep = true}
-            if (isTechrep(it) && !hasStructure(it)) {
-                it.biorep = it.id
-                it.condition = it.id
-            }
-            it
-        }
+def mergeHashmaps = {
+    hashmaps ->
 
-        /*
-            The approach here is to groupTuple the samples by the condition and
-            biorep id, which identifies the samples to be merged.
-
-            That means "is_techrep/is_biorep/is_condition" indicates whether
-            the sample is in one of these sample types and "techrep/biorep/condition"
-            indicates the subset of samples with which it should be merged.
-
-            We then create an "id" from the conditiona and biorep id.
-
-            To create the biorep hashmap, we keep all the key:value pairs that
-            are shared amongst all input techreps as well as the complete set
-            of "latest" values.
-
-            I am pretty sure this means the sample_id and id key:value pairs
-            will be discarded since the values don't match across techreps.
-            Therefore it seems like we ought to be able to just get rid of the
-            "id" part and keep the sample_id part.
-        */
-        samples
-            | filter{it.containsKey("techrep") && it.containsKey("biorep") && isTechrep(it)}
-            | map{ensureStructure(it)}
-            | map{tuple(it.subMap("condition", "biorep"), it)}
-            | groupTuple
-            | map {
-                biorep, techreps ->
-                biorep += techreps[0].findAll{entry -> techreps.every {map -> map[entry.key] == entry.value}}
-                biorep.latest = techreps.collect{it.latest}
-                biorep.is_biorep = true
-                biorep.id = "${biorep.condition}_${biorep.biorep}"
-                biorep
-            }
-            | AssignParams
-            | set{to_merge}
-
-        to_merge = transpack(
-            Merge,
-            [to_merge],
-            ["id", "latest"],
-            ["id", "biorep_merge_pairs"],
-            ["latest":"biorep_merge_pairs"]
-        )
+    hashmaps[0].findAll {
+        item ->
         
-        to_merge
-            | concat(samples)
-            | set {samples}
+        hashmaps.every {
+            map -> map[item.key] == item.value
+        }clea
+    }
+}
 
-        if ("TechrepsToBioreps" in params.general.get("qc_after")) {
-            QCReads(samples, "TechrepsToBioreps")
-        }
+def mergeGroupParams = {
+    hashmaps ->
+    def merge = mergeHashmaps(hashmaps)
+    merge.latest = []
+    hashmaps.each {map -> merge.latest.add(map.get("latest"))}
+    if (isTechrep(hashmaps[0])) {
+        merge.remove("techrep")
+        merge.id = "${merge.condition}_${merge.biorep}"
+    } else if (isBiorep(hashmaps[0])) {
+        merge.remove("biorep")
+        merge.id = merge.condition
+    } else {
+        error "merge ${merge.id} is not a condition or biorep:\n${merge}"
+    }
+    return merge
+}
+
+workflow Merge {
+    take:
+    samples
+    sampleType
+
+    main:
+
+    switch(sampleType) {
+        case "TechrepsToBiorep":
+            filterFunction = isTechrep
+            groups = ["condition", "biorep"]
+            result = "biorep_merge_pairs"
+            break
+        case "BiorepsToCondition":
+            filterFunction = isBiorep
+            groups = ["condition"]
+            result = "condition_merge_pairs"
+            break
+        default:
+            error "Invalid merge sampleType '${sampleType}'"
+    }
+
+    
+
+    samples
+        | filter{filterFunction.call(it)}
+        | map{tuple(it.subMap(*groups), it)}
+        | groupTuple
+        | map {group, samples -> mergeGroupParams(samples)}
+        | AssignParams
+        | set{to_merge}
+
+    to_merge = transpack(
+        PairtoolsMerge,
+        [to_merge],
+        ["id", "latest"],
+        ["id", result],
+        ["latest":result]
+    )
+    
+    to_merge
+        | concat(samples)
+        | set {samples}
+
+    if (sampleType in params.general.get("qc_after")) {
+        QCReads(samples, sampleType)
+    }
 
     emit:
-        samples
+    samples
+}
+
+workflow TechrepsToBioreps {
+    take:
+    samples
+
+    main:
+
+    samples = Merge(samples, "TechrepsToBiorep")
+
+    emit:
+    samples
 }
 
 workflow BiorepsToConditions {
     take:
-        samples
+    samples
 
     main:
-
-        def isBiorep = {it.containsKey("is_biorep") && it.is_biorep}
-        def hasStructure = {it.get("condition").length() > 0
-                            && it.get("biorep").length() > 0}
-        def ensureStructure = {
-            if (isBiorep(it)) {it.is_biorep = true}
-            if (isBiorep(it) && !hasStructure(it)) {
-                it.biorep = it.id
-                it.condition = it.id
-            }
-            it
-        }
-
-        samples
-            | filter{it.containsKey("biorep") && it.containsKey("condition") && isBiorep(it)}
-            | map{ensureStructure(it)}
-            | map{tuple(it.subMap("condition"), it)}
-            | groupTuple
-            | map {
-                condition, bioreps ->
-                condition += bioreps[0].findAll{entry -> bioreps.every {map -> map[entry.key] == entry.value}}
-                condition.latest = bioreps.collect{it.latest}
-                condition.id = "${condition.condition}"
-                condition.is_condition = true
-                condition
-            }
-            | AssignParams
-            | set{to_merge}
-
-        to_merge = transpack(
-            Merge,
-            [to_merge],
-            ["id", "latest"],
-            ["id", "condition_merge_pairs"],
-            ["latest":"condition_merge_pairs"]
-        )
-
-        to_merge
-            | concat(samples)
-            | set {samples}
-
-        if ("BiorepsToConditions" in params.general.get("qc_after")) {
-            QCReads(samples, "BiorepsToConditions")
-        }
+    samples = Merge(samples, "BiorepsToCondition")
 
     emit:
-        samples
+    samples
 }

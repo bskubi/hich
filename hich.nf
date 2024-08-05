@@ -31,8 +31,16 @@ workflow {
     // Think more carefully about .id vs .sample_id
 
     sampleCSV = params.general.sampleCSV
-    channel.fromPath(sampleCSV.filename, checkIfExists: true)
+    samples = channel.fromPath(sampleCSV.filename, checkIfExists: true)
         | splitCsv(header: true, sep: sampleCSV.sep)
+        | map {hmap ->
+            if (hmap.get("id") == null || hmap.get("id").toString().length() == 0) {
+                hmap.id = "${hmap.condition}_${hmap.biorep}_${hmap.techrep}".toString()
+            }
+            hmap
+        }
+
+    samples
         | AssignParams
         | HeadReads
         | Align
