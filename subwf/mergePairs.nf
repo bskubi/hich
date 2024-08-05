@@ -37,8 +37,8 @@ workflow TechrepsToBioreps {
         def ensureStructure = {
             if (isTechrep(it)) {it.is_techrep = true}
             if (isTechrep(it) && !hasStructure(it)) {
-                it.biorep = it.sample_id
-                it.condition = it.sample_id
+                it.biorep = it.id
+                it.condition = it.id
             }
             it
         }
@@ -110,8 +110,8 @@ workflow BiorepsToConditions {
         def ensureStructure = {
             if (isBiorep(it)) {it.is_biorep = true}
             if (isBiorep(it) && !hasStructure(it)) {
-                it.biorep = it.sample_id
-                it.condition = it.sample_id
+                it.biorep = it.id
+                it.condition = it.id
             }
             it
         }
