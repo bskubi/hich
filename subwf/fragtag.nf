@@ -32,7 +32,8 @@ workflow OptionalFragtag {
         samples
 
     main:
-        // I think this is cruft and can be removed
+        // This should be reworked so that the output filename is determined
+        // by the process.
         def hasFragfileName = {
             it.get("fragfile").toString().trim().length() > 0
         }
@@ -40,7 +41,6 @@ workflow OptionalFragtag {
         def fragfileExists = {
             hasFragfileName(it) && file(it.fragfile).exists()
         }
-        // End cruft
 
         samples
             | filter{fragfileExists(it)}

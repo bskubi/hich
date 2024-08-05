@@ -43,6 +43,25 @@ workflow TechrepsToBioreps {
             it
         }
 
+        /*
+            The approach here is to groupTuple the samples by the condition and
+            biorep id, which identifies the samples to be merged.
+
+            That means "is_techrep/is_biorep/is_condition" indicates whether
+            the sample is in one of these sample types and "techrep/biorep/condition"
+            indicates the subset of samples with which it should be merged.
+
+            We then create an "id" from the conditiona and biorep id.
+
+            To create the biorep hashmap, we keep all the key:value pairs that
+            are shared amongst all input techreps as well as the complete set
+            of "latest" values.
+
+            I am pretty sure this means the sample_id and id key:value pairs
+            will be discarded since the values don't match across techreps.
+            Therefore it seems like we ought to be able to just get rid of the
+            "id" part and keep the sample_id part.
+        */
         samples
             | filter{it.containsKey(["techrep", "biorep"]) && isTechrep(it)}
             | map{ensureStructure(it)}
