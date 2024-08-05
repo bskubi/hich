@@ -30,10 +30,10 @@ workflow AssignParams {
                     // Overwrite previous params with id-specific params
                     // Priority is to later-specified params in nextflow.config
                     if (bundle && bundle.getClass() == nextflow.config.ConfigMap && bundle.get("ids")) {
-                        sample_id = sample.id.toString()
+                        id = sample.id.toString()
                         bundle_ids = bundle.ids.collect{it.toString()}
 
-                        if (bundle.containsKey("ids") && sample_id in bundle_ids) {
+                        if (bundle.containsKey("ids") && id in bundle_ids) {
                             update = bundle.clone()
                             update.remove("ids")
                             sample += update

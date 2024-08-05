@@ -9,7 +9,7 @@ process BwaAlign {
     container "bskubi/hich:latest"
     
     maxRetries 6
-    memory {20.GB + 10.GB * (task.attempt-1)}
+    memory {15.GB + 15.GB * (task.attempt-1)}
 
     // NOTE: Alignment speed is trivially parallelizeable and does not benefit
     // from running alignment in parallel multiple files at once. Each instance
@@ -22,10 +22,10 @@ process BwaAlign {
     maxForks 1
 
     input:
-    tuple val(sample_id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2), val(aligner), val(threads), val(bwa_flags)
+    tuple val(id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2), val(aligner), val(threads), val(bwa_flags)
 
     output:
-    tuple val(sample_id), path("${sample_id}.bam")
+    tuple val(id), path("${id}.bam")
 
     shell:
     align = ""
@@ -33,11 +33,11 @@ process BwaAlign {
         align = "${aligner} mem -t ${threads} ${bwa_flags} ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
     }
     
-    tobam = "samtools view -b -o ${sample_id}.bam"
+    tobam = "samtools view -b -o ${id}.bam"
     "${align} | ${tobam}"
 
     stub:
-    "touch ${sample_id}.bam"
+    "touch ${id}.bam"
 }
 
 workflow Align {
@@ -62,10 +62,10 @@ workflow Align {
     samples = transpack(
         BwaAlign,
         [fastq, samples],
-        ["sample_id", "index_dir", "index_prefix", "fastq1", "fastq2", "aligner", "aligner_threads", "bwa_flags"],
-        ["sample_id", "sambam"],
+        ["id", "index_dir", "index_prefix", "fastq1", "fastq2", "aligner", "aligner_threads", "bwa_flags"],
+        ["id", "sambam"],
         ["latest":"sambam"],
-        "sample_id"
+        "id"
     )
 
     if (params.general.get("last_step") == "align") {

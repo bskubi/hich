@@ -37,8 +37,8 @@ workflow TechrepsToBioreps {
         def ensureStructure = {
             if (isTechrep(it)) {it.is_techrep = true}
             if (isTechrep(it) && !hasStructure(it)) {
-                it.biorep = it.sample_id
-                it.condition = it.sample_id
+                it.biorep = it.id
+                it.condition = it.id
             }
             it
         }
@@ -63,7 +63,7 @@ workflow TechrepsToBioreps {
             "id" part and keep the sample_id part.
         */
         samples
-            | filter{it.containsKey(["techrep", "biorep"]) && isTechrep(it)}
+            | filter{it.containsKey("techrep") && it.containsKey("biorep") && isTechrep(it)}
             | map{ensureStructure(it)}
             | map{tuple(it.subMap("condition", "biorep"), it)}
             | groupTuple
@@ -77,7 +77,6 @@ workflow TechrepsToBioreps {
             }
             | AssignParams
             | set{to_merge}
-
 
         to_merge = transpack(
             Merge,
@@ -111,14 +110,14 @@ workflow BiorepsToConditions {
         def ensureStructure = {
             if (isBiorep(it)) {it.is_biorep = true}
             if (isBiorep(it) && !hasStructure(it)) {
-                it.biorep = it.sample_id
-                it.condition = it.sample_id
+                it.biorep = it.id
+                it.condition = it.id
             }
             it
         }
 
         samples
-            | filter{it.containsKey(["biorep", "condition"]) && isBiorep(it)}
+            | filter{it.containsKey("biorep") && it.containsKey("condition") && isBiorep(it)}
             | map{ensureStructure(it)}
             | map{tuple(it.subMap("condition"), it)}
             | groupTuple

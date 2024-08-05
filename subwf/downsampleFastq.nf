@@ -2,18 +2,18 @@ include {transpack} from './extraops.nf'
 
 process ZcatHeadFastq {
     input:
-    tuple val(sample_id), path(fastq1), path(fastq2), val(n_reads)
+    tuple val(id), path(fastq1), path(fastq2), val(n_reads)
 
     output:
-    tuple val(sample_id), path("${sample_id}_R1.fastq.gz"), path("${sample_id}_R2.fastq.gz")
+    tuple val(id), path("${id}_R1.fastq.gz"), path("${id}_R2.fastq.gz")
 
     shell:
     lines = (n_reads as Integer) * 4
 
-    "zcat ${fastq1} | head -n ${lines} | gzip -c > ${sample_id}_R1.fastq.gz && zcat ${fastq2} | head -n ${lines} | gzip -c > ${sample_id}_R2.fastq.gz"
+    "zcat ${fastq1} | head -n ${lines} | gzip -c > ${id}_R1.fastq.gz && zcat ${fastq2} | head -n ${lines} | gzip -c > ${id}_R2.fastq.gz"
 
     stub:
-    "touch ${sample_id}_R1.fastq.gz ${sample_id}_R2.fastq.gz"
+    "touch ${id}_R1.fastq.gz ${id}_R2.fastq.gz"
 }
 
 workflow HeadReads {
@@ -31,10 +31,10 @@ workflow HeadReads {
     samples = transpack(
         ZcatHeadFastq,
         [head, samples],
-        ["sample_id", "fastq1", "fastq2", "n_reads"],
-        ["sample_id", "fastq1", "fastq2"],
+        ["id", "fastq1", "fastq2", "n_reads"],
+        ["id", "fastq1", "fastq2"],
         [:],
-        "sample_id"
+        "id"
     )
 
     emit:

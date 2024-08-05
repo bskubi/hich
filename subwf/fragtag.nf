@@ -9,10 +9,10 @@ process Fragtag {
     container "bskubi/hich:latest"
 
     input:
-    tuple val(sample_id), path(pairs), path(fragfile), val(tagged_pairs)
+    tuple val(id), path(pairs), path(fragfile), val(tagged_pairs)
 
     output:
-    tuple val(sample_id), path(tagged_pairs)
+    tuple val(id), path(tagged_pairs)
 
     shell:
     // ["pairtools restrict",
@@ -44,16 +44,16 @@ workflow OptionalFragtag {
 
         samples
             | filter{fragfileExists(it)}
-            | map{it.frag_pairs = "${it.sample_id}_fragtag.pairs.gz"; it}
+            | map{it.frag_pairs = "${it.id}_fragtag.pairs.gz"; it}
             | set{fragtag}
 
         samples = transpack(
             Fragtag,
             [fragtag, samples],
-            ["sample_id", "pairs", "fragfile", "frag_pairs"],
-            ["sample_id", "frag_pairs"],
+            ["id", "pairs", "fragfile", "frag_pairs"],
+            ["id", "frag_pairs"],
             ["latest":"frag_pairs"],
-            "sample_id"
+            "id"
         )
 
         if ("OptionalFragtag" in params.general.get("qc_after")) {

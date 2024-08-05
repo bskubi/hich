@@ -9,23 +9,23 @@ process PairtoolsParse2 {
     container "bskubi/hich:latest"
 
     input:
-    tuple val(sample_id), path(sambam), path(chromsizes), val(assembly), val(parse_params)
+    tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parse_params)
 
     output:
-    tuple val(sample_id), path("${sample_id}.pairs.gz")
+    tuple val(id), path("${id}.pairs.gz")
 
     shell:
     cmd = ["pairtools parse2",
            "--assembly ${assembly}",
            "--chroms-path ${chromsizes}"] +
            parse_params +
-          ["${sambam} | pairtools sort --output ${sample_id}.pairs.gz"]
+          ["${sambam} | pairtools sort --output ${id}.pairs.gz"]
     cmd.removeAll([null])
 
     cmd.join(" ")
 
     stub:
-    "touch ${sample_id}.pairs.gz"
+    "touch ${id}.pairs.gz"
 }
 
 workflow Parse {
@@ -45,13 +45,11 @@ workflow Parse {
     samples = transpack(
         PairtoolsParse2,
         [sambam, samples],
-        ["sample_id", "sambam", "chromsizes", "assembly", "parse_params"],
-        ["sample_id", "pairs"],
+        ["id", "sambam", "chromsizes", "assembly", "parse_params"],
+        ["id", "pairs"],
         ["latest":"pairs"],
-        "sample_id"
+        "id"
         )
-    
-    samples | map{it.id = it.sample_id; it} | set{samples}
 
     // It might be good to simplify these workflow control steps since they
     // are repeated frequently.

@@ -33,7 +33,6 @@ workflow {
     sampleCSV = params.general.sampleCSV
     channel.fromPath(sampleCSV.filename, checkIfExists: true)
         | splitCsv(header: true, sep: sampleCSV.sep)
-        | map{it.id = it.sample_id; it}
         | AssignParams
         | HeadReads
         | Align
