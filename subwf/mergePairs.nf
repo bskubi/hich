@@ -117,7 +117,7 @@ workflow BiorepsToConditions {
         }
 
         samples
-            | filter{it.containsKey(["biorep", "condition"]) && isBiorep(it)}
+            | filter{it.containsKey("biorep") && it.containsKey("condition") && isBiorep(it)}
             | map{ensureStructure(it)}
             | map{tuple(it.subMap("condition"), it)}
             | groupTuple
