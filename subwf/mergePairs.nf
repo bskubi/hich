@@ -63,7 +63,7 @@ workflow TechrepsToBioreps {
             "id" part and keep the sample_id part.
         */
         samples
-            | filter{it.containsKey(["techrep", "biorep"]) && isTechrep(it)}
+            | filter{it.containsKey("techrep") && it.containsKey("biorep") && isTechrep(it)}
             | map{ensureStructure(it)}
             | map{tuple(it.subMap("condition", "biorep"), it)}
             | groupTuple
@@ -77,7 +77,6 @@ workflow TechrepsToBioreps {
             }
             | AssignParams
             | set{to_merge}
-
 
         to_merge = transpack(
             Merge,
