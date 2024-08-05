@@ -46,7 +46,9 @@ workflow Deduplicate {
             [deduplicate, samples],
             ["id", "latest", "dedup_params"],
             ["id", "dedup_pairs"],
-            ["latest":"dedup_pairs"]
+            ["latest":"dedup_pairs"],
+            "id",
+            ["nullOk":"dedup_params"]
         )
 
         if (params.general.get("last_step") == "dedup") {

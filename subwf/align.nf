@@ -9,7 +9,7 @@ process BwaAlign {
     container "bskubi/hich:latest"
     
     maxRetries 6
-    memory {20.GB + 10.GB * (task.attempt-1)}
+    memory {15.GB + 15.GB * (task.attempt-1)}
 
     // NOTE: Alignment speed is trivially parallelizeable and does not benefit
     // from running alignment in parallel multiple files at once. Each instance

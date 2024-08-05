@@ -18,9 +18,6 @@ process StageReferences {
 
     shell:
     ":"
-
-    stub:
-    "touch ${url}"
 }
 
 workflow TryDownloadMissingReferences {
