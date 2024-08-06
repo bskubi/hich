@@ -3,6 +3,42 @@ include {TryDownloadMissingReferences} from './genomeReferences.nf'
 include {MakeMissingIndex} from './alignerIndex.nf'
 include {MakeMissingDigest} from './makeDigest.nf'
 
+def validKey = {
+    map, key ->
+
+    map.get(key) && map.get(key).toString().trim()
+}
+
+def keySwitch = {
+    map, keyMap, defaultVal ->
+
+    def keySet = keyMap.keySet().flatten().toSet()
+    def result = keyMap.findResult {
+        keys, val ->
+
+        def truthy = keys
+        def falsey = keySet.findAll{!(it in keys)}
+        
+        if (truthy.every{validKey(map, it)} && falsey.every{!validKey(map, it)}) {
+            return val
+        }
+        return null
+    }
+    result ?: defaultVal
+}
+
+def getDatatype = {
+    sample ->
+
+    ["datatype":keySwitch(sample,
+              [
+                ["fastq1", "fastq2"]:"fastq",
+                ["sambam"]:"sambam",
+                ["pairs"]:"pairs"
+              ],
+              sample.get("datatype"))]
+}
+
 workflow AssignParams {
     take:
         samples
@@ -24,6 +60,18 @@ workflow AssignParams {
                     // Add default params to sample hashmaps if not present
                     !(k in sample) ? sample += [(k):v] : null
                 }
+
+                sample += getDatatype(sample)
+            } | map {
+                sample ->
+                
+                if (!validKey(sample, "id")) {
+                    sample += ["id":"${sample.condition}_${sample.biorep}_${sample.techrep}".toString()]
+                }
+                sample
+            } | map{
+                sample ->
+
                 params.each {
                     k, bundle ->
 
@@ -40,9 +88,9 @@ workflow AssignParams {
                         }
                     }
                 }
+                
                 sample
-            }
-            | map {
+            } | map {
                 sample ->
                 
                 ["fastq1", "fastq2", "sambam", "pairs"].each {

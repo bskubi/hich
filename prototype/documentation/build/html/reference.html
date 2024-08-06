@@ -435,6 +435,30 @@
 <div class="line">The name of the genome assembly for the sample, such as <code class="docutils literal notranslate"><span class="pre">hg38</span></code>.</div>
 </div>
 </section>
+<section id="fastq1-and-fastq2">
+<h4>fastq1 and fastq2<a class="headerlink" href="#fastq1-and-fastq2" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">Optional, but one of <a class="reference internal" href="#fastq1-and-fastq2">fastq1 and fastq2</a>, <a class="reference internal" href="#sambam">sambam</a>, or <a class="reference internal" href="#pairs">pairs</a> must be specified for each sample as these are the data files Hich ingests.</div>
+<div class="line"><br /></div>
+<div class="line">The fastq1 and fastq2 attributes are two separate columns in the sample file, each specifying the path to one of two paired-end .fastq-format files which can be gzipped.</div>
+</div>
+</section>
+<section id="sambam">
+<h4>sambam<a class="headerlink" href="#sambam" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">Optional, but one of <a class="reference internal" href="#fastq1-and-fastq2">fastq1 and fastq2</a>, <a class="reference internal" href="#sambam">sambam</a>, or <a class="reference internal" href="#pairs">pairs</a> must be specified for each sample as these are the data files Hich ingests.</div>
+<div class="line"><br /></div>
+<div class="line">Specifies a .sam or .bam format file to ingest.</div>
+</div>
+</section>
+<section id="pairs">
+<h4>pairs<a class="headerlink" href="#pairs" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">Optional, but one of <a class="reference internal" href="#fastq1-and-fastq2">fastq1 and fastq2</a>, <a class="reference internal" href="#sambam">sambam</a>, or <a class="reference internal" href="#pairs">pairs</a> must be specified for each sample as these are the data files Hich ingests.</div>
+<div class="line"><br /></div>
+<div class="line">Specifies a <a class="reference external" href="https://github.com/4dn-dcic/pairix/blob/master/pairs_format_specification.md">4DN .pairs format</a> file to ingest.</div>
+</div>
+</section>
 <section id="reference">
 <h4>reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
@@ -471,15 +495,14 @@
 <section id="datatype">
 <h4>datatype<a class="headerlink" href="#datatype" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
-<div class="line">Required</div>
+<div class="line">Required, but can be autodetected.</div>
 <div class="line"><br /></div>
 <div class="line">Options:</div>
 </div>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">fastq</span></code> <cite>default</cite></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">sam</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">bam</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">pairs</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fastq</span></code> <cite>default + autodetected if “fastq1” and “fastq2” are specified but “sambam” and “pairs” are not.</cite></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sambam</span></code> <cite>autodetected if “sambam” is specified but “fastq1”, “fastq2”, and “pairs” are not.</cite></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pairs</span></code> <cite>autodetected if “pairs” is specified but “fastq1”, “fastq2”, and “sambam” are not.</cite></p></li>
 </ul>
 <div class="line-block">
 <div class="line"><br /></div>
@@ -1081,6 +1104,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#biorep">biorep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#techrep">techrep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#assembly">assembly</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fastq1-and-fastq2">fastq1 and fastq2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sambam">sambam</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairs">pairs</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#reference">reference</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#chromsizes">chromsizes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#min-mapq">min_mapq</a></li>

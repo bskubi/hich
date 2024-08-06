@@ -29,8 +29,6 @@ workflow {
 
     // ingest .mcool/.hic files and interconvert between them using hictk
 
-    // Think more carefully about .id vs .sample_id
-
     
 
     LoadSampleFile

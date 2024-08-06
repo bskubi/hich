@@ -207,6 +207,23 @@ assembly
 | 
 | The name of the genome assembly for the sample, such as ``hg38``.
 
+fastq1 and fastq2
+,,,,,,,,,,,,,,,,,
+| Optional, but one of `fastq1 and fastq2`_, `sambam`_, or `pairs`_ must be specified for each sample as these are the data files Hich ingests.
+|
+| The fastq1 and fastq2 attributes are two separate columns in the sample file, each specifying the path to one of two paired-end .fastq-format files which can be gzipped.
+
+sambam
+,,,,,,
+| Optional, but one of `fastq1 and fastq2`_, `sambam`_, or `pairs`_ must be specified for each sample as these are the data files Hich ingests.
+|
+| Specifies a .sam or .bam format file to ingest.
+
+pairs
+,,,,,
+| Optional, but one of `fastq1 and fastq2`_, `sambam`_, or `pairs`_ must be specified for each sample as these are the data files Hich ingests.
+|
+| Specifies a `4DN .pairs format <https://github.com/4dn-dcic/pairix/blob/master/pairs_format_specification.md>`_ file to ingest.
 
 reference
 ,,,,,,,,,
@@ -236,14 +253,13 @@ min_mapq
 
 datatype
 ,,,,,,,,
-| Required
+| Required, but can be autodetected.
 | 
 | Options:
 
-- ``fastq`` `default`
-- ``sam``
-- ``bam``
-- ``pairs``
+- ``fastq`` `default + autodetected if "fastq1" and "fastq2" are specified but "sambam" and "pairs" are not.`
+- ``sambam`` `autodetected if "sambam" is specified but "fastq1", "fastq2", and "pairs" are not.`
+- ``pairs`` `autodetected if "pairs" is specified but "fastq1", "fastq2", and "sambam" are not.`
 
 | 
 | The format for input read data.
