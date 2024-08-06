@@ -44,9 +44,7 @@ workflow MakeMcool {
         samples
     
     main:
-        samples
-            | filter{it.matrix.make_mcool_file_format}
-            | set{mcool}
+        samples | filter{it.matrix.make_mcool_file_format} | set{mcool}
 
         transpack (
             CoolerZoomify,

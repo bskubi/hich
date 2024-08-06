@@ -24,7 +24,9 @@ process PairtoolsMerge {
 }
 
 def label(hashmap, label) {
-    hashmap.containsKey(label) && hashmap.get(label) != null && hashmap.get(label).toString().length() >= 1
+    hashmap.containsKey(label) &&
+    hashmap.get(label) != null &&
+    hashmap.get(label).toString().trim().length() >= 1
 }
 
 def isTechrep = {map -> label(map, "techrep") && label(map, "biorep") && label(map, "condition")}
@@ -39,7 +41,7 @@ def mergeHashmaps = {
         
         hashmaps.every {
             map -> map[item.key] == item.value
-        }clea
+        }
     }
 }
 

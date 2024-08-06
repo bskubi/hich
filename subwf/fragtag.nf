@@ -9,48 +9,38 @@ process Fragtag {
     container "bskubi/hich:latest"
 
     input:
-    tuple val(id), path(pairs), path(fragfile), val(tagged_pairs)
+    tuple val(id), path(pairs), path(fragfile)
 
     output:
-    tuple val(id), path(tagged_pairs)
+    tuple val(id), path("${id}_fragtag.pairs.gz")
 
     shell:
     // ["pairtools restrict",
     //  "--frags ${fragfile}",
     //  "--output ${tagged_pairs}",
     //  "${pairs}"].join(" ")
-    
-    cmd = "hich fragtag ${fragfile} ${tagged_pairs} ${pairs}"
+    cmd = "hich fragtag ${fragfile} ${id}_fragtag.pairs.gz ${pairs}"
     cmd
 
     stub:
-    "touch ${tagged_pairs}"
+    "touch ${id}_fragtag.pairs.gz"
 }
+
+def hasFragfileName = {it.get("fragfile").toString().trim().length() > 0}
+
+def fragfileExists = {hasFragfileName(it) && file(it.fragfile).exists()}
 
 workflow OptionalFragtag {
     take:
         samples
 
     main:
-        // This should be reworked so that the output filename is determined
-        // by the process.
-        def hasFragfileName = {
-            it.get("fragfile").toString().trim().length() > 0
-        }
-        
-        def fragfileExists = {
-            hasFragfileName(it) && file(it.fragfile).exists()
-        }
-
-        samples
-            | filter{fragfileExists(it)}
-            | map{it.frag_pairs = "${it.id}_fragtag.pairs.gz"; it}
-            | set{fragtag}
+        samples | filter{fragfileExists(it)} | set{fragtag}
 
         samples = transpack(
             Fragtag,
             [fragtag, samples],
-            ["id", "pairs", "fragfile", "frag_pairs"],
+            ["id", "pairs", "fragfile"],
             ["id", "frag_pairs"],
             ["latest":"frag_pairs"],
             "id"
