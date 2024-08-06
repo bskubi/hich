@@ -1,4 +1,4 @@
-include {LoadSampleCSV} from './subwf/loadSampleFile.nf'
+include {LoadSampleFile} from './subwf/loadSampleFile.nf'
 include {AssignParams} from './subwf/assignParams.nf'
 include {Align} from './subwf/align.nf'
 include {HeadReads} from './subwf/downsampleFastq.nf'
@@ -33,7 +33,7 @@ workflow {
 
     
 
-    LoadSampleCSV
+    LoadSampleFile
         | AssignParams
         | HeadReads
         | Align
@@ -41,15 +41,15 @@ workflow {
         | IngestPairs
         | OptionalFragtag
         | TechrepsToBioreps
-        // | Deduplicate
-        // | BiorepsToConditions
-        // | Select
-        // | MakeHic
-        // | MakeMcool
-        // | Hicrep
-        // | CallCompartments
-        // | CallLoops
-        // | CallInsulation
+        | Deduplicate
+        | BiorepsToConditions
+        | Select
+        | MakeHic
+        | MakeMcool
+        | Hicrep
+        | CallCompartments
+        | CallLoops
+        | CallInsulation
         
 }
 

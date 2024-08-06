@@ -1,4 +1,4 @@
-include {sqljoin; sourcePrefix} from './extraops.nf'
+include {sourcePrefix} from './extraops.nf'
 
 process BwaMem2Index {
     conda "bwa-mem2"
@@ -16,7 +16,6 @@ process BwaMem2Index {
           path("bwa-mem2/index/${prefix}.pac")
 
     shell:
-    //"mkdir -p bwa-mem2/index && cd bwa-mem2/index && touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
     "bwa-mem2 index -p ${prefix} ${reference} && mkdir -p bwa-mem2/index && mv ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac bwa-mem2/index"
 
     stub:
@@ -26,7 +25,7 @@ process BwaMem2Index {
 process BwaMemIndex {
     conda "bwa"
     container "bskubi/hich:latest"
-    publishDir params.general.publish.bwa_mem_index ? params.general.publish.bwa_mem2_index : "results",
+    publishDir params.general.publish.bwa_mem_index ? params.general.publish.bwa_mem_index : "results",
                saveAs: {params.general.publish.bwa_mem_index ? it : null},
                mode: params.general.publish.mode
 
@@ -35,10 +34,9 @@ process BwaMemIndex {
 
     output:
     tuple path("bwa/index"), val(prefix), path("bwa/index/${prefix}.ann"), path("bwa/index/${prefix}.amb"),
-          path("bwa/index/${prefix}.pac"), path("bwa/index/${prefix}.bwt"), path("bwa/index/${prefix}.sa"),
+          path("bwa/index/${prefix}.pac"), path("bwa/index/${prefix}.bwt"), path("bwa/index/${prefix}.sa")
 
     shell:
-    //"mkdir -p bwa-mem2/index && cd bwa-mem2/index && touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
     "bwa index -p ${prefix} ${reference} && mkdir -p bwa/index && mv ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa bwa/index"
 
     stub:
@@ -52,7 +50,6 @@ workflow MakeMissingIndex {
         samples
     
     main:
-
         sourcePrefix(
             BwaMem2Index,
             samples,
@@ -62,7 +59,20 @@ workflow MakeMissingIndex {
             ["index_dir", "index_prefix", ".0123", ".amb", ".ann", ".bwt.2bit.64", ".pac"],
             {["index_prefix":it.assembly]},
             "index_prefix",
-            {it.datatype in ["fq", "fastq"]},
+            {it.datatype in ["fq", "fastq"] && it.aligner == "bwa-mem2"},
+            ["keep":["index_dir", "index_prefix"]]
+        ) | set{samples}
+
+        sourcePrefix(
+            BwaMemIndex,
+            samples,
+            "index_dir",
+            "index_prefix",
+            ["reference", "index_prefix"],
+            ["index_dir", "index_prefix", ".0123", ".ann", ".amb", ".pac", ".bwt", ".sa"],
+            {["index_prefix":it.assembly]},
+            "index_prefix",
+            {it.datatype in ["fq", "fastq"] && it.aligner == "bwa"},
             ["keep":["index_dir", "index_prefix"]]
         ) | set{samples}
 

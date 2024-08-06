@@ -3,8 +3,8 @@ include {AssignParams} from './assignParams.nf'
 include {transpack} from './extraops.nf'
 
 process PairtoolsMerge {
-    publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
-               saveAs: {params.general.publish.fragtag ? it : null},
+    publishDir params.general.publish.merge ? params.general.publish.merge : "results",
+               saveAs: {params.general.publish.merge ? it : null},
                mode: params.general.publish.mode
     conda "pairtools"
     container "bskubi/hich:latest"
