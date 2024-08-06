@@ -1,0 +1,5 @@
+condition	fastq1	fastq2	assembly	enzymes
+MNase	MNase_R1.fq	MNase_R2.fq	hg38	
+ArimaKit	Arima_R1.fq	Arima_R2.fq	hg38	Arima
+SingleDigest	Single_R1.fq	Single_R2.fq	hg38	DdeI
+DoubleDigest	Double_R1.fq	Double_R2.fq	hg38	DdeI,DpnII

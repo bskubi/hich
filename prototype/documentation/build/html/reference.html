@@ -1,26 +1,26 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="./">
+<html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>Hich Reference &#8212; Hich 0.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
-    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=c058f7c8" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
-    <script src="_static/documentation_options.js?v=2709fde1"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Hich Installation" href="installation.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
-
   
-  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
   
@@ -33,31 +33,414 @@
           <div class="body" role="main">
             
   <section id="hich-reference">
-<h1>Hich Reference<a class="headerlink" href="#hich-reference" title="Link to this heading">¶</a></h1>
-<p>In Hich, a <strong>sample</strong> is a single unit of data, such as a <strong>technical replicate</strong>, <strong>biological replicate</strong>, or experimental <strong>condition</strong>.</p>
-<section id="sample-attributes">
-<h2>Sample attributes<a class="headerlink" href="#sample-attributes" title="Link to this heading">¶</a></h2>
-<section id="general">
-<h3>General<a class="headerlink" href="#general" title="Link to this heading">¶</a></h3>
-<section id="sample-id">
-<h4>sample_id<a class="headerlink" href="#sample-id" title="Link to this heading">¶</a></h4>
-<p>Required (no default)</p>
-<p>A unique name for the sample.</p>
+<h1>Hich Reference<a class="headerlink" href="#hich-reference" title="Permalink to this headline">¶</a></h1>
+<section id="sample-file">
+<h2>Sample file<a class="headerlink" href="#sample-file" title="Permalink to this headline">¶</a></h2>
+<p>Normally, the <a class="reference internal" href="#sample-file">sample file</a> is called “samples.tsv” (tab-delimited). Basic <a class="reference internal" href="#sample-attributes">sample attributes</a> are usually specified here. Default sample attributes are customizeable and can be specified on the basis of individual sample ids in <a class="reference internal" href="#nextflow-config">nextflow.config</a>, which is useful for specifying defaults for <a class="reference internal" href="#biorep">biorep</a> and <a class="reference internal" href="#condition">condition</a> samples produced via merge.</p>
+<table class="docutils align-default" id="id6">
+<caption><span class="caption-text"><strong>Example 1.</strong> Because <a class="reference internal" href="#reference">reference</a>, <a class="reference internal" href="#chromsizes">chromsizes</a>, <a class="reference internal" href="#index-dir">index_dir</a>, <a class="reference internal" href="#index-prefix">index_prefix</a>, and <a class="reference internal" href="#fragfile">fragfile</a> files are unspecified and the <a class="reference internal" href="#assembly">assembly</a> values are supported, Hich will download the reference and produce these needed files automatically.</span><a class="headerlink" href="#id6" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>condition</p></th>
+<th class="head"><p>biorep</p></th>
+<th class="head"><p>techrep</p></th>
+<th class="head"><p>fastq1</p></th>
+<th class="head"><p>fastq2</p></th>
+<th class="head"><p>assembly</p></th>
+<th class="head"><p>enzymes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Human_KO</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>Human_KO_1_1_R1.fq.gz</p></td>
+<td><p>Human_KO_1_1_R2.fq.gz</p></td>
+<td><p>hg38</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-odd"><td><p>Human_KO</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>Human_KO_1_2_R1.fq.gz</p></td>
+<td><p>Human_KO_1_2_R2.fq.gz</p></td>
+<td><p>hg38</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-even"><td><p>Human_KO</p></td>
+<td><p>2</p></td>
+<td><p>1</p></td>
+<td><p>Human_KO_2_1_R1.fq.gz</p></td>
+<td><p>Human_KO_2_1_R2.fq.gz</p></td>
+<td><p>hg38</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-odd"><td><p>Human_KO</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>Human_KO_2_2_R1.fq.gz</p></td>
+<td><p>Human_KO_2_2_R2.fq.gz</p></td>
+<td><p>hg38</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-even"><td><p>Mouse_KO</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>Mouse_KO_1_1_R1.fq.gz</p></td>
+<td><p>Mouse_KO_1_1_R2.fq.gz</p></td>
+<td><p>mm10</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mouse_KO</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>Mouse_KO_1_2_R1.fq.gz</p></td>
+<td><p>Mouse_KO_1_2_R2.fq.gz</p></td>
+<td><p>mm10</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-even"><td><p>Mouse_KO</p></td>
+<td><p>2</p></td>
+<td><p>1</p></td>
+<td><p>Mouse_KO_2_1_R1.fq.gz</p></td>
+<td><p>Mouse_KO_2_1_R2.fq.gz</p></td>
+<td><p>mm10</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mouse_KO</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>Mouse_KO_2_2_R1.fq.gz</p></td>
+<td><p>Mouse_KO_2_2_R2.fq.gz</p></td>
+<td><p>mm10</p></td>
+<td><p>Arima</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default" id="id7">
+<caption><span class="caption-text"><strong>Example 2.</strong> Here, needed reference files are given (possibly from a permanent lab repository), so they will be used rather than produced by Hich. Because there’s just one sample, there is no need to specify a <a class="reference internal" href="#biorep">biorep</a> or <a class="reference internal" href="#techrep">techrep</a> parameter.</span><a class="headerlink" href="#id7" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>condition</p></th>
+<th class="head"><p>fastq1</p></th>
+<th class="head"><p>fastq2</p></th>
+<th class="head"><p>assembly</p></th>
+<th class="head"><p>enzymes</p></th>
+<th class="head"><p>reference</p></th>
+<th class="head"><p>chromsizes</p></th>
+<th class="head"><p>index_dir</p></th>
+<th class="head"><p>index_prefix</p></th>
+<th class="head"><p>fragfile</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Human_KO</p></td>
+<td><p>Human_KO_1_1_R1.fq.gz</p></td>
+<td><p>Human_KO_1_1_R2.fq.gz</p></td>
+<td><p>hg38</p></td>
+<td><p>Arima</p></td>
+<td><p>resources/hg38.fa</p></td>
+<td><p>resources/hg38.sizes</p></td>
+<td><p>resources/bwa-mem2</p></td>
+<td><p>hg38</p></td>
+<td><p>resources/hg38_Arima.bed</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default" id="id8">
+<caption><span class="caption-text"><strong>Example 3.</strong> Here, files with a mixture of <a class="reference internal" href="#datatype">datatype</a> values are ingested by Hich.</span><a class="headerlink" href="#id8" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>condition</p></th>
+<th class="head"><p>datatype</p></th>
+<th class="head"><p>fastq1</p></th>
+<th class="head"><p>fastq2</p></th>
+<th class="head"><p>sambam</p></th>
+<th class="head"><p>pairs</p></th>
+<th class="head"><p>assembly</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Cond1</p></td>
+<td><p>fastq</p></td>
+<td><p>Cond1_R1.fq.gz</p></td>
+<td><p>Cond2_R2.fq.gz</p></td>
+<td></td>
+<td></td>
+<td><p>hg38</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cond2</p></td>
+<td><p>sambam</p></td>
+<td></td>
+<td></td>
+<td><p>Cond2.bam</p></td>
+<td></td>
+<td><p>hg38</p></td>
+</tr>
+<tr class="row-even"><td><p>Cond3</p></td>
+<td><p>pairs</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td><p>Cond3.pairs</p></td>
+<td><p>hg38</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default" id="id9">
+<caption><span class="caption-text"><strong>Example 4.</strong> An experiment using a variety of <a class="reference internal" href="#enzymes">enzymes</a> for reference digestion and fragment tagging, as well as one sample not tagged or filtered (MNase).</span><a class="headerlink" href="#id9" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>condition</p></th>
+<th class="head"><p>fastq1</p></th>
+<th class="head"><p>fastq2</p></th>
+<th class="head"><p>assembly</p></th>
+<th class="head"><p>enzymes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>MNase</p></td>
+<td><p>MNase_R1.fq</p></td>
+<td><p>MNase_R2.fq</p></td>
+<td><p>hg38</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>ArimaKit</p></td>
+<td><p>Arima_R1.fq</p></td>
+<td><p>Arima_R2.fq</p></td>
+<td><p>hg38</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-even"><td><p>SingleDigest</p></td>
+<td><p>Single_R1.fq</p></td>
+<td><p>Single_R2.fq</p></td>
+<td><p>hg38</p></td>
+<td><p>DdeI</p></td>
+</tr>
+<tr class="row-odd"><td><p>DoubleDigest</p></td>
+<td><p>Double_R1.fq</p></td>
+<td><p>Double_R2.fq</p></td>
+<td><p>hg38</p></td>
+<td><p>DdeI,DpnII</p></td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="id">
-<h4>id<a class="headerlink" href="#id" title="Link to this heading">¶</a></h4>
-<div class="line-block">
-<div class="line">Required (defaults to sample_id)</div>
-<div class="line"><br /></div>
-<div class="line">A unique name for the sample. Automatically chosen by Hich, not set manually.</div>
+<section id="nextflow-config">
+<h2>nextflow.config<a class="headerlink" href="#nextflow-config" title="Permalink to this headline">¶</a></h2>
+<p>The nextflow.config file is one way to <a class="reference external" href="https://www.nextflow.io/docs/latest/config.html">configure</a> Nextflow, including by setting Hich-specific sample attributes. All sample attributes are described in this section.</p>
+<section id="scopes">
+<h3>Scopes<a class="headerlink" href="#scopes" title="Permalink to this headline">¶</a></h3>
+<p>Hich uses specialized config scopes, specified with a name followed by brackets, to group related sample attributes and general Hich workflow parameters. Here is an example with a subset of the real Hich default <code class="docutils literal notranslate"><span class="pre">nextflow.config</span></code> file and an extra scope used to specify parameters for a merge.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">params</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">general</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// The general scope holds params</span>
+<span class="w">        </span><span class="c1">// relevant to general Hich workflow</span>
+<span class="w">        </span><span class="c1">// control, not sample attributes.</span>
+
+<span class="w">        </span><span class="n">sampleFile</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="c1">// Path to sample file</span>
+<span class="w">            </span><span class="c1">// and column separator.</span>
+<span class="w">            </span><span class="n">filename</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;samples.tsv&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">defaults</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// The default scope gives default</span>
+<span class="w">        </span><span class="c1">// sample attributes applied to all</span>
+<span class="w">        </span><span class="c1">// samples if an explicit value is not</span>
+<span class="w">        </span><span class="c1">// given in samples.csv or in a scope</span>
+<span class="w">        </span><span class="c1">// specific to the sample&#39;s id.</span>
+
+<span class="w">        </span><span class="c1">// Default techrep and biorep labels</span>
+<span class="w">        </span><span class="c1">// applied to any samples where they</span>
+<span class="w">        </span><span class="c1">// are not specified in samples.csv</span>
+<span class="w">        </span><span class="n">techrep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">        </span><span class="n">biorep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// Minimum mapq threshold to keep reads</span>
+<span class="w">        </span><span class="n">min_mapq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">ko</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// Apply these parameters to samples</span>
+<span class="w">        </span><span class="c1">// with the id &quot;KO&quot; and &quot;NT&quot;</span>
+<span class="w">        </span><span class="n">ids</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;KO&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;NT&quot;</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="n">hicrep</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">exclude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;chrM&quot;</span><span class="p">]</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<section id="general">
+<h4>general<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h4>
+<section id="last-step">
+<h5>last_step<a class="headerlink" href="#last-step" title="Permalink to this headline">¶</a></h5>
+<p>Specifies the last processing step that should be executed when <code class="docutils literal notranslate"><span class="pre">nextflow</span> <span class="pre">run</span> <span class="pre">hich.nf</span></code> is invoked (as a stub, humid or full run). QC for that step will also be completed. Useful for test runs, debugging, and making processing decisions based on QC results. Commented out by default.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">params</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">general</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">//last_step = &quot;align&quot;</span>
+</pre></div>
 </div>
 </section>
-<section id="assembly">
-<h4>assembly<a class="headerlink" href="#assembly" title="Link to this heading">¶</a></h4>
+<section id="samplefile">
+<h5>sampleFile<a class="headerlink" href="#samplefile" title="Permalink to this headline">¶</a></h5>
+<p>The filename and column separator for the <a class="reference internal" href="#sample-file">sample file</a>. The <code class="docutils literal notranslate"><span class="pre">filename</span></code> param can contain a path relative to the Nextflow <a class="reference external" href="https://www.nextflow.io/docs/latest/script.html">projectDir</a>.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">params</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">general</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">sampleFile</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">filename</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;samples.tsv&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="publish">
+<h5>publish<a class="headerlink" href="#publish" title="Permalink to this headline">¶</a></h5>
+<p>Specifies the Nextflow <a class="reference external" href="https://www.nextflow.io/docs/latest/process.html#publishdir">publishDir</a> mode and output directory for the results of various Hich processes.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">params</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">general</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">publish</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="c1">// Nextflow publishDir param for all processes</span>
+<span class="w">            </span><span class="c1">// https://www.nextflow.io/docs/latest/process.html#publishdir</span>
+<span class="w">            </span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;copy&quot;</span><span class="w"></span>
+
+<span class="w">            </span><span class="c1">// Where to publish results of Hich processes</span>
+<span class="w">            </span><span class="n">genome</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;resources/.hich&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="n">chromsizes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;resources/.hich&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="n">bwa_mem2_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;resources/.hich/bwa-mem2/index&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="n">bwa_mem_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;resources/.hich/bwa-mem/index&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="n">digest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;resources/.hich&quot;</span><span class="w"></span>
+
+<span class="w">            </span><span class="n">bam</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;results/bam&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="n">parse</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;results/pairs/parse&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="n">dedup</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;results/pairs/dedup&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="n">mcool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;results/matrix/mcool&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="n">hic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;results/matrix/hic&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="n">pair_stats</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;results/pair_stats&quot;</span><span class="w"></span>
+<span class="w">            </span><span class="n">qc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;results/qc&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="qc-after">
+<h5>qc_after<a class="headerlink" href="#qc-after" title="Permalink to this headline">¶</a></h5>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">params</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">general</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// After these steps, generate read-level pairs</span>
+<span class="w">        </span><span class="c1">// stats files and generate a combined MultiQC report</span>
+<span class="w">        </span><span class="c1">// for all samples at each processing stage</span>
+<span class="w">        </span><span class="n">qc_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;Parse&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s">&quot;IngestPairs&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s">&quot;OptionalFragtag&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s">&quot;TechrepsToBioreps&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s">&quot;Deduplicate&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s">&quot;BiorepsToConditions&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="s">&quot;Select&quot;</span><span class="p">]</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="humid">
+<h5>humid<a class="headerlink" href="#humid" title="Permalink to this headline">¶</a></h5>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">params</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">general</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// Number of reads to downsample to</span>
+<span class="w">        </span><span class="c1">// when doing a humid run</span>
+<span class="w">        </span><span class="n">humid</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">n_reads</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100000</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="defaults">
+<h4>defaults<a class="headerlink" href="#defaults" title="Permalink to this headline">¶</a></h4>
+<p>All <a class="reference internal" href="#sample-attributes">sample attributes</a> specified under this scope will be applied to any samples for which a value is not given in the <a class="reference internal" href="#sample-file">sample file</a> or one of the <a class="reference internal" href="#custom-scopes">custom scopes</a>.</p>
+</section>
+<section id="custom-scopes">
+<h4>custom scopes<a class="headerlink" href="#custom-scopes" title="Permalink to this headline">¶</a></h4>
+<p>Custom scopes work just like the <a class="reference internal" href="#defaults">defaults</a> scope, except that they have a special <code class="docutils literal notranslate"><span class="pre">ids</span></code> list specifying the set of ids to which they should be applied. Custom scopes override the values in the <a class="reference internal" href="#sample-file">sample file</a>.</p>
+</section>
+</section>
+</section>
+<section id="sample-attributes">
+<h2>Sample attributes<a class="headerlink" href="#sample-attributes" title="Permalink to this headline">¶</a></h2>
+<p>In Hich, a <strong>sample</strong> is a single unit of data, such as a <strong>technical replicate</strong>, <strong>biological replicate</strong>, or experimental <strong>condition</strong>. Each sample has a number of sample attributes. These can be specified via columns in the <a class="reference internal" href="#sample-file">sample file</a>, or to a subset of sample ids via the <a class="reference internal" href="#nextflow-config">nextflow.config</a> file (or anywhere your Nextflow is <a class="reference external" href="https://www.nextflow.io/docs/latest/config.html">configured</a>, including directly at the command line).</p>
+<section id="basic">
+<h3>Basic<a class="headerlink" href="#basic" title="Permalink to this headline">¶</a></h3>
+<section id="condition">
+<h4>condition<a class="headerlink" href="#condition" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
 <div class="line">Required (no default)</div>
 <div class="line"><br /></div>
-<div class="line">The genome assembly for the sample, such as <code class="docutils literal notranslate"><span class="pre">hg38</span></code>. Hich will automatically download a genome reference if not provided for the following assemblies:</div>
+<div class="line">A label for the condition. Biological replicates with the same <a class="reference internal" href="#condition">condition</a> label will be merged into a condition sample.</div>
+</div>
+</section>
+<section id="biorep">
+<h4>biorep<a class="headerlink" href="#biorep" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">Required (default = <code class="docutils literal notranslate"><span class="pre">1</span></code>)</div>
+<div class="line"><br /></div>
+<div class="line">A label for the biological replicate. Technical replicates with the same <a class="reference internal" href="#condition">condition</a> and <a class="reference internal" href="#biorep">biorep</a> labels will be merged into a biorep sample. Note that Hich does not increment the default value, so it is essential to explicitly specify a biorep label if a value other than 1 is desired.</div>
+</div>
+</section>
+<section id="techrep">
+<h4>techrep<a class="headerlink" href="#techrep" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">Required (default = <code class="docutils literal notranslate"><span class="pre">1</span></code>)</div>
+<div class="line"><br /></div>
+<div class="line">A label for the technical replicate. Note that Hich does not increment the default value, so it is essential to explicitly specify a techrep label if a value other than 1 is desired.</div>
+</div>
+</section>
+<section id="assembly">
+<h4>assembly<a class="headerlink" href="#assembly" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">Required (no default)</div>
+<div class="line"><br /></div>
+<div class="line">The name of the genome assembly for the sample, such as <code class="docutils literal notranslate"><span class="pre">hg38</span></code>.</div>
+</div>
+</section>
+<section id="reference">
+<h4>reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">Required (no default, but can be downloaded automatically)</div>
+<div class="line"><br /></div>
+<div class="line">The reference genome file for the sample. Hich will automatically download a genome reference if not provided for the following assemblies:</div>
 </div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">hg38</span></code>, <code class="docutils literal notranslate"><span class="pre">homo_sapiens</span></code>, <code class="docutils literal notranslate"><span class="pre">GRCh38</span></code></p></li>
@@ -68,15 +451,32 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">danRer11</span></code></p></li>
 </ul>
 </section>
-<section id="datatype">
-<h4>datatype<a class="headerlink" href="#datatype" title="Link to this heading">¶</a></h4>
+<section id="chromsizes">
+<h4>chromsizes<a class="headerlink" href="#chromsizes" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
-<div class="line">Required (no default)</div>
+<div class="line">Required (no default, but can be built automatically)</div>
+<div class="line"><br /></div>
+<div class="line">The chromsizes file for the <a class="reference internal" href="#reference">reference</a> genome, a two-column list of contig names and contig sizes in bp. Built automatically from the reference genome if not specified for a given sample.</div>
+</div>
+</section>
+<section id="min-mapq">
+<h4>min_mapq<a class="headerlink" href="#min-mapq" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">Not required</div>
+<div class="line">Default: <code class="docutils literal notranslate"><span class="pre">30</span></code></div>
+<div class="line"><br /></div>
+<div class="line">Minimum alignment threshold to keep an aligned read.</div>
+</div>
+</section>
+<section id="datatype">
+<h4>datatype<a class="headerlink" href="#datatype" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">Required</div>
 <div class="line"><br /></div>
 <div class="line">Options:</div>
 </div>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">fastq</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fastq</span></code> <cite>default</cite></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">sam</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">bam</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">pairs</span></code></p></li>
@@ -88,65 +488,19 @@
 <div class="line"><cite>Note: Hich can read data compressed in gzip format, but gzip compression does not need to be explicitly specified.</cite></div>
 </div>
 </section>
-<section id="is-techrep">
-<h4>is_techrep<a class="headerlink" href="#is-techrep" title="Link to this heading">¶</a></h4>
+<section id="id">
+<h4>id<a class="headerlink" href="#id" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
-<div class="line">Required</div>
-<div class="line">Available options:</div>
-</div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">true</span></code> <cite>default</cite></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p></li>
-</ul>
-<div class="line-block">
+<div class="line">Required (defaults to <code class="docutils literal notranslate"><span class="pre">{condition}_{biorep}_{techrep}</span></code>)</div>
 <div class="line"><br /></div>
-<div class="line">Whether or not the sample is a technical replicate.</div>
-</div>
-</section>
-<section id="is-biorep">
-<h4>is_biorep<a class="headerlink" href="#is-biorep" title="Link to this heading">¶</a></h4>
-<div class="line-block">
-<div class="line">Required</div>
-<div class="line">Available options:</div>
-</div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">false</span></code> <cite>default</cite></p></li>
-</ul>
-<div class="line-block">
-<div class="line"><br /></div>
-<div class="line">Whether or not the sample is a biological replicate.</div>
-</div>
-</section>
-<section id="is-condition">
-<h4>is_condition<a class="headerlink" href="#is-condition" title="Link to this heading">¶</a></h4>
-<div class="line-block">
-<div class="line">Required</div>
-<div class="line">Available options:</div>
-</div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">false</span></code> <cite>default</cite></p></li>
-</ul>
-<div class="line-block">
-<div class="line"><br /></div>
-<div class="line">Whether or not the sample is a condition.</div>
-</div>
-</section>
-<section id="min-mapq">
-<h4>min_mapq<a class="headerlink" href="#min-mapq" title="Link to this heading">¶</a></h4>
-<div class="line-block">
-<div class="line">Not required</div>
-<div class="line">Default: <code class="docutils literal notranslate"><span class="pre">30</span></code></div>
-<div class="line"><br /></div>
-<div class="line">Minimum alignment threshold to keep an aligned read.</div>
+<div class="line">A unique id label for the sample.</div>
 </div>
 </section>
 </section>
 <section id="alignment">
-<h3>Alignment<a class="headerlink" href="#alignment" title="Link to this heading">¶</a></h3>
+<h3>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h3>
 <section id="aligner">
-<h4>aligner<a class="headerlink" href="#aligner" title="Link to this heading">¶</a></h4>
+<h4>aligner<a class="headerlink" href="#aligner" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
 <div class="line">Required if <code class="docutils literal notranslate"><span class="pre">datatype</span> <span class="pre">==</span> <span class="pre">fastq</span></code></div>
 <div class="line">Available options:</div>
@@ -160,27 +514,103 @@
 <div class="line">While <cite>bwa-mem2</cite> is 1.3-3x faster, indexing genomes with <code class="docutils literal notranslate"><span class="pre">bwa-mem2</span></code> requires a 60-80 Gb memory footprint, whereas indexing with <cite>bwa</cite> can be done in less than 32 Gb.</div>
 </div>
 </section>
+<section id="index-dir">
+<h4>index_dir<a class="headerlink" href="#index-dir" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">Not required</div>
+<div class="line"><br /></div>
+<div class="line">Directory where the <a class="reference internal" href="#aligner">aligner</a>-specific <a class="reference internal" href="#reference">reference</a> genome index files are stored. Each file should start with the same <a class="reference internal" href="#index-prefix">index_prefix</a>. If not specified, Hich will attempt to index the reference genome and will output the result to <cite>resources/.hich</cite> under a subdirectory for the specific aligner.</div>
+</div>
+</section>
+<section id="index-prefix">
+<h4>index_prefix<a class="headerlink" href="#index-prefix" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">Not required</div>
+<div class="line"><br /></div>
+<div class="line">Prefix shared by all needed <a class="reference internal" href="#aligner">aligner</a>-specifi <a class="reference internal" href="#reference">reference</a> genome index files in the <a class="reference internal" href="#index-dir">index_dir</a> directory. If not specified, Hich will attempt to index the reference genome and will output the result to <cite>resources/.hich</cite> under a subdirectory for the specific aligner.</div>
+</div>
+</section>
 <section id="aligner-threads">
-<h4>aligner_threads<a class="headerlink" href="#aligner-threads" title="Link to this heading">¶</a></h4>
+<h4>aligner_threads<a class="headerlink" href="#aligner-threads" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
 <div class="line">Default: <code class="docutils literal notranslate"><span class="pre">10</span></code></div>
 <div class="line"><br /></div>
-<div class="line">Max threads to use for alignment. It is highly recommended to set this to the maximum number of available cores. Note that only one alignment process is spawned at a time. This is because the aligners Hich uses (BWA MEM and BWA MEM2) are internally parallelized, so there is no substantial performance gain to running multiple alignment processes in parallel, while the substantial memory footprint is duplicated for each aligner instance being run.</div>
+<div class="line">Max threads to use for alignment. It is highly recommended to set this to the maximum number of available cores. Note that only one alignment process is spawned at a time. This is because every <a class="reference internal" href="#aligner">aligner</a> Hich uses (BWA MEM and BWA MEM2) are internally parallelized, so there is no substantial performance gain to running multiple alignment processes in parallel, while the substantial memory footprint is duplicated for each aligner instance being run.</div>
 </div>
 </section>
 <section id="bwa-flags">
-<h4>bwa_flags<a class="headerlink" href="#bwa-flags" title="Link to this heading">¶</a></h4>
+<h4>bwa_flags<a class="headerlink" href="#bwa-flags" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
 <div class="line">Default: <code class="docutils literal notranslate"><span class="pre">-SP5M</span></code></div>
 <div class="line"><br /></div>
-<div class="line">Flags to use for <code class="docutils literal notranslate"><span class="pre">bwa</span> <span class="pre">mem</span></code> or <code class="docutils literal notranslate"><span class="pre">bwa-mem2</span> <span class="pre">mem</span></code>. The default <code class="docutils literal notranslate"><span class="pre">-SP5M</span></code> is recommended by <a class="reference external" href="https://data.4dnucleome.org/resources/data-analysis/hi_c-processing-pipeline">4DN</a> for aligning paired-end Hi-C reads with <code class="docutils literal notranslate"><span class="pre">bwa</span> <span class="pre">mem</span></code> or <code class="docutils literal notranslate"><span class="pre">bwa-mem2</span> <span class="pre">mem</span></code>. See <a class="reference external" href="https://bio-bwa.sourceforge.net/bwa.shtml">bwa manual reference page</a> for additional options.</div>
+<div class="line">Flags to use for the <a class="reference internal" href="#aligner">aligner</a> <code class="docutils literal notranslate"><span class="pre">bwa</span> <span class="pre">mem</span></code> or <code class="docutils literal notranslate"><span class="pre">bwa-mem2</span> <span class="pre">mem</span></code>. The default <code class="docutils literal notranslate"><span class="pre">-SP5M</span></code> is recommended by <a class="reference external" href="https://data.4dnucleome.org/resources/data-analysis/hi_c-processing-pipeline">4DN</a> for aligning paired-end Hi-C reads with <code class="docutils literal notranslate"><span class="pre">bwa</span> <span class="pre">mem</span></code> or <code class="docutils literal notranslate"><span class="pre">bwa-mem2</span> <span class="pre">mem</span></code>. See <a class="reference external" href="https://bio-bwa.sourceforge.net/bwa.shtml">bwa manual reference page</a> for additional options.</div>
 </div>
 </section>
 </section>
 <section id="pairs-processing">
-<h3>Pairs processing<a class="headerlink" href="#pairs-processing" title="Link to this heading">¶</a></h3>
+<h3>Pairs processing<a class="headerlink" href="#pairs-processing" title="Permalink to this headline">¶</a></h3>
+<section id="enzymes">
+<h4>enzymes<a class="headerlink" href="#enzymes" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">Default: none</div>
+<div class="line"><br /></div>
+<div class="line">If restriction enzymes were used to digest the sample, they can be listed here. Hich allows specifying “Arima” for the Arima Hi-C+ kit enzymes. Any enzymes or combination of enzymes in Biopython’s <a class="reference external" href="http://biopython.org/DIST/docs/cookbook/Restriction.html">Bio.Restrict</a> library can be used. Multiple enzymes should be separated by commas <cite>,</cite>. If specified, a “fragment index” (a digest of the reference genome using the enzymes in .bed format) will be produced automatically, used to tag tne ends of each read with the restriction fragment it maps to, and then filter out any reads where each end maps to the same restriction fragment. If not specified, none of these steps occur. See <a class="reference internal" href="#fragfile">fragfile</a> for how to use an already-created fragment index.</div>
+</div>
+<table class="docutils align-default" id="id10">
+<caption><span class="caption-text">Example samples.csv specifying different <code class="docutils literal notranslate"><span class="pre">enzymes</span></code> options</span><a class="headerlink" href="#id10" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>condition</p></th>
+<th class="head"><p>fastq1</p></th>
+<th class="head"><p>fastq2</p></th>
+<th class="head"><p>assembly</p></th>
+<th class="head"><p>enzymes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>MNase</p></td>
+<td><p>MNase_R1.fq</p></td>
+<td><p>MNase_R2.fq</p></td>
+<td><p>hg38</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>ArimaKit</p></td>
+<td><p>Arima_R1.fq</p></td>
+<td><p>Arima_R2.fq</p></td>
+<td><p>hg38</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-even"><td><p>SingleDigest</p></td>
+<td><p>Single_R1.fq</p></td>
+<td><p>Single_R2.fq</p></td>
+<td><p>hg38</p></td>
+<td><p>DdeI</p></td>
+</tr>
+<tr class="row-odd"><td><p>DoubleDigest</p></td>
+<td><p>Double_R1.fq</p></td>
+<td><p>Double_R2.fq</p></td>
+<td><p>hg38</p></td>
+<td><p>DdeI,DpnII</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="fragfile">
+<h4>fragfile<a class="headerlink" href="#fragfile" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">Default: none</div>
+<div class="line"><br /></div>
+<div class="line">An already-created fragment index in .bed format, to be used for tagging contacts with the fragment from which each end originated if the <a class="reference internal" href="#enzymes">enzymes</a> parameter is specified for the sample.</div>
+</div>
+</section>
 <section id="deduplicate">
-<h4>deduplicate<a class="headerlink" href="#deduplicate" title="Link to this heading">¶</a></h4>
+<h4>deduplicate<a class="headerlink" href="#deduplicate" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
 <div class="line">Options:</div>
 </div>
@@ -194,9 +624,9 @@
 </div>
 </section>
 <section id="pairs-format">
-<h4>pairs_format<a class="headerlink" href="#pairs-format" title="Link to this heading">¶</a></h4>
+<h4>pairs_format<a class="headerlink" href="#pairs-format" title="Permalink to this headline">¶</a></h4>
 <section id="chrom1">
-<h5>chrom1<a class="headerlink" href="#chrom1" title="Link to this heading">¶</a></h5>
+<h5>chrom1<a class="headerlink" href="#chrom1" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Required</div>
 <div class="line">Default: 2</div>
@@ -205,7 +635,7 @@
 </div>
 </section>
 <section id="pos1">
-<h5>pos1<a class="headerlink" href="#pos1" title="Link to this heading">¶</a></h5>
+<h5>pos1<a class="headerlink" href="#pos1" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Required</div>
 <div class="line">Default: 3</div>
@@ -214,7 +644,7 @@
 </div>
 </section>
 <section id="chrom2">
-<h5>chrom2<a class="headerlink" href="#chrom2" title="Link to this heading">¶</a></h5>
+<h5>chrom2<a class="headerlink" href="#chrom2" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Required</div>
 <div class="line">Default: 4</div>
@@ -223,7 +653,7 @@
 </div>
 </section>
 <section id="pos2">
-<h5>pos2<a class="headerlink" href="#pos2" title="Link to this heading">¶</a></h5>
+<h5>pos2<a class="headerlink" href="#pos2" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Required</div>
 <div class="line">Default: 5</div>
@@ -233,7 +663,7 @@
 </section>
 </section>
 <section id="parse-params">
-<h4>parse_params<a class="headerlink" href="#parse-params" title="Link to this heading">¶</a></h4>
+<h4>parse_params<a class="headerlink" href="#parse-params" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
 <div class="line">Default:</div>
 </div>
@@ -251,24 +681,24 @@
 </div>
 </section>
 <section id="dedup-params">
-<h4>dedup_params<a class="headerlink" href="#dedup-params" title="Link to this heading">¶</a></h4>
+<h4>dedup_params<a class="headerlink" href="#dedup-params" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
 <div class="line">Extra parameters to use during the deduplication step.</div>
 </div>
 </section>
 <section id="select-params">
-<h4>select_params<a class="headerlink" href="#select-params" title="Link to this heading">¶</a></h4>
+<h4>select_params<a class="headerlink" href="#select-params" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
 <div class="line">Extra parameters to use during the selection step.</div>
 </div>
 </section>
 <section id="select-condition">
-<h4>select_condition<a class="headerlink" href="#select-condition" title="Link to this heading">¶</a></h4>
+<h4>select_condition<a class="headerlink" href="#select-condition" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
 <div class="line">Read-level filters to use during the selection step.</div>
 </div>
 <section id="keep-pair-types">
-<h5>keep_pair_types<a class="headerlink" href="#keep-pair-types" title="Link to this heading">¶</a></h5>
+<h5>keep_pair_types<a class="headerlink" href="#keep-pair-types" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Default: <code class="docutils literal notranslate"><span class="pre">UU</span></code>, <code class="docutils literal notranslate"><span class="pre">UR</span></code>, <code class="docutils literal notranslate"><span class="pre">RU</span></code></div>
 <div class="line"><br /></div>
@@ -276,7 +706,7 @@
 </div>
 </section>
 <section id="keep-trans">
-<h5>keep_trans<a class="headerlink" href="#keep-trans" title="Link to this heading">¶</a></h5>
+<h5>keep_trans<a class="headerlink" href="#keep-trans" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Options:</div>
 </div>
@@ -290,7 +720,7 @@
 </div>
 </section>
 <section id="keep-cis">
-<h5>keep_cis<a class="headerlink" href="#keep-cis" title="Link to this heading">¶</a></h5>
+<h5>keep_cis<a class="headerlink" href="#keep-cis" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Options:</div>
 </div>
@@ -304,41 +734,41 @@
 </div>
 </section>
 <section id="min-dist-fr">
-<h5>min_dist_fr<a class="headerlink" href="#min-dist-fr" title="Link to this heading">¶</a></h5>
+<h5>min_dist_fr<a class="headerlink" href="#min-dist-fr" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Default: <code class="docutils literal notranslate"><span class="pre">1000</span></code></div>
 <div class="line">Minimum insert size (in bp) to keep FR (+- or inward) strands. In Hi-C, the set of short-range FR strands can be highly enriched in undigested chromatin, which shows up in Hich’s MultiQC report as a percentage of FR orientations substantially higher than the expected 25%. These can be filtered out using this option.</div>
 </div>
 </section>
 <section id="min-dist-rf">
-<h5>min_dist_rf<a class="headerlink" href="#min-dist-rf" title="Link to this heading">¶</a></h5>
+<h5>min_dist_rf<a class="headerlink" href="#min-dist-rf" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Default: <code class="docutils literal notranslate"><span class="pre">1000</span></code></div>
 <div class="line">Minimum insert size (in bp) to keep RF (-+ or outward) strands. In Hi-C, the set of short-range FR strands can be highly enriched in self-circles (digested fragments that self-ligated end to end), which shows up in Hich’s MultiQC report as a percentage of RF orientations substantially higher than the expected 25%. These can be filtered out using this option.</div>
 </div>
 </section>
 <section id="min-dist-ff">
-<h5>min_dist_ff<a class="headerlink" href="#min-dist-ff" title="Link to this heading">¶</a></h5>
+<h5>min_dist_ff<a class="headerlink" href="#min-dist-ff" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Default: <code class="docutils literal notranslate"><span class="pre">0</span></code></div>
 <div class="line">Minimum insert size (in bp) to keep FF (++) strands.</div>
 </div>
 </section>
 <section id="id1">
-<h5>min_dist_ff<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h5>
+<h5>min_dist_ff<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Default: <code class="docutils literal notranslate"><span class="pre">0</span></code></div>
 <div class="line">Minimum insert size (in bp) to keep RR (–) strands.</div>
 </div>
 </section>
 <section id="chroms">
-<h5>chroms<a class="headerlink" href="#chroms" title="Link to this heading">¶</a></h5>
+<h5>chroms<a class="headerlink" href="#chroms" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">If specified, each read alignment must be to a chromosome in this set.</div>
 </div>
 </section>
 <section id="discard-same-frag">
-<h5>discard_same_frag<a class="headerlink" href="#discard-same-frag" title="Link to this heading">¶</a></h5>
+<h5>discard_same_frag<a class="headerlink" href="#discard-same-frag" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Options:</div>
 </div>
@@ -354,21 +784,21 @@
 </section>
 </section>
 <section id="matrix-processing">
-<h3>Matrix processing<a class="headerlink" href="#matrix-processing" title="Link to this heading">¶</a></h3>
+<h3>Matrix processing<a class="headerlink" href="#matrix-processing" title="Permalink to this headline">¶</a></h3>
 <section id="make-hic">
-<h4>make_hic<a class="headerlink" href="#make-hic" title="Link to this heading">¶</a></h4>
+<h4>make_hic<a class="headerlink" href="#make-hic" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
 <div class="line">Arguments supplied to juicer tools’ <code class="docutils literal notranslate"><span class="pre">pre</span></code> command when forming a Hi-C contact matrix.</div>
 </div>
 </section>
 <section id="make-cool">
-<h4>make_cool<a class="headerlink" href="#make-cool" title="Link to this heading">¶</a></h4>
+<h4>make_cool<a class="headerlink" href="#make-cool" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
 <div class="line">Arguments supplied to the <code class="docutils literal notranslate"><span class="pre">cooler</span> <span class="pre">cload</span></code> command for forming .cool format precursors to the .mcool contact matrix.</div>
 </div>
 </section>
 <section id="make-mcool">
-<h4>make_mcool<a class="headerlink" href="#make-mcool" title="Link to this heading">¶</a></h4>
+<h4>make_mcool<a class="headerlink" href="#make-mcool" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
 <div class="line">Default:</div>
 </div>
@@ -382,9 +812,9 @@
 </div>
 </section>
 <section id="matrix">
-<h4>matrix<a class="headerlink" href="#matrix" title="Link to this heading">¶</a></h4>
+<h4>matrix<a class="headerlink" href="#matrix" title="Permalink to this headline">¶</a></h4>
 <section id="make-mcool-file-format">
-<h5>make_mcool_file_format<a class="headerlink" href="#make-mcool-file-format" title="Link to this heading">¶</a></h5>
+<h5>make_mcool_file_format<a class="headerlink" href="#make-mcool-file-format" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Options:</div>
 </div>
@@ -398,7 +828,7 @@
 </div>
 </section>
 <section id="make-hic-file-format">
-<h5>make_hic_file_format<a class="headerlink" href="#make-hic-file-format" title="Link to this heading">¶</a></h5>
+<h5>make_hic_file_format<a class="headerlink" href="#make-hic-file-format" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Options:</div>
 </div>
@@ -412,7 +842,7 @@
 </div>
 </section>
 <section id="resolutions">
-<h5>resolutions<a class="headerlink" href="#resolutions" title="Link to this heading">¶</a></h5>
+<h5>resolutions<a class="headerlink" href="#resolutions" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Default:</div>
 </div>
@@ -436,11 +866,11 @@
 </section>
 </section>
 <section id="quality-control">
-<h3>Quality control<a class="headerlink" href="#quality-control" title="Link to this heading">¶</a></h3>
+<h3>Quality control<a class="headerlink" href="#quality-control" title="Permalink to this headline">¶</a></h3>
 <section id="hicrep">
-<h4>hicrep<a class="headerlink" href="#hicrep" title="Link to this heading">¶</a></h4>
+<h4>hicrep<a class="headerlink" href="#hicrep" title="Permalink to this headline">¶</a></h4>
 <section id="call-on">
-<h5>call_on<a class="headerlink" href="#call-on" title="Link to this heading">¶</a></h5>
+<h5>call_on<a class="headerlink" href="#call-on" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Options:</div>
 </div>
@@ -455,7 +885,7 @@
 </div>
 </section>
 <section id="id2">
-<h5>resolutions<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h5>
+<h5>resolutions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Default:</div>
 </div>
@@ -470,37 +900,37 @@
 </div>
 </section>
 <section id="id3">
-<h5>chroms<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h5>
+<h5>chroms<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Which chromosomes to use for calling Hicrep SCC scores. If not specified, all chromosomes shared by both matrices at the given resolution will be used.</div>
 </div>
 </section>
 <section id="exclude">
-<h5>exclude<a class="headerlink" href="#exclude" title="Link to this heading">¶</a></h5>
+<h5>exclude<a class="headerlink" href="#exclude" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Which chromosomes to exclude when calling Hicrep SCC scores.</div>
 </div>
 </section>
 <section id="chrom-filter">
-<h5>chrom_filter<a class="headerlink" href="#chrom-filter" title="Link to this heading">¶</a></h5>
+<h5>chrom_filter<a class="headerlink" href="#chrom-filter" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">A conditional statement in Python to determine whether to use a chromosome for Hicrep as a function of its name (referenced via the <code class="docutils literal notranslate"><span class="pre">chrom</span></code> variable) and size (the <code class="docutils literal notranslate"><span class="pre">size</span></code> variable). It will be evaluated using Python’s <code class="docutils literal notranslate"><span class="pre">eval</span></code> statement.</div>
 </div>
 </section>
 <section id="h">
-<h5>h<a class="headerlink" href="#h" title="Link to this heading">¶</a></h5>
+<h5>h<a class="headerlink" href="#h" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Values of Hicrep’s <code class="docutils literal notranslate"><span class="pre">h</span></code> parameter to use.</div>
 </div>
 </section>
 <section id="dbpmax">
-<h5>dBPMax<a class="headerlink" href="#dbpmax" title="Link to this heading">¶</a></h5>
+<h5>dBPMax<a class="headerlink" href="#dbpmax" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Values of Hicrep’s <code class="docutils literal notranslate"><span class="pre">dBPMax</span></code> parameter to use.</div>
 </div>
 </section>
 <section id="bdownsample">
-<h5>bDownSample<a class="headerlink" href="#bdownsample" title="Link to this heading">¶</a></h5>
+<h5>bDownSample<a class="headerlink" href="#bdownsample" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Values of Hicrep’s <code class="docutils literal notranslate"><span class="pre">bDownSample</span></code> parameter to use.</div>
 </div>
@@ -508,11 +938,11 @@
 </section>
 </section>
 <section id="feature-calling">
-<h3>Feature calling<a class="headerlink" href="#feature-calling" title="Link to this heading">¶</a></h3>
+<h3>Feature calling<a class="headerlink" href="#feature-calling" title="Permalink to this headline">¶</a></h3>
 <section id="compartments">
-<h4>compartments<a class="headerlink" href="#compartments" title="Link to this heading">¶</a></h4>
+<h4>compartments<a class="headerlink" href="#compartments" title="Permalink to this headline">¶</a></h4>
 <section id="resolution">
-<h5>resolution<a class="headerlink" href="#resolution" title="Link to this heading">¶</a></h5>
+<h5>resolution<a class="headerlink" href="#resolution" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Default: 5000</div>
 <div class="line"><br /></div>
@@ -520,7 +950,7 @@
 </div>
 </section>
 <section id="cooltools-eigs-cis-params">
-<h5>cooltools_eigs_cis_params<a class="headerlink" href="#cooltools-eigs-cis-params" title="Link to this heading">¶</a></h5>
+<h5>cooltools_eigs_cis_params<a class="headerlink" href="#cooltools-eigs-cis-params" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Defaults:</div>
 </div>
@@ -533,9 +963,9 @@
 </section>
 </section>
 <section id="insulation">
-<h4>insulation<a class="headerlink" href="#insulation" title="Link to this heading">¶</a></h4>
+<h4>insulation<a class="headerlink" href="#insulation" title="Permalink to this headline">¶</a></h4>
 <section id="id4">
-<h5>resolution<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h5>
+<h5>resolution<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Default: 5000</div>
 <div class="line"><br /></div>
@@ -543,7 +973,7 @@
 </div>
 </section>
 <section id="cooltools-insulation-params">
-<h5>cooltools_insulation_params<a class="headerlink" href="#cooltools-insulation-params" title="Link to this heading">¶</a></h5>
+<h5>cooltools_insulation_params<a class="headerlink" href="#cooltools-insulation-params" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Defaults:</div>
 </div>
@@ -556,12 +986,12 @@
 </section>
 </section>
 <section id="loops">
-<h4>loops<a class="headerlink" href="#loops" title="Link to this heading">¶</a></h4>
+<h4>loops<a class="headerlink" href="#loops" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
 <div class="line">Hich uses Mustache for loop and differential loop calling. This software was chosen mainly for its theoretical advantages. Based on scale space theory, it applies an artifact-free filter to a matrix to remove fine details, then detects blobs which are called as loops. It thereby takes local information into account in loop calling. Differential loops for a pair of matrices are loops that are present or enriched in one matrix and not present or depleted in the other. An added practical benefit is that Mustache is fast enough that it can run on a CPU, whereas many other loop callers require a GPU.</div>
 </div>
 <section id="id5">
-<h5>call_on<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h5>
+<h5>call_on<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Options:</div>
 </div>
@@ -576,7 +1006,7 @@
 </div>
 </section>
 <section id="use-format">
-<h5>use_format<a class="headerlink" href="#use-format" title="Link to this heading">¶</a></h5>
+<h5>use_format<a class="headerlink" href="#use-format" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Options:</div>
 </div>
@@ -589,7 +1019,7 @@
 </div>
 </section>
 <section id="mustache-params">
-<h5>mustache_params<a class="headerlink" href="#mustache-params" title="Link to this heading">¶</a></h5>
+<h5>mustache_params<a class="headerlink" href="#mustache-params" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Default:</div>
 </div>
@@ -613,7 +1043,7 @@
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <h1 class="logo"><a href="index.html">Hich</a></h1>
 
@@ -624,38 +1054,51 @@
 
 
 
-
-<search id="searchbox" style="display: none" role="search">
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Hich Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Hich Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#sample-file">Sample file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nextflow-config">nextflow.config</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scopes">Scopes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#general">general</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#last-step">last_step</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#samplefile">sampleFile</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#publish">publish</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#qc-after">qc_after</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#humid">humid</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#defaults">defaults</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#custom-scopes">custom scopes</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#sample-attributes">Sample attributes</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#general">General</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#sample-id">sample_id</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id">id</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#basic">Basic</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#condition">condition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#biorep">biorep</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#techrep">techrep</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#assembly">assembly</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#datatype">datatype</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#is-techrep">is_techrep</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#is-biorep">is_biorep</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#is-condition">is_condition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#reference">reference</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#chromsizes">chromsizes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#min-mapq">min_mapq</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#datatype">datatype</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id">id</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#alignment">Alignment</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#aligner">aligner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#index-dir">index_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#index-prefix">index_prefix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#aligner-threads">aligner_threads</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bwa-flags">bwa_flags</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#pairs-processing">Pairs processing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#enzymes">enzymes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fragfile">fragfile</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#deduplicate">deduplicate</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#pairs-format">pairs_format</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#chrom1">chrom1</a></li>
@@ -740,6 +1183,16 @@
   </ul></li>
 </ul>
 </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -753,11 +1206,11 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &#169;2024, Benjamin Skubi, Andrew Adey, Galip Gürkan Yardımcı.
+      &copy;2024, Benjamin Skubi, Andrew Adey, Galip Gürkan Yardımcı.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.0.2</a>
-      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/reference.rst.txt"

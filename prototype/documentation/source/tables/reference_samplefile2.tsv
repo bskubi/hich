@@ -1,0 +1,2 @@
+condition	fastq1	fastq2	assembly	enzymes	reference	chromsizes	index_dir	index_prefix	fragfile
+Human_KO	Human_KO_1_1_R1.fq.gz	Human_KO_1_1_R2.fq.gz	hg38	Arima	resources/hg38.fa	resources/hg38.sizes	resources/bwa-mem2	hg38	resources/hg38_Arima.bed

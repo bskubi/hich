@@ -47,7 +47,8 @@ workflow AssignParams {
                 
                 ["fastq1", "fastq2", "sambam", "pairs"].each {
                     // This should give an error if the file does not exist
-                    // or if there is no sample in the file.
+                    // or if there is no sample in the file. Also we should
+                    // be able to figure out the datatype from this.
                     it in sample ? sample[it] = file(sample[it]) : null
                 }
                 sample

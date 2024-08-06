@@ -1,0 +1,4 @@
+condition	datatype	fastq1	fastq2	sambam	pairs	assembly
+Cond1	fastq	Cond1_R1.fq.gz	Cond2_R2.fq.gz			hg38
+Cond2	sambam			Cond2.bam		hg38
+Cond3	pairs				Cond3.pairs	hg38

@@ -1,3 +1,4 @@
+include {LoadSampleCSV} from './subwf/loadSampleFile.nf'
 include {AssignParams} from './subwf/assignParams.nf'
 include {Align} from './subwf/align.nf'
 include {HeadReads} from './subwf/downsampleFastq.nf'
@@ -30,17 +31,9 @@ workflow {
 
     // Think more carefully about .id vs .sample_id
 
-    sampleCSV = params.general.sampleCSV
-    samples = channel.fromPath(sampleCSV.filename, checkIfExists: true)
-        | splitCsv(header: true, sep: sampleCSV.sep)
-        | map {hmap ->
-            if (hmap.get("id") == null || hmap.get("id").toString().length() == 0) {
-                hmap.id = "${hmap.condition}_${hmap.biorep}_${hmap.techrep}".toString()
-            }
-            hmap
-        }
+    
 
-    samples
+    LoadSampleCSV
         | AssignParams
         | HeadReads
         | Align
@@ -48,15 +41,15 @@ workflow {
         | IngestPairs
         | OptionalFragtag
         | TechrepsToBioreps
-        | Deduplicate
-        | BiorepsToConditions
-        | Select
-        | MakeHic
-        | MakeMcool
-        | Hicrep
-        | CallCompartments
-        | CallLoops
-        | CallInsulation
+        // | Deduplicate
+        // | BiorepsToConditions
+        // | Select
+        // | MakeHic
+        // | MakeMcool
+        // | Hicrep
+        // | CallCompartments
+        // | CallLoops
+        // | CallInsulation
         
 }
 

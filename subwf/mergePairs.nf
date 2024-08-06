@@ -16,8 +16,8 @@ process PairtoolsMerge {
     tuple val(id), path("${id}.pairs.gz")
 
     shell:
-    samples = (samples.getClass() == nextflow.processor.TaskPath) ? samples : samples.join(" ")
-    "pairtools merge --output ${id}.pairs.gz ${samples}"
+    def to_merge = (samples.getClass() == nextflow.processor.TaskPath) ? samples : samples.join(" ")
+    "pairtools merge --output ${id}.pairs.gz ${to_merge}"
 
     stub:
     "touch ${id}.pairs.gz"
@@ -50,6 +50,7 @@ def mergeGroupParams = {
     def merge = mergeHashmaps(hashmaps)
     merge.latest = []
     hashmaps.each {map -> merge.latest.add(map.get("latest"))}
+    merge.latest = merge.latest.clone().sort()
     if (isTechrep(hashmaps[0])) {
         merge.remove("techrep")
         merge.id = "${merge.condition}_${merge.biorep}"
@@ -59,7 +60,7 @@ def mergeGroupParams = {
     } else {
         error "merge ${merge.id} is not a condition or biorep:\n${merge}"
     }
-    return merge
+    merge
 }
 
 workflow Merge {
@@ -83,8 +84,6 @@ workflow Merge {
         default:
             error "Invalid merge sampleType '${sampleType}'"
     }
-
-    
 
     samples
         | filter{filterFunction.call(it)}
