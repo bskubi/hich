@@ -15,11 +15,12 @@ process PairtoolsParse2 {
     tuple val(id), path("${id}.pairs.gz")
 
     shell:
-    cmd = ["pairtools parse2",
+    cmd = ["samtools sort -n ${sambam}",
+           "| pairtools parse2",
            "--assembly ${assembly}",
            "--chroms-path ${chromsizes}"] +
            parse_params +
-          ["${sambam} | pairtools sort --output ${id}.pairs.gz"]
+          ["| pairtools sort --output ${id}.pairs.gz"]
     cmd.removeAll([null])
 
     cmd.join(" ")

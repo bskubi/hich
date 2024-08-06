@@ -16,7 +16,7 @@ Normally, the `sample file`_ is called "samples.tsv" (tab-delimited). Basic `sam
     :delim: tab
     :header-rows: 1
 
-.. csv-table:: **Example 3.** Here, files with a mixture of `datatype`_ values are ingested by Hich.
+.. csv-table:: **Example 3.** Here Hich is ingesting files in several formats, autodetecting the `datatype`_.
     :file: tables/reference_samplefile3.tsv
     :delim: tab
     :header-rows: 1
@@ -217,7 +217,7 @@ sambam
 ,,,,,,
 | Optional, but one of `fastq1 and fastq2`_, `sambam`_, or `pairs`_ must be specified for each sample as these are the data files Hich ingests.
 |
-| Specifies a .sam or .bam format file to ingest.
+| Specifies a .sam or .bam format file to ingest. Hich will sort it by name automatically prior to parsing to .pairs format, which is required for correct parsing.
 
 pairs
 ,,,,,
@@ -253,7 +253,7 @@ min_mapq
 
 datatype
 ,,,,,,,,
-| Required, but can be autodetected.
+| Required, but typically autodetected.
 | 
 | Options:
 

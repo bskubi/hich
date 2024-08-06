@@ -16,9 +16,8 @@ process PairtoolsFlipSort {
 
     shell:
     cmd = ["pairtools flip --chroms-path ${chromsizes} ${pairs}",
-           "| pairtools sort --output ${id}.pairs.gz"]
-    cmd.removeAll([null])
-    cmd.join(" ")
+           "| pairtools sort --output ${id}.pairs.gz"].join(" ")
+    cmd
 }
 
 workflow IngestPairs {
