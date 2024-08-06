@@ -1,3 +1,5 @@
+include {parameterize} from './extraops.nf'
+
 process HicrepCombos{
     publishDir "results/hicrep",
                mode: params.general.publish.mode
@@ -33,24 +35,11 @@ workflow Hicrep {
 
     main:
 
-    samples
-        | filter {
-            sample ->
-            (sample.is_condition && "is_condition" in sample.hicrep.call_on) ||
-            (!sample.is_condition && sample.is_biorep && "is_biorep" in sample.hicrep.call_on) ||
-            (!sample.is_condition && !sample.is_biorep && sample.is_techrep && "is_techrep" in sample.hicrep.call_on)
-        }
-        | filter{sample -> sample.containsKey("mcool")}
-        | map{sample -> sample.get("mcool")}
-        | collect
-        | map{mcool -> tuple(mcool,
-                             params.defaults.hicrep.resolutions,
-                             params.defaults.hicrep.chroms,
-                             params.defaults.hicrep.exclude,
-                             params.defaults.hicrep.chrom_filter,
-                             params.defaults.hicrep.h,
-                             params.defaults.hicrep.dBPMax,
-                             params.defaults.hicrep.bDownSample)}
+    parameterize("hicrep",
+                 samples,
+                 params.parameterizations,
+                 ["mcool"],
+                 ["mcool", "resolutions", "chroms", "exclude", "chrom_filter", "h", "dBPMax", "bDownSample"])
         | HicrepCombos
 
     emit:

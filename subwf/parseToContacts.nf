@@ -15,6 +15,7 @@ process PairtoolsParse2 {
     tuple val(id), path("${id}.pairs.gz")
 
     shell:
+    
     cmd = ["samtools sort -n ${sambam}",
            "| pairtools parse2",
            "--assembly ${assembly}",

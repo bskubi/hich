@@ -481,3 +481,71 @@ def sourcePrefix (produceProc, ch, dir, prefix, input, output, namer, by, needsT
     // needed it but were not missing, and those that did not need it.
     return made | concat(missing.no) | concat(needs.no)
 }
+
+/*
+    We can't extract the requested information from the samples and process in groovy.
+    Instead we will need to do something like:
+    For each profile
+        Filter for samples having that profile
+        subMap the samples
+        collect the samples
+        coalesce the samples
+        add the args to the hashmap
+        submap it on the complete set of args
+    The caller will call the process and collect the results
+*/
+
+def parameterize(processName, samples, parameterizations, sampleKeys, inputOrder) {
+    def argSets = parameterizations.get(processName)
+
+    def resultChannels = channel.empty()
+
+    argSets.each {
+        argsName, args ->
+        
+        def newChannel = samples
+            | filter{
+                sample ->
+
+                def hasKeys = sampleKeys.every{sample.get(it)}
+                def hasProcess = sample.get(processName)
+                def hasParameterization = argsName in sample.get(processName)
+
+                if (hasProcess && !hasKeys) {
+                    error [
+                        "For ${processName} ${argsName}, the following sample does not have all required keys ${sampleKeys}:",
+                        "${sample}",
+                        "It only has ${sample.subMap(sampleKeys)}"
+                    ].join("\n")
+                }
+
+                hasKeys && hasProcess && hasParameterization
+            }
+            | map{sample -> sample.subMap(sampleKeys)}
+            | collect
+            | map {
+                sampleList ->
+
+                // Coalesce the samples
+                def result = [:]
+                sampleList.each {
+                    sample ->
+
+                    sample.each {
+                        k, v ->
+
+                        result.get(k, []) << v
+                    }
+                }
+                result
+            }
+            | map {
+                sampleKeySubMap ->
+
+                (sampleKeySubMap + args).subMap(inputOrder)
+            }
+        resultChannels = resultChannels.concat(newChannel)
+    }
+
+    return resultChannels
+}

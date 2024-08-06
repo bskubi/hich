@@ -29,7 +29,7 @@ workflow {
 
     // ingest .mcool/.hic files and interconvert between them using hictk
 
-    
+      
 
     LoadSampleFile
         | AssignParams
@@ -38,16 +38,16 @@ workflow {
         | Parse
         | IngestPairs
         | OptionalFragtag
-        | TechrepsToBioreps
+        // | TechrepsToBioreps
         | Deduplicate
-        | BiorepsToConditions
+    //     | BiorepsToConditions
         | Select
-        | MakeHic
+    //     | MakeHic
         | MakeMcool
         | Hicrep
-        | CallCompartments
-        | CallLoops
-        | CallInsulation
+    //     | CallCompartments
+    //     | CallLoops
+    //     | CallInsulation
         
 }
 
