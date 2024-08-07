@@ -42,11 +42,11 @@ workflow {
         | Deduplicate
     //     | BiorepsToConditions
         | Select
-    //     | MakeHic
+        | MakeHic
         | MakeMcool
-        | Hicrep
+//        | Hicrep
     //     | CallCompartments
-    //     | CallLoops
+        | CallLoops
     //     | CallInsulation
         
 }

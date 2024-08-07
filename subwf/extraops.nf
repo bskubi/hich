@@ -549,3 +549,34 @@ def parameterize(processName, samples, parameterizations, sampleKeys, inputOrder
 
     return resultChannels
 }
+
+def label(hashmap, lbl) {
+    return (hashmap.containsKey(lbl) &&
+            hashmap.get(lbl) != null &&
+            hashmap.get(lbl).toString().trim().length() >= 1)
+}
+
+def isTechrep(map) {return label(map, "techrep") && label(map, "biorep") && label(map, "condition")}
+def isBiorep(map) {return (!label(map, "techrep")) && label(map, "biorep") && label(map, "condition")}
+def isCondition(map) {return (!label(map, "techrep")) && (!label(map, "biorep")) && label(map, "condition")}
+
+def combinations(samples, comboKeys, renameComboKeys, constKeys) {
+    toCombine = samples
+        | map{sample -> sample.subMap(comboKeys).values().toList().transpose().toSet()}
+        | flatten
+        | collate(comboKeys.size())
+    
+    constPart = samples
+        | map{sample -> sample.subMap(constKeys)}
+    
+    return toCombine
+        | combine(toCombine)
+        | filter{it[0] > it[comboKeys.size()]}
+        | map {
+            sample ->
+
+            [renameComboKeys, sample].transpose().collectEntries{[(it[0]): it[1]]}
+        }
+        | combine(constPart)
+        | map{it[0] + it[1]}
+}
