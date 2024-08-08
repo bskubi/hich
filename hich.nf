@@ -44,10 +44,10 @@ workflow {
         | Select
         | MakeHic
         | MakeMcool
-//        | Hicrep
-    //     | CallCompartments
+        | Hicrep
+        | CallCompartments
         | CallLoops
-    //     | CallInsulation
+        | CallInsulation
         
 }
 

@@ -1,25 +1,24 @@
-process CooltoolsEigsCis {
+process HichCompartments {
     publishDir "results/compartments",
                mode: params.general.publish.mode
-    conda "cooltools"
+
     container "bskubi/hich:latest"
 
     input:
-    tuple val(id), path(mcool), val(resolution), val(cooltools_ciseigs_params)
+    tuple val(id), path(reference), path(matrix), val(resolution), val(hich_compartments_params)
 
     output:
-    tuple val(id), path("${id}.cis.bw"), path("${id}.cis.lam.txt"), path("${id}.cis.vecs.tsv")
+    tuple val(id), path("${id}_0.bw"), path("${id}_1.bw"), path("${id}_2.bw")
 
     shell:
-    cmd = ["cooltools eigs-cis", 
-           "--out-prefix ${id}"] +
-          cooltools_ciseigs_params +
-          ["${mcool}::/resolutions/${resolution}"]
+    cmd = ["hich compartments"] +
+          hich_compartments_params +
+          ["${reference} ${matrix} ${resolution}"]
     cmd = cmd.join(" ")
     cmd
 
     stub:
-    "touch ${id}.cis.bw ${id}.cis.lam.txt ${id}.cis.vecs.tsv"
+    "touch ${id}_0.bw ${id}_1.bw ${id}_2.bw"
 }
 
 workflow CallCompartments {
@@ -28,9 +27,9 @@ workflow CallCompartments {
 
     main:
     samples
-        | filter {it.get("compartments") != null && it.get("mcool") != null}
-        | map{tuple(it.id, it.mcool, it.compartments.resolution, it.compartments.cooltools_eigs_cis_params)}
-        | CooltoolsEigsCis
+        | filter {it.get("compartments") != null && it.get("latest_matrix") != null}
+        | map{tuple(it.id, it.reference, it.latest_matrix, it.compartments.resolution, it.compartments.hich_compartments_params)}
+        | HichCompartments
 
     emit:
     samples

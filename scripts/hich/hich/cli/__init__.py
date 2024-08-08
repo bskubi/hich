@@ -62,7 +62,7 @@ class _PathList(_ParamList):
             raise ValueError(f"{value} is not a valid path")
 
 class _StrList(_ParamList):
-    name = "path_list"
+    name = "str_list"
 
     def convert(self, value, param, ctx):
         try:

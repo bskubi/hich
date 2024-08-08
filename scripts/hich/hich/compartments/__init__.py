@@ -14,7 +14,7 @@ import os
 import inspect
 from scipy.sparse import coo_matrix
 import copy
-from smart_open import smart_open/
+from smart_open import smart_open
 
 def chromsizes_hic(path: Path) -> Dict[str, int]:
     h = hicstraw.HiCFile(str(path.resolve()))

@@ -15,7 +15,9 @@ dependencies:
   - smart-open
   - biopython
   - ucsc-bedgraphtobigwig
+  - pyBigWig
   - pip:
     - hicrep
     - cooltools
     - git+https://github.com/open2c/MultiQC.git
+    - hic-straw
