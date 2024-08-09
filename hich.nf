@@ -16,21 +16,6 @@ include {CallInsulation} from './subwf/callInsulation.nf'
 include {Hicrep} from './subwf/hicrep.nf'
 
 workflow {
-    // we need to give a conda-based option for all workflow steps if possible
-    // add read downsample step after select (can also be used for ingestion)
-
-    // is there a way to clean up SLURM output from Nextflow?
-
-    // compute the md5hash for the samples.csv and nextflow.config and save
-    // as that hash in something like "runs" as a record of the analysis
-    // actually it would be better to save a snapshot of params when nextflow
-    // is launched, since its value is the result of aggregating several
-    // places where param values can be set.
-
-    // ingest .mcool/.hic files and interconvert between them using hictk
-
-      
-
     LoadSampleFile
         | AssignParams
         | HeadReads
@@ -38,9 +23,9 @@ workflow {
         | Parse
         | IngestPairs
         | OptionalFragtag
-        // | TechrepsToBioreps
+        | TechrepsToBioreps
         | Deduplicate
-    //     | BiorepsToConditions
+        | BiorepsToConditions
         | Select
         | MakeHic
         | MakeMcool
@@ -48,6 +33,5 @@ workflow {
         | CallCompartments
         | CallLoops
         | CallInsulation
-        
 }
 

@@ -62,7 +62,7 @@ workflow CallLoops {
         sampleTypeGroupChannel ->
         p = parameterize("mustacheLoops",
                          sampleTypeGroupChannel,
-                         params.parameterizations,
+                         params.comparisonSets,
                          ["id", "latest_matrix"],
                          ["id", "latest_matrix", "mustacheParams"])
 

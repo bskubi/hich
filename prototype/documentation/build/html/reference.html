@@ -37,8 +37,8 @@
 <section id="sample-file">
 <h2>Sample file<a class="headerlink" href="#sample-file" title="Permalink to this headline">¶</a></h2>
 <p>Normally, the <a class="reference internal" href="#sample-file">sample file</a> is called “samples.tsv” (tab-delimited). Basic <a class="reference internal" href="#sample-attributes">sample attributes</a> are usually specified here. Default sample attributes are customizeable and can be specified on the basis of individual sample ids in <a class="reference internal" href="#nextflow-config">nextflow.config</a>, which is useful for specifying defaults for <a class="reference internal" href="#biorep">biorep</a> and <a class="reference internal" href="#condition">condition</a> samples produced via merge.</p>
-<table class="docutils align-default" id="id6">
-<caption><span class="caption-text"><strong>Example 1.</strong> Because <a class="reference internal" href="#reference">reference</a>, <a class="reference internal" href="#chromsizes">chromsizes</a>, <a class="reference internal" href="#index-dir">index_dir</a>, <a class="reference internal" href="#index-prefix">index_prefix</a>, and <a class="reference internal" href="#fragfile">fragfile</a> files are unspecified and the <a class="reference internal" href="#assembly">assembly</a> values are supported, Hich will download the reference and produce these needed files automatically.</span><a class="headerlink" href="#id6" title="Permalink to this table">¶</a></caption>
+<table class="docutils align-default" id="id3">
+<caption><span class="caption-text"><strong>Example 1.</strong> Because <a class="reference internal" href="#reference">reference</a>, <a class="reference internal" href="#chromsizes">chromsizes</a>, <a class="reference internal" href="#index-dir">index_dir</a>, <a class="reference internal" href="#index-prefix">index_prefix</a>, and <a class="reference internal" href="#fragfile">fragfile</a> files are unspecified and the <a class="reference internal" href="#assembly">assembly</a> values are supported, Hich will download the reference and produce these needed files automatically.</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 14%" />
 <col style="width: 14%" />
@@ -125,8 +125,8 @@
 </tr>
 </tbody>
 </table>
-<table class="docutils align-default" id="id7">
-<caption><span class="caption-text"><strong>Example 2.</strong> Here, needed reference files are given (possibly from a permanent lab repository), so they will be used rather than produced by Hich. Because there’s just one sample, there is no need to specify a <a class="reference internal" href="#biorep">biorep</a> or <a class="reference internal" href="#techrep">techrep</a> parameter.</span><a class="headerlink" href="#id7" title="Permalink to this table">¶</a></caption>
+<table class="docutils align-default" id="id4">
+<caption><span class="caption-text"><strong>Example 2.</strong> Here, needed reference files are given (possibly from a permanent lab repository), so they will be used rather than produced by Hich. Because there’s just one sample, there is no need to specify a <a class="reference internal" href="#biorep">biorep</a> or <a class="reference internal" href="#techrep">techrep</a> parameter.</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 10%" />
@@ -166,8 +166,8 @@
 </tr>
 </tbody>
 </table>
-<table class="docutils align-default" id="id8">
-<caption><span class="caption-text"><strong>Example 3.</strong> Here Hich is ingesting files in several formats, autodetecting the <a class="reference internal" href="#datatype">datatype</a>.</span><a class="headerlink" href="#id8" title="Permalink to this table">¶</a></caption>
+<table class="docutils align-default" id="id5">
+<caption><span class="caption-text"><strong>Example 3.</strong> Here Hich is ingesting files in several formats, autodetecting the <a class="reference internal" href="#datatype">datatype</a>.</span><a class="headerlink" href="#id5" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 17%" />
 <col style="width: 17%" />
@@ -209,8 +209,8 @@
 </tr>
 </tbody>
 </table>
-<table class="docutils align-default" id="id9">
-<caption><span class="caption-text"><strong>Example 4.</strong> An experiment using a variety of <a class="reference internal" href="#enzymes">enzymes</a> for reference digestion and fragment tagging, as well as one sample not tagged or filtered (MNase).</span><a class="headerlink" href="#id9" title="Permalink to this table">¶</a></caption>
+<table class="docutils align-default" id="id6">
+<caption><span class="caption-text"><strong>Example 4.</strong> An experiment using a variety of <a class="reference internal" href="#enzymes">enzymes</a> for reference digestion and fragment tagging, as well as one sample not tagged or filtered (MNase).</span><a class="headerlink" href="#id6" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 20%" />
 <col style="width: 20%" />
@@ -378,6 +378,68 @@
 <span class="w">        </span><span class="c1">// when doing a humid run</span>
 <span class="w">        </span><span class="n">humid</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">            </span><span class="n">n_reads</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100000</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="comparisonsets">
+<h4>comparisonSets<a class="headerlink" href="#comparisonsets" title="Permalink to this headline">¶</a></h4>
+<p>Generating chromosome-wide stratum-adjusted correlation coefficients (SCC) with Hicrep and differential loop calls with Mustache involve comparing combinations of samples, potentially with combinations of parameterizations as well. This requires the ability to specify which comparison sets each sample will participate in, as well as what the parameters will be for that comparison set.</p>
+<p>Comparisons will be made between any pair of samples participating in a given comparison set, using the parameters (or combinations of parameters) for that comparison set. To apply the same parameterizations to different combinations of sample subsets, simply declare two differently named comparisonSets using the same parameters, and assign the desired subsets of samples to the comparison sets they should participate in.</p>
+<section id="hicrep">
+<h5>hicrep<a class="headerlink" href="#hicrep" title="Permalink to this headline">¶</a></h5>
+<p><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">hicrep</span></code> is based on the existing Python-based <a class="reference external" href="https://github.com/dejunlin/hicrep">hicrep implementation</a>. It adds value by:
+- Comparison all given contact matrices
+- Making comparisons using all combinations of given parameters as parameterizations
+- Outputting results in a single header tab-delimited (.tsv) file, with each row representing a single SCC score for a specific pair of matrices, chromosome, and parameterization of hicrep. This makes it easy to visualize or load as a dataframe for downstream analysis.</p>
+<p>See also: <a class="reference internal" href="#hicrepcomparisonsets">hicrepComparisonSets</a></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">params</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">comparisonSets</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">hicrep</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="c1">// p1 is a default parameterization</span>
+<span class="w">            </span><span class="n">p1</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="c1">// Resolutions (in bp) at which Hicrep SCC scores should be computed</span>
+<span class="w">                </span><span class="n">resolutions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">10000</span><span class="p">,</span><span class="w"> </span><span class="mi">100000</span><span class="p">,</span><span class="w"> </span><span class="mi">1000000</span><span class="p">]</span><span class="w"></span>
+
+<span class="w">                </span><span class="c1">// Which chromosomes to call SCC scores on</span>
+<span class="w">                </span><span class="n">chroms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span><span class="w"></span>
+
+<span class="w">                </span><span class="c1">// Which chromosomes to exclude from analysis</span>
+<span class="w">                </span><span class="n">exclude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span><span class="w"></span>
+
+<span class="w">                </span><span class="c1">// A Python statement used to filter which chromosomes to keep on the basis</span>
+<span class="w">                </span><span class="c1">// of two variables: chrom (the chromosome name) and size (the size in bp of the chromosome)</span>
+<span class="w">                </span><span class="n">chrom_filter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;chrom if size &gt; 5000000 else None&quot;</span><span class="w"></span>
+
+<span class="w">                </span><span class="c1">// The set of Hicrep h parameter values to call on</span>
+<span class="w">                </span><span class="n">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"></span>
+
+<span class="w">                </span><span class="c1">// The set of dBPMax values that should be used.</span>
+<span class="w">                </span><span class="n">dBPMax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mi">-1</span><span class="p">]</span><span class="w"></span>
+
+<span class="w">                </span><span class="c1">// The set of bDownSample parameters that should be used.</span>
+<span class="w">                </span><span class="n">bDownSample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="nb">false</span><span class="p">]</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="mustacheloops">
+<h5>mustacheLoops<a class="headerlink" href="#mustacheloops" title="Permalink to this headline">¶</a></h5>
+<p>Hich uses <a class="reference external" href="https://github.com/ay-lab/mustache">mustache</a> diffloops to obtain loop calls and diffloop calls for each pair of matrices participating in a comparison set. The only required parameter is mustacheParams, specifying the arguments to supply to <code class="docutils literal notranslate"><span class="pre">diff_mustache.py</span></code>. The defaults given are identical to the defaults for <code class="docutils literal notranslate"><span class="pre">diff_mustache.py</span></code>.</p>
+<p>See also: <a class="reference internal" href="#mustacheloopscomparisonsets">mustacheLoopsComparisonSets</a></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">params</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">comparisonSets</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">mustacheLoops</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">mustacheLoops1</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">mustacheParams</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">                </span><span class="s">&quot;--resolution 1000000&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="s">&quot;--chromosome chr22&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="s">&quot;--pThreshold .1&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="s">&quot;--sparsityThreshold .88&quot;</span><span class="w"></span>
+<span class="w">                </span><span class="p">]</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
 <span class="w">        </span><span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
@@ -574,8 +636,8 @@
 <div class="line"><br /></div>
 <div class="line">If restriction enzymes were used to digest the sample, they can be listed here. Hich allows specifying “Arima” for the Arima Hi-C+ kit enzymes. Any enzymes or combination of enzymes in Biopython’s <a class="reference external" href="http://biopython.org/DIST/docs/cookbook/Restriction.html">Bio.Restrict</a> library can be used. Multiple enzymes should be separated by commas <cite>,</cite>. If specified, a “fragment index” (a digest of the reference genome using the enzymes in .bed format) will be produced automatically, used to tag tne ends of each read with the restriction fragment it maps to, and then filter out any reads where each end maps to the same restriction fragment. If not specified, none of these steps occur. See <a class="reference internal" href="#fragfile">fragfile</a> for how to use an already-created fragment index.</div>
 </div>
-<table class="docutils align-default" id="id10">
-<caption><span class="caption-text">Example samples.csv specifying different <code class="docutils literal notranslate"><span class="pre">enzymes</span></code> options</span><a class="headerlink" href="#id10" title="Permalink to this table">¶</a></caption>
+<table class="docutils align-default" id="id7">
+<caption><span class="caption-text">Example samples.csv specifying different <code class="docutils literal notranslate"><span class="pre">enzymes</span></code> options</span><a class="headerlink" href="#id7" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 20%" />
 <col style="width: 20%" />
@@ -885,80 +947,19 @@
 </section>
 <section id="quality-control">
 <h3>Quality control<a class="headerlink" href="#quality-control" title="Permalink to this headline">¶</a></h3>
-<section id="hicrep">
-<h4>hicrep<a class="headerlink" href="#hicrep" title="Permalink to this headline">¶</a></h4>
-<section id="call-on">
-<h5>call_on<a class="headerlink" href="#call-on" title="Permalink to this headline">¶</a></h5>
+<section id="hicrepcomparisonsets">
+<h4>hicrepComparisonSets<a class="headerlink" href="#hicrepcomparisonsets" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
-<div class="line">Options:</div>
+<div class="line">Default: <code class="docutils literal notranslate"><span class="pre">hicrepComparisonSets</span> <span class="pre">=</span> <span class="pre">[&quot;p1&quot;,</span> <span class="pre">&quot;p2&quot;]</span></code></div>
 </div>
-<ul class="simple">
-<li><p>is_techrep <cite>default</cite></p></li>
-<li><p>is_biorep <cite>default</cite></p></li>
-<li><p>is_condition <cite>default</cite></p></li>
-</ul>
-<div class="line-block">
-<div class="line"><br /></div>
-<div class="line">Whether to compute Hicrep SCC scores on technical replicates, biological replicates, and conditions. Results for all comparisons are output to a single .tsv file with a per-column header giving the pair of samples, chromosome, resolution, and Hicrep parameters that were used, along with the SCC score.</div>
-</div>
-</section>
-<section id="id2">
-<h5>resolutions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h5>
-<div class="line-block">
-<div class="line">Default:</div>
-</div>
-<ul class="simple">
-<li><p>10000</p></li>
-<li><p>100000</p></li>
-<li><p>1000000</p></li>
-</ul>
-<div class="line-block">
-<div class="line"><br /></div>
-<div class="line">Which resolutions to use for calling Hicrep SCC scores.</div>
-</div>
-</section>
-<section id="id3">
-<h5>chroms<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h5>
-<div class="line-block">
-<div class="line">Which chromosomes to use for calling Hicrep SCC scores. If not specified, all chromosomes shared by both matrices at the given resolution will be used.</div>
-</div>
-</section>
-<section id="exclude">
-<h5>exclude<a class="headerlink" href="#exclude" title="Permalink to this headline">¶</a></h5>
-<div class="line-block">
-<div class="line">Which chromosomes to exclude when calling Hicrep SCC scores.</div>
-</div>
-</section>
-<section id="chrom-filter">
-<h5>chrom_filter<a class="headerlink" href="#chrom-filter" title="Permalink to this headline">¶</a></h5>
-<div class="line-block">
-<div class="line">A conditional statement in Python to determine whether to use a chromosome for Hicrep as a function of its name (referenced via the <code class="docutils literal notranslate"><span class="pre">chrom</span></code> variable) and size (the <code class="docutils literal notranslate"><span class="pre">size</span></code> variable). It will be evaluated using Python’s <code class="docutils literal notranslate"><span class="pre">eval</span></code> statement.</div>
-</div>
-</section>
-<section id="h">
-<h5>h<a class="headerlink" href="#h" title="Permalink to this headline">¶</a></h5>
-<div class="line-block">
-<div class="line">Values of Hicrep’s <code class="docutils literal notranslate"><span class="pre">h</span></code> parameter to use.</div>
-</div>
-</section>
-<section id="dbpmax">
-<h5>dBPMax<a class="headerlink" href="#dbpmax" title="Permalink to this headline">¶</a></h5>
-<div class="line-block">
-<div class="line">Values of Hicrep’s <code class="docutils literal notranslate"><span class="pre">dBPMax</span></code> parameter to use.</div>
-</div>
-</section>
-<section id="bdownsample">
-<h5>bDownSample<a class="headerlink" href="#bdownsample" title="Permalink to this headline">¶</a></h5>
-<div class="line-block">
-<div class="line">Values of Hicrep’s <code class="docutils literal notranslate"><span class="pre">bDownSample</span></code> parameter to use.</div>
-</div>
-</section>
+<p>The hicrepComparisonSets parameter specifies which <a class="reference internal" href="#hicrep">hicrep</a> <a class="reference internal" href="#comparisonsets">comparisonSets</a> parameters a sample participates in.</p>
 </section>
 </section>
 <section id="feature-calling">
 <h3>Feature calling<a class="headerlink" href="#feature-calling" title="Permalink to this headline">¶</a></h3>
 <section id="compartments">
 <h4>compartments<a class="headerlink" href="#compartments" title="Permalink to this headline">¶</a></h4>
+<p>Compartment scores are <em>cis</em> eigenvectors whose sign is chosen to force the eigenvectors to have a positive Pearson correlation with %GC content, which also results in a positive correlation with gene density. Therefore positive compartment scores are in the A compartment, negative scores in the B compartment. Output is in BigWig format.</p>
 <section id="resolution">
 <h5>resolution<a class="headerlink" href="#resolution" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
@@ -967,23 +968,23 @@
 <div class="line">The resolution at which compartments should be called.</div>
 </div>
 </section>
-<section id="cooltools-eigs-cis-params">
-<h5>cooltools_eigs_cis_params<a class="headerlink" href="#cooltools-eigs-cis-params" title="Permalink to this headline">¶</a></h5>
+<section id="hich-compartment-params">
+<h5>hich_compartment_params<a class="headerlink" href="#hich-compartment-params" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Defaults:</div>
 </div>
 <ul class="simple">
-<li><p>–bigwig</p></li>
+<li><p>–n_eigs 3</p></li>
 </ul>
 <div class="line-block">
-<div class="line">Additional parameters that should be passed to cooltools_eigs_cis. The default specifies that a .bigwig-format file should be generated as well as the .bedgraph format.</div>
+<div class="line">Additional parameters that should be passed to hich compartments. The default specifies that the first three eigenvectors should be computed and sign-corrected. Occasionally the score based on the first eigenvector does not correspond to compartments, so they should be checked by eye to confirm sign changes correspond closely to the plaid pattern in the Hi-C matrix.</div>
 </div>
 </section>
 </section>
 <section id="insulation">
 <h4>insulation<a class="headerlink" href="#insulation" title="Permalink to this headline">¶</a></h4>
-<section id="id4">
-<h5>resolution<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h5>
+<section id="id2">
+<h5>resolution<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h5>
 <div class="line-block">
 <div class="line">Default: 5000</div>
 <div class="line"><br /></div>
@@ -1003,54 +1004,15 @@
 </div>
 </section>
 </section>
-<section id="loops">
-<h4>loops<a class="headerlink" href="#loops" title="Permalink to this headline">¶</a></h4>
+<section id="mustacheloopscomparisonsets">
+<h4>mustacheLoopsComparisonSets<a class="headerlink" href="#mustacheloopscomparisonsets" title="Permalink to this headline">¶</a></h4>
 <div class="line-block">
-<div class="line">Hich uses Mustache for loop and differential loop calling. This software was chosen mainly for its theoretical advantages. Based on scale space theory, it applies an artifact-free filter to a matrix to remove fine details, then detects blobs which are called as loops. It thereby takes local information into account in loop calling. Differential loops for a pair of matrices are loops that are present or enriched in one matrix and not present or depleted in the other. An added practical benefit is that Mustache is fast enough that it can run on a CPU, whereas many other loop callers require a GPU.</div>
+<div class="line">Default: <code class="docutils literal notranslate"><span class="pre">mustacheLoopsComparisonSets</span> <span class="pre">=</span> <span class="pre">[&quot;mustacheLoops1&quot;]</span></code></div>
 </div>
-<section id="id5">
-<h5>call_on<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h5>
-<div class="line-block">
-<div class="line">Options:</div>
-</div>
-<ul class="simple">
-<li><p>is_techrep <cite>default</cite></p></li>
-<li><p>is_biorep <cite>default</cite></p></li>
-<li><p>is_condition <cite>default</cite></p></li>
-</ul>
-<div class="line-block">
-<div class="line"><br /></div>
-<div class="line">Whether to call loops on technical replicates, biological replicates, and conditions.</div>
-</div>
-</section>
-<section id="use-format">
-<h5>use_format<a class="headerlink" href="#use-format" title="Permalink to this headline">¶</a></h5>
-<div class="line-block">
-<div class="line">Options:</div>
-</div>
-<ul class="simple">
-<li><p>mcool <cite>default</cite></p></li>
-<li><p>hic</p></li>
-</ul>
-<div class="line-block">
-<div class="line">Mustache can use both .mcool and .hic matrix formats as input. Loops will only be called on samples where the appropriate matrix type is output. If both are generated, which is used should not affect the outcome.</div>
-</div>
-</section>
-<section id="mustache-params">
-<h5>mustache_params<a class="headerlink" href="#mustache-params" title="Permalink to this headline">¶</a></h5>
-<div class="line-block">
-<div class="line">Default:</div>
-</div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--resolution</span> <span class="pre">5000</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--pThreshold</span> <span class="pre">.1</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--sparsityThreshold</span> <span class="pre">.88</span></code></p></li>
-</ul>
-<div class="line-block">
-<div class="line"><br /></div>
-<div class="line">Parameters passed to mustache_diffloops, which will output both individual matrix loop calls and a pair of diffloops calls for each matrix.</div>
-</div>
-</section>
+<p>Differential loops for a pair of matrices are loops that are present or enriched in one matrix and not present or depleted in the other.</p>
+<p>Hich uses Mustache for loop and differential loop calling. This software was chosen mainly for its theoretical advantages. Based on scale space theory, it applies an artifact-free filter to a matrix to remove fine details, then detects blobs which are called as loops. This takes local information into account in loop calling.</p>
+<p>Mustache is fast enough that it can run on a CPU, whereas many other loop callers require a GPU.</p>
+<p>The mustacheLoops parameter specifies which <a class="reference internal" href="#mustacheloops">mustacheLoops</a> <a class="reference internal" href="#comparisonsets">comparisonSets</a> a given sample participates in.</p>
 </section>
 </section>
 </section>
@@ -1085,6 +1047,11 @@
 <li class="toctree-l5"><a class="reference internal" href="#publish">publish</a></li>
 <li class="toctree-l5"><a class="reference internal" href="#qc-after">qc_after</a></li>
 <li class="toctree-l5"><a class="reference internal" href="#humid">humid</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#comparisonsets">comparisonSets</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#hicrep">hicrep</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#mustacheloops">mustacheLoops</a></li>
 </ul>
 </li>
 <li class="toctree-l4"><a class="reference internal" href="#defaults">defaults</a></li>
@@ -1158,36 +1125,21 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#quality-control">Quality control</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#hicrep">hicrep</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="#call-on">call_on</a></li>
-<li class="toctree-l5"><a class="reference internal" href="#id2">resolutions</a></li>
-<li class="toctree-l5"><a class="reference internal" href="#id3">chroms</a></li>
-<li class="toctree-l5"><a class="reference internal" href="#exclude">exclude</a></li>
-<li class="toctree-l5"><a class="reference internal" href="#chrom-filter">chrom_filter</a></li>
-<li class="toctree-l5"><a class="reference internal" href="#h">h</a></li>
-<li class="toctree-l5"><a class="reference internal" href="#dbpmax">dBPMax</a></li>
-<li class="toctree-l5"><a class="reference internal" href="#bdownsample">bDownSample</a></li>
-</ul>
-</li>
+<li class="toctree-l4"><a class="reference internal" href="#hicrepcomparisonsets">hicrepComparisonSets</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#feature-calling">Feature calling</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#compartments">compartments</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#resolution">resolution</a></li>
-<li class="toctree-l5"><a class="reference internal" href="#cooltools-eigs-cis-params">cooltools_eigs_cis_params</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#hich-compartment-params">hich_compartment_params</a></li>
 </ul>
 </li>
 <li class="toctree-l4"><a class="reference internal" href="#insulation">insulation</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="#id4">resolution</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#id2">resolution</a></li>
 <li class="toctree-l5"><a class="reference internal" href="#cooltools-insulation-params">cooltools_insulation_params</a></li>
 </ul>
 </li>
-<li class="toctree-l4"><a class="reference internal" href="#loops">loops</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="#id5">call_on</a></li>
-<li class="toctree-l5"><a class="reference internal" href="#use-format">use_format</a></li>
-<li class="toctree-l5"><a class="reference internal" href="#mustache-params">mustache_params</a></li>
-</ul>
-</li>
+<li class="toctree-l4"><a class="reference internal" href="#mustacheloopscomparisonsets">mustacheLoopsComparisonSets</a></li>
 </ul>
 </li>
 </ul>

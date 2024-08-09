@@ -62,12 +62,10 @@ workflow Merge {
 
     switch(sampleType) {
         case "TechrepsToBiorep":
-            filterFunction = isTechrep
             groups = ["condition", "biorep"]
             result = "biorep_merge_pairs"
             break
         case "BiorepsToCondition":
-            filterFunction = isBiorep
             groups = ["condition"]
             result = "condition_merge_pairs"
             break
@@ -76,7 +74,18 @@ workflow Merge {
     }
 
     samples
-        | filter{filterFunction.call(it)}
+        | filter{
+            switch(sampleType) {
+                case "TechrepsToBiorep":
+                    isTechrep(it)
+                    break
+                case "BiorepsToCondition":
+                    isBiorep(it)
+                    break
+                default:
+                    error "Invalid merge sampleType '${sampleType}'"
+            }
+        }
         | map{tuple(it.subMap(*groups), it)}
         | groupTuple
         | map {group, samples -> mergeGroupParams(samples)}

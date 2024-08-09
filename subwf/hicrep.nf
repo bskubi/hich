@@ -37,7 +37,7 @@ workflow Hicrep {
 
     parameterize("hicrep",
                  samples,
-                 params.parameterizations,
+                 params.comparisonSets,
                  ["mcool"],
                  ["mcool", "resolutions", "chroms", "exclude", "chrom_filter", "h", "dBPMax", "bDownSample"])
         | HicrepCombos
