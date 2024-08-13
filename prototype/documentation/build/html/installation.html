@@ -53,7 +53,7 @@
 <section id="id1">
 <h2><a class="reference external" href="https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html">Install with Mamba</a><a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
 <p>Install</p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">mamba</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="o">-</span><span class="n">qy</span><span class="w"> </span><span class="o">-</span><span class="n">c</span><span class="w"> </span><span class="n">bioconda</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="n">nextflow</span><span class="w"> </span><span class="n">singularity</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">mamba</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="o">-</span><span class="n">qy</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="n">bioconda</span><span class="o">::</span><span class="n">nextflow</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">singularity</span>
 </pre></div>
 </div>
 <p>Activate environment (each time you log in, prior to running Hich)</p>
@@ -64,7 +64,7 @@
 <section id="id2">
 <h2><a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/install/index.html">Install with Conda</a><a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
 <p>Install</p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="o">-</span><span class="n">qy</span><span class="w"> </span><span class="o">-</span><span class="n">c</span><span class="w"> </span><span class="n">bioconda</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="n">nextflow</span><span class="w"> </span><span class="n">singularity</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="o">-</span><span class="n">qy</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="n">bioconda</span><span class="o">::</span><span class="n">nextflow</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">singularity</span>
 </pre></div>
 </div>
 <p>Activate environment (each time you log in, prior to running Hich)</p>
@@ -87,9 +87,8 @@
 <dl>
 <dt>The <code class="docutils literal notranslate"><span class="pre">create</span></code> command creates a new environment especially for Hich with its dependencies.</dt><dd><div class="line-block">
 <div class="line"><code class="docutils literal notranslate"><span class="pre">-qy</span></code> quiets installation messages automatically says “yes” to the “do you want to install” prompt.</div>
-<div class="line"><code class="docutils literal notranslate"><span class="pre">-c</span> <span class="pre">bioconda</span></code> lets mamba/conda look for packages in the bioconda repository, which is where the nextflow package is located.</div>
 <div class="line"><code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">hich</span></code> names the environment “hich”. You can choose a different name.</div>
-<div class="line"><code class="docutils literal notranslate"><span class="pre">nextflow</span> <span class="pre">singularity</span></code> The two packages that must be installed to the <code class="docutils literal notranslate"><span class="pre">hich</span></code> environment.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">bioconda::nextflow</span> <span class="pre">conda-forge::singularity</span></code> The two packages that must be installed to the <code class="docutils literal notranslate"><span class="pre">hich</span></code> environment along with the channels from which they should be accessed. Note that it is essential to use these specific channels.</div>
 </div>
 </dd>
 </dl>

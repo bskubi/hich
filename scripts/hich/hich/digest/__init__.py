@@ -80,6 +80,8 @@ def kit_names_to_enzymes(digest):
 
     # Add any non-kit enzymes to the digest
     enzymes = enzymes.union(digest)
+
+    print(enzymes)
     return enzymes
 
 def digest(output, startshift, endshift, cutshift, reference, digest):

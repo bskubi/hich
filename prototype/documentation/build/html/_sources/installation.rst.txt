@@ -8,7 +8,7 @@ Install
 
 .. code-block:: c
 
-    mamba create -qy -c bioconda -n hich nextflow singularity
+    mamba create -qy -n hich bioconda::nextflow conda-forge::singularity
 
 Activate environment (each time you log in, prior to running Hich)
 
@@ -23,7 +23,7 @@ Install
 
 .. code-block:: c
 
-    conda create -qy -c bioconda -n hich nextflow singularity
+    conda create -qy -n hich bioconda::nextflow conda-forge::singularity
 
 Activate environment (each time you log in, prior to running Hich)
 
@@ -50,9 +50,8 @@ Mamba and Conda make it easy to install new packages. Mamba is a faster drop-in 
 
 The ``create`` command creates a new environment especially for Hich with its dependencies.
     | ``-qy`` quiets installation messages automatically says "yes" to the "do you want to install" prompt.
-    | ``-c bioconda`` lets mamba/conda look for packages in the bioconda repository, which is where the nextflow package is located.
     | ``-n hich`` names the environment "hich". You can choose a different name.
-    | ``nextflow singularity`` The two packages that must be installed to the ``hich`` environment.
+    | ``bioconda::nextflow conda-forge::singularity`` The two packages that must be installed to the ``hich`` environment along with the channels from which they should be accessed. Note that it is essential to use these specific channels.
 
 [mamba|conda] activate
 .......................

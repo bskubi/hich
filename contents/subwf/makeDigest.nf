@@ -30,7 +30,7 @@ workflow MakeMissingDigest {
            "fragfile",
             ["reference", "enzymes", "fragfile", "assembly"],
             ["enzymes", "fragfile", "assembly"],
-           {"${it.assembly}_${it.enzymes}.bed"},
+           {"${it.assembly}_${it.enzymes.replace(" ", "_")}.bed"},
            [["assembly", "enzymes"]],
            {it.enzymes}) | set{samples}
     
