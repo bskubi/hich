@@ -66,7 +66,12 @@ def kit_names_to_enzymes(digest):
 
     # If the digest is a known kit name, map it to the corresponding enzymes
     kits = {
-        ("Arima Genome-Wide HiC+", "Arima"): ["DpnII", "HinfI"]
+        ("Arima Genome-Wide HiC+", "Arima"): ["DpnII", "HinfI"],
+        ("Phase Proximo 2021+ Plant", "Phase Plant"): ["DpnII"],
+        ("Phase Proximo 2021+ Animal", "Phase Animal"): ["DpnII"],
+        ("Phase Proximo 2021+ Microbiome", "Phase Microbiome"): ["Sau3AI", "MluCI"],
+        ("Phase Proximo 2021+ Human", "Phase Human"): ["DpnII"],
+        ("Phase Proximo 2021+ Fungal", "Phase Fungal"): ["DpnII"]
     }
     digest_removed = set()
     for kit, kit_enzymes in kits.items():
