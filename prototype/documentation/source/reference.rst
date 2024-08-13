@@ -6,22 +6,30 @@ Sample file
 
 Normally, the `sample file`_ is called "samples.tsv" (tab-delimited). Basic `sample attributes`_ are usually specified here. Default sample attributes are customizeable and can be specified on the basis of individual sample ids in `nextflow.config`_, which is useful for specifying defaults for `biorep`_ and `condition`_ samples produced via merge.
 
-.. csv-table:: **Example 1.** Because `reference`_, `chromsizes`_, `index_dir`_, `index_prefix`_, and `fragfile`_ files are unspecified and the `assembly`_ values are supported, Hich will download the reference and produce these needed files automatically.
+**Example 1.** Because `reference`_, `chromsizes`_, `index_dir`_, `index_prefix`_, and `fragfile`_ files are unspecified and the `assembly`_ values are supported, Hich will download the reference and produce these needed files automatically.
+
+.. csv-table::
     :file: tables/reference_samplefile1.tsv
     :delim: tab
     :header-rows: 1
 
-.. csv-table:: **Example 2.** Here, needed reference files are given (possibly from a permanent lab repository), so they will be used rather than produced by Hich. Because there's just one sample, there is no need to specify a `biorep`_ or `techrep`_ parameter.
+**Example 2.** Here, needed reference files are given (possibly from a permanent lab repository), so they will be used rather than produced by Hich. Because there's just one sample, there is no need to specify a `biorep`_ or `techrep`_ parameter.
+
+.. csv-table::
     :file: tables/reference_samplefile2.tsv
     :delim: tab
     :header-rows: 1
 
-.. csv-table:: **Example 3.** Here Hich is ingesting files in several formats, autodetecting the `datatype`_.
+**Example 3.** Here Hich is ingesting files in several formats, autodetecting the `datatype`_.
+
+.. csv-table::
     :file: tables/reference_samplefile3.tsv
     :delim: tab
     :header-rows: 1
 
-.. csv-table:: **Example 4.** An experiment using a variety of `enzymes`_ for reference digestion and fragment tagging, as well as one sample not tagged or filtered (MNase).
+**Example 4.** An experiment using a variety of `enzymes`_ for reference digestion and fragment tagging, as well as one sample not tagged or filtered (MNase).
+
+.. csv-table::
     :file: tables/reference_enzymes.tsv
     :delim: tab
     :header-rows: 1

@@ -57,16 +57,16 @@ workflow Align {
             it.fastq2 = file(it.fastq2)
             it
         }
-        | set {fastq}    
+        | set {to_align}    
 
     samples = transpack(
         BwaAlign,
-        [fastq, samples],
-        ["id", "index_dir", "index_prefix", "fastq1", "fastq2", "aligner", "aligner_threads", "bwa_flags"],
+        [to_align, samples],
+        ["id", "index_dir", "index_prefix", "fastq1", "fastq2",
+         "aligner", "aligner_threads", "bwa_flags"],
         ["id", "sambam"],
         ["latest":"sambam"],
-        "id"
-    )
+        "id")
 
     if (params.general.get("last_step") == "align") {
         channel.empty() | set{samples}

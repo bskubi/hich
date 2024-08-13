@@ -1,0 +1,10 @@
+name: hichnf
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - git
+  - python
+  - pip
+  - nextflow
+  - singularity

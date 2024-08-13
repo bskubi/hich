@@ -8,5 +8,6 @@ Hich documentation
 
 .. toctree::
    installation
+   samplefile
    reference
    

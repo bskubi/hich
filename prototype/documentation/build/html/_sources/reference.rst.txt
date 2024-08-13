@@ -6,22 +6,30 @@ Sample file
 
 Normally, the `sample file`_ is called "samples.tsv" (tab-delimited). Basic `sample attributes`_ are usually specified here. Default sample attributes are customizeable and can be specified on the basis of individual sample ids in `nextflow.config`_, which is useful for specifying defaults for `biorep`_ and `condition`_ samples produced via merge.
 
-.. csv-table:: **Example 1.** Because `reference`_, `chromsizes`_, `index_dir`_, `index_prefix`_, and `fragfile`_ files are unspecified and the `assembly`_ values are supported, Hich will download the reference and produce these needed files automatically.
+**Example 1.** Because `reference`_, `chromsizes`_, `index_dir`_, `index_prefix`_, and `fragfile`_ files are unspecified and the `assembly`_ values are supported, Hich will download the reference and produce these needed files automatically.
+
+.. csv-table::
     :file: tables/reference_samplefile1.tsv
     :delim: tab
     :header-rows: 1
 
-.. csv-table:: **Example 2.** Here, needed reference files are given (possibly from a permanent lab repository), so they will be used rather than produced by Hich. Because there's just one sample, there is no need to specify a `biorep`_ or `techrep`_ parameter.
+**Example 2.** Here, needed reference files are given (possibly from a permanent lab repository), so they will be used rather than produced by Hich. Because there's just one sample, there is no need to specify a `biorep`_ or `techrep`_ parameter.
+
+.. csv-table::
     :file: tables/reference_samplefile2.tsv
     :delim: tab
     :header-rows: 1
 
-.. csv-table:: **Example 3.** Here Hich is ingesting files in several formats, autodetecting the `datatype`_.
+**Example 3.** Here Hich is ingesting files in several formats, autodetecting the `datatype`_.
+
+.. csv-table::
     :file: tables/reference_samplefile3.tsv
     :delim: tab
     :header-rows: 1
 
-.. csv-table:: **Example 4.** An experiment using a variety of `enzymes`_ for reference digestion and fragment tagging, as well as one sample not tagged or filtered (MNase).
+**Example 4.** An experiment using a variety of `enzymes`_ for reference digestion and fragment tagging, as well as one sample not tagged or filtered (MNase).
+
+.. csv-table::
     :file: tables/reference_enzymes.tsv
     :delim: tab
     :header-rows: 1
@@ -163,76 +171,6 @@ humid
             // when doing a humid run
             humid {
                 n_reads = 100000
-            }
-
-comparisonSets
-,,,,,,,,,,,,,,
-
-Generating chromosome-wide stratum-adjusted correlation coefficients (SCC) with Hicrep and differential loop calls with Mustache involve comparing combinations of samples, potentially with combinations of parameterizations as well. This requires the ability to specify which comparison sets each sample will participate in, as well as what the parameters will be for that comparison set.
-
-Comparisons will be made between any pair of samples participating in a given comparison set, using the parameters (or combinations of parameters) for that comparison set. To apply the same parameterizations to different combinations of sample subsets, simply declare two differently named comparisonSets using the same parameters, and assign the desired subsets of samples to the comparison sets they should participate in.
-
-hicrep
-^^^^^^
-
-``hich hicrep`` is based on the existing Python-based `hicrep implementation <https://github.com/dejunlin/hicrep>`_. It adds value by:
-- Comparison all given contact matrices
-- Making comparisons using all combinations of given parameters as parameterizations
-- Outputting results in a single header tab-delimited (.tsv) file, with each row representing a single SCC score for a specific pair of matrices, chromosome, and parameterization of hicrep. This makes it easy to visualize or load as a dataframe for downstream analysis.
-
-See also: `hicrepComparisonSets`_
-
-.. code-block:: c
-
-    params {
-        comparisonSets {
-            hicrep {
-                // p1 is a default parameterization
-                p1 {
-                    // Resolutions (in bp) at which Hicrep SCC scores should be computed
-                    resolutions = [1000, 10000, 100000, 1000000]
-
-                    // Which chromosomes to call SCC scores on
-                    chroms = []
-
-                    // Which chromosomes to exclude from analysis
-                    exclude = []
-
-                    // A Python statement used to filter which chromosomes to keep on the basis
-                    // of two variables: chrom (the chromosome name) and size (the size in bp of the chromosome)
-                    chrom_filter = "chrom if size > 5000000 else None"
-
-                    // The set of Hicrep h parameter values to call on
-                    h = [1]
-
-                    // The set of dBPMax values that should be used.
-                    dBPMax = [-1]
-
-                    // The set of bDownSample parameters that should be used.
-                    bDownSample = [false]
-                }
-            }
-
-mustacheLoops
-^^^^^^^^^^^^^
-
-Hich uses `mustache <https://github.com/ay-lab/mustache>`_ diffloops to obtain loop calls and diffloop calls for each pair of matrices participating in a comparison set. The only required parameter is mustacheParams, specifying the arguments to supply to ``diff_mustache.py``. The defaults given are identical to the defaults for ``diff_mustache.py``.
-
-See also: `mustacheLoopsComparisonSets`_
-
-.. code-block:: c
-
-    params {
-        comparisonSets {
-            mustacheLoops {
-                mustacheLoops1 {
-                    mustacheParams = [
-                    "--resolution 1000000",
-                    "--chromosome chr22",
-                    "--pThreshold .1",
-                    "--sparsityThreshold .88"
-                    ]
-                }
             }
 
 defaults
@@ -592,11 +530,54 @@ resolutions
 Quality control
 ...............
 
-hicrepComparisonSets
-,,,,,,,,,,,,,,,,,,,,
-| Default: ``hicrepComparisonSets = ["p1", "p2"]``
+hicrep
+,,,,,,
 
-The hicrepComparisonSets parameter specifies which `hicrep`_ `comparisonSets`_ parameters a sample participates in.
+call_on
+^^^^^^^
+| Options:
+
+- is_techrep `default`
+- is_biorep `default`
+- is_condition `default`
+
+| 
+| Whether to compute Hicrep SCC scores on technical replicates, biological replicates, and conditions. Results for all comparisons are output to a single .tsv file with a per-column header giving the pair of samples, chromosome, resolution, and Hicrep parameters that were used, along with the SCC score.
+
+resolutions
+^^^^^^^^^^^
+| Default:
+
+- 10000
+- 100000
+- 1000000
+
+| 
+| Which resolutions to use for calling Hicrep SCC scores.
+
+chroms
+^^^^^^
+| Which chromosomes to use for calling Hicrep SCC scores. If not specified, all chromosomes shared by both matrices at the given resolution will be used.
+
+exclude
+^^^^^^^
+| Which chromosomes to exclude when calling Hicrep SCC scores.
+
+chrom_filter
+^^^^^^^^^^^^
+| A conditional statement in Python to determine whether to use a chromosome for Hicrep as a function of its name (referenced via the ``chrom`` variable) and size (the ``size`` variable). It will be evaluated using Python's ``eval`` statement.
+
+h
+^^^^^
+| Values of Hicrep's ``h`` parameter to use.
+
+dBPMax
+^^^^^^
+| Values of Hicrep's ``dBPMax`` parameter to use.
+
+bDownSample
+^^^^^^^^^^^^
+| Values of Hicrep's ``bDownSample`` parameter to use.
 
 Feature calling
 ...............
@@ -604,21 +585,19 @@ Feature calling
 compartments
 ,,,,,,,,,,,,
 
-Compartment scores are *cis* eigenvectors whose sign is chosen to force the eigenvectors to have a positive Pearson correlation with %GC content, which also results in a positive correlation with gene density. Therefore positive compartment scores are in the A compartment, negative scores in the B compartment. Output is in BigWig format.
-
 resolution
 ^^^^^^^^^^^
 | Default: 5000
 | 
 | The resolution at which compartments should be called.
 
-hich_compartment_params
+cooltools_eigs_cis_params
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 | Defaults:
 
-- --n_eigs 3
+- --bigwig
 
-| Additional parameters that should be passed to hich compartments. The default specifies that the first three eigenvectors should be computed and sign-corrected. Occasionally the score based on the first eigenvector does not correspond to compartments, so they should be checked by eye to confirm sign changes correspond closely to the plaid pattern in the Hi-C matrix.
+| Additional parameters that should be passed to cooltools_eigs_cis. The default specifies that a .bigwig-format file should be generated as well as the .bedgraph format.
 
 insulation
 ,,,,,,,,,,
@@ -637,14 +616,37 @@ cooltools_insulation_params
 
 | Additional parameters that should be passed to cooltools_eigs_cis. The default specifies that a .bigwig-format file should be generated as well as the .bedgraph format.
 
-mustacheLoopsComparisonSets
-,,,,,,,,,,,,,,,,,,,,,,,,,,,
-| Default: ``mustacheLoopsComparisonSets = ["mustacheLoops1"]``
+loops
+,,,,,,,
+| Hich uses Mustache for loop and differential loop calling. This software was chosen mainly for its theoretical advantages. Based on scale space theory, it applies an artifact-free filter to a matrix to remove fine details, then detects blobs which are called as loops. It thereby takes local information into account in loop calling. Differential loops for a pair of matrices are loops that are present or enriched in one matrix and not present or depleted in the other. An added practical benefit is that Mustache is fast enough that it can run on a CPU, whereas many other loop callers require a GPU.
 
-Differential loops for a pair of matrices are loops that are present or enriched in one matrix and not present or depleted in the other. 
+call_on
+^^^^^^^^^^^
+| Options:
 
-Hich uses Mustache for loop and differential loop calling. This software was chosen mainly for its theoretical advantages. Based on scale space theory, it applies an artifact-free filter to a matrix to remove fine details, then detects blobs which are called as loops. This takes local information into account in loop calling.
+- is_techrep `default`
+- is_biorep `default`
+- is_condition `default`
 
-Mustache is fast enough that it can run on a CPU, whereas many other loop callers require a GPU.
+| 
+| Whether to call loops on technical replicates, biological replicates, and conditions.
 
-The mustacheLoops parameter specifies which `mustacheLoops`_ `comparisonSets`_ a given sample participates in.
+use_format
+^^^^^^^^^^^^^^
+| Options:
+
+- mcool `default`
+- hic
+
+| Mustache can use both .mcool and .hic matrix formats as input. Loops will only be called on samples where the appropriate matrix type is output. If both are generated, which is used should not affect the outcome.
+
+mustache_params
+^^^^^^^^^^^^^^^^^
+| Default:
+
+- ``--resolution 5000``
+- ``--pThreshold .1``
+- ``--sparsityThreshold .88``
+
+| 
+| Parameters passed to mustache_diffloops, which will output both individual matrix loop calls and a pair of diffloops calls for each matrix.
