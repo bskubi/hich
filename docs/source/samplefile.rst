@@ -69,3 +69,4 @@ In this documentation, some terms have specific definitions.
 
 When Hich merges techrep samples to form biorep samples, it keeps the techrep samples as well. It also keeps the biorep samples after merging them to form condition samples. That means that the output contains techrep, biorep, and condition samples for the experiment, facilitating downstream QC and analysis.
 
+This is a test.
