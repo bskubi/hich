@@ -1,0 +1,9 @@
+condition	biorep	techrep	fastq1	fastq2	assembly	restriction	reference	chromsizes	aligner	index_dir	index_prefix	fragfile
+condition1	1	1	sample1_r1.fq.gz	sample1_r2.fq.gz	hg38	Arima						
+condition1	1	2	sample2_r1.fq.gz	sample2_r2.fq.gz	hg38	Arima						
+condition1	2	1	sample3_r1.fq.gz	sample3_r2.fq.gz	hg38							
+condition1	2	2	sample4_r1.fq.gz	sample4_r2.fq.gz	hg38							
+condition2			sample5_r1.fq.gz	sample5_r1.fq.gz	mm10	DpnII DdeI	resources/mm10.fa.gz	resources/mm10.sizes		resources/indexes/bwa-mem2	mm10	resources/DpnII_DdeI.bed
+condition3			sample6_r1.fq.gz	sample6_r2.fq.gz	mm10	DpnII			bwa			
+condition4			sample7_r1.fq.gz	sample7_r2.fq.gz	mm10	Arima			bwa-mem2			
+condition5			sample8_r1.fq.gz	sample8_r2.fq.gz	mm10	Arima			bsbolt			

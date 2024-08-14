@@ -7,13 +7,13 @@ process MakeDigest {
     container "bskubi/hich:latest"
     
     input:
-    tuple path(reference), val(enzymes), val(fragfile), val(assembly)
+    tuple path(reference), val(restriction_enzymes), val(fragfile), val(assembly)
 
     output:
-    tuple val(enzymes), path(fragfile), val(assembly)
+    tuple val(restriction_enzymes), path(fragfile), val(assembly)
 
     script:
-    "hich digest --output ${fragfile} ${reference} ${enzymes}"
+    "hich digest --output ${fragfile} ${reference} ${restriction_enzymes}"
 
     stub:
     "touch ${fragfile}"
@@ -28,11 +28,11 @@ workflow MakeMissingDigest {
     source(MakeDigest,
            samples,
            "fragfile",
-            ["reference", "enzymes", "fragfile", "assembly"],
-            ["enzymes", "fragfile", "assembly"],
-           {"${it.assembly}_${it.enzymes.replace(" ", "_")}.bed"},
-           [["assembly", "enzymes"]],
-           {it.enzymes}) | set{samples}
+            ["reference", "restriction_enzymes", "fragfile", "assembly"],
+            ["restriction_enzymes", "fragfile", "assembly"],
+           {"${it.assembly}_${it.restriction_enzymes.replace(" ", "_")}.bed"},
+           [["assembly", "restriction_enzymes"]],
+           {it.restriction_enzymes}) | set{samples}
     
     emit:
     samples

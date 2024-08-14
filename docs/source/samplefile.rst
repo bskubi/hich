@@ -32,15 +32,13 @@ Example 3. Use local reference, index, chromsizes, and fragfile
     :delim: tab
     :header-rows: 1
 
-Here, all resource files are already created and their paths are given. The new columns are:
+Here, all resource files are already created and their paths are given, but this is not necessary. The ``index_dir`` and ``index_prefix`` columns must either both have a value or neither have a value, but other than that, it is fine to specify some resource file columns and leave others blank for any given sample. The new columns are:
 
 - reference: The reference genome in FASTA format
 - chromsizes: A two-column tab-delimited file with the contigs in column 1 and the size (bp) of the contig in column 2.
 - index_dir: The directory where the desired index files are located
 - index_prefix: The common prefix string for each index file. BWA, for example, uses the files [index_prefix].amb, [index_prefix].ann, [index_prefix].bwt, [index_prefix].pac, and [index_prefix].sa.
 - fragfile: A partition of the genome into restriction fragments in BED format.
-
-The ``index_dir`` and ``index_prefix`` columns must either both have a value or neither have a value, but other than that, it is fine to specify some resource file columns and leave others blank for any given sample.
 
 4D Nucleome makes several commonly-used BWA index files available for manual download. If using them, you will need to download and unzip them before putting their paths into the sample file. Many labs produce an index for the genomes they work with and reuse them across many projects. As indexing the genome is the most RAM-intensive process Hich executes, it can be helpful to supply one if available.
 
