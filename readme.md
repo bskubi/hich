@@ -10,14 +10,14 @@ Hich installs with conda/mamba using one command. Sensible defaults are pre-chos
 | | | | | | | |
 |-|-|-|-|-|-|-|
 |condition|biorep|techrep|fastq1|fastq2|assembly|enzymes|
-|Human_KO|1|1|Human_KO_1_1_R1.fq.gz|Human_KO_1_1_R2.fq.gz|hg38|Arima|
-|Human_KO|1|2|Human_KO_1_2_R1.fq.gz|Human_KO_1_2_R2.fq.gz|hg38|Arima|
-|Human_KO|2|1|Human_KO_2_1_R1.fq.gz|Human_KO_2_1_R2.fq.gz|hg38|Arima|
-|Human_KO|2|2|Human_KO_2_2_R1.fq.gz|Human_KO_2_2_R2.fq.gz|hg38|Arima|
-|Mouse_KO|1|1|Mouse_KO_1_1_R1.fq.gz|Mouse_KO_1_1_R2.fq.gz|mm10|Arima|
-|Mouse_KO|1|2|Mouse_KO_1_2_R1.fq.gz|Mouse_KO_1_2_R2.fq.gz|mm10|Arima|
-|Mouse_KO|2|1|Mouse_KO_2_1_R1.fq.gz|Mouse_KO_2_1_R2.fq.gz|mm10|Arima|
-|Mouse_KO|2|2|Mouse_KO_2_2_R1.fq.gz|Mouse_KO_2_2_R2.fq.gz|mm10|Arima|
+|H|1|1|Human_1_1_R1.fq.gz|Human_1_1_R2.fq.gz|hg38|Arima|
+|H|1|2|Human_1_2_R1.fq.gz|Human_1_2_R2.fq.gz|hg38|Arima|
+|H|2|1|Human_2_1_R1.fq.gz|Human_2_1_R2.fq.gz|hg38|Arima|
+|H|2|2|Human_2_2_R1.fq.gz|Human_2_2_R2.fq.gz|hg38|Arima|
+|M|1|1|Mouse_1_1_R1.fq.gz|Mouse_1_1_R2.fq.gz|mm10|Arima|
+|M|1|2|Mouse_1_2_R1.fq.gz|Mouse_1_2_R2.fq.gz|mm10|Arima|
+|M|2|1|Mouse_2_1_R1.fq.gz|Mouse_2_1_R2.fq.gz|mm10|Arima|
+|M|2|2|Mouse_2_2_R1.fq.gz|Mouse_2_2_R2.fq.gz|mm10|Arima|
 
 # Features
 
