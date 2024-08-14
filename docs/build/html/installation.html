@@ -53,7 +53,7 @@
 <section id="id1">
 <h2><a class="reference external" href="https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html">Install with Mamba</a><a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
 <p>Install</p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">mamba</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="o">-</span><span class="n">qy</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="n">bioconda</span><span class="o">::</span><span class="n">nextflow</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">singularity</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">mamba</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="o">-</span><span class="n">qy</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="n">bioconda</span><span class="o">::</span><span class="n">nextflow</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">squashfuse</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">apptainer</span>
 </pre></div>
 </div>
 <p>Activate environment (each time you log in, prior to running Hich)</p>
@@ -64,7 +64,7 @@
 <section id="id2">
 <h2><a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/install/index.html">Install with Conda</a><a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
 <p>Install</p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="o">-</span><span class="n">qy</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="n">bioconda</span><span class="o">::</span><span class="n">nextflow</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">singularity</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="o">-</span><span class="n">qy</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="n">bioconda</span><span class="o">::</span><span class="n">nextflow</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">squashfuse</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">apptainer</span>
 </pre></div>
 </div>
 <p>Activate environment (each time you log in, prior to running Hich)</p>
@@ -88,7 +88,7 @@
 <dt>The <code class="docutils literal notranslate"><span class="pre">create</span></code> command creates a new environment especially for Hich with its dependencies.</dt><dd><div class="line-block">
 <div class="line"><code class="docutils literal notranslate"><span class="pre">-qy</span></code> quiets installation messages automatically says “yes” to the “do you want to install” prompt.</div>
 <div class="line"><code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">hich</span></code> names the environment “hich”. You can choose a different name.</div>
-<div class="line"><code class="docutils literal notranslate"><span class="pre">bioconda::nextflow</span> <span class="pre">conda-forge::singularity</span></code> The two packages that must be installed to the <code class="docutils literal notranslate"><span class="pre">hich</span></code> environment along with the channels from which they should be accessed. Note that it is essential to use these specific channels.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">bioconda::nextflow</span> <span class="pre">conda-forge::squashfuse</span> <span class="pre">conda-forge::apptainer</span></code> The three packages that must be installed to the <code class="docutils literal notranslate"><span class="pre">hich</span></code> environment along with the channels from which they should be accessed. Note that it is essential to use these specific channels.</div>
 </div>
 </dd>
 </dl>
@@ -99,10 +99,10 @@
 <p>The outputs will be accessible to you whether or not the environment is activated.</p>
 </section>
 </section>
-<section id="new-to-nextflow-and-singularity">
-<h2>New to Nextflow and Singularity?<a class="headerlink" href="#new-to-nextflow-and-singularity" title="Link to this heading">¶</a></h2>
-<p><a class="reference external" href="https://nextflow.io/">Nextflow</a> is a powerful workflow platform for reproducible science, similar to <a class="reference external" href="https://snakemake.github.io/">Snakemake</a> and widely used in bioinformatics. <a class="reference external" href="https://docs.sylabs.io/guides/3.5/user-guide/introduction.html">Singularity</a> makes software extremely portable. The <code class="docutils literal notranslate"><span class="pre">nextflow</span> <span class="pre">run</span> <span class="pre">bskubi/hich</span></code> command downloads <code class="docutils literal notranslate"><span class="pre">hich</span></code> from its <a class="reference external" href="https://github.com/bskubi/hich">GitHub repo</a>, installs it to the Nextflow home directory, and runs it using the <a class="reference internal" href="samplefile.html"><span class="doc">sample file</span></a> in your current working directory with default settings. See Nextflow’s section on <a class="reference external" href="https://www.nextflow.io/docs/latest/sharing.html">pipeline sharing</a> for more details.</p>
-<p>For Hich’s individual processes, from data processing to QC to analysis, Hich relies on a number of existing and novel tools, packages and algorithms. These have been containerized for Hich so that Singularity can install them behind the scenes, without any need for manual setup or configuration by the user.</p>
+<section id="new-to-nextflow-squashfuse-or-apptainer">
+<h2>New to Nextflow, Squashfuse or Apptainer?<a class="headerlink" href="#new-to-nextflow-squashfuse-or-apptainer" title="Link to this heading">¶</a></h2>
+<p><a class="reference external" href="https://nextflow.io/">Nextflow</a> is a powerful workflow platform for reproducible science, similar to <a class="reference external" href="https://snakemake.github.io/">Snakemake</a> and widely used in bioinformatics. <a class="reference external" href="https://apptainer.org/docs/admin/latest/index.html">Apptainer</a> makes software extremely portable and works in a variety of HPC environments. <a class="reference external" href="https://github.com/vasi/squashfuse">Squashfuse</a> is a critical to Apptainer’s performance. The <code class="docutils literal notranslate"><span class="pre">nextflow</span> <span class="pre">run</span> <span class="pre">bskubi/hich</span></code> command downloads <code class="docutils literal notranslate"><span class="pre">hich</span></code> from its <a class="reference external" href="https://github.com/bskubi/hich">GitHub repo</a>, installs it to the Nextflow home directory, and runs it using the <a class="reference internal" href="samplefile.html"><span class="doc">sample file</span></a> in your current working directory with default settings. See Nextflow’s section on <a class="reference external" href="https://www.nextflow.io/docs/latest/sharing.html">pipeline sharing</a> for more details.</p>
+<p>For Hich’s individual processes, from data processing to QC to analysis, Hich relies on a number of existing and novel tools, packages and algorithms. These have been containerized for Hich so that Apptainer can install them behind the scenes, without any need for manual setup or configuration by the user.</p>
 </section>
 </section>
 
@@ -125,7 +125,7 @@
 <li><a class="reference internal" href="#mamba-conda-activate">[mamba|conda] activate</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#new-to-nextflow-and-singularity">New to Nextflow and Singularity?</a></li>
+<li><a class="reference internal" href="#new-to-nextflow-squashfuse-or-apptainer">New to Nextflow, Squashfuse or Apptainer?</a></li>
 </ul>
 </li>
 </ul>

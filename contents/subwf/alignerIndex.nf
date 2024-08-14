@@ -1,7 +1,7 @@
 include {sourcePrefix} from './extraops.nf'
 
 process BwaMem2Index {
-    conda "bwa-mem2"
+    conda "bioconda::bwa-mem2"
     container "bskubi/hich:latest"
     publishDir params.general.publish.bwa_mem2_index ? params.general.publish.bwa_mem2_index : "results",
                saveAs: {params.general.publish.bwa_mem2_index ? it : null},
@@ -23,7 +23,7 @@ process BwaMem2Index {
 }
 
 process BwaMemIndex {
-    conda "bwa"
+    conda "bioconda::bwa"
     container "bskubi/hich:latest"
     publishDir params.general.publish.bwa_mem_index ? params.general.publish.bwa_mem_index : "results",
                saveAs: {params.general.publish.bwa_mem_index ? it : null},

@@ -5,7 +5,7 @@ process CoolerZoomify {
     publishDir params.general.publish.mcool ? params.general.publish.mcool : "results",
                saveAs: {params.general.publish.mcool ? it : null},
                mode: params.general.publish.mode
-    conda "cooler"
+    conda "bioconda::cooler"
     container "bskubi/hich:latest"
     maxForks 2
 

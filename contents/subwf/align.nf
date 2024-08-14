@@ -5,7 +5,7 @@ process BwaAlign {
                saveAs: {params.general.publish.bam ? it : null},
                mode: params.general.publish.mode
 
-    conda "bwa bwa-mem2 samtools"
+    conda "bioconda::bwa bioconda::bwa-mem2 bioconda::samtools"
     container "bskubi/hich:latest"
     
     maxRetries 6

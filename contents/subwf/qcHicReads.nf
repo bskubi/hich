@@ -2,7 +2,7 @@ process PairtoolsStats {
     publishDir params.general.publish.pair_stats ? params.general.publish.pair_stats : "results",
                saveAs: {params.general.publish.pair_stats ? it : null},
                mode: params.general.publish.mode
-    conda "pairtools"
+    conda "bioconda::pairtools"
     container "bskubi/hich:latest"
 
     input:

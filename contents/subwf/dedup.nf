@@ -5,7 +5,7 @@ process PairtoolsDedup {
     publishDir params.general.publish.dedup ? params.general.publish.dedup : "results",
                saveAs: {params.general.publish.dedup ? it : null},
                mode: params.general.publish.mode
-    conda "pairtools"
+    conda "bioconda::pairtools"
     container "bskubi/hich:latest"
 
     input:

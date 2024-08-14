@@ -2,7 +2,7 @@ process CooltoolsInsulation {
     publishDir "results/insulation",
                mode: params.general.publish.mode
     container "bskubi/hich:latest"
-    conda "cooltools"
+    conda "bioconda::cooltools"
 
     input:
     tuple val(id), path(mcool), val(resolution), val(cooltools_insulation_params)

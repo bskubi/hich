@@ -5,7 +5,7 @@ process PairtoolsSelect {
     publishDir params.general.publish.select ? params.general.publish.select : "results",
                saveAs: {params.general.publish.select ? it : null},
                mode: params.general.publish.mode
-    conda "pairtools"
+    conda "bioconda::pairtools"
     container "bskubi/hich:latest"
 
     input:

@@ -6,7 +6,7 @@ process PairtoolsMerge {
     publishDir params.general.publish.merge ? params.general.publish.merge : "results",
                saveAs: {params.general.publish.merge ? it : null},
                mode: params.general.publish.mode
-    conda "pairtools"
+    conda "bioconda::pairtools"
     container "bskubi/hich:latest"
 
     input:

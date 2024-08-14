@@ -5,7 +5,7 @@ process MakeChromsizes {
                saveAs: {params.general.publish.chromsizes ? it : null},
                mode: params.general.publish.mode
 
-    conda "ucsc-fasize"
+    conda "bioconda::ucsc-fasize"
     container 'quay.io/biocontainers/ucsc-fasize:332--0'
 
     input:

@@ -45,6 +45,7 @@ The ``index_dir`` and ``index_prefix`` columns must either both have a value or 
 4D Nucleome makes several commonly-used BWA index files available for manual download. If using them, you will need to download and unzip them before putting their paths into the sample file. Many labs produce an index for the genomes they work with and reuse them across many projects. As indexing the genome is the most RAM-intensive process Hich executes, it can be helpful to supply one if available.
 
 Links to 4DN BWA Index files:
+
 - `danRer11 (compressed) <https://data.4dnucleome.org/files-reference/4DNFIUH46PG1/#details>`_
 - `mm10 (uncompressed) <https://data.4dnucleome.org/files-reference/4DNFIZ2PWCC2/#details>`_
 - `hg38 (uncompressed) <https://data.4dnucleome.org/files-reference/4DNFIZQB369V/#details>`_
@@ -68,5 +69,3 @@ In this documentation, some terms have specific definitions.
 - **Synthetic sample** A sample that is created by Hich based on input samples, typically via merging and/or downsampling.
 
 When Hich merges techrep samples to form biorep samples, it keeps the techrep samples as well. It also keeps the biorep samples after merging them to form condition samples. That means that the output contains techrep, biorep, and condition samples for the experiment, facilitating downstream QC and analysis.
-
-This is a test.

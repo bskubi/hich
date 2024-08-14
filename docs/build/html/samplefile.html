@@ -200,13 +200,15 @@
 </ul>
 <p>The <code class="docutils literal notranslate"><span class="pre">index_dir</span></code> and <code class="docutils literal notranslate"><span class="pre">index_prefix</span></code> columns must either both have a value or neither have a value, but other than that, it is fine to specify some resource file columns and leave others blank for any given sample.</p>
 <p>4D Nucleome makes several commonly-used BWA index files available for manual download. If using them, you will need to download and unzip them before putting their paths into the sample file. Many labs produce an index for the genomes they work with and reuse them across many projects. As indexing the genome is the most RAM-intensive process Hich executes, it can be helpful to supply one if available.</p>
-<p>Links to 4DN BWA Index files:
-- <a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIUH46PG1/#details">danRer11 (compressed)</a>
-- <a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIZ2PWCC2/#details">mm10 (uncompressed)</a>
-- <a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIZQB369V/#details">hg38 (uncompressed)</a>
-- <a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIVGRYVQF/#details">galGal5 (compressed)</a>
-- <a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIO5MGY32/#details">dm6 (compressed)</a>
-- <a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFI823LSI8/#details">mm10 (compressed)</a></p>
+<p>Links to 4DN BWA Index files:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIUH46PG1/#details">danRer11 (compressed)</a></p></li>
+<li><p><a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIZ2PWCC2/#details">mm10 (uncompressed)</a></p></li>
+<li><p><a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIZQB369V/#details">hg38 (uncompressed)</a></p></li>
+<li><p><a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIVGRYVQF/#details">galGal5 (compressed)</a></p></li>
+<li><p><a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIO5MGY32/#details">dm6 (compressed)</a></p></li>
+<li><p><a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFI823LSI8/#details">mm10 (compressed)</a></p></li>
+</ul>
 <p>If using one of these, it is essential to set the <code class="docutils literal notranslate"><span class="pre">aligner</span></code> column to <code class="docutils literal notranslate"><span class="pre">bwa</span></code> in the sample file for each sample using a BWA index, since Hich defaults to using the faster (but more RAM-intensive) bwa-mem2, which uses a different index format.</p>
 </section>
 <section id="merging-and-downsampling">
@@ -222,7 +224,6 @@
 <li><p><strong>Synthetic sample</strong> A sample that is created by Hich based on input samples, typically via merging and/or downsampling.</p></li>
 </ul>
 <p>When Hich merges techrep samples to form biorep samples, it keeps the techrep samples as well. It also keeps the biorep samples after merging them to form condition samples. That means that the output contains techrep, biorep, and condition samples for the experiment, facilitating downstream QC and analysis.</p>
-<p>This is a test.</p>
 </section>
 </section>
 
