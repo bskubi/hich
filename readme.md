@@ -1,4 +1,4 @@
-<img align="center" src="docs/source/images/hich_logo_white.png" alt="Hich" width="100" height="100" style="margin-right: 10px;">
+<p align="center"><img src="docs/source/images/hich_logo_white.png" alt="Hich" width="100" height="100" style="margin-right: 10px;"></p>
 Hich is a powerful workflow for 3D Genome (Hi-C) data. It replaces previous tools such as Juicer, HiCPro, nf-core hic, and distiller.
 
 # [Documentation and vignettes](https://hich.readthedocs.io/en/latest/index.html)
