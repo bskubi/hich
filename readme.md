@@ -3,7 +3,7 @@ Hich is a powerful workflow for 3D Genome (Hi-C) data. It replaces previous tool
 
 # [Documentation and vignettes](https://hich.readthedocs.io/en/latest/index.html)
 
-Hich installs with conda/mamba. Sensible defaults are chosen and can be easily modified with on a granular, per-sample level for total control. Setup for an experiment is based on one sample file that looks like this:
+Hich installs with conda/mamba. Sensible defaults are chosen and can be easily modified with on a granular, per-sample level for total control. Setup for an experiment is based on one sample file that looks like this (give or take a few rows and columns):
 
 | | | | | | | |
 |-|-|-|-|-|-|-|
