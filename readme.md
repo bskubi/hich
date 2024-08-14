@@ -1,5 +1,5 @@
 <div style="display: flex; align-items: center;">
-  <img src="docs/source/images/hich_logo_white.png" alt="Hich" width="100" height="100" style="margin-right: 10px;">
+  <img src="docs/source/images/hich_logo_white.png" alt="Hich" width="25" height="25" style="margin-right: 10px;">
   <span>is a powerful workflow for 3D Genome (Hi-C) data. It replaces previous tools such as Juicer, HiCPro, nf-core hic, and distiller.</span>
 </div>
 
