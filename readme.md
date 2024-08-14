@@ -1,6 +1,6 @@
 <p align="center">
   <img src="docs/source/images/hich_logo_white.png" alt="Hich" width="50" height="50" style="margin-right: 10px;">
-  <span>is a powerful workflow for 3D Genome (Hi-C) data. It replaces previous tools such as Juicer, HiCPro, nf-core hic, and distiller.</span>
+  is a powerful workflow for 3D Genome (Hi-C) data. It replaces previous tools such as Juicer, HiCPro, nf-core hic, and distiller.
 </p>
 
 # [Documentation and vignettes](https://hich.readthedocs.io/en/latest/index.html)
