@@ -50,6 +50,16 @@ workflow AssignParams {
             | map {
                 sample ->
                 
+                ////////////////////////////////////////////////////
+                // Input validation for the sample.
+                // 1. Set up a humid run if specified
+                // 2. Add default params
+                // 3. Set sample datatype
+                // 4. Set sample id
+                // 5. If the sample id matches any ConfigMap "ids" lists under
+                //    params, update the sample
+                // 6. Convert string paths to data files to file objects
+
                 ///////////////////////////////
                 // Set up a humid run if needed
                 if (params.containsKey("humid") && !sample.get("n_reads")) {
@@ -105,6 +115,7 @@ workflow AssignParams {
                     // or if there is no data file specified for the sample.
                     it in sample ? sample[it] = file(sample[it]) : null
                 }
+                
                 sample
             }
             | TryDownloadMissingReferences
