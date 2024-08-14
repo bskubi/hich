@@ -1,0 +1,2 @@
+condition	fastq1	fastq2	assembly	enzymes	aligner
+Human_KO	Human_KO_1_1_R1.fq.gz	Human_KO_1_1_R2.fq.gz	hg38	Arima	bwa
