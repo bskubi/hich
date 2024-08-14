@@ -50,28 +50,36 @@ workflow AssignParams {
             | map {
                 sample ->
                 
+                ///////////////////////////////
+                // Set up a humid run if needed
                 if (params.containsKey("humid") && !sample.get("n_reads")) {
                     sample += ["n_reads": params.general.humid.n_reads]
                 }
 
+                ///////////////////////////////////////////////////////
+                // Add default params to sample hashmaps if not present
                 params.defaults.each {
                     k, v ->
 
-                    // Add default params to sample hashmaps if not present
+                    
                     !(k in sample) ? sample += [(k):v] : null
                 }
 
+                ////////////////////////////////////
+                // Set sample datatype automatically
                 sample += getDatatype(sample)
-            } | map {
-                sample ->
-                
+
+                /////////////////////////////////
+                // Set id
                 if (!validKey(sample, "id")) {
                     sample += ["id":"${sample.condition}_${sample.biorep}_${sample.techrep}".toString()]
                 }
-                sample
-            } | map{
-                sample ->
 
+                //////////////////////////////////////////////////////////////
+                // Loop through each ConfigMap in params. If sample.id is in
+                // the ConfigMap.ids list, override any existing values in the
+                // sample with the ones in the ConfigMap. As a result, later
+                // ConfigMaps in params have priority.
                 params.each {
                     k, bundle ->
 
@@ -89,14 +97,12 @@ workflow AssignParams {
                     }
                 }
                 
-                sample
-            } | map {
-                sample ->
-                
+                ///////////////////////////////////////////////////////////////
+                // Convert string paths for input data to file types if present
+
                 ["fastq1", "fastq2", "sambam", "pairs"].each {
                     // This should give an error if the file does not exist
-                    // or if there is no sample in the file. Also we should
-                    // be able to figure out the datatype from this.
+                    // or if there is no data file specified for the sample.
                     it in sample ? sample[it] = file(sample[it]) : null
                 }
                 sample
