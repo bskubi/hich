@@ -5,7 +5,7 @@
 
 # [Documentation and vignettes](https://hich.readthedocs.io/en/latest/index.html)
 
-Hich installs with conda/mamba using one command. Sensible defaults are pre-chosen. Setup for an experiment is one sample file that looks like this:
+Hich installs with conda/mamba using one command. Setup for an experiment is based on one sample file that looks like this:
 
 | | | | | | | |
 |-|-|-|-|-|-|-|
@@ -18,6 +18,8 @@ Hich installs with conda/mamba using one command. Sensible defaults are pre-chos
 |M|1|2|Mouse_1_2_R1.fq.gz|Mouse_1_2_R2.fq.gz|mm10|Arima|
 |M|2|1|Mouse_2_1_R1.fq.gz|Mouse_2_1_R2.fq.gz|mm10|Arima|
 |M|2|2|Mouse_2_2_R1.fq.gz|Mouse_2_2_R2.fq.gz|mm10|Arima|
+
+Sensible defaults are chosen and can be easily modified with on a granular, per-sample level for total control. 
 
 # Features
 
