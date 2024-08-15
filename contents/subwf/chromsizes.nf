@@ -1,6 +1,6 @@
 include {source; emptyOnLastStep} from './extraops.nf'
 
-process MakeChromsizes {
+process ChromsizesProc {
     publishDir params.general.publish.chromsizes ? params.general.publish.chromsizes : "results",
                saveAs: {params.general.publish.chromsizes ? it : null},
                mode: params.general.publish.mode
@@ -21,13 +21,13 @@ process MakeChromsizes {
     "touch ${chromsizes}"
 }
 
-workflow MakeMissingChromsizes {
+workflow Chromsizes {
     take:
     samples
 
     main:
 
-    source(MakeChromsizes,
+    source(ChromsizesProc,
            samples,
            "chromsizes",
            ["genomeReference", "assembly", "chromsizes"],
