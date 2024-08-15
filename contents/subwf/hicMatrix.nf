@@ -14,7 +14,7 @@ process JuicerToolsPre {
     maxForks 2
 
     input:
-    tuple val(id), path(infile), path(chromsizes), val(pairsFormat), val(matrix)
+    tuple val(id), path(infile), path(chromsizes), val(pairsFormat), val(matrix), val(juicerToolsPreParams)
 
     output:
     tuple val(id), path("${id}.hic")
@@ -25,8 +25,7 @@ process JuicerToolsPre {
     bins = matrix.resolutions ? "-r ${matrix.resolutions.join(',')}" : ""
 
     cmd = ["java -Xmx20g -jar /app/juicer_tools_1.22.01.jar pre",
-            bins,
-           "${infile} ${outfile} ${chromsizes}"]
+            bins] + juicerToolsPreParams + ["${infile} ${outfile} ${chromsizes}"]
     cmd.removeAll([null])
     cmd.join(" ")
 
@@ -44,9 +43,11 @@ workflow HicMatrix {
     transpack (
         JuicerToolsPre,
         [hic, samples],
-        ["id", "latest", "chromsizes", "pairsFormat", "matrix"],
+        ["id", "latest", "chromsizes", "pairsFormat", "matrix", "juicerToolsPreParams"],
         ["id", "hic"],
-        ["latestMatrix":"hic"]
+        ["latestMatrix":"hic"],
+        "id",
+        ["nullOk":"juicerToolsPreParams"]
     ) | set{samples}
 
     samples = emptyOnLastStep("HicMatrix", samples)

@@ -468,15 +468,15 @@ discardSingleFrag
 Matrix processing
 .................
 
-makeHic
+juicerToolsPreParams
 ,,,,,,,,,,,
 | Arguments supplied to juicer tools' ``pre`` command when forming a Hi-C contact matrix.
 
-makeCool
+coolerCloadParams
 ,,,,,,,,,,
 | Arguments supplied to the ``cooler cload`` command for forming .cool format precursors to the .mcool contact matrix.
 
-makeMcool
+coolerZoomifyParams
 ,,,,,,,,,,
 | Default:
 

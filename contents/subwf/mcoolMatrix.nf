@@ -10,7 +10,7 @@ process CoolerZoomify {
     maxForks 2
 
     input:
-    tuple val(id), path(infile), path(chromsizes), val(pairsFormat), val(assembly), val(matrix), val(makeCool), val(makeMcool)
+    tuple val(id), path(infile), path(chromsizes), val(pairsFormat), val(assembly), val(matrix), val(coolerCloadParams), val(coolerZoomifyParams)
 
     output:
     tuple val(id), path("${id}.mcool")
@@ -19,7 +19,7 @@ process CoolerZoomify {
     min_bin = matrix.resolutions.min()
     bins = matrix.resolutions.join(",")
 
-    cmd = ["cooler cload pairs"] + makeCool +
+    cmd = ["cooler cload pairs"] + coolerCloadParams +
            ["--assembly ${assembly}",
            "--chrom1 ${pairsFormat.chrom1}",
            "--pos1 ${pairsFormat.pos1}",
@@ -27,7 +27,7 @@ process CoolerZoomify {
            "--pos2 ${pairsFormat.pos2}",
            "${chromsizes}:${min_bin}",
            "${infile} ${id}.cool",
-           "&& cooler zoomify"] + makeMcool +
+           "&& cooler zoomify"] + coolerZoomifyParams +
            ["--resolutions '${bins}'",
            "--out ${id}.mcool",
            "${id}.cool"]
@@ -49,11 +49,11 @@ workflow McoolMatrix {
         transpack (
             CoolerZoomify,
             [mcool, samples],
-            ["id", "latest", "chromsizes", "pairsFormat", "assembly", "matrix", "makeCool", "makeMcool"],
+            ["id", "latest", "chromsizes", "pairsFormat", "assembly", "matrix", "coolerCloadParams", "coolerZoomifyParams"],
             ["id", "mcool"],
             ["latestMatrix":"mcool"],
             "id",
-            ["nullOk":"makeCool"]
+            ["nullOk":"coolerCloadParams"]
         ) | set{samples}
     
     samples = emptyOnLastStep("McoolMatrix", samples)
