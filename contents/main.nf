@@ -3,7 +3,7 @@ include {Setup} from './subwf/setup.nf'
 include {Align} from './subwf/align.nf'
 include {HeadReads} from './subwf/downsampleFastq.nf'
 include {Parse} from './subwf/parseToContacts.nf'
-include {OptionalFragtag} from './subwf/fragtag.nf'
+include {Fragtag} from './subwf/fragtag.nf'
 include {TechrepsToBioreps; BiorepsToConditions} from './subwf/mergePairs.nf'
 include {IngestPairs} from './subwf/ingestPairs.nf'
 include {Deduplicate} from './subwf/dedup.nf'
@@ -22,7 +22,7 @@ workflow {
         | Align
         | Parse
         | IngestPairs
-        | OptionalFragtag
+        | Fragtag
         | TechrepsToBioreps
         | Deduplicate
         | BiorepsToConditions

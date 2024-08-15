@@ -3,8 +3,8 @@ include {sourcePrefix; emptyOnLastStep} from './extraops.nf'
 process BwaMem2Index {
     conda "bioconda::bwa-mem2"
     container "bskubi/hich:latest"
-    publishDir params.general.publish.bwa_mem2_index ? params.general.publish.bwa_mem2_index : "results",
-               saveAs: {params.general.publish.bwa_mem2_index ? it : null},
+    publishDir params.general.publish.bwa_mem2Index ? params.general.publish.bwa_mem2Index : "results",
+               saveAs: {params.general.publish.bwa_mem2Index ? it : null},
                mode: params.general.publish.mode
 
     input:
@@ -25,8 +25,8 @@ process BwaMem2Index {
 process BwaMemIndex {
     conda "bioconda::bwa"
     container "bskubi/hich:latest"
-    publishDir params.general.publish.bwa_mem_index ? params.general.publish.bwa_mem_index : "results",
-               saveAs: {params.general.publish.bwa_mem_index ? it : null},
+    publishDir params.general.publish.bwaIndex ? params.general.publish.bwaIndex : "results",
+               saveAs: {params.general.publish.bwaIndex ? it : null},
                mode: params.general.publish.mode
 
     input:
@@ -76,7 +76,7 @@ workflow AlignerIndex {
             ["keep":["alignerIndexDir", "alignerIndexPrefix"]]
         ) | set{samples}
 
-    samples = emptyOnLastStep("index", samples)
+    samples = emptyOnLastStep("alignerIndex", samples)
 
     emit:
         samples

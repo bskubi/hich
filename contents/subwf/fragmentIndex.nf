@@ -29,7 +29,7 @@ workflow FragmentIndex {
            samples,
            "fragmentIndex",
             ["genomeReference", "restrictionEnzymes", "fragmentIndex", "assembly"],
-            ["restriction_enzymes", "fragmentIndex", "assembly"],
+            ["restrictionEnzymes", "fragmentIndex", "assembly"],
            {"${it.assembly}_${it.restrictionEnzymes.replace(" ", "_")}.bed"},
            [["assembly", "restrictionEnzymes"]],
            {it.restrictionEnzymes}) | set{samples}

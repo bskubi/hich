@@ -1,8 +1,8 @@
 include {transpack; emptyOnLastStep} from './extraops.nf'
 
 process BwaAlign {
-    publishDir params.general.publish.bam ? params.general.publish.bam : "results",
-               saveAs: {params.general.publish.bam ? it : null},
+    publishDir params.general.publish.align ? params.general.publish.align : "results",
+               saveAs: {params.general.publish.align ? it : null},
                mode: params.general.publish.mode
 
     conda "bioconda::bwa bioconda::bwa-mem2 bioconda::samtools"
