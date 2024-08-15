@@ -9,7 +9,7 @@ process Fragtag {
     container "bskubi/hich:latest"
 
     input:
-    tuple val(id), path(pairs), path(fragfile)
+    tuple val(id), path(pairs), path(fragmentIndex)
 
     output:
     tuple val(id), path("${id}_fragtag.pairs.gz")
@@ -19,28 +19,28 @@ process Fragtag {
     //  "--frags ${fragfile}",
     //  "--output ${tagged_pairs}",
     //  "${pairs}"].join(" ")
-    cmd = "hich fragtag ${fragfile} ${id}_fragtag.pairs.gz ${pairs}"
+    cmd = "hich fragtag ${fragmentIndex} ${id}_fragtag.pairs.gz ${pairs}"
     cmd
 
     stub:
     "touch ${id}_fragtag.pairs.gz"
 }
 
-def hasFragfileName = {it.get("fragfile").toString().trim().length() > 0}
+def hasFragmentIndexName = {it.get("fragmentIndex").toString().trim().length() > 0}
 
-def fragfileExists = {hasFragfileName(it) && file(it.fragfile).exists()}
+def fragmentIndexExists = {hasFragmentIndexName(it) && file(it.fragmentIndex).exists()}
 
 workflow OptionalFragtag {
     take:
         samples
 
     main:
-    samples | filter{fragfileExists(it)} | set{fragtag}
+    samples | filter{fragmentIndexExists(it)} | set{fragtag}
 
     samples = transpack(
         Fragtag,
         [fragtag, samples],
-        ["id", "pairs", "fragfile"],
+        ["id", "pairs", "fragmentIndex"],
         ["id", "frag_pairs"],
         ["latest":"frag_pairs"],
         "id"

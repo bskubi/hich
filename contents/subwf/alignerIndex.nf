@@ -44,7 +44,7 @@ process BwaMemIndex {
 }
 
 
-workflow MakeMissingIndex {
+workflow AlignerIndex {
 
     take:
         samples
@@ -53,27 +53,27 @@ workflow MakeMissingIndex {
         sourcePrefix(
             BwaMem2Index,
             samples,
-            "index_dir",
-            "index_prefix",
-            ["genomeReference", "index_prefix"],
-            ["index_dir", "index_prefix", ".0123", ".amb", ".ann", ".bwt.2bit.64", ".pac"],
-            {["index_prefix":it.assembly]},
-            "index_prefix",
+            "alignerIndexDir",
+            "alignerIndexPrefix",
+            ["genomeReference", "alignerIndexPrefix"],
+            ["index_dir", "alignerIndexPrefix", ".0123", ".amb", ".ann", ".bwt.2bit.64", ".pac"],
+            {["alignerIndexPrefix":it.assembly]},
+            "alignerIndexPrefix",
             {it.datatype in ["fq", "fastq"] && it.aligner == "bwa-mem2"},
-            ["keep":["index_dir", "index_prefix"]]
+            ["keep":["indealignerIndexDirx_dir", "alignerIndexPrefix"]]
         ) | set{samples}
 
         sourcePrefix(
             BwaMemIndex,
             samples,
-            "index_dir",
-            "index_prefix",
-            ["genomeReference", "index_prefix"],
-            ["index_dir", "index_prefix", ".0123", ".ann", ".amb", ".pac", ".bwt", ".sa"],
-            {["index_prefix":it.assembly]},
-            "index_prefix",
+            "alignerIndexDir",
+            "alignerIndexPrefix",
+            ["genomeReference", "alignerIndexPrefix"],
+            ["alignerIndexDir", "alignerIndexPrefix", ".0123", ".ann", ".amb", ".pac", ".bwt", ".sa"],
+            {["alignerIndexPrefix":it.assembly]},
+            "alignerIndexPrefix",
             {it.datatype in ["fq", "fastq"] && it.aligner == "bwa"},
-            ["keep":["index_dir", "index_prefix"]]
+            ["keep":["alignerIndexDir", "alignerIndexPrefix"]]
         ) | set{samples}
 
     samples = emptyOnLastStep("index", samples)

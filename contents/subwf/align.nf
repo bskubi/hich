@@ -54,7 +54,7 @@ workflow Align {
     samples = transpack(
         BwaAlign,
         [to_align, samples],
-        ["id", "index_dir", "index_prefix", "fastq1", "fastq2",
+        ["id", "alignerIndexDir", "alignerIndexPrefix", "fastq1", "fastq2",
          "aligner", "aligner_threads", "bwa_flags"],
         ["id", "sambam"],
         ["latest":"sambam"],

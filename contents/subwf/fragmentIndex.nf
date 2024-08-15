@@ -7,16 +7,16 @@ process FragmentIndexProc {
     container "bskubi/hich:latest"
     
     input:
-    tuple path(genomeReference), val(restriction_enzymes), val(fragfile), val(assembly)
+    tuple path(genomeReference), val(restrictionEnzymes), val(fragmentIndex), val(assembly)
 
     output:
-    tuple val(restriction_enzymes), path(fragfile), val(assembly)
+    tuple val(restrictionEnzymes), path(fragmentIndex), val(assembly)
 
     script:
-    "hich digest --output ${fragfile} ${genomeReference} ${restriction_enzymes}"
+    "hich digest --output ${fragmentIndex} ${genomeReference} ${restrictionEnzymes}"
 
     stub:
-    "touch ${fragfile}"
+    "touch ${fragmentIndex}"
 }
 
 workflow FragmentIndex {
@@ -27,12 +27,12 @@ workflow FragmentIndex {
     
     source(FragmentIndexProc,
            samples,
-           "fragfile",
-            ["genomeReference", "restriction_enzymes", "fragfile", "assembly"],
-            ["restriction_enzymes", "fragfile", "assembly"],
-           {"${it.assembly}_${it.restriction_enzymes.replace(" ", "_")}.bed"},
-           [["assembly", "restriction_enzymes"]],
-           {it.restriction_enzymes}) | set{samples}
+           "fragmentIndex",
+            ["genomeReference", "restrictionEnzymes", "fragmentIndex", "assembly"],
+            ["restriction_enzymes", "fragmentIndex", "assembly"],
+           {"${it.assembly}_${it.restrictionEnzymes.replace(" ", "_")}.bed"},
+           [["assembly", "restrictionEnzymes"]],
+           {it.restrictionEnzymes}) | set{samples}
     
     samples = emptyOnLastStep("fragmentIndex", samples)
     

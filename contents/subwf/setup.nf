@@ -1,6 +1,6 @@
 include {Chromsizes} from './chromsizes.nf'
 include {GenomeReference} from './genomeReference.nf'
-include {MakeMissingIndex} from './alignerIndex.nf'
+include {AlignerIndex} from './alignerIndex.nf'
 include {FragmentIndex} from './fragmentIndex.nf'
 include {emptyOnLastStep} from './extraops.nf'
 
@@ -121,7 +121,7 @@ workflow Setup {
             }
             | GenomeReference
             | Chromsizes
-            | MakeMissingIndex
+            | AlignerIndex
             | FragmentIndex
             | set{samples}
 
