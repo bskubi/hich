@@ -25,31 +25,29 @@ workflow IngestPairs {
         samples
 
     main:
-        // Maybe there is an easier and more general way we can do ingestion?
-        samples
-            | filter{it.datatype == "pairs" && it.get("pairs") && file(it.get("pairs")).exists()}
-            | map{
-                it.pairs = file(it.pairs);
-                it
-            }
-            | set{ingest}
-
-        samples = transpack(
-            PairtoolsFlipSort,
-            [ingest, samples],
-            ["id", "pairs", "chromsizes"],
-            ["id", "pairs"],
-            ["latest":"pairs"],
-            "id"
-        )
-
-        if ("IngestPairs" in params.general.get("qc_after")) {
-            samples = QCReads(samples, "IngestPairs")
+    // Maybe there is an easier and more general way we can do ingestion?
+    samples
+        | filter{it.datatype == "pairs" && it.get("pairs") && file(it.get("pairs")).exists()}
+        | map{
+            it.pairs = file(it.pairs);
+            it
         }
+        | set{ingest}
 
-        if (params.general.get("last_step") == "ingestpairs") {
-            channel.empty() | set{samples}
-        }
+    samples = transpack(
+        PairtoolsFlipSort,
+        [ingest, samples],
+        ["id", "pairs", "chromsizes"],
+        ["id", "pairs"],
+        ["latest":"pairs"],
+        "id"
+    )
+
+    if ("IngestPairs" in params.general.get("qc_after")) {
+        samples = QCReads(samples, "IngestPairs")
+    }
+
+    samples = emptyOnLastStep("ingestPairs") ?: samples
 
     emit:
         samples

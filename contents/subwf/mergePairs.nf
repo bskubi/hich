@@ -120,6 +120,8 @@ workflow TechrepsToBioreps {
 
     samples = Merge(samples, "TechrepsToBiorep")
 
+    samples = emptyOnLastStep("mergeTechrepsToBiorep") ?: samples
+
     emit:
     samples
 }
@@ -130,6 +132,7 @@ workflow BiorepsToConditions {
 
     main:
     samples = Merge(samples, "BiorepsToCondition")
+    samples = emptyOnLastStep("mergeBiorepsToCondition") ?: samples
 
     emit:
     samples

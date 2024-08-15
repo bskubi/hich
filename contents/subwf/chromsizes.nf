@@ -35,6 +35,8 @@ workflow MakeMissingChromsizes {
            {"${it.assembly}.sizes"},
            "assembly",
             {true}) | set{samples}
+    
+    samples = emptyOnLastStep("chromsizes") ?: samples
 
     emit:
     samples

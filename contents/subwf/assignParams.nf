@@ -124,6 +124,7 @@ workflow AssignParams {
             | MakeMissingDigest
             | set{samples}
 
+    samples = emptyOnLastStep("setup") ?: samples
 
     emit:
         samples

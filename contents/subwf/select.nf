@@ -84,9 +84,7 @@ workflow Select {
         QCReads(samples, "Select")
     }
 
-    if (params.general.get("last_step") == "select") {
-        channel.empty() | set{samples}
-    }
+    samples = emptyOnLastStep("select") ?: samples
 
 
 

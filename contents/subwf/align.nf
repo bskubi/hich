@@ -1,4 +1,4 @@
-include {transpack} from './extraops.nf'
+include {transpack; emptyOnLastStep} from './extraops.nf'
 
 process BwaAlign {
     publishDir params.general.publish.bam ? params.general.publish.bam : "results",
@@ -48,15 +48,7 @@ workflow Align {
     // and BSBolt (for methylation + hi-c alignment)
 
     samples
-        | filter{it.datatype == "fastq"
-                    && it.get("fastq1")
-                    && it.get("fastq2")
-        }
-        | map{
-            it.fastq1 = file(it.fastq1)
-            it.fastq2 = file(it.fastq2)
-            it
-        }
+        | filter{it.datatype == "fastq"}
         | set {to_align}    
 
     samples = transpack(
@@ -68,9 +60,7 @@ workflow Align {
         ["latest":"sambam"],
         "id")
 
-    if (params.general.get("last_step") == "align") {
-        channel.empty() | set{samples}
-    }
+    samples = emptyOnLastStep("align") ?: samples
 
     emit:
     samples

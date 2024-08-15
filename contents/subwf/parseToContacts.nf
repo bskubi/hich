@@ -59,9 +59,7 @@ workflow Parse {
         QCReads(samples, "Parse")
     }
 
-    if (params.general.get("last_step") == "parse") {
-        channel.empty() | set{samples}
-    }
+    samples = emptyOnLastStep("parse") ?: samples
 
     emit:
         samples

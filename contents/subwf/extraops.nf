@@ -580,3 +580,7 @@ def combinations(samples, comboKeys, renameComboKeys, constKeys) {
         | combine(constPart)
         | map{it[0] + it[1]}
 }
+
+def emptyOnLastStep(step) {
+    return params.get("lastStep") == step ? channel.empty() : null
+}

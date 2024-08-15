@@ -39,21 +39,19 @@ workflow Deduplicate {
     
     main:
         
-        samples | filter{it.deduplicate} | set {deduplicate}
+    samples | filter{it.deduplicate} | set {deduplicate}
 
-        samples = transpack(
-            PairtoolsDedup,
-            [deduplicate, samples],
-            ["id", "latest", "dedup_params"],
-            ["id", "dedup_pairs"],
-            ["latest":"dedup_pairs"],
-            "id",
-            ["nullOk":"dedup_params"]
-        )
-
-        if (params.general.get("last_step") == "dedup") {
-            channel.empty() | set{samples}
-        }
+    samples = transpack(
+        PairtoolsDedup,
+        [deduplicate, samples],
+        ["id", "latest", "dedup_params"],
+        ["id", "dedup_pairs"],
+        ["latest":"dedup_pairs"],
+        "id",
+        ["nullOk":"dedup_params"]
+    )
+    
+    samples = emptyOnLastStep("dedup") ?: samples
 
     emit:
         samples

@@ -35,24 +35,22 @@ workflow OptionalFragtag {
         samples
 
     main:
-        samples | filter{fragfileExists(it)} | set{fragtag}
+    samples | filter{fragfileExists(it)} | set{fragtag}
 
-        samples = transpack(
-            Fragtag,
-            [fragtag, samples],
-            ["id", "pairs", "fragfile"],
-            ["id", "frag_pairs"],
-            ["latest":"frag_pairs"],
-            "id"
-        )
+    samples = transpack(
+        Fragtag,
+        [fragtag, samples],
+        ["id", "pairs", "fragfile"],
+        ["id", "frag_pairs"],
+        ["latest":"frag_pairs"],
+        "id"
+    )
 
-        if ("OptionalFragtag" in params.general.get("qc_after")) {
-            samples = QCReads(samples, "OptionalFragtag")
-        }
+    if ("OptionalFragtag" in params.general.get("qc_after")) {
+        samples = QCReads(samples, "OptionalFragtag")
+    }
 
-        if (params.general.get("last_step") == "fragtag") {
-            channel.empty() | set{samples}
-        }
+    samples = emptyOnLastStep("fragtag") ?: samples
 
     emit:
         samples

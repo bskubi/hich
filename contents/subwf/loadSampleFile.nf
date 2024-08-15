@@ -5,6 +5,7 @@ workflow LoadSampleFile {
     samples = channel.fromPath(sampleFile.filename, checkIfExists: true)
         | splitCsv(header: true, sep: sampleFile.sep)
         
+    samples = emptyOnLastStep("loadSampleFile") ?: samples
 
     emit:
     samples
