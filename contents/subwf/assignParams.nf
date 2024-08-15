@@ -2,6 +2,7 @@ include {MakeMissingChromsizes} from './chromsizes.nf'
 include {TryDownloadMissingReferences} from './genomeReferences.nf'
 include {MakeMissingIndex} from './alignerIndex.nf'
 include {MakeMissingDigest} from './makeDigest.nf'
+include {emptyOnLastStep} from './extraops.nf'
 
 def validKey = {
     map, key ->

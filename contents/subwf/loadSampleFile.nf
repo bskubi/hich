@@ -1,9 +1,9 @@
+include {emptyOnLastStep} from './extraops.nf'
+
 workflow LoadSampleFile {
     main:
-    sampleFile = params.general.sampleFile
-
-    samples = channel.fromPath(sampleFile.filename, checkIfExists: true)
-        | splitCsv(header: true, sep: sampleFile.sep)
+    samples = channel.fromPath(params.sampleFile, checkIfExists: true)
+        | splitCsv(header: true, sep: params.sampleFileSep)
         
     samples = emptyOnLastStep("loadSampleFile") ?: samples
 

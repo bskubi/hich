@@ -1,4 +1,4 @@
-include {transpack} from './extraops.nf'
+include {transpack; emptyOnLastStep} from './extraops.nf'
 
 process ZcatHeadFastq {
     input:

@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {transpack} from './extraops.nf'
+include {transpack; emptyOnLastStep} from './extraops.nf'
 
 process PairtoolsDedup {
     publishDir params.general.publish.dedup ? params.general.publish.dedup : "results",

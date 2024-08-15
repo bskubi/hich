@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {transpack} from './extraops.nf'
+include {transpack; emptyOnLastStep} from './extraops.nf'
 
 process PairtoolsSelect {
     publishDir params.general.publish.select ? params.general.publish.select : "results",

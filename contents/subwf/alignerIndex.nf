@@ -1,4 +1,4 @@
-include {sourcePrefix} from './extraops.nf'
+include {sourcePrefix; emptyOnLastStep} from './extraops.nf'
 
 process BwaMem2Index {
     conda "bioconda::bwa-mem2"

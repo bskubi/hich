@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {transpack} from './extraops.nf'
+include {transpack; emptyOnLastStep} from './extraops.nf'
 
 process PairtoolsParse2 {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",

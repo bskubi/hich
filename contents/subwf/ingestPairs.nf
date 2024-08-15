@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {transpack} from './extraops.nf'
+include {transpack; emptyOnLastStep} from './extraops.nf'
 
 process PairtoolsFlipSort {
     publishDir params.general.publish.flip_sort ? params.general.publish.flip_sort : "results",

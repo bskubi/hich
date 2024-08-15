@@ -1,4 +1,4 @@
-include {source} from './extraops.nf'
+include {source; emptyOnLastStep} from './extraops.nf'
 
 process MakeChromsizes {
     publishDir params.general.publish.chromsizes ? params.general.publish.chromsizes : "results",

@@ -1,4 +1,4 @@
-include {source} from './extraops.nf'
+include {source; emptyOnLastStep} from './extraops.nf'
 
 process StageReferences {
     /*  When a URL is passed to a Nextflow function, the resource will be

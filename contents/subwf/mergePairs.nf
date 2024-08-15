@@ -1,6 +1,6 @@
 include {QCReads} from './qcHicReads.nf'
 include {AssignParams} from './assignParams.nf'
-include {transpack; isTechrep; isBiorep; isCondition} from './extraops.nf'
+include {transpack; isTechrep; isBiorep; isCondition; emptyOnLastStep} from './extraops.nf'
 
 process PairtoolsMerge {
     publishDir params.general.publish.merge ? params.general.publish.merge : "results",

@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {transpack} from './extraops.nf'
+include {transpack; emptyOnLastStep} from './extraops.nf'
 
 process Fragtag {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",

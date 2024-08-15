@@ -1,4 +1,4 @@
-include {source} from "./extraops.nf"
+include {source; emptyOnLastStep} from "./extraops.nf"
 
 process MakeDigest {
     publishDir params.general.publish.digest ? params.general.publish.digest : "results",
