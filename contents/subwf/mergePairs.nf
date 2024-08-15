@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {AssignParams} from './assignParams.nf'
+include {Setup} from './setup.nf'
 include {transpack; isTechrep; isBiorep; isCondition; emptyOnLastStep} from './extraops.nf'
 
 process PairtoolsMerge {
@@ -89,7 +89,7 @@ workflow Merge {
         | map{tuple(it.subMap(*groups), it)}
         | groupTuple
         | map {group, samples -> mergeGroupParams(samples)}
-        | AssignParams
+        | Setup
         | set{to_merge}
 
     to_merge = transpack(

@@ -1,13 +1,13 @@
 include {source; emptyOnLastStep} from './extraops.nf'
 
-process StageReferences {
+process Stage {
     /*  When a URL is passed to a Nextflow function, the resource will be
         automatically downloaded and staged by Nextflow. This is a dummy
         function used to download a unique reference and intentionally has
         no content.
     */
-    publishDir params.general.publish.genome ? params.general.publish.genome : "results",
-               saveAs: {params.general.publish.genome ? it : null},
+    publishDir params.general.publish.genomeReference ? params.general.publish.genomeReference : "results",
+               saveAs: {params.general.publish.genomeReference ? it : null},
                mode: params.general.publish.mode
     
     input:
@@ -20,7 +20,7 @@ process StageReferences {
     ":"
 }
 
-workflow TryDownloadMissingReferences {
+workflow GenomeReference {
     /*
         We will mainly aim to download resources from NCBI:
 
@@ -65,16 +65,16 @@ workflow TryDownloadMissingReferences {
             5. Download
             6. Set file as output path
         */
-    source(StageReferences,
+    source(Stage,
            samples,
-           "reference",
-           ["assembly", "reference"],
-           ["assembly", "reference"],
+           "genomeReference",
+           ["assembly", "genomeReference"],
+           ["assembly", "genomeReference"],
            {urls[synonyms[it.assembly]]},
            "assembly",
             {true}) | set{samples}
 
-    samples = emptyOnLastStep("references", samples)
+    samples = emptyOnLastStep("genomeReference", samples)
 
     emit:
         samples

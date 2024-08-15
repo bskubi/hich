@@ -30,7 +30,7 @@ workflow MakeMissingChromsizes {
     source(MakeChromsizes,
            samples,
            "chromsizes",
-           ["reference", "assembly", "chromsizes"],
+           ["genomeReference", "assembly", "chromsizes"],
            ["assembly", "chromsizes"],
            {"${it.assembly}.sizes"},
            "assembly",

@@ -1,7 +1,7 @@
 include {MakeMissingChromsizes} from './chromsizes.nf'
-include {TryDownloadMissingReferences} from './genomeReferences.nf'
+include {GenomeReference} from './genomeReference.nf'
 include {MakeMissingIndex} from './alignerIndex.nf'
-include {MakeMissingDigest} from './makeDigest.nf'
+include {FragmentIndex} from './fragmentIndex.nf'
 include {emptyOnLastStep} from './extraops.nf'
 
 def validKey = {
@@ -40,7 +40,7 @@ def getDatatype = {
               sample.get("datatype"))]
 }
 
-workflow AssignParams {
+workflow Setup {
     take:
         samples
     
@@ -119,10 +119,10 @@ workflow AssignParams {
                 
                 sample
             }
-            | TryDownloadMissingReferences
+            | GenomeReference
             | MakeMissingChromsizes
             | MakeMissingIndex
-            | MakeMissingDigest
+            | FragmentIndex
             | set{samples}
 
     samples = emptyOnLastStep("setup", samples)

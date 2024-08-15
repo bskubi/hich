@@ -1,5 +1,5 @@
 include {LoadSampleFile} from './subwf/loadSampleFile.nf'
-include {AssignParams} from './subwf/assignParams.nf'
+include {Setup} from './subwf/setup.nf'
 include {Align} from './subwf/align.nf'
 include {HeadReads} from './subwf/downsampleFastq.nf'
 include {Parse} from './subwf/parseToContacts.nf'
@@ -17,7 +17,7 @@ include {Hicrep} from './subwf/hicrep.nf'
 
 workflow {
     LoadSampleFile
-        | AssignParams
+        | Setup
         | HeadReads
         | Align
         | Parse

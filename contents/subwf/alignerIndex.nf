@@ -8,7 +8,7 @@ process BwaMem2Index {
                mode: params.general.publish.mode
 
     input:
-    tuple path(reference), val(prefix)
+    tuple path(genomeReference), val(prefix)
 
     output:
     tuple path("bwa-mem2/index"), val(prefix), path("bwa-mem2/index/${prefix}.0123"), path("bwa-mem2/index/${prefix}.amb"),
@@ -16,7 +16,7 @@ process BwaMem2Index {
           path("bwa-mem2/index/${prefix}.pac")
 
     shell:
-    "bwa-mem2 index -p ${prefix} ${reference} && mkdir -p bwa-mem2/index && mv ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac bwa-mem2/index"
+    "bwa-mem2 index -p ${prefix} ${genomeReference} && mkdir -p bwa-mem2/index && mv ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac bwa-mem2/index"
 
     stub:
     "mkdir -p bwa-mem2/index && cd bwa-mem2/index && touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
@@ -30,14 +30,14 @@ process BwaMemIndex {
                mode: params.general.publish.mode
 
     input:
-    tuple path(reference), val(prefix)
+    tuple path(genomeReference), val(prefix)
 
     output:
     tuple path("bwa/index"), val(prefix), path("bwa/index/${prefix}.ann"), path("bwa/index/${prefix}.amb"),
           path("bwa/index/${prefix}.pac"), path("bwa/index/${prefix}.bwt"), path("bwa/index/${prefix}.sa")
 
     shell:
-    "bwa index -p ${prefix} ${reference} && mkdir -p bwa/index && mv ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa bwa/index"
+    "bwa index -p ${prefix} ${genomeReference} && mkdir -p bwa/index && mv ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa bwa/index"
 
     stub:
     "mkdir -p bwa/index && cd bwa/index && touch ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa"
@@ -55,7 +55,7 @@ workflow MakeMissingIndex {
             samples,
             "index_dir",
             "index_prefix",
-            ["reference", "index_prefix"],
+            ["genomeReference", "index_prefix"],
             ["index_dir", "index_prefix", ".0123", ".amb", ".ann", ".bwt.2bit.64", ".pac"],
             {["index_prefix":it.assembly]},
             "index_prefix",
@@ -68,7 +68,7 @@ workflow MakeMissingIndex {
             samples,
             "index_dir",
             "index_prefix",
-            ["reference", "index_prefix"],
+            ["genomeReference", "index_prefix"],
             ["index_dir", "index_prefix", ".0123", ".ann", ".amb", ".pac", ".bwt", ".sa"],
             {["index_prefix":it.assembly]},
             "index_prefix",

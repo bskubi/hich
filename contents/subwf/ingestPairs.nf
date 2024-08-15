@@ -25,14 +25,7 @@ workflow IngestPairs {
         samples
 
     main:
-    // Maybe there is an easier and more general way we can do ingestion?
-    samples
-        | filter{it.datatype == "pairs" && it.get("pairs") && file(it.get("pairs")).exists()}
-        | map{
-            it.pairs = file(it.pairs);
-            it
-        }
-        | set{ingest}
+    samples | filter{it.datatype == "pairs"} | set{ingest}
 
     samples = transpack(
         PairtoolsFlipSort,
