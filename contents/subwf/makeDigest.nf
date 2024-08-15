@@ -34,7 +34,7 @@ workflow MakeMissingDigest {
            [["assembly", "restriction_enzymes"]],
            {it.restriction_enzymes}) | set{samples}
     
-    samples = emptyOnLastStep("fragfile") ?: samples
+    samples = emptyOnLastStep("fragfile", samples)
     
     emit:
     samples

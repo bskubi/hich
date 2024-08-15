@@ -581,6 +581,17 @@ def combinations(samples, comboKeys, renameComboKeys, constKeys) {
         | map{it[0] + it[1]}
 }
 
-def emptyOnLastStep(step) {
-    return params.get("lastStep") == step ? channel.empty() : null
+def emptyOnLastStep(step, samples) {
+    if (params.get("lastStep") == step && params.get("viewLastStep")) {
+        samples
+            | map {
+                if (params.get("viewLastStep") instanceof Boolean) {
+                    it
+                } else {
+                    it.subMap(params.get("viewLastStep").split())
+                }
+            }
+            | view
+    }
+    return params.get("lastStep") == step ? channel.empty() : samples
 }

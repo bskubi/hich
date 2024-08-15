@@ -47,7 +47,7 @@ workflow IngestPairs {
         samples = QCReads(samples, "IngestPairs")
     }
 
-    samples = emptyOnLastStep("ingestPairs") ?: samples
+    samples = emptyOnLastStep("ingestPairs", samples)
 
     emit:
         samples

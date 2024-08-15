@@ -56,7 +56,7 @@ workflow MakeMcool {
             ["nullOk":"make_cool"]
         ) | set{samples}
     
-    samples = emptyOnLastStep("mcoolMatrix") ?: samples
+    samples = emptyOnLastStep("mcoolMatrix", samples)
 
     emit:
         samples

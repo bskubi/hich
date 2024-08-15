@@ -49,7 +49,7 @@ workflow MakeHic {
         ["latest_matrix":"hic"]
     ) | set{samples}
 
-    samples = emptyOnLastStep("hicMatrix") ?: samples
+    samples = emptyOnLastStep("hicMatrix", samples)
 
     emit:
     samples

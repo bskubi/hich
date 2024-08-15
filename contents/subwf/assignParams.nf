@@ -62,13 +62,16 @@ workflow AssignParams {
                 // 6. Convert string paths to data files to file objects
 
                 ///////////////////////////////
-                // Set up a humid run if needed
-                if (params.containsKey("humid") && !sample.get("n_reads")) {
-                    sample += ["n_reads": params.general.humid.n_reads]
+                // Humid run
+                if (params.get("humid")) {
+                    def n_reads = params.humid instanceof Boolean ? params.general.humidDefault : params.humid
+                    if (n_reads) {
+                        sample += ["n_reads": n_reads]
+                    }
                 }
 
                 ///////////////////////////////////////////////////////
-                // Add default params to sample hashmaps if not present
+                // Default params
                 params.defaults.each {
                     k, v ->
 
@@ -77,20 +80,17 @@ workflow AssignParams {
                 }
 
                 ////////////////////////////////////
-                // Set sample datatype automatically
+                // Datatype
                 sample += getDatatype(sample)
 
                 /////////////////////////////////
-                // Set id
+                // Id
                 if (!validKey(sample, "id")) {
                     sample += ["id":"${sample.condition}_${sample.biorep}_${sample.techrep}".toString()]
                 }
 
                 //////////////////////////////////////////////////////////////
-                // Loop through each ConfigMap in params. If sample.id is in
-                // the ConfigMap.ids list, override any existing values in the
-                // sample with the ones in the ConfigMap. As a result, later
-                // ConfigMaps in params have priority.
+                // ConfigMaps
                 params.each {
                     k, bundle ->
 
@@ -109,7 +109,7 @@ workflow AssignParams {
                 }
                 
                 ///////////////////////////////////////////////////////////////
-                // Convert string paths for input data to file types if present
+                // File objects
 
                 ["fastq1", "fastq2", "sambam", "pairs"].each {
                     // This should give an error if the file does not exist
@@ -125,7 +125,7 @@ workflow AssignParams {
             | MakeMissingDigest
             | set{samples}
 
-    samples = emptyOnLastStep("setup") ?: samples
+    samples = emptyOnLastStep("setup", samples)
 
     emit:
         samples

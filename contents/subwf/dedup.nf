@@ -51,7 +51,7 @@ workflow Deduplicate {
         ["nullOk":"dedup_params"]
     )
     
-    samples = emptyOnLastStep("dedup") ?: samples
+    samples = emptyOnLastStep("dedup", samples)
 
     emit:
         samples

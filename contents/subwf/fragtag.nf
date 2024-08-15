@@ -50,7 +50,7 @@ workflow OptionalFragtag {
         samples = QCReads(samples, "OptionalFragtag")
     }
 
-    samples = emptyOnLastStep("fragtag") ?: samples
+    samples = emptyOnLastStep("fragtag", samples)
 
     emit:
         samples

@@ -37,7 +37,7 @@ workflow HeadReads {
         "id"
     )
 
-    samples = emptyOnLastStep("headReads") ?: samples
+    samples = emptyOnLastStep("headReads", samples)
 
     emit:
     samples

@@ -74,7 +74,7 @@ workflow TryDownloadMissingReferences {
            "assembly",
             {true}) | set{samples}
 
-    samples = emptyOnLastStep("references") ?: samples
+    samples = emptyOnLastStep("references", samples)
 
     emit:
         samples

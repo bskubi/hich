@@ -84,7 +84,7 @@ workflow Select {
         QCReads(samples, "Select")
     }
 
-    samples = emptyOnLastStep("select") ?: samples
+    samples = emptyOnLastStep("select", samples)
 
 
 

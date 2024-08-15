@@ -60,7 +60,7 @@ workflow Align {
         ["latest":"sambam"],
         "id")
 
-    samples = emptyOnLastStep("align") ?: samples
+    samples = emptyOnLastStep("align", samples)
 
     emit:
     samples

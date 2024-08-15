@@ -59,7 +59,7 @@ workflow Parse {
         QCReads(samples, "Parse")
     }
 
-    samples = emptyOnLastStep("parse") ?: samples
+    samples = emptyOnLastStep("parse", samples)
 
     emit:
         samples

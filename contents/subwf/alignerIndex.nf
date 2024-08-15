@@ -76,6 +76,8 @@ workflow MakeMissingIndex {
             ["keep":["index_dir", "index_prefix"]]
         ) | set{samples}
 
+    samples = emptyOnLastStep("index", samples)
+
     emit:
         samples
 
