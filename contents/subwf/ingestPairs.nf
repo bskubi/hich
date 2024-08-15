@@ -36,7 +36,7 @@ workflow IngestPairs {
         "id"
     )
 
-    if ("IngestPairs" in params.general.get("qc_after")) {
+    if ("IngestPairs" in params.general.get("qcAfter")) {
         samples = QCReads(samples, "IngestPairs")
     }
 

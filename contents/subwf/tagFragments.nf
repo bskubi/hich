@@ -46,7 +46,7 @@ workflow TagFragments {
         "id"
     )
 
-    if ("TagFragments" in params.general.get("qc_after")) {
+    if ("TagFragments" in params.general.get("qcAfter")) {
         samples = QCReads(samples, "TagFragments")
     }
 

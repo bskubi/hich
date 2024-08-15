@@ -104,7 +104,7 @@ workflow Merge {
         | concat(samples)
         | set {samples}
 
-    if (sampleType in params.general.get("qc_after")) {
+    if (sampleType in params.general.get("qcAfter")) {
         QCReads(samples, sampleType)
     }
 

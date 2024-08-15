@@ -55,7 +55,7 @@ workflow Parse {
 
     // It might be good to simplify these workflow control steps since they
     // are repeated frequently.
-    if ("Parse" in params.general.get("qc_after")) {
+    if ("Parse" in params.general.get("qcAfter")) {
         QCReads(samples, "Parse")
     }
 

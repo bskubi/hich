@@ -9,13 +9,13 @@ process PairtoolsDedup {
     container "bskubi/hich:latest"
 
     input:
-    tuple val(id), path(infile), val(dedup_params)
+    tuple val(id), path(infile), val(pairtoolsDedupParams)
 
     output:
     tuple val(id), path("${id}_dedup.pairs.gz")
 
     shell:
-    dedup_params = dedup_params ? dedup_params.collect
+    pairtoolsDedupParams = pairtoolsDedupParams ? pairtoolsDedupParams.collect
         {
             item ->
             return [
@@ -26,7 +26,7 @@ process PairtoolsDedup {
             ].get(item, item)
         }.join(" ") : ""
     
-    cmd = "pairtools dedup --output ${id}_dedup.pairs.gz ${dedup_params} ${infile}"
+    cmd = "pairtools dedup --output ${id}_dedup.pairs.gz ${pairtoolsDedupParams} ${infile}"
     cmd
 
     stub:
@@ -44,11 +44,11 @@ workflow Deduplicate {
     samples = transpack(
         PairtoolsDedup,
         [deduplicate, samples],
-        ["id", "latest", "dedup_params"],
+        ["id", "latest", "pairtoolsDedupParams"],
         ["id", "dedup_pairs"],
         ["latest":"dedup_pairs"],
         "id",
-        ["nullOk":"dedup_params"]
+        ["nullOk":"pairtoolsDedupParams"]
     )
     
     samples = emptyOnLastStep("Deduplicate", samples)

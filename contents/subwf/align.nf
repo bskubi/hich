@@ -55,7 +55,7 @@ workflow Align {
         BwaAlign,
         [to_align, samples],
         ["id", "alignerIndexDir", "alignerIndexPrefix", "fastq1", "fastq2",
-         "aligner", "aligner_threads", "bwaFlags"],
+         "aligner", "alignerThreads", "bwaFlags"],
         ["id", "sambam"],
         ["latest":"sambam"],
         "id")

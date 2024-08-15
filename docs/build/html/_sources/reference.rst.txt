@@ -74,7 +74,7 @@ Hich uses specialized config scopes, specified with a name followed by brackets,
             biorep = 1
 
             // Minimum mapq threshold to keep reads
-            min_mapq = 30
+            minMapq = 30
         }
 
         ko {
@@ -138,11 +138,11 @@ Specifies the Nextflow `publishDir <https://www.nextflow.io/docs/latest/process.
                 dedup = "results/pairs/dedup"
                 mcool = "results/matrix/mcool"
                 hic = "results/matrix/hic"
-                pair_stats = "results/pair_stats"
+                pairStats = "results/pairStats"
                 qc = "results/qc"
             }
 
-qc_after
+qcAfter
 ^^^^^^^^
 
 .. code-block:: c
@@ -152,7 +152,7 @@ qc_after
             // After these steps, generate read-level pairs 
             // stats files and generate a combined MultiQC report
             // for all samples at each processing stage
-            qc_after = ["Parse",
+            qcAfter = ["Parse",
                         "IngestPairs",
                         "OptionalFragtag",
                         "TechrepsToBioreps",
@@ -252,7 +252,7 @@ chromsizes
 |
 | The chromsizes file for the `reference`_ genome, a two-column list of contig names and contig sizes in bp. Built automatically from the reference genome if not specified for a given sample.
 
-min_mapq
+minMapq
 ,,,,,,,,
 | Not required
 | Default: ``30``
@@ -306,7 +306,7 @@ index_prefix
 |
 | Prefix shared by all needed `aligner`_-specifi `reference`_ genome index files in the `index_dir`_ directory. If not specified, Hich will attempt to index the reference genome and will output the result to `resources/.hich` under a subdirectory for the specific aligner.
 
-aligner_threads
+alignerThreads
 ,,,,,,,,,,,,,,,
 | Default: ``10``
 | 
@@ -393,15 +393,15 @@ parseParams
 | 
 | `Note:` The ``drop-*`` parameters are one of the most impactful for making Hich fast and giving it a low disk footprint. It is not recommended to remove these parameters unless you know what you are doing, although additional parameters can be added.
 
-dedup_params
+pairtoolsDedupParams
 ,,,,,,,,,,,,
 | Extra parameters to use during the deduplication step.
 
-select_params
+pairtoolsSelectParams
 ,,,,,,,,,,,,,
 | Extra parameters to use during the selection step.
 
-select_condition
+selectFilters
 ,,,,,,,,,,,,,,,,
 | Read-level filters to use during the selection step.
 

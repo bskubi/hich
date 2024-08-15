@@ -9,7 +9,7 @@ process PairtoolsSelect {
     container "bskubi/hich:latest"
 
     input:
-    tuple val(id), path(pairs), val(select_params), val(condition)
+    tuple val(id), path(pairs), val(pairtoolsSelectParams), val(condition)
 
     output:
     tuple val(id), path("${id}_select.pairs.gz")
@@ -49,7 +49,7 @@ process PairtoolsSelect {
     filters = filters.collect {"(${it})"}
     filters = filters.join(" and ")
 
-    select_params = select_params ? select_params.collect {
+    pairtoolsSelectParams = pairtoolsSelectParams ? pairtoolsSelectParams.collect {
         item ->
         ["--output-rest": "--output-rest ${id}_select.rest.pairs.gz"].get(item, item)
     }.join(" ") : ""
@@ -57,7 +57,7 @@ process PairtoolsSelect {
     write_chroms = condition.chroms ? "echo '${condition.chroms.join('\n')}' > __chroms__.bed &&" : ""
     chroms_file = condition.chroms ? "--chrom-subset __chroms__.bed" : ""
 
-    cmd = """${write_chroms} pairtools select --output ${id}_select.pairs.gz ${chroms_file} ${select_params} "${filters}" ${pairs}"""
+    cmd = """${write_chroms} pairtools select --output ${id}_select.pairs.gz ${chroms_file} ${pairtoolsSelectParams} "${filters}" ${pairs}"""
     
     cmd
 
@@ -73,14 +73,14 @@ workflow Select {
     transpack (
         PairtoolsSelect,
         samples,
-        ["id", "latest", "select_params", "select_condition"],
+        ["id", "latest", "pairtoolsSelectParams", "selectFilters"],
         ["id", "select_pairs"],
         ["latest":"select_pairs"],
         "id",
-        ["nullOk":"select_params"]
+        ["nullOk":"pairtoolsSelectParams"]
     ) | set{samples}
     
-    if ("Select" in params.general.get("qc_after")) {
+    if ("Select" in params.general.get("qcAfter")) {
         QCReads(samples, "Select")
     }
 
