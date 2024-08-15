@@ -231,7 +231,7 @@ pairs
 ,,,,,
 | Optional, but one of `fastq1 and fastq2`_, `sambam`_, or `pairs`_ must be specified for each sample as these are the data files Hich ingests.
 |
-| Specifies a `4DN .pairs format <https://github.com/4dn-dcic/pairix/blob/master/pairs_format_specification.md>`_ file to ingest.
+| Specifies a `4DN .pairs format <https://github.com/4dn-dcic/pairix/blob/master/pairsFormat_specification.md>`_ file to ingest.
 
 reference
 ,,,,,,,,,
@@ -312,7 +312,7 @@ aligner_threads
 | 
 | Max threads to use for alignment. It is highly recommended to set this to the maximum number of available cores. Note that only one alignment process is spawned at a time. This is because every `aligner`_ Hich uses (BWA MEM and BWA MEM2) are internally parallelized, so there is no substantial performance gain to running multiple alignment processes in parallel, while the substantial memory footprint is duplicated for each aligner instance being run.
 
-bwa_flags
+bwaFlags
 ,,,,,,,,,
 | Default: ``-SP5M``
 | 
@@ -348,7 +348,7 @@ deduplicate
 | 
 | Whether to remove technical duplicates (i.e. PCR or optical duplicates). Deduplication is applied to biological replicates after forming them from non-deduplicated technical replicates or after ingesting them directly into Hich. Hich deduplicates technical replicates `after` using them to merge biological replicates.
 
-pairs_format
+pairsFormat
 ,,,,,,,,,,,,
 
 chrom1
@@ -379,7 +379,7 @@ pos2
 | 
 | The column in the .pairs file where the second base pair position is labeled for each read.
 
-parse_params
+parseParams
 ,,,,,,,,,,,,
 | Default:
 
@@ -405,13 +405,13 @@ select_condition
 ,,,,,,,,,,,,,,,,
 | Read-level filters to use during the selection step.
 
-keep_pair_types
+keepPairTypes
 ^^^^^^^^^^^^^^^
 | Default: ``UU``, ``UR``, ``RU``
 | 
 | U is for a unique aligned read, whereas an R is "rescued" by detecting pairs where one side maps to locus 1 and the other to a slightly different position on locus 1 and to locus 2, the classic "split ligation junction" pattern that represents an observed, rather than inferred, ligation junction.
 
-keep_trans
+keepTrans
 ^^^^^^^^^^^^^^^
 | Options:
 
@@ -421,7 +421,7 @@ keep_trans
 | 
 | Whether to keep interchromosomal ("trans") contacts. Note that this should be left as true if forming .mcool files and using the default ``trans-only`` option, which normalizes contact matrices based exclusively on trans contacts, which are in some cases thought to yield more biologically representative results.
 
-keep_cis
+keepCis
 ^^^^^^^^^^^^^^^
 | Options:
 
@@ -431,22 +431,22 @@ keep_cis
 | 
 | Whether to keep intrachromosomal ("cis") contacts.
 
-min_dist_fr
+minDistFR
 ^^^^^^^^^^^^^^^
 | Default: ``1000``
 | Minimum insert size (in bp) to keep FR (+- or inward) strands. In Hi-C, the set of short-range FR strands can be highly enriched in undigested chromatin, which shows up in Hich's MultiQC report as a percentage of FR orientations substantially higher than the expected 25%. These can be filtered out using this option.
 
-min_dist_rf
+minDistRF
 ^^^^^^^^^^^^^^^
 | Default: ``1000``
 | Minimum insert size (in bp) to keep RF (-+ or outward) strands. In Hi-C, the set of short-range FR strands can be highly enriched in self-circles (digested fragments that self-ligated end to end), which shows up in Hich's MultiQC report as a percentage of RF orientations substantially higher than the expected 25%. These can be filtered out using this option.
 
-min_dist_ff
+minDistFF
 ^^^^^^^^^^^^^^^
 | Default: ``0``
 | Minimum insert size (in bp) to keep FF (++) strands.
 
-min_dist_ff
+minDistFF
 ^^^^^^^^^^^^^^^
 | Default: ``0``
 | Minimum insert size (in bp) to keep RR (--) strands.
@@ -455,7 +455,7 @@ chroms
 ^^^^^^^^^^^^^^^
 | If specified, each read alignment must be to a chromosome in this set.
 
-discard_same_frag
+discardSingleFrag
 ^^^^^^^^^^^^^^^^^^
 | Options:
 
@@ -468,15 +468,15 @@ discard_same_frag
 Matrix processing
 .................
 
-make_hic
+makeHic
 ,,,,,,,,,,,
 | Arguments supplied to juicer tools' ``pre`` command when forming a Hi-C contact matrix.
 
-make_cool
+makeCool
 ,,,,,,,,,,
 | Arguments supplied to the ``cooler cload`` command for forming .cool format precursors to the .mcool contact matrix.
 
-make_mcool
+makeMcool
 ,,,,,,,,,,
 | Default:
 
@@ -489,7 +489,7 @@ make_mcool
 matrix
 ,,,,,,
 
-make_mcool_file_format
+makeMcoolFileFormat
 ^^^^^^^^^^^^^^^^^^^^^^
 | Options:
 
@@ -499,7 +499,7 @@ make_mcool_file_format
 | 
 | Whether to produce .mcool-format contact matrices (the Open2C multi-resolution format). Currently required for feature calling and QC.
 
-make_hic_file_format
+makeHicFileFormat
 ^^^^^^^^^^^^^^^^^^^^^^
 | Options:
 
@@ -563,7 +563,7 @@ exclude
 ^^^^^^^
 | Which chromosomes to exclude when calling Hicrep SCC scores.
 
-chrom_filter
+chromFilter
 ^^^^^^^^^^^^
 | A conditional statement in Python to determine whether to use a chromosome for Hicrep as a function of its name (referenced via the ``chrom`` variable) and size (the ``size`` variable). It will be evaluated using Python's ``eval`` statement.
 
@@ -608,7 +608,7 @@ resolution
 | 
 | The resolution at which insulation should be called.
 
-cooltools_insulation_params
+cooltoolsInsulationParams
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 | Defaults:
 

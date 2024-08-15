@@ -42,7 +42,7 @@ process MustacheLoops{
     "touch ${prefix}.loop1 ${prefix}.loop2 ${prefix}.diffloop1 ${prefix}.diffloop2"
 }
 
-workflow CallLoops {
+workflow DifferentialLoops {
     take:
     samples
 
@@ -63,11 +63,11 @@ workflow CallLoops {
         p = parameterize("mustacheLoops",
                          sampleTypeGroupChannel,
                          params.comparisonSets,
-                         ["id", "latest_matrix"],
-                         ["id", "latest_matrix", "mustacheParams"])
+                         ["id", "latestMatrix"],
+                         ["id", "latestMatrix", "mustacheParams"])
 
         combinations(p,
-                     ["id", "latest_matrix"],
+                     ["id", "latestMatrix"],
                      ["id1", "mx1", "id2", "mx2"],
                      ["mustacheParams"])
             | map{tuple("${it.id1}_${it.id2}".toString(), it.mx1, it.mx2, it.mustacheParams)}

@@ -61,11 +61,11 @@ workflow Merge {
     main:
 
     switch(sampleType) {
-        case "TechrepsToBiorep":
+        case "TechrepsToBioreps":
             groups = ["condition", "biorep"]
             result = "biorep_merge_pairs"
             break
-        case "BiorepsToCondition":
+        case "BiorepsToConditions":
             groups = ["condition"]
             result = "condition_merge_pairs"
             break
@@ -76,10 +76,10 @@ workflow Merge {
     samples
         | filter{
             switch(sampleType) {
-                case "TechrepsToBiorep":
+                case "TechrepsToBioreps":
                     isTechrep(it)
                     break
-                case "BiorepsToCondition":
+                case "BiorepsToConditions":
                     isBiorep(it)
                     break
                 default:
@@ -118,9 +118,9 @@ workflow TechrepsToBioreps {
 
     main:
 
-    samples = Merge(samples, "TechrepsToBiorep")
+    samples = Merge(samples, "TechrepsToBioreps")
 
-    samples = emptyOnLastStep("mergeTechrepsToBiorep", samples)
+    samples = emptyOnLastStep("TechrepsToBioreps", samples)
 
     emit:
     samples
@@ -131,8 +131,8 @@ workflow BiorepsToConditions {
     samples
 
     main:
-    samples = Merge(samples, "BiorepsToCondition")
-    samples = emptyOnLastStep("mergeBiorepsToCondition", samples)
+    samples = Merge(samples, "BiorepsToConditions")
+    samples = emptyOnLastStep("BiorepsToConditions", samples)
 
     emit:
     samples

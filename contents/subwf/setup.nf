@@ -125,7 +125,7 @@ workflow Setup {
             | FragmentIndex
             | set{samples}
 
-    samples = emptyOnLastStep("setup", samples)
+    samples = emptyOnLastStep("Setup", samples)
 
     emit:
         samples

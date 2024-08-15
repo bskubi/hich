@@ -36,7 +36,7 @@ workflow Chromsizes {
            "assembly",
             {true}) | set{samples}
     
-    samples = emptyOnLastStep("chromsizes", samples)
+    samples = emptyOnLastStep("Chromsizes", samples)
 
     emit:
     samples

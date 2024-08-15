@@ -93,15 +93,15 @@ def fragtag(batch_size, fragfile, out_pairs, in_pairs):
 @click.option("--resolutions", type = IntList, default = 10000)
 @click.option("--chroms", "--include_chroms", type = StrList, default = None)
 @click.option("--exclude", "--exclude_chroms", type = StrList, default = None)
-@click.option("--chrom_filter", type=str, default = "chrom if size > 5000000 else None")
+@click.option("--chromFilter", type=str, default = "chrom if size > 5000000 else None")
 @click.option("--h", type = IntList, default = "1")
 @click.option("--d_bp_max", type = IntList, default = "-1")
 @click.option("--b_downsample", type = BooleanList, default = False)
 @click.option("--nproc", type=int, default=None)
 @click.option("--output", type=str, default = None)
 @click.argument("paths", type=str, nargs = -1)
-def hicrep(resolutions, chroms, exclude, chrom_filter, h, d_bp_max, b_downsample, nproc, output, paths):
-    result = hicrep_combos(resolutions, chroms, exclude, chrom_filter, h, d_bp_max, b_downsample, nproc, output, paths)
+def hicrep(resolutions, chroms, exclude, chromFilter, h, d_bp_max, b_downsample, nproc, output, paths):
+    result = hicrep_combos(resolutions, chroms, exclude, chromFilter, h, d_bp_max, b_downsample, nproc, output, paths)
     if result is not None:
         click.echo(result)
     

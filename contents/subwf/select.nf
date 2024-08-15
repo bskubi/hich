@@ -19,19 +19,19 @@ process PairtoolsSelect {
     result = items.collect { "'$it'" }.join(", ")
     "[${result}]"}
 
-    pair_types = "pair_type in ${quote(condition.keep_pair_types)}"
+    pair_types = "pair_type in ${quote(condition.keepPairTypes)}"
     
-    cis_trans = condition.keep_cis ^ condition.keep_trans
-                    ? (condition.keep_cis
+    cis_trans = condition.keepCis ^ condition.keepTrans
+                    ? (condition.keepCis
                             ? "(chrom1 == chrom2)"
                             : "(chrom1 != chrom2)")
                     : null
 
     min_distances = [:]
-    min_distances += condition.min_dist_fr != null ? ["+-":condition.min_dist_fr] : [:]
-    min_distances += condition.min_dist_rf != null ? ["-+":condition.min_dist_rf] : [:]
-    min_distances += condition.min_dist_ff != null ? ["++":condition.min_dist_ff] : [:]
-    min_distances += condition.min_dist_rr != null ? ["--":condition.min_dist_rr] : [:]
+    min_distances += condition.minDistFR != null ? ["+-":condition.minDistFR] : [:]
+    min_distances += condition.minDistRF != null ? ["-+":condition.minDistRF] : [:]
+    min_distances += condition.minDistFF != null ? ["++":condition.minDistFF] : [:]
+    min_distances += condition.minDistRR != null ? ["--":condition.minDistRR] : [:]
     strand_dist = min_distances.collect {
         strand, dist ->
         s1 = strand[0]
@@ -41,7 +41,7 @@ process PairtoolsSelect {
 
     strand_dist = strand_dist ?: null
     
-    frags = condition.discard_same_frag ? "rfrag1 != rfrag2" : null
+    frags = condition.discardSingleFrag ? "rfrag1 != rfrag2" : null
     
     filters = [pair_types, cis_trans, strand_dist, frags]
     
@@ -84,7 +84,7 @@ workflow Select {
         QCReads(samples, "Select")
     }
 
-    samples = emptyOnLastStep("select", samples)
+    samples = emptyOnLastStep("Select", samples)
 
 
 

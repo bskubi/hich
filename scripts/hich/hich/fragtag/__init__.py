@@ -20,7 +20,7 @@ def tag_batch(pairs_batch_df, frag_index):
                                             chrom_df)
         chroms_dict[chrom] = chroms_dict[chrom].with_columns(frag_columns)
     
-    return pairs_format(pairs_batch_df, chroms_dict)
+    return pairsFormat(pairs_batch_df, chroms_dict)
 
 def tag_restriction_fragments(frags_filename: str,
                               input_pairs_filename: str,

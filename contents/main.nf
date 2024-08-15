@@ -1,37 +1,40 @@
 include {LoadSampleFile} from './subwf/loadSampleFile.nf'
 include {Setup} from './subwf/setup.nf'
 include {Align} from './subwf/align.nf'
-include {HeadReads} from './subwf/downsampleFastq.nf'
-include {Parse} from './subwf/parseToContacts.nf'
-include {Fragtag} from './subwf/fragtag.nf'
+include {FastqHead} from './subwf/fastqHead.nf'
+include {Parse} from './subwf/parse.nf'
+include {TagFragments} from './subwf/tagFragments.nf'
 include {TechrepsToBioreps; BiorepsToConditions} from './subwf/mergePairs.nf'
 include {IngestPairs} from './subwf/ingestPairs.nf'
-include {Deduplicate} from './subwf/dedup.nf'
+include {Deduplicate} from './subwf/deduplicate.nf'
 include {Select} from './subwf/select.nf'
-include {MakeMcool} from './subwf/makeMcool.nf'
-include {MakeHic} from './subwf/makeHic.nf'
-include {CallLoops} from './subwf/callLoops.nf'
-include {CallCompartments} from './subwf/callCompartments.nf'
-include {CallInsulation} from './subwf/callInsulation.nf'
+include {HicMatrix} from './subwf/hicMatrix.nf'
+include {McoolMatrix} from './subwf/mcoolMatrix.nf'
 include {Hicrep} from './subwf/hicrep.nf'
+include {CompartmentScore} from './subwf/compartmentScore.nf'
+include {DifferentialLoops} from './subwf/differentialLoops.nf'
+include {InsulationScore} from './subwf/insulationScore.nf'
+include {emptyOnLastStep} from './subwf/extraops.nf'
 
 workflow {
     LoadSampleFile
         | Setup
-        | HeadReads
+        | FastqHead
         | Align
         | Parse
         | IngestPairs
-        | Fragtag
+        | TagFragments
         | TechrepsToBioreps
         | Deduplicate
         | BiorepsToConditions
         | Select
-        | MakeHic
-        | MakeMcool
+        | HicMatrix
+        | McoolMatrix
         | Hicrep
-        | CallCompartments
-        | CallLoops
-        | CallInsulation
+        | CompartmentScore
+        | DifferentialLoops
+        | InsulationScore
+        | set{samples}
+    samples = emptyOnLastStep("End", samples)
 }
 

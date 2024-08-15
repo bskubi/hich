@@ -9,7 +9,7 @@ process PairtoolsParse2 {
     container "bskubi/hich:latest"
 
     input:
-    tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parse_params)
+    tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseParams)
 
     output:
     tuple val(id), path("${id}.pairs.gz")
@@ -20,7 +20,7 @@ process PairtoolsParse2 {
            "| pairtools parse2",
            "--assembly ${assembly}",
            "--chroms-path ${chromsizes}"] +
-           parse_params +
+           parseParams +
           ["| pairtools sort --output ${id}.pairs.gz"]
     cmd.removeAll([null])
 
@@ -47,7 +47,7 @@ workflow Parse {
     samples = transpack(
         PairtoolsParse2,
         [sambam, samples],
-        ["id", "sambam", "chromsizes", "assembly", "parse_params"],
+        ["id", "sambam", "chromsizes", "assembly", "parseParams"],
         ["id", "pairs"],
         ["latest":"pairs"],
         "id"
@@ -59,7 +59,7 @@ workflow Parse {
         QCReads(samples, "Parse")
     }
 
-    samples = emptyOnLastStep("parse", samples)
+    samples = emptyOnLastStep("Parse", samples)
 
     emit:
         samples

@@ -76,7 +76,7 @@ workflow AlignerIndex {
             ["keep":["alignerIndexDir", "alignerIndexPrefix"]]
         ) | set{samples}
 
-    samples = emptyOnLastStep("alignerIndex", samples)
+    samples = emptyOnLastStep("AlignerIndex", samples)
 
     emit:
         samples

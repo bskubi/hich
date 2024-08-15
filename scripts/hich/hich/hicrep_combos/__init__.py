@@ -119,9 +119,9 @@ def hicrep_callers(matrices: List,
     
     return [HicrepCall(combo[0][0], combo[0][1], *combo[1]) for combo in combos]
     
-def hicrep_combos(resolutions, chroms, exclude, chrom_filter, h, d_bp_max, b_downsample, nproc, output, paths):
+def hicrep_combos(resolutions, chroms, exclude, chromFilter, h, d_bp_max, b_downsample, nproc, output, paths):
     assert paths, "No paths specified in hich hicrep"
-    chroms = chroms or shared_chroms(paths, lambda chrom, size: eval(chrom_filter))
+    chroms = chroms or shared_chroms(paths, lambda chrom, size: eval(chromFilter))
     chroms = set(chroms) - set(exclude) if exclude else chroms
     assert chroms, "No chromosomes specified or no universally overlapping chromosomes found in hich hicrep"
     print(exclude)

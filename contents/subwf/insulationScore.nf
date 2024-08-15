@@ -5,7 +5,7 @@ process CooltoolsInsulation {
     conda "bioconda::cooltools"
 
     input:
-    tuple val(id), path(mcool), val(resolution), val(cooltools_insulation_params)
+    tuple val(id), path(mcool), val(resolution), val(cooltoolsInsulationParams)
 
     output:
     tuple val(id), path("${id}_insulation.tsv"), path("${id}_insulation.tsv.${resolution}.bw")
@@ -13,7 +13,7 @@ process CooltoolsInsulation {
     shell:
     cmd = ["cooltools insulation", 
            "--output ${id}_insulation.tsv"] +
-          cooltools_insulation_params +
+          cooltoolsInsulationParams +
           ["${mcool}::/resolutions/${resolution} 100000"]
     cmd = cmd.join(" ")
     cmd
@@ -22,14 +22,14 @@ process CooltoolsInsulation {
     "touch ${id}_insulation.tsv ${id}_insulation.tsv.${resolution}.bw"
 }
 
-workflow CallInsulation {
+workflow InsulationScore {
     take:
     samples
 
     main:
     samples
         | filter {it.get("insulation") != null && it.get("mcool") != null}
-        | map{tuple(it.id, it.mcool, it.insulation.resolution, it.insulation.cooltools_insulation_params)}
+        | map{tuple(it.id, it.mcool, it.insulation.resolution, it.insulation.cooltoolsInsulationParams)}
         | CooltoolsInsulation
 
     emit:

@@ -34,7 +34,7 @@ workflow FragmentIndex {
            [["assembly", "restrictionEnzymes"]],
            {it.restrictionEnzymes}) | set{samples}
     
-    samples = emptyOnLastStep("fragmentIndex", samples)
+    samples = emptyOnLastStep("FragmentIndex", samples)
     
     emit:
     samples

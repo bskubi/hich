@@ -10,7 +10,7 @@ process CoolerZoomify {
     maxForks 2
 
     input:
-    tuple val(id), path(infile), path(chromsizes), val(pairs_format), val(assembly), val(matrix), val(make_cool), val(make_mcool)
+    tuple val(id), path(infile), path(chromsizes), val(pairsFormat), val(assembly), val(matrix), val(makeCool), val(makeMcool)
 
     output:
     tuple val(id), path("${id}.mcool")
@@ -19,15 +19,15 @@ process CoolerZoomify {
     min_bin = matrix.resolutions.min()
     bins = matrix.resolutions.join(",")
 
-    cmd = ["cooler cload pairs"] + make_cool +
+    cmd = ["cooler cload pairs"] + makeCool +
            ["--assembly ${assembly}",
-           "--chrom1 ${pairs_format.chrom1}",
-           "--pos1 ${pairs_format.pos1}",
-           "--chrom2 ${pairs_format.chrom2}",
-           "--pos2 ${pairs_format.pos2}",
+           "--chrom1 ${pairsFormat.chrom1}",
+           "--pos1 ${pairsFormat.pos1}",
+           "--chrom2 ${pairsFormat.chrom2}",
+           "--pos2 ${pairsFormat.pos2}",
            "${chromsizes}:${min_bin}",
            "${infile} ${id}.cool",
-           "&& cooler zoomify"] + make_mcool +
+           "&& cooler zoomify"] + makeMcool +
            ["--resolutions '${bins}'",
            "--out ${id}.mcool",
            "${id}.cool"]
@@ -39,24 +39,24 @@ process CoolerZoomify {
     "touch ${id}.mcool"
 }
 
-workflow MakeMcool {
+workflow McoolMatrix {
     take:
         samples
     
     main:
-        samples | filter{it.matrix.make_mcool_file_format} | set{mcool}
+        samples | filter{it.matrix.makeMcoolFileFormat} | set{mcool}
 
         transpack (
             CoolerZoomify,
             [mcool, samples],
-            ["id", "latest", "chromsizes", "pairs_format", "assembly", "matrix", "make_cool", "make_mcool"],
+            ["id", "latest", "chromsizes", "pairsFormat", "assembly", "matrix", "makeCool", "makeMcool"],
             ["id", "mcool"],
-            ["latest_matrix":"mcool"],
+            ["latestMatrix":"mcool"],
             "id",
-            ["nullOk":"make_cool"]
+            ["nullOk":"makeCool"]
         ) | set{samples}
     
-    samples = emptyOnLastStep("mcoolMatrix", samples)
+    samples = emptyOnLastStep("McoolMatrix", samples)
 
     emit:
         samples

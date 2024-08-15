@@ -16,13 +16,14 @@ process ZcatHeadFastq {
     "touch ${id}_R1.fastq.gz ${id}_R2.fastq.gz"
 }
 
-workflow HeadReads {
+workflow FastqHead {
     take:
     samples
 
     main:
     // We should get a feature to downsample ingested bam and pairs files as well
     // to facilitate the --humid parameter
+    // Also this needs to work on plaintext fastq files
     
     samples
         | filter{it.datatype == "fastq" && it.get("n_reads") && it.get("n_reads").toString() != "all"}
@@ -37,7 +38,7 @@ workflow HeadReads {
         "id"
     )
 
-    samples = emptyOnLastStep("headReads", samples)
+    samples = emptyOnLastStep("FastqHead", samples)
 
     emit:
     samples

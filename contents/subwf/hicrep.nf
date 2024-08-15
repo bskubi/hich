@@ -6,7 +6,7 @@ process HicrepCombos{
     container "bskubi/hich:latest"
 
     input:
-    tuple path(mcools), val(resolutions), val(chroms), val(exclude), val(chrom_filter), val(h), val(dBPMax), val(bDownSample)
+    tuple path(mcools), val(resolutions), val(chroms), val(exclude), val(chromFilter), val(h), val(dBPMax), val(bDownSample)
 
     output:
     path("hicrep.tsv")
@@ -17,7 +17,7 @@ process HicrepCombos{
            resolutions ? "--resolutions ${resolutions.join(",")}" : "",
            chroms ? "--chroms ${chroms.join(",")}" : "",
            exclude ? "--exclude ${exclude.join(",")}" : "",
-           chrom_filter ? "--chrom_filter '${chrom_filter}'" : "",
+           chromFilter ? "--chromFilter '${chromFilter}'" : "",
            "--h ${h.join(",")}",
            "--d_bp_max ${dBPMax.join(",")}",
            "--b_downsample ${bDownSample.join(",")}",
@@ -39,7 +39,7 @@ workflow Hicrep {
                  samples,
                  params.comparisonSets,
                  ["mcool"],
-                 ["mcool", "resolutions", "chroms", "exclude", "chrom_filter", "h", "dBPMax", "bDownSample"])
+                 ["mcool", "resolutions", "chroms", "exclude", "chromFilter", "h", "dBPMax", "bDownSample"])
         | HicrepCombos
 
     emit:

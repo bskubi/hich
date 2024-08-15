@@ -427,7 +427,7 @@
 <div class="line-block">
 <div class="line">Optional, but one of <a class="reference internal" href="#fastq1-and-fastq2">fastq1 and fastq2</a>, <a class="reference internal" href="#sambam">sambam</a>, or <a class="reference internal" href="#pairs">pairs</a> must be specified for each sample as these are the data files Hich ingests.</div>
 <div class="line"><br /></div>
-<div class="line">Specifies a <a class="reference external" href="https://github.com/4dn-dcic/pairix/blob/master/pairs_format_specification.md">4DN .pairs format</a> file to ingest.</div>
+<div class="line">Specifies a <a class="reference external" href="https://github.com/4dn-dcic/pairix/blob/master/pairsFormat_specification.md">4DN .pairs format</a> file to ingest.</div>
 </div>
 </section>
 <section id="reference">
@@ -533,7 +533,7 @@
 </div>
 </section>
 <section id="bwa-flags">
-<h4>bwa_flags<a class="headerlink" href="#bwa-flags" title="Link to this heading">¶</a></h4>
+<h4>bwaFlags<a class="headerlink" href="#bwa-flags" title="Link to this heading">¶</a></h4>
 <div class="line-block">
 <div class="line">Default: <code class="docutils literal notranslate"><span class="pre">-SP5M</span></code></div>
 <div class="line"><br /></div>
@@ -611,7 +611,7 @@
 </div>
 </section>
 <section id="pairs-format">
-<h4>pairs_format<a class="headerlink" href="#pairs-format" title="Link to this heading">¶</a></h4>
+<h4>pairsFormat<a class="headerlink" href="#pairs-format" title="Link to this heading">¶</a></h4>
 <section id="chrom1">
 <h5>chrom1<a class="headerlink" href="#chrom1" title="Link to this heading">¶</a></h5>
 <div class="line-block">
@@ -650,7 +650,7 @@
 </section>
 </section>
 <section id="parse-params">
-<h4>parse_params<a class="headerlink" href="#parse-params" title="Link to this heading">¶</a></h4>
+<h4>parseParams<a class="headerlink" href="#parse-params" title="Link to this heading">¶</a></h4>
 <div class="line-block">
 <div class="line">Default:</div>
 </div>
@@ -685,7 +685,7 @@
 <div class="line">Read-level filters to use during the selection step.</div>
 </div>
 <section id="keep-pair-types">
-<h5>keep_pair_types<a class="headerlink" href="#keep-pair-types" title="Link to this heading">¶</a></h5>
+<h5>keepPairTypes<a class="headerlink" href="#keep-pair-types" title="Link to this heading">¶</a></h5>
 <div class="line-block">
 <div class="line">Default: <code class="docutils literal notranslate"><span class="pre">UU</span></code>, <code class="docutils literal notranslate"><span class="pre">UR</span></code>, <code class="docutils literal notranslate"><span class="pre">RU</span></code></div>
 <div class="line"><br /></div>
@@ -693,7 +693,7 @@
 </div>
 </section>
 <section id="keep-trans">
-<h5>keep_trans<a class="headerlink" href="#keep-trans" title="Link to this heading">¶</a></h5>
+<h5>keepTrans<a class="headerlink" href="#keep-trans" title="Link to this heading">¶</a></h5>
 <div class="line-block">
 <div class="line">Options:</div>
 </div>
@@ -707,7 +707,7 @@
 </div>
 </section>
 <section id="keep-cis">
-<h5>keep_cis<a class="headerlink" href="#keep-cis" title="Link to this heading">¶</a></h5>
+<h5>keepCis<a class="headerlink" href="#keep-cis" title="Link to this heading">¶</a></h5>
 <div class="line-block">
 <div class="line">Options:</div>
 </div>
@@ -721,28 +721,28 @@
 </div>
 </section>
 <section id="min-dist-fr">
-<h5>min_dist_fr<a class="headerlink" href="#min-dist-fr" title="Link to this heading">¶</a></h5>
+<h5>minDistFR<a class="headerlink" href="#min-dist-fr" title="Link to this heading">¶</a></h5>
 <div class="line-block">
 <div class="line">Default: <code class="docutils literal notranslate"><span class="pre">1000</span></code></div>
 <div class="line">Minimum insert size (in bp) to keep FR (+- or inward) strands. In Hi-C, the set of short-range FR strands can be highly enriched in undigested chromatin, which shows up in Hich’s MultiQC report as a percentage of FR orientations substantially higher than the expected 25%. These can be filtered out using this option.</div>
 </div>
 </section>
 <section id="min-dist-rf">
-<h5>min_dist_rf<a class="headerlink" href="#min-dist-rf" title="Link to this heading">¶</a></h5>
+<h5>minDistRF<a class="headerlink" href="#min-dist-rf" title="Link to this heading">¶</a></h5>
 <div class="line-block">
 <div class="line">Default: <code class="docutils literal notranslate"><span class="pre">1000</span></code></div>
 <div class="line">Minimum insert size (in bp) to keep RF (-+ or outward) strands. In Hi-C, the set of short-range FR strands can be highly enriched in self-circles (digested fragments that self-ligated end to end), which shows up in Hich’s MultiQC report as a percentage of RF orientations substantially higher than the expected 25%. These can be filtered out using this option.</div>
 </div>
 </section>
 <section id="min-dist-ff">
-<h5>min_dist_ff<a class="headerlink" href="#min-dist-ff" title="Link to this heading">¶</a></h5>
+<h5>minDistFF<a class="headerlink" href="#min-dist-ff" title="Link to this heading">¶</a></h5>
 <div class="line-block">
 <div class="line">Default: <code class="docutils literal notranslate"><span class="pre">0</span></code></div>
 <div class="line">Minimum insert size (in bp) to keep FF (++) strands.</div>
 </div>
 </section>
 <section id="id1">
-<h5>min_dist_ff<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h5>
+<h5>minDistFF<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h5>
 <div class="line-block">
 <div class="line">Default: <code class="docutils literal notranslate"><span class="pre">0</span></code></div>
 <div class="line">Minimum insert size (in bp) to keep RR (–) strands.</div>
@@ -755,7 +755,7 @@
 </div>
 </section>
 <section id="discard-same-frag">
-<h5>discard_same_frag<a class="headerlink" href="#discard-same-frag" title="Link to this heading">¶</a></h5>
+<h5>discardSingleFrag<a class="headerlink" href="#discard-same-frag" title="Link to this heading">¶</a></h5>
 <div class="line-block">
 <div class="line">Options:</div>
 </div>
@@ -773,19 +773,19 @@
 <section id="matrix-processing">
 <h3>Matrix processing<a class="headerlink" href="#matrix-processing" title="Link to this heading">¶</a></h3>
 <section id="make-hic">
-<h4>make_hic<a class="headerlink" href="#make-hic" title="Link to this heading">¶</a></h4>
+<h4>makeHic<a class="headerlink" href="#make-hic" title="Link to this heading">¶</a></h4>
 <div class="line-block">
 <div class="line">Arguments supplied to juicer tools’ <code class="docutils literal notranslate"><span class="pre">pre</span></code> command when forming a Hi-C contact matrix.</div>
 </div>
 </section>
 <section id="make-cool">
-<h4>make_cool<a class="headerlink" href="#make-cool" title="Link to this heading">¶</a></h4>
+<h4>makeCool<a class="headerlink" href="#make-cool" title="Link to this heading">¶</a></h4>
 <div class="line-block">
 <div class="line">Arguments supplied to the <code class="docutils literal notranslate"><span class="pre">cooler</span> <span class="pre">cload</span></code> command for forming .cool format precursors to the .mcool contact matrix.</div>
 </div>
 </section>
 <section id="make-mcool">
-<h4>make_mcool<a class="headerlink" href="#make-mcool" title="Link to this heading">¶</a></h4>
+<h4>makeMcool<a class="headerlink" href="#make-mcool" title="Link to this heading">¶</a></h4>
 <div class="line-block">
 <div class="line">Default:</div>
 </div>
@@ -801,7 +801,7 @@
 <section id="matrix">
 <h4>matrix<a class="headerlink" href="#matrix" title="Link to this heading">¶</a></h4>
 <section id="make-mcool-file-format">
-<h5>make_mcool_file_format<a class="headerlink" href="#make-mcool-file-format" title="Link to this heading">¶</a></h5>
+<h5>makeMcoolFileFormat<a class="headerlink" href="#make-mcool-file-format" title="Link to this heading">¶</a></h5>
 <div class="line-block">
 <div class="line">Options:</div>
 </div>
@@ -815,7 +815,7 @@
 </div>
 </section>
 <section id="make-hic-file-format">
-<h5>make_hic_file_format<a class="headerlink" href="#make-hic-file-format" title="Link to this heading">¶</a></h5>
+<h5>makeHicFileFormat<a class="headerlink" href="#make-hic-file-format" title="Link to this heading">¶</a></h5>
 <div class="line-block">
 <div class="line">Options:</div>
 </div>
@@ -899,7 +899,7 @@
 </div>
 </section>
 <section id="chrom-filter">
-<h5>chrom_filter<a class="headerlink" href="#chrom-filter" title="Link to this heading">¶</a></h5>
+<h5>chromFilter<a class="headerlink" href="#chrom-filter" title="Link to this heading">¶</a></h5>
 <div class="line-block">
 <div class="line">A conditional statement in Python to determine whether to use a chromosome for Hicrep as a function of its name (referenced via the <code class="docutils literal notranslate"><span class="pre">chrom</span></code> variable) and size (the <code class="docutils literal notranslate"><span class="pre">size</span></code> variable). It will be evaluated using Python’s <code class="docutils literal notranslate"><span class="pre">eval</span></code> statement.</div>
 </div>
@@ -960,7 +960,7 @@
 </div>
 </section>
 <section id="cooltools-insulation-params">
-<h5>cooltools_insulation_params<a class="headerlink" href="#cooltools-insulation-params" title="Link to this heading">¶</a></h5>
+<h5>cooltoolsInsulationParams<a class="headerlink" href="#cooltools-insulation-params" title="Link to this heading">¶</a></h5>
 <div class="line-block">
 <div class="line">Defaults:</div>
 </div>
@@ -1074,44 +1074,44 @@
 <li><a class="reference internal" href="#index-dir">index_dir</a></li>
 <li><a class="reference internal" href="#index-prefix">index_prefix</a></li>
 <li><a class="reference internal" href="#aligner-threads">aligner_threads</a></li>
-<li><a class="reference internal" href="#bwa-flags">bwa_flags</a></li>
+<li><a class="reference internal" href="#bwa-flags">bwaFlags</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#pairs-processing">Pairs processing</a><ul>
 <li><a class="reference internal" href="#enzymes">enzymes</a></li>
 <li><a class="reference internal" href="#fragfile">fragfile</a></li>
 <li><a class="reference internal" href="#deduplicate">deduplicate</a></li>
-<li><a class="reference internal" href="#pairs-format">pairs_format</a><ul>
+<li><a class="reference internal" href="#pairs-format">pairsFormat</a><ul>
 <li><a class="reference internal" href="#chrom1">chrom1</a></li>
 <li><a class="reference internal" href="#pos1">pos1</a></li>
 <li><a class="reference internal" href="#chrom2">chrom2</a></li>
 <li><a class="reference internal" href="#pos2">pos2</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#parse-params">parse_params</a></li>
+<li><a class="reference internal" href="#parse-params">parseParams</a></li>
 <li><a class="reference internal" href="#dedup-params">dedup_params</a></li>
 <li><a class="reference internal" href="#select-params">select_params</a></li>
 <li><a class="reference internal" href="#select-condition">select_condition</a><ul>
-<li><a class="reference internal" href="#keep-pair-types">keep_pair_types</a></li>
-<li><a class="reference internal" href="#keep-trans">keep_trans</a></li>
-<li><a class="reference internal" href="#keep-cis">keep_cis</a></li>
-<li><a class="reference internal" href="#min-dist-fr">min_dist_fr</a></li>
-<li><a class="reference internal" href="#min-dist-rf">min_dist_rf</a></li>
-<li><a class="reference internal" href="#min-dist-ff">min_dist_ff</a></li>
-<li><a class="reference internal" href="#id1">min_dist_ff</a></li>
+<li><a class="reference internal" href="#keep-pair-types">keepPairTypes</a></li>
+<li><a class="reference internal" href="#keep-trans">keepTrans</a></li>
+<li><a class="reference internal" href="#keep-cis">keepCis</a></li>
+<li><a class="reference internal" href="#min-dist-fr">minDistFR</a></li>
+<li><a class="reference internal" href="#min-dist-rf">minDistRF</a></li>
+<li><a class="reference internal" href="#min-dist-ff">minDistFF</a></li>
+<li><a class="reference internal" href="#id1">minDistFF</a></li>
 <li><a class="reference internal" href="#chroms">chroms</a></li>
-<li><a class="reference internal" href="#discard-same-frag">discard_same_frag</a></li>
+<li><a class="reference internal" href="#discard-same-frag">discardSingleFrag</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li><a class="reference internal" href="#matrix-processing">Matrix processing</a><ul>
-<li><a class="reference internal" href="#make-hic">make_hic</a></li>
-<li><a class="reference internal" href="#make-cool">make_cool</a></li>
-<li><a class="reference internal" href="#make-mcool">make_mcool</a></li>
+<li><a class="reference internal" href="#make-hic">makeHic</a></li>
+<li><a class="reference internal" href="#make-cool">makeCool</a></li>
+<li><a class="reference internal" href="#make-mcool">makeMcool</a></li>
 <li><a class="reference internal" href="#matrix">matrix</a><ul>
-<li><a class="reference internal" href="#make-mcool-file-format">make_mcool_file_format</a></li>
-<li><a class="reference internal" href="#make-hic-file-format">make_hic_file_format</a></li>
+<li><a class="reference internal" href="#make-mcool-file-format">makeMcoolFileFormat</a></li>
+<li><a class="reference internal" href="#make-hic-file-format">makeHicFileFormat</a></li>
 <li><a class="reference internal" href="#resolutions">resolutions</a></li>
 </ul>
 </li>
@@ -1123,7 +1123,7 @@
 <li><a class="reference internal" href="#id2">resolutions</a></li>
 <li><a class="reference internal" href="#id3">chroms</a></li>
 <li><a class="reference internal" href="#exclude">exclude</a></li>
-<li><a class="reference internal" href="#chrom-filter">chrom_filter</a></li>
+<li><a class="reference internal" href="#chrom-filter">chromFilter</a></li>
 <li><a class="reference internal" href="#h">h</a></li>
 <li><a class="reference internal" href="#dbpmax">dBPMax</a></li>
 <li><a class="reference internal" href="#bdownsample">bDownSample</a></li>
@@ -1139,7 +1139,7 @@
 </li>
 <li><a class="reference internal" href="#insulation">insulation</a><ul>
 <li><a class="reference internal" href="#id4">resolution</a></li>
-<li><a class="reference internal" href="#cooltools-insulation-params">cooltools_insulation_params</a></li>
+<li><a class="reference internal" href="#cooltools-insulation-params">cooltoolsInsulationParams</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#loops">loops</a><ul>

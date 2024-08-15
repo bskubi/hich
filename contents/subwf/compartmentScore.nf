@@ -5,14 +5,14 @@ process HichCompartments {
     container "bskubi/hich:latest"
 
     input:
-    tuple val(id), path(genomeReference), path(matrix), val(resolution), val(hich_compartments_params)
+    tuple val(id), path(genomeReference), path(matrix), val(resolution), val(hichCompartmentsParams)
 
     output:
     tuple val(id), path("${id}_0.bw"), path("${id}_1.bw"), path("${id}_2.bw")
 
     shell:
     cmd = ["hich compartments"] +
-          hich_compartments_params +
+          hichCompartmentsParams +
           ["${genomeReference} ${matrix} ${resolution}"]
     cmd = cmd.join(" ")
     cmd
@@ -21,14 +21,14 @@ process HichCompartments {
     "touch ${id}_0.bw ${id}_1.bw ${id}_2.bw"
 }
 
-workflow CallCompartments {
+workflow CompartmentScore {
     take:
     samples
 
     main:
     samples
-        | filter {it.get("compartments") != null && it.get("latest_matrix") != null}
-        | map{tuple(it.id, it.genomeReference, it.latest_matrix, it.compartments.resolution, it.compartments.hich_compartments_params)}
+        | filter {it.get("compartments") != null && it.get("latestMatrix") != null}
+        | map{tuple(it.id, it.genomeReference, it.latestMatrix, it.compartments.resolution, it.compartments.hichCompartmentsParams)}
         | HichCompartments
 
     emit:

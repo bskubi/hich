@@ -74,7 +74,7 @@ workflow GenomeReference {
            "assembly",
             {true}) | set{samples}
 
-    samples = emptyOnLastStep("genomeReference", samples)
+    samples = emptyOnLastStep("GenomeReference", samples)
 
     emit:
         samples

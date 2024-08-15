@@ -14,7 +14,7 @@ process JuicerToolsPre {
     maxForks 2
 
     input:
-    tuple val(id), path(infile), path(chromsizes), val(pairs_format), val(matrix)
+    tuple val(id), path(infile), path(chromsizes), val(pairsFormat), val(matrix)
 
     output:
     tuple val(id), path("${id}.hic")
@@ -34,22 +34,22 @@ process JuicerToolsPre {
     "touch ${id}.hic"
 }
 
-workflow MakeHic {
+workflow HicMatrix {
     take:
     samples
     
     main:
-    samples | filter{it.matrix.make_hic_file_format} | set{hic}
+    samples | filter{it.matrix.makeHicFileFormat} | set{hic}
 
     transpack (
         JuicerToolsPre,
         [hic, samples],
-        ["id", "latest", "chromsizes", "pairs_format", "matrix"],
+        ["id", "latest", "chromsizes", "pairsFormat", "matrix"],
         ["id", "hic"],
-        ["latest_matrix":"hic"]
+        ["latestMatrix":"hic"]
     ) | set{samples}
 
-    samples = emptyOnLastStep("hicMatrix", samples)
+    samples = emptyOnLastStep("HicMatrix", samples)
 
     emit:
     samples

@@ -1,7 +1,7 @@
 include {QCReads} from './qcHicReads.nf'
 include {transpack; emptyOnLastStep} from './extraops.nf'
 
-process FragtagProc {
+process HichFragtag {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
                saveAs: {params.general.publish.fragtag ? it : null},
                mode: params.general.publish.mode
@@ -30,7 +30,7 @@ def hasFragmentIndexName = {it.get("fragmentIndex").toString().trim().length() >
 
 def fragmentIndexExists = {hasFragmentIndexName(it) && file(it.fragmentIndex).exists()}
 
-workflow Fragtag {
+workflow TagFragments {
     take:
         samples
 
@@ -38,7 +38,7 @@ workflow Fragtag {
     samples | filter{fragmentIndexExists(it)} | set{fragtag}
 
     samples = transpack(
-        FragtagProc,
+        HichFragtag,
         [fragtag, samples],
         ["id", "pairs", "fragmentIndex"],
         ["id", "frag_pairs"],
@@ -46,11 +46,11 @@ workflow Fragtag {
         "id"
     )
 
-    if ("OptionalFragtag" in params.general.get("qc_after")) {
-        samples = QCReads(samples, "OptionalFragtag")
+    if ("TagFragments" in params.general.get("qc_after")) {
+        samples = QCReads(samples, "TagFragments")
     }
 
-    samples = emptyOnLastStep("fragtag", samples)
+    samples = emptyOnLastStep("TagFragments", samples)
 
     emit:
         samples

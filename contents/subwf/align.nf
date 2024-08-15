@@ -22,7 +22,7 @@ process BwaAlign {
     maxForks 1
 
     input:
-    tuple val(id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2), val(aligner), val(threads), val(bwa_flags)
+    tuple val(id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2), val(aligner), val(threads), val(bwaFlags)
 
     output:
     tuple val(id), path("${id}.bam")
@@ -30,7 +30,7 @@ process BwaAlign {
     shell:
     align = ""
     if (aligner in ["bwa-mem2", "bwa"]) {
-        align = "${aligner} mem -t ${threads} ${bwa_flags} ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
+        align = "${aligner} mem -t ${threads} ${bwaFlags} ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
     }
     
     tobam = "samtools view -b -o ${id}.bam"
@@ -55,12 +55,12 @@ workflow Align {
         BwaAlign,
         [to_align, samples],
         ["id", "alignerIndexDir", "alignerIndexPrefix", "fastq1", "fastq2",
-         "aligner", "aligner_threads", "bwa_flags"],
+         "aligner", "aligner_threads", "bwaFlags"],
         ["id", "sambam"],
         ["latest":"sambam"],
         "id")
 
-    samples = emptyOnLastStep("align", samples)
+    samples = emptyOnLastStep("Align", samples)
 
     emit:
     samples
