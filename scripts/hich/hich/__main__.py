@@ -101,8 +101,38 @@ def fragtag(batch_size, fragfile, out_pairs, in_pairs):
 @click.option("--head", type = int, default = None, show_default = True)
 @click.option("--record-code", "--rc", type = str, default = None)
 @click.option("--filename-code", "--fc", "--filename", type = str, default = None)
-def organize(fmt, f1, f2, out_dir, annot_file, annot_has_header, annot_separator, head, record_code, filename_code):
-    _organize(fmt, f1, f2, out_dir, annot_file, annot_has_header, annot_separator, head, record_code, filename_code)
+@click.option("--metadata-code", "--mc", "--metadata", type = str, default = None)
+@click.option("--metadata-filename", "--mf", "--meta-file", type = str, default = None)
+@click.option("--metadata-has-header", "--mh", type = bool, default = True)
+@click.option("--metadata-separator", "--ms", type = str, default = "\t")
+def organize(fmt,
+             f1,
+             f2,
+             out_dir,
+             annot_file,
+             annot_has_header,
+             annot_separator,
+             head,
+             record_code,
+             filename_code,
+             metadata_code,
+             metadata_filename,
+             metadata_has_header,
+             metadata_separator):
+    _organize(fmt,
+              f1,
+              f2,
+              out_dir,
+              annot_file,
+              annot_has_header,
+              annot_separator,
+              head,
+              record_code,
+              filename_code,
+              metadata_code,
+              metadata_filename,
+              metadata_has_header,
+              metadata_separator)
 
 @hich.command
 @click.option("--resolutions", type = IntList, default = 10000)
