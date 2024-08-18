@@ -7,6 +7,7 @@ import hich.coverage as _coverage
 from hich.compartments import write_compartment_scores
 import polars as pl
 from pathlib import Path
+from hich.organize import organize as _organize
 
 @click.group
 def hich():
@@ -88,6 +89,20 @@ def digest(output, startshift, endshift, cutshift, reference, digest):
 @click.argument("in_pairs")
 def fragtag(batch_size, fragfile, out_pairs, in_pairs):
     tag_restriction_fragments(fragfile, in_pairs, out_pairs, batch_size)
+
+@hich.command
+@click.option("--format", "--fmt", "fmt", type = str, required = True)
+@click.option("--f1", "-f", "--file", "--file1", type = str, required = True)
+@click.option("--f2", "--file2", "f2", default = None, type = str)
+@click.option("--out-dir", "--dir", "--output-dir", type = str, default = "")
+@click.option("--annot-file", "--annot", "-a", "--annotations", default = None, type = str)
+@click.option("--annot-has-header", "-h", type = bool, default = False, show_default = True)
+@click.option("--annot-separator", "-s", type = str, default = "\t", show_default = True)
+@click.option("--head", type = int, default = None, show_default = True)
+@click.option("--record-code", "--rc", type = str, default = None)
+@click.option("--filename-code", "--fc", "--filename", type = str, default = None)
+def organize(fmt, f1, f2, out_dir, annot_file, annot_has_header, annot_separator, head, record_code, filename_code):
+    _organize(fmt, f1, f2, out_dir, annot_file, annot_has_header, annot_separator, head, record_code, filename_code)
 
 @hich.command
 @click.option("--resolutions", type = IntList, default = 10000)
