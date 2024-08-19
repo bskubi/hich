@@ -8,6 +8,8 @@ from hich.compartments import write_compartment_scores
 import polars as pl
 from pathlib import Path
 from hich.organize import organize as _organize
+from hich.visuals import view_hicrep
+
 
 @click.group
 def hich():
@@ -149,8 +151,15 @@ def hicrep(resolutions, chroms, exclude, chromFilter, h, d_bp_max, b_downsample,
     result = hicrep_combos(resolutions, chroms, exclude, chromFilter, h, d_bp_max, b_downsample, nproc, output, paths)
     if result is not None:
         click.echo(result)
-    
 
+@hich.group 
+def view(): pass
+
+@view.command(name='hicrep')
+@click.option("--host", default = "127.0.0.1", show_default = True)
+@click.option("--port", default = 8050, show_default = True)
+def hicrep_comparisons(host, port):
+    view_hicrep.run_dashboard(host, port)
 
 if __name__ == "__main__":
     hich()
