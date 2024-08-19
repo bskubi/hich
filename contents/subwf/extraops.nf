@@ -499,7 +499,6 @@ def parameterize(processName, samples, parameterizations, sampleKeys, inputOrder
     def argSets = parameterizations.get(processName)
 
     def resultChannels = channel.empty()
-
     argSets.each {
         argsName, args ->
         
@@ -507,7 +506,7 @@ def parameterize(processName, samples, parameterizations, sampleKeys, inputOrder
             | filter{
                 sample ->
 
-                def hasKeys = sampleKeys.every{sample.get(it)}
+                def hasKeys = sampleKeys.every{sampleKey -> sample.get(sampleKey)}
                 def hasProcess = sample.get(processName)
                 def hasParameterization = argsName in sample.get(processName)
 

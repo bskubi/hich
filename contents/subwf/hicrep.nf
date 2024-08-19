@@ -17,7 +17,7 @@ process HicrepCombos{
            resolutions ? "--resolutions ${resolutions.join(",")}" : "",
            chroms ? "--chroms ${chroms.join(",")}" : "",
            exclude ? "--exclude ${exclude.join(",")}" : "",
-           chromFilter ? "--chromFilter '${chromFilter}'" : "",
+           chromFilter ? "--chrom_filter '${chromFilter}'" : "",
            "--h ${h.join(",")}",
            "--d_bp_max ${dBPMax.join(",")}",
            "--b_downsample ${bDownSample.join(",")}",
@@ -34,6 +34,8 @@ workflow Hicrep {
     samples
 
     main:
+
+    print(params.comparisonSets)
 
     parameterize("hicrep",
                  samples,
