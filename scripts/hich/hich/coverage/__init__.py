@@ -8,18 +8,91 @@ from numpy.random import default_rng
 from hich.coverage.samheader_coverage import SamheaderCoverage
 
 """
-Compute strata on each pairs file
-Join on chrom1 chrom2 stratum
+With stratum sampling, the idea is:
+    - Input:
+        - Some description of the samples to consider
+    - Compute count of reads per strata for each sample:
+        - trans
+        - cis thresholds as [p1, p2), [p2, p3)... [pn ∞)
+            - algorithmically or specified explicitly
+        - Defaults:
+            - Trans is a block
+            - Cis blocks are (2, 5, 10)*10^i
+            - Accept PairSegment as input, output a block id
+    - Determine target read block profiles
+        - A target read block profile has:
+            - A block definition
+            - A fraction of reads per block that sums to 1 over the set of blocks
+            - An ID
+        - Explicitly specify target fractions for each block
+        - Define a partition over a subset of samples (such as a grouping by condition, for non-outlier samples) + a function over the strata within each group
+            - Special settings:
+                - All samples are their own group
+                - Group by techrep, biorep, condition, cell;
+                - Explicit target profile labels for each sample
+        - Defaults: subgroup mean
+    - Associate each sample with a read block profile
+    - Define a target number or fraction of total reads to target for each sample
+        - Fraction (0-1)
+        - Number (integer > 1)
+        - Special settings:
+            - The maximum number of reads achievable such that all samples assigned to a given target profile have an equal number of reads
+    - Use selection sampling to choose reads and write to new files
 
-Strategies:
-    - To given strata fractions
-    - To mean strata fractions, min column total
-    - To min column total, random sample
+1. Format ReadProfile template
+2. Compute original ReadProfiles for each sample (optionally load rather than create and optionally save)
+3. Compute target ReadProfiles
+4. Assign target ReadProfiles
+5. Downsample samples
 
-Create a way to randomly sample a specific number of pairs
-    - Computing the strata gives us the total number to sample for each file
-    - Use interpolation sampling since we know the total number of reads of each
-      stratum in the file
+Objects:
+    - ReadFilter
+    - ReadProfile (block: count or block: fraction dict)
+        - (chrom1, chrom2) trans
+        - chrom + stratum
+        - parse function: PairSegment -> self-increment appropriate block or ignore
+        - convert to proportions
+            - as_proportions()
+        - multiply by fraction
+            - as_counts(0-1.0)
+        - convert to N reads
+            - as_counts(1+, int)
+            - convert N * profile, then iteratively randomly downsample according to proportions of reads until all strata are at or below real count
+        - save/load csv/tsv
+    - Sample
+        - PairsFile
+        - SampleMetadata
+        - ReadProfile (original)
+        - ReadProfile (target)
+    - ReadCountProfile
+        - string: int
+    - ReadFractionProfile
+        - string: float [0-1]
+    - SampleGroup
+        - Sample: group id
+    - ReadBlockSampleGroupFunction (mean)
+    - ReadCountSampleGroupfunction (max_reads)
+    - StratumSampler
+        - (seen, sampled, target, total)
+    - MultiSampler
+        - Block: StratumSampler
+
+Sample
+    - SampleMetadata
+    - ReadCountProfile
+
+SampleAssigner (Sample -> SampleGroup)
+    - For creating read fraction profiles
+    - For downsampling
+
+SampleGroup
+    - Sample
+
+ReadFractionProfile
+    - SampleGroup
+    - SampleGroupFunction
+
+
 """
 
 def drop_unmapped(df):
@@ -84,6 +157,7 @@ def combine_strata(dfs):
 
 @dataclass
 class StratumSampler:
+
     N_records: int
     n_to_sample: int
     t_viewed: int = 0

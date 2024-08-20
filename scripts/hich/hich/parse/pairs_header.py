@@ -1,3 +1,5 @@
+from pathlib import Path
+
 class PairsHeader:
     version_prefix = "## pairs format v"
     def __init__(self):

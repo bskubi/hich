@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from smart_open import smart_open
 from hich.parse.pairs_header import PairsHeader
 from hich.parse.pairs_segment import PairsSegment
+from pathlib import Path
 
 @dataclass
 class PairsFile:
@@ -11,7 +12,7 @@ class PairsFile:
 
     def __init__(self,
         filepath_or_object,
-        mode = None,
+        mode = "rt",
         template = None,
         text = None,
         header = None,
@@ -34,22 +35,11 @@ class PairsFile:
                 self.header = header
                 self.filepath_or_object.write(self.header.to_string())
 
+    def __del__(self):
+        self.close()
+
     def close(self):
         self.filepath_or_object.close()
-
-    def count(self,
-              contig: str = None,
-              start: int = None,
-              stop: int = None,
-              region: str = None,
-              read_callback: str = "nofilter"):
-        reads = 0
-        
-        for read in self:
-            if read_callback == "nofilter":
-                reads += 1
-            elif read_callback == "all":
-                pass
 
     def pair_segment_from_text(self, line):
         stripped = line.strip()
