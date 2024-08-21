@@ -9,8 +9,7 @@ hisham
 results
 bam
 pairs
-prototype
-prototypes
+prototype/data
 .gitignore
 samples.csv
 samples.tsv
