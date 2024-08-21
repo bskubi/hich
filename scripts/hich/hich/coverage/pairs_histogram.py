@@ -10,6 +10,7 @@ from random import choices
 import numpy as np
 from types import MethodType
 from numbers import Number
+import polars as pl
 
 always = lambda func, vec: all([func(elem) for elem in vec])
 
@@ -61,7 +62,7 @@ class PairsHistogram:
         """
         if self.space.ignore(pair): return
         event = self.space.event(pair)
-        self.distribution[event] += 1
+        self.distribution[str(event)] += 1
     
     def events(self): return self.distribution.keys()
 
@@ -164,10 +165,17 @@ class PairsHistogram:
 
         return pairs_distribution
 
-    def __getitem__(self, key: object) -> Number:
+    def read_csv(self, file, **kwargs):
+        d = pl.read_csv(file, **kwargs, has_header = False)
+        self.distribution = defaultdict(lambda:0, d)
+
+    def write_csv(self, file, **kwargs):
+        pl.DataFrame(self.distribution).write_csv(file, **kwargs)
+
+    def __getitem__(self, key: str) -> Number:
         return self.distribution[key]
     
-    def __setitem__(self, key: object, value: Number) -> None:
+    def __setitem__(self, key: str, value: Number) -> None:
         self.distribution[key] = value
     
     def copy(self) -> 'PairsHistogram': return deepcopy(self)
