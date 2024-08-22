@@ -7,29 +7,11 @@ from hich.sample.sampler import Sampler
 import click
 from dataclasses import dataclass, field
 from collections import defaultdict
-
-def test():
-    pairs_file = PairsFile("data/240802_Arima_reseq_dedup.pairs.gz")
-    cis_thresholds = [10, 20, 50, 100]
-    space = TransCisThresholds(ignore_code = "not pair.ur()", cis_thresholds = cis_thresholds)
-
-    dist = PairsHistogram(space)
-
-    for i, pair in enumerate(pairs_file):
-        dist.count_pair(pair)
-        if i >= 1000:
-            break
-
-    print(dist)
-    print(dist.to_probdist())
-    prob = [.7, .15, .05, .1, 0]
-    print(dist.downsample_to_probdist(prob))
-    print(dist.downsample_to_probdist(prob).to_count(50))
-
 from json import dumps, loads
 from pathlib import Path
 import polars as pl
 import re
+
 default_cis_thresholds = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000, 5000000]
 
 def extract_integers(input_string):
@@ -208,6 +190,7 @@ class PairsComparison:
         return "\n".join(s)
 
 
+
 @click.command
 @click.option("--groups", "-g", "--sample_groups", type = str, default = {})
 @click.option("--downsample-to", "--to", type=DownsampleOption(), default = "min_all_groups")
@@ -222,19 +205,59 @@ def coverage(groups, downsample_to, outlier, ignore_contig, ignore_cis, ignore_t
     groups = load_groups(groups, sep, list_sep)
     space = TransCisThresholds("not pair.ur()", [10, 20, 50, 100])
     comparison = PairsComparison(space, groups, downsample_to)
-    comparison.compute_counts()
+    comparison.compute_counts() # Heavy processing - read through all lines in all files, also can probably be a separate function
     comparison.compute_central_distributions()
     comparison.downsample_to_target_probdist()
     comparison.compute_target_count()
     comparison.downsample_to_target_count()
     comparison.create_samplers()
-    comparison.write_samples()
-    print(comparison)
+    comparison.write_samples() # Heavy processing - write all sampled lines to all files
 
+from collections import Counter
 
+from numpy import searchsorted
+from pathlib import Path
+
+def pair_stats(pairs_file: PairsFile, output = None, columns = list[str], cis_strata = None):
+    events = Counter()
+
+    cols = ', '.join(columns)
+    event_code = f"({cols})"
+    event_code_compiled = compile(event_code, '<string>', 'eval')
+
+    nat_partition = lambda cuts: sorted(list(set(cuts + [float('inf')]))) if cuts else None
+    strata = nat_partition(cis_strata)
+
+    if strata:
+        get_stratum = lambda pair: strata[searchsorted(strata, pair.distance)] if pair.is_cis() else ""
+    else:
+        get_stratum = lambda pair: None
+
+    for i, pair in enumerate(pairs_file):
+        stratum = get_stratum(pair)
+        event = eval(event_code_compiled)
+        events[event] += 1
+        if i > 10000:
+            break
+    
+    stats_dict = defaultdict(list)
+    for event, count in events.most_common():
+        for col, row in zip(columns, event):
+            stats_dict[col].append(str(row))
+        stats_dict["count"].append(count)
+    stats_df = pl.DataFrame(stats_dict)
+    if output is None: print(stats_df)
+    else: stats_df.write_csv(output, separator = "\t")
+    
 
 if __name__ == "__main__":
-    coverage()
+    pairs_file = PairsFile("data/240802_Arima_reseq_dedup.pairs.gz")
+    stats(pairs_file, "stats.tsv", columns = ["pair.chr1", "pair.chr2", "stratum"], cis_strata = [10, 20, 50, 100])
+
+"""
+For stats, a space should define a way to map pair objects to a dict object
+That dict gets 
+"""
 
 """
 0. On input

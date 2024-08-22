@@ -1,13 +1,19 @@
 import click
+from collections import defaultdict
+from polars import DataFrame
+import polars as pl
+
 from hich.cli import BooleanList, IntList, PathList, StrList
+from hich.parse.pairs_file import PairsFile
 import hich.digest as _digest
 from hich.fragtag import tag_restriction_fragments
 from hich.hicrep_combos import hicrep_combos
 import hich.coverage as _coverage
 from hich.compartments import write_compartment_scores
-import polars as pl
+
 from pathlib import Path
 from hich.organize import organize as _organize
+from hich.stats import pair_stats
 from hich.visuals import view_hicrep
 
 
@@ -161,6 +167,29 @@ def hicrep(resolutions, chroms, exclude, chromFilter, h, d_bp_max, b_downsample,
     result = hicrep_combos(resolutions, chroms, exclude, chromFilter, h, d_bp_max, b_downsample, nproc, output, paths)
     if result is not None:
         click.echo(result)
+
+@hich.command
+@click.option("--conjuncts", "--event", "--columns", default = "pair.chr1 pair.chr2 stratum pair.pair_type")
+@click.option("--output", type = str, default = "")
+@click.option("--strata", type = str, default = "10 20 50 100 200 500 1000 2000 5000 10000 20000 50000 100000 200000 500000 1000000 2000000 5000000")
+@click.argument("pairs_file", type = str)
+def stats(conjuncts, output, strata, pairs_file):
+    conjuncts = conjuncts.split()
+    cuts = []
+    if all([stratum.isnumeric() for stratum in strata.split()]): strata = [int(stratum) for stratum in strata.split()]
+    else: strata = list(eval(strata))
+    print(strata)
+
+    events = pair_stats(PairsFile(pairs_file), output, conjuncts, strata)
+    
+    stats_dict = defaultdict(list)
+    for event, count in events.most_common():
+        for col, row in zip(conjuncts, event):
+            stats_dict[col].append(str(row))
+        stats_dict["count"].append(count)
+    df = DataFrame(stats_dict)
+    if output: df.write_csv(output, separator = "\t")
+    else: print(df) 
 
 @hich.group 
 def view(): pass
