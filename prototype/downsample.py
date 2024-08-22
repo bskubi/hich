@@ -2,6 +2,8 @@ from hich.parse.pairs_file import PairsFile
 from hich.coverage.pairs_space import PairsSpace
 from hich.coverage.trans_cis_thresholds import TransCisThresholds
 from hich.coverage.pairs_histogram import PairsHistogram
+from hich.sample.sampler import Sampler
+
 import click
 from dataclasses import dataclass, field
 from collections import defaultdict
@@ -78,10 +80,6 @@ def load_groups(groups: str, sep: str = "\t", list_sep: str = ",") -> dict[str, 
             exit()
     return groups
 
-def validate_filenames(filenames: list[str]):
-    for file in filenames:
-        assert Path(file).exists(), f"File {file} not found."
-
 def read_counts_histogram(data: tuple[PairsFile, PairsHistogram, int]) -> PairsHistogram:
     pairs_file, histogram, lines = data
     for i, pair in enumerate(pairs_file):
@@ -90,29 +88,129 @@ def read_counts_histogram(data: tuple[PairsFile, PairsHistogram, int]) -> PairsH
             break
     return histogram
 
-@dataclass
-class PairsFileData:
-    pairs_file: PairsFile
-    histogram: PairsHistogram
 
 @dataclass
-class PairsFileDataGrouping:
-    groups: defaultdict(list) = field(default_factory = lambda: defaultdict(list))
-    ignore: list[str] = field(default_factory = list)
+class PairsData:
+    filename: str
+    outlier: bool
+    pairs_file: PairsFile = None
+    counts: PairsHistogram = None
+    target_dist: PairsHistogram = None
+    target_count: int = None
+    samplers: defaultdict(Sampler) = None
 
-    def to_centers(self):
-        for group, data in self.groups.items():
-            use_histograms = [d.histogram for d in data if d.pairs_file.filepath_or_object not in ignore]
-            central_histogram = PairsHistogram.center(use_histograms)
-            for i, datum in enumerate(data):
-                self.groups[group][i].histogram = central_histogram
+    def compute_counts(self):
+        for i, pair in enumerate(self.pairs_file):
+            self.counts.count_pair(pair)
+            if i > 1000:
+                break
     
-    def 
+    def create_samplers(self):
+        self.samplers = defaultdict(Sampler)
+        for event in self.target_dist.events():
+            orig_count = self.counts.distribution[event]
+            target_count = self.target_dist.distribution[event]
+            self.samplers[event] = Sampler(orig_count, target_count)
+    
+    def write_samples(self, write_file):
+        read_from = PairsFile(self.filename)
+        write_to = PairsFile(write_file, header = read_from.header, mode = "w")
+        for pair in read_from:
+            event = str(self.counts.space.event(pair))
+            if self.samplers[event].sample(): write_to.write(pair)
+            if all([sampler.finished() for sampler in self.samplers.values()]):
+                break
+
+    def __str__(self):
+        s = []
+        s.append(self.filename)
+        s.append(f"\t- outlier: {self.outlier}")
+        s.append(f"\t- counts: " + str(self.counts))
+        s.append(f"\t- target_dist: " + str(self.target_dist))
+        s.append(f"\t- target_count: " + str(self.target_count))
+        return "\n".join(s)
+
+@dataclass
+class PairsComparison:
+    space: PairsSpace
+    groups: defaultdict[list[PairsData]]
+
+    def __init__(self, space: PairsSpace, groups: dict[str: object], target_count: str = None):
+        self.space = space
+        self.groups = defaultdict(list[PairsData])
+        for file, group in groups.items():
+            data = PairsData(file, False, PairsFile(file), PairsHistogram(self.space), target_count = target_count)
+            self.groups[str(group)].append(data)
+
+    def compute_counts(self):
+        for group, data in self.groups.items():
+            for datum in data:
+                datum.compute_counts()
+
+    def compute_central_distributions(self):
+        for group, data in self.groups.items():
+            non_outliers = [datum.counts for datum in data if not datum.outlier]
+            center = PairsHistogram.center(non_outliers)
+            for i, datum in enumerate(data):
+                self.groups[group][i].target_dist = center
+    
+    def downsample_to_target_probdist(self):
+        for group, data in self.groups.items():
+            for datum in data:
+                datum.target_dist = datum.counts.downsample_to_probdist(datum.target_dist)
+    
+    def compute_target_count(self):
+        min_in_groups = {}
+        min_all_groups = 0
+        positive_int = lambda v: isinstance(v, int) and v >= 0
+        zero_to_one = lambda v: isinstance(v, float) and v >= 0 and v <= 1
+        valid_number = lambda v: positive_int(v) or zero_to_one(v)
+
+        for group, data in self.groups.items():
+            min_in_groups[group] = 0
+            for datum in data:
+                count = datum.target_dist.total()
+                min_in_groups[group] = min(count, min_in_groups[group])
+                min_all_groups = min(count, min_all_groups)
+        for group, data in self.groups.items():
+            for datum in data:
+                if datum.target_count == "min_in_groups": datum.target_count = min_in_groups[group]
+                elif datum.target_count == "min_all_groups": datum.target_count = min_all_groups
+                else: assert valid_number(datum.target_count), f"{datum.filename} had invalid target count {datum.target_count}"
+
+    def downsample_to_target_count(self):
+        for group, data in self.groups.items():
+            for datum in data:
+                datum.target_dist = datum.target_dist.to_count(datum.target_count)
+    
+    def create_samplers(self):
+        for group, data in self.groups.items():
+            for datum in data:
+                datum.create_samplers()
+    
+    def write_samples(self):
+        for group, data in self.groups.items():
+            for datum in data:
+                new_file = Path(datum.filename)
+                parent = Path(datum.filename).parent
+                new_filename = "downsample_" + Path(datum.filename).name
+                print(new_filename)
+                new_path = parent / new_filename
+                print(new_path)
+                datum.write_samples(str(new_path))
+
+    def __str__(self):
+        s = []
+        for group, data in self.groups.items():
+            s.append(f"Group {group}")
+            for datum in data:
+                s.append(str(datum))
+        return "\n".join(s)
 
 
 @click.command
 @click.option("--groups", "-g", "--sample_groups", type = str, default = {})
-@click.option("--downsample", type=DownsampleOption(), default = "min_all_groups")
+@click.option("--downsample-to", "--to", type=DownsampleOption(), default = "min_all_groups")
 @click.option("--outlier", multiple = True)
 @click.option("--ignore-contig", "--ic", multiple = True)
 @click.option("--ignore-cis", type = bool, default = False, show_default = True)
@@ -120,23 +218,20 @@ class PairsFileDataGrouping:
 @click.option("--cis-thresholds", "--thresholds", "--cis-strata", "--strata", type = str, default = default_cis_thresholds, show_default = True)
 @click.option("--sep", default = "\t")
 @click.option("--list-sep", default = ",")
-def coverage(groups, downsample, outlier, ignore_contig, ignore_cis, ignore_trans, cis_thresholds, sep, list_sep):
+def coverage(groups, downsample_to, outlier, ignore_contig, ignore_cis, ignore_trans, cis_thresholds, sep, list_sep):
     groups = load_groups(groups, sep, list_sep)
-    if isinstance(groups, str):
-        groups = {groups: 0}
-    cis_thresholds = extract_integers(cis_thresholds)
-    space = TransCisThresholds(ignore_code = "not pair.ur()", cis_thresholds = cis_thresholds)
-    
-    data_grouping = PairsFileDataGrouping()
-    print(groups)
-    for file, group in groups.items():
-        pairs_file = PairsFile(file)
-        histogram = PairsHistogram(space)
-        histogram = read_counts_histogram((pairs_file, histogram, 10000))
-        data_grouping.groups[group] = PairsFileData(pairs_file, histogram)
-    
-    #histogram.write_csv("hist.tsv", separator="\t")
-    #validate_filenames(groups.keys())
+    space = TransCisThresholds("not pair.ur()", [10, 20, 50, 100])
+    comparison = PairsComparison(space, groups, downsample_to)
+    comparison.compute_counts()
+    comparison.compute_central_distributions()
+    comparison.downsample_to_target_probdist()
+    comparison.compute_target_count()
+    comparison.downsample_to_target_count()
+    comparison.create_samplers()
+    comparison.write_samples()
+    print(comparison)
+
+
 
 if __name__ == "__main__":
     coverage()
@@ -167,5 +262,18 @@ in the sample group.
 3. This yields new PairsHistograms for each sample. We then use MultiSampler
 to selection sample the pairs files.
 
-Possibly reading from the PairsHistograms should be parallelized
+Architecture for setting up the run
+
+Filename -> Pairs file + Histogram + Group
+Set of groups ->
+    -> Compute histograms
+    -> Compute central histograms and assign as target histograms for files
+    -> Adjust histogram to target profile
+    -> Adjust histogram to specific size/fraction/sample size
+    -> Downsample based on histogram
+
+1. PairsSpace, {filename: group} -> {filename}
+2. Extract 
+
 """
+

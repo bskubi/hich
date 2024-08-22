@@ -37,7 +37,7 @@ class PairsHistogram:
         
         support = set()
         for hist in histograms: support.update(hist.support())
-        set.difference_update(ignore_events)
+        support.difference_update(ignore_events)
         
         central = PairsHistogram(space = histograms[0].space)
         for event in support:
@@ -46,7 +46,7 @@ class PairsHistogram:
         return central.to_probdist()
 
     def support(self) -> list[object]:
-        return [event for event, outcome in self.distribution if outcome > 0]
+        return [event for event, outcome in self.distribution.items() if outcome > 0]
 
     def count_pair(self, pair: PairsSegment) -> None:
         """Filter pair and increment read bin
@@ -141,7 +141,7 @@ class PairsHistogram:
         # Upper bounds. A_ub is a one-column vector of the probabilities.
         # b_ub is a list of the original counts, serving as the upper bound.
         # Linear programming will ensure that [A_ub]N <= b_ub
-        A_ub = np.array([prob_dist]).T
+        A_ub = np.array([list(prob_dist.outcomes())]).T
         b_ub = list(self.outcomes())
 
         # Set lower bound of 0 on N to force positive counts
@@ -155,7 +155,7 @@ class PairsHistogram:
         downsampled_N = result.x[0]
 
         # Set downsampled counts and round counts to integers
-        count_dist = downsampled_N*np.array(prob_dist)
+        count_dist = downsampled_N*np.array(list(prob_dist.outcomes()))
         rounded_count_dist = np.round(count_dist, 0).astype(int)
         
 
