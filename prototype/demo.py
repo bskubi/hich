@@ -1,5 +1,5 @@
 from hich.stats.discrete_distribution import DiscreteDistribution
-from hich.stats import PairsSampler
+from hich.coverage.pairs_sampler import PairsSampler
 from statistics import mean
 import pypeln as pln
 from pypeln.process import run
@@ -14,16 +14,6 @@ from itertools import chain
 
 def mp(function, *args, **kwargs):
     return pln.process.map(function, *args, workers=os.cpu_count(), **kwargs)
-
-@dataclass
-class StatsCaller:
-    sampler: PairsSampler
-    count: int = float('inf')
-
-    def __call__(self, filename):
-        pairs_file = PairsFile(filename)
-        counter = self.sampler.count(pairs_file, self.count)
-        return {"id": filename, "distribution": DiscreteDistribution(counter)}
 
 @dataclass
 class DownsampleStep:
@@ -106,3 +96,16 @@ def compute_downsample_targets(filename_subgroups: list[list[str]],
 filenames = [f"data/file{i}.pairs.gz" for i in range(1, 5)]
 sample_groups = [[filenames[0], filenames[1]], [filenames[2], filenames[3]]]
 print(compute_downsample_targets(sample_groups, False, .5, ["pair.chr1", "pair.chr2", "pair.pair_type", "stratum"], [100, 200, 500, 1000, 2000, 5000]))
+
+"""
+Architecture:
+
+DiscreteDistribution
+SelectionSampler
+
+PairsRV: pair -> event
+PairsSampler(SelectionSampler): compute statistics over and sample pairs files
+
+DownsampleStep
+DownsamplePipeline: PairsFiles + parameters -> PairsSampler for each file
+"""

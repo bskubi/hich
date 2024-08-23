@@ -7,6 +7,8 @@ from hich.parse.file_splitter import FileSplitter
 
 @dataclass
 class PairsSplitter(FileSplitter):
+    """ Write to 4DN Consortium .pairs-format files, creating handles as needed
+    """
     header: PairsHeader = None
 
     def access(self, filename: str):

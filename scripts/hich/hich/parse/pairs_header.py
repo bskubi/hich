@@ -5,6 +5,7 @@ class PairsHeader:
     def __init__(self):
         self.chromsizes = {}
         self.columns = []
+        self.command = []
 
     def to_dict(self):
         return self.__dict__
@@ -50,7 +51,7 @@ class PairsHeader:
                 contig, size = fields[1:]
                 header.chromsizes[contig] = size
             elif field_type == "#command:":
-                header.commands.append(rest)
+                header.command.append(rest)
             elif field_type == "#columns:":
                 header.columns = fields[1:]
             elif field_type.endswith(":"):

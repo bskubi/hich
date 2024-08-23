@@ -1,20 +1,16 @@
+from hich.cli import BooleanList, IntList, PathList, StrList
+import hich.digest as _digest
+from hich.fragtag import tag_restriction_fragments
+from hich.hicrep_combos import hicrep_combos
+from hich.compartments import write_compartment_scores
+from hich.visuals import view_hicrep
+
 import click
 from collections import defaultdict
 from polars import DataFrame
 import polars as pl
-
-from hich.cli import BooleanList, IntList, PathList, StrList
-from hich.parse.pairs_file import PairsFile
-import hich.digest as _digest
-from hich.fragtag import tag_restriction_fragments
-from hich.hicrep_combos import hicrep_combos
-import hich.coverage as _coverage
-from hich.compartments import write_compartment_scores
-
 from pathlib import Path
-from hich.organize import organize as _organize
-from hich.stats import pair_stats
-from hich.visuals import view_hicrep
+
 
 
 @click.group
@@ -42,15 +38,7 @@ def compartments(chroms, exclude_chroms, keep_chroms_when, n_eigs, reference, ma
 @click.option("--fraction", type = float, default = 1.0)
 @click.argument("filenames", nargs = -1)
 def coverage(strata, fraction, filenames):
-    import warnings
-    warnings.warn("Coverage not fully implemented yet.", UserWarning)
-
-    strata = [0] if not strata else strata
-    stratum_counts = _coverage.strata(filenames[0], strata)
-    stratum_counts = stratum_counts.rename({filenames[0]:"N"})
-    
-    stratum_counts = stratum_counts.with_columns((pl.col("N")*fraction).cast(pl.Int64).alias("n"))
-    _coverage.selection_sample(filenames[0], "output.pairs", strata, stratum_counts, ["chrom1", "chrom2", "stratum"], "N", "n")
+    raise NotImplementedError("Hich coverage is not implemented yet")
 
 @hich.command()
 @click.option("--output", default = None, show_default = True, help = "Output file. Compression autodetected by file extension. If None, prints to stdout.")
@@ -140,17 +128,7 @@ def organize(fmt,
 
 
     """
-    _organize(fmt,
-              f1,
-              f2,
-              out_dir,
-              annot_file,
-              annot_has_header,
-              annot_separator,
-              head,
-              key_code,
-              record_code,
-              output_code)
+    raise NotImplementedError("Hich organize is not implemented yet")
 
 @hich.command
 @click.option("--resolutions", type = IntList, default = 10000)
@@ -174,21 +152,22 @@ def hicrep(resolutions, chroms, exclude, chromFilter, h, d_bp_max, b_downsample,
 @click.option("--strata", type = str, default = "10 20 50 100 200 500 1000 2000 5000 10000 20000 50000 100000 200000 500000 1000000 2000000 5000000")
 @click.argument("pairs_file", type = str)
 def stats(conjuncts, output, strata, pairs_file):
-    conjuncts = conjuncts.split()
-    cuts = []
-    if all([stratum.isnumeric() for stratum in strata.split()]): strata = [int(stratum) for stratum in strata.split()]
-    else: strata = list(eval(strata))
+    raise NotImplementedError("stats is not implemented yet")
+    # conjuncts = conjuncts.split()
+    # cuts = []
+    # if all([stratum.isnumeric() for stratum in strata.split()]): strata = [int(stratum) for stratum in strata.split()]
+    # else: strata = list(eval(strata))
 
-    events = pair_stats(PairsFile(pairs_file), output, conjuncts, strata)
+    # events = pair_stats(PairsFile(pairs_file), output, conjuncts, strata)
     
-    stats_dict = defaultdict(list)
-    for event, count in events.most_common():
-        for col, row in zip(conjuncts, event):
-            stats_dict[col].append(str(row))
-        stats_dict["count"].append(count)
-    df = DataFrame(stats_dict)
-    if output: df.write_csv(output, separator = "\t")
-    else: print(df) 
+    # stats_dict = defaultdict(list)
+    # for event, count in events.most_common():
+    #     for col, row in zip(conjuncts, event):
+    #         stats_dict[col].append(str(row))
+    #     stats_dict["count"].append(count)
+    # df = DataFrame(stats_dict)
+    # if output: df.write_csv(output, separator = "\t")
+    # else: print(df) 
 
 @hich.group 
 def view(): pass
