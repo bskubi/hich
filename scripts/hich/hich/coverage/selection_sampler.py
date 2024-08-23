@@ -4,19 +4,18 @@ from random import random
 
 @dataclass
 class SelectionSampler:
-    total: DiscreteDistribution
-    target: DiscreteDistribution
-    viewed: DiscreteDistribution
-    kept: DiscreteDistribution
+    full: DiscreteDistribution = field(default_factory = DiscreteDistribution)
+    target: DiscreteDistribution = field(default_factory = DiscreteDistribution)
+    viewed: DiscreteDistribution = field(default_factory = DiscreteDistribution)
+    kept: DiscreteDistribution = field(default_factory = DiscreteDistribution)
 
     def count(self, event):
-        self.total[event] += 1
+        self.full[event] += 1
 
     def sample(self, event):
-        u_random = random()
-        unseen = (self.total[event] - self.viewed[event])
-        undersampled = self.target[event] - self.kept[event]
-        keep = unseen * u_random < undersampled
+        to_view = self.full[event] - self.viewed[event]
+        to_sample = self.target[event] - self.kept[event]
+        keep = to_view * random() < to_sample
         self.kept[event] += keep
         self.viewed[event] += 1
         return keep

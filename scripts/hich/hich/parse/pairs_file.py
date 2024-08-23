@@ -56,5 +56,34 @@ class PairsFile:
         line = self.filepath_or_object.readline()
         return self.pair_segment_from_text(line)
 
+    def to_header(self):
+        self.filepath_or_object.seek(0)
+    
+    def to_records(self, record_number=0):
+        self.to_header()
+
+        # First, scan for the first non-comment line
+        while True:
+            position = self.filepath_or_object.tell()  # Get the current file pointer position
+            line = self.filepath_or_object.readline()  # Read a line manually
+
+            if not line:  # If we reach EOF, exit the loop
+                break
+
+            if not line.startswith("#"):
+                self.filepath_or_object.seek(position)  # Seek back to the start of the non-comment line
+                if record_number == 0:
+                    return line
+
+        # If record_number is not 0, continue reading lines
+        while record_number > 0:
+            line = self.filepath_or_object.readline()
+            record_number -= 1
+            if not line:  # Handle the case where EOF is reached
+                return None
+            if record_number == 0:
+                return line
+
+
     def write(self, pairs_segment: PairsSegment):
-        self.filepath_or_object.write(pairs_segment.to_string() + "\n")
+        self.filepath_or_object.write("\n" + pairs_segment.to_string())
