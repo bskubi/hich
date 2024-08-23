@@ -178,7 +178,6 @@ def stats(conjuncts, output, strata, pairs_file):
     cuts = []
     if all([stratum.isnumeric() for stratum in strata.split()]): strata = [int(stratum) for stratum in strata.split()]
     else: strata = list(eval(strata))
-    print(strata)
 
     events = pair_stats(PairsFile(pairs_file), output, conjuncts, strata)
     
