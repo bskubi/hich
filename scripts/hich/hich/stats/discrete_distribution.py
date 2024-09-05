@@ -5,19 +5,32 @@ from numbers import Number
 from scipy.optimize import linprog
 from statistics import mean
 import numpy as np
+import random
+import math
 
 class DiscreteDistribution(Counter):
     @classmethod
     def mean_mass(cls, distributions: list['DiscreteDistribution']) -> 'DiscreteDistribution':
         combined = reduce(lambda a, b: a+b, distributions)
         return combined/combined.total()
+    
+    @classmethod
+    def probabilistic_round(cls, n):
+        lower = math.floor(n)
+        upper = math.ceil(n)
+        prob_up = n - lower
+        if random.random() < prob_up:
+            return upper
+        else:
+            return lower
+            
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def to_count(self, n: int) -> 'DiscreteDistribution':
         total = n if isinstance(n, int) else self.total() * n
-        new_counts = {event: round(prob*total) for event, prob in self.probabilities().items()}
+        new_counts = {event: DiscreteDistribution.probabilistic_round(prob*total) for event, prob in self.probabilities().items()}
         return DiscreteDistribution(new_counts)
 
     def downsample_to_probabilities(self, probdist: 'DiscreteDistribution') -> 'DiscreteDistribution':
@@ -47,7 +60,7 @@ class DiscreteDistribution(Counter):
         assert result.success, "No solution found attempting to match distribution"
 
         # Get value of N - total number of downsampled events
-        N = round(result.x[0])
+        N = DiscreteDistribution.probabilistic_round(result.x[0])
 
         return probdist.to_count(N)
 

@@ -12,7 +12,7 @@ import polars as pl
 from polars import DataFrame
 from hich.pairs import PairsClassifier, PairsFile
 from hich.sample import SelectionSampler
-from hich.stats import DiscreteDistribution, compute_pairs_stats_on_path_list
+from hich.stats import DiscreteDistribution, compute_pairs_stats_on_path_list, aggregate_classifier
 from numbers import Number
 from itertools import combinations
 
@@ -249,10 +249,10 @@ def stats(conjuncts, cis_strata, stats_directory, pairs_paths):
 @hich.command
 @click.option("--to_group_mean", is_flag = True, default = False)
 @click.option("--to_group_min", is_flag = True, default = False)
-@click.option("--to_count", type = Number, default = None)
+@click.option("--to_count", type = str, default = None)
 @click.option("--prefix", type = str, default = None)
 @click.argument("stats_paths", type = str, nargs = -1)
-def stats_aggregate(to_group_mean, to_group_min, to_count, stats_paths):
+def stats_aggregate(to_group_mean, to_group_min, to_count, prefix, stats_paths):
     """Aggregate hich stats files for .pairs
 
     """
@@ -270,6 +270,10 @@ def stats_aggregate(to_group_mean, to_group_min, to_count, stats_paths):
         if prefix is None:
             build_prefix += "to_group_min"
     if to_count:
+        if to_count.isdigit():
+            to_count = int(to_count)
+        else:
+            to_count = float(to_count)
         targets = [d.to_count(to_count) for d in targets]
         if prefix is None:
             build_prefix += f"to_{to_count}"
@@ -277,7 +281,8 @@ def stats_aggregate(to_group_mean, to_group_min, to_count, stats_paths):
         prefix = build_prefix + "_"
     for d, stats_path in zip(targets, stats_paths):
         df = classifier.to_polars(d)
-        path = str(Path(stats_path).parent / prefix / Path(stast_path).name)
+        path = str(Path(stats_path).parent / (prefix + Path(stats_path).name))
+        print(path)
         df.write_csv(path, separator = "\t", include_header = True)
     
 

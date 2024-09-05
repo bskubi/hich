@@ -1,5 +1,6 @@
 from multiprocessing import Pool
 from typing import Tuple
+import polars as pl
 from polars import DataFrame
 
 def compute_pairs_stats_on_path(data):
@@ -25,15 +26,15 @@ def aggregate_classifier(pairs_stats_paths: list[str]) -> Tuple["PairsClassifier
     conjuncts = None
     raw_strata = set()
     for path in pairs_stats_paths:
-        df = DataFrame(pairs_stats_header_tsv_path, separator = "\t", infer_schema_length = None)
+        df = pl.read_csv(path, separator = "\t", infer_schema_length = None)
         dfs.append(df)
-        new_conjuncts = [col for col in df.columns if col != "count"]
+        new_conjuncts = [col for col in df.columns if col and col != "count"]
         conjuncts = conjuncts or new_conjuncts
         assert conjuncts == new_conjuncts, "Conjuncts do not match for all hich stats files."
         if "stratum" in conjuncts:
             strata = set(df["stratum"].unique().to_list())
             raw_strata.update(strata)
-    raw_strata = list(raw_strata)
+    raw_strata = sorted(list(raw_strata))
     cis_strata = []
     for stratum in raw_strata:
         if stratum.isdigit():
@@ -42,7 +43,7 @@ def aggregate_classifier(pairs_stats_paths: list[str]) -> Tuple["PairsClassifier
             try:
                 cis_strata.append(float(stratum))
             except ValueError:
-                cis_strata.append("")
+                pass
     classifier = PairsClassifier(conjuncts, cis_strata)
     distributions = []
     for df in dfs:
