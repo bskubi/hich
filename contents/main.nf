@@ -49,24 +49,33 @@ There are several conceptual questions:
 */
 
 workflow {
-    LoadSampleFile
+    LoadSampleFile              // Setup workflow inputs
         | Setup
         | FastqHead
-        | Align
-        | Parse
+
+        | Align                 // Align .fastq -> .bam
+
+        | Parse                 // .bam -> .pairs and read-level filters
         | IngestPairs
         | TagFragments
+        | Select
+
+        | DownsampleTechreps    // Condition/biorep/techrep coverage control and merge
         | TechrepsToBioreps
         | Deduplicate
+        | DownsampleBioreps
         | BiorepsToConditions
-        | Select
-        | HicMatrix
+        | DownsampleConditions
+        
+        | HicMatrix             // Create contact matrices
         | McoolMatrix
-        | Hicrep
+
+        | Hicrep                // Call features
         | CompartmentScore
         | DifferentialLoops
         | InsulationScore
         | set{samples}
+
     samples = emptyOnLastStep("End", samples)
 }
 

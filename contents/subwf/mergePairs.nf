@@ -23,9 +23,15 @@ process PairtoolsMerge {
     "touch ${id}.pairs.gz"
 }
 
-def mergeHashmaps = {
+// Get a hashmap containing only key:value pairs identical across all HashMaps.
+def getSameValueSubset = {
     hashmaps ->
 
+    // Implementation:
+    // Start with the first HashMap and iterate through each of its keys
+    // For each key:
+    //     Keep only if its value in the first HashMap is the same for every HashMap
+    // Return the subset of the hashmap for the kept keys only
     hashmaps[0].findAll {
         item ->
         
@@ -35,12 +41,24 @@ def mergeHashmaps = {
     }
 }
 
+// Drop the non-shared subset of parameters across all HashMaps
+// Except latest, which are combined to a list.
+// Remove the "techrep" or "biorep" key as appropriate.
+// Then create a composite id.
 def mergeGroupParams = {
     hashmaps ->
-    def merge = mergeHashmaps(hashmaps)
+
+    // Keep key:value pairs that are identical across all hashmaps.
+    // Drop the rest of the key:value pairs.
+    def merge = getSameValueSubset(hashmaps)
+
+    // Create a list of the "latest" pairs for every hashmap
     merge.latest = []
     hashmaps.each {map -> merge.latest.add(map.get("latest"))}
     merge.latest = merge.latest.clone().sort()
+
+    // Edit the indicators for being a techrep/biorep as necessary and
+    // create a composite id based on the merged sampleType
     if (isTechrep(hashmaps[0])) {
         merge.remove("techrep")
         merge.id = "${merge.condition}_${merge.biorep}"
@@ -73,6 +91,11 @@ workflow Merge {
             error "Invalid merge sampleType '${sampleType}'"
     }
 
+    // Filter for the samples to merge
+    // Group them according to their similars (i.e. same condition/biorep)
+    // Then drop the non-shared keys, put the "latest" values into a list,
+    // drop the "techrep" or "biorep" keys as appropriate, and create a composite ID
+    // Finally, apply the Setup parameters based on the composite ID
     samples
         | filter{
             switch(sampleType) {
@@ -92,6 +115,9 @@ workflow Merge {
         | Setup
         | set{to_merge}
 
+    // The "latest" key now contains a list of the pairs to merge
+    // Store the result in biorep_merge_pairs or condition_merge_pairs
+    // as well as in "latest"
     to_merge = transpack(
         PairtoolsMerge,
         [to_merge],
@@ -100,6 +126,7 @@ workflow Merge {
         ["latest":result]
     )
     
+    // Concatenate the merged samples to the rest of the samples
     to_merge
         | concat(samples)
         | set {samples}
