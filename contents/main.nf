@@ -60,12 +60,12 @@ workflow {
         | TagFragments
         | Select
 
-        | DownsampleTechreps    // Condition/biorep/techrep coverage control and merge
+        //| DownsampleTechreps    // Condition/biorep/techrep coverage control and merge
         | TechrepsToBioreps
         | Deduplicate
-        | DownsampleBioreps
+        //| DownsampleBioreps
         | BiorepsToConditions
-        | DownsampleConditions
+        //| DownsampleConditions
         
         | HicMatrix             // Create contact matrices
         | McoolMatrix

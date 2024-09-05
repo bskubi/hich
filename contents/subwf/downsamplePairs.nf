@@ -26,30 +26,56 @@ process HichStats {
     "hich stats ${hich_stats_params} ${pairs} ${id}.stats.tsv"
 }
 
+process HichStatsAggregateSubgroups {
+    input:
+    tuple val(subgroup), val(ids), path(stats), val(statsAggregateParams), val(stats_outputs)
+
+    output:
+    tuple val(subgroup), val(ids), path(stats_outputs)
+
+    shell:
+    def toAggregate = (pairs.getClass() == nextflow.processor.TaskPath) ? samples : samples.join(" ")
+    "hich stats-aggregate ${statsAggregateParams} ${toAggregate}"
+}
+
+process HichStatsAggregateAll {
+    input:
+    tuple val(ids), path(stats), val(statsAggregateParams), val(stats_outputs)
+
+    output:
+    tuple val(ids), path(stats_outputs)
+
+    shell:
+    def toAggregate = (pairs.getClass() == nextflow.processor.TaskPath) ? samples : samples.join(" ")
+    "hich stats-aggregate ${statsAggregateParams} ${toAggregate}"
+}
+
+
 workflow Downsample {
     take:
     samples
     sampleType
 
     main:
+    // Note: we need a way of skipping downsampling where it's not desired.
     // Get the sample traits to group by ("groups") and the sample trait name
     // to save the resulting pairs file as ("downsample_techreps_pairs")
     switch(sampleType) {
         case "DownsampleTechreps":
             groups = ["condition", "biorep"]
-            pairs = "downsample_techreps_pairs"
+            downsampled_pairs = "downsample_techreps_pairs"
             orig_stats = "techreps_stats"
             target_stats = "downsample_techreps_target"
             break
         case "DownsampleBioreps":
             groups = ["condition"]
-            pairs = "downsample_bioreps_pairs"
+            downsampled_pairs = "downsample_bioreps_pairs"
             orig_stats = "bioreps_stats"
             target_stats = "downsample_bioreps_target"
             break
         case "DownsampleConditions":
             groups = []
-            pairs = "downsample_conditions_pairs"
+            downsampled_pairs = "downsample_conditions_pairs"
             orig_stats = "conditions_stats"
             target_stats = "downsample_techreps_target"
             break
@@ -78,14 +104,14 @@ workflow Downsample {
         | set{to_downsample}
 
     // Second, call stats on to_downsample with transpack
-    to_downsample = transpack(
-        HichStats,
-        [to_downsample],
-        ["id", "latest", "hichStatsParams"],
-        ["id", orig_stats],
-        [],
-        "id"
-    )
+    // to_downsample = transpack(
+    //     HichStats,
+    //     [to_downsample],
+    //     ["id", "latest", "hichStatsParams"],
+    //     ["id", orig_stats],
+    //     [],
+    //     "id"
+    // )
 
     // Then put the traits ("condition", "stats", "none") as the first item in a tuple with the items themselves as the second
     // Then do a groupTuple on the first item to group the filtered samples with their similars
@@ -93,10 +119,40 @@ workflow Downsample {
     to_downsample
         | map{tuple(it.subMap(*groups), it)}
         | groupTuple
-    // Filter for appropriate sampleType
-    // Call stats and store as original distribution
+    
+    
     // Call stats-aggregate and store as target distribution
+    // This is where I'm still a bit confused about implementation.
+    // At this point, we've filtered for the appropriate condition and split to subgroups.
+    // However, as currently written, stats-aggregate only offers the options:
+    // --to_group_mean
+    // --to_group_min
+    // --to_count
+    // If we pass the individual groups to the process that gives us the ability to do subgroup
+    // filtering and obtain output stats files, but it doesn't let us do additional processing
+    // on the entire group. So I think what we'd need to do here is something like:
+    // call stats-aggregate once per subgroup using a given prefix
+    // construct the step 1 output stats file names based on the prefix
+    // then call stats-aggregate again on the entire group using the step 1
+    // construct the step 2 output stats file names based ont the prefix
+    // then return the step 2 output stats file names as the targets
+    //
+    // The problem here is that to stage the files appropriately we have to pass them in as paths
+    // but we can't do that with a list of lists.
+    // We could do that by nesting the ids and passing in all the paths
+    // then we'd construct the pipeline in the process
+    // Potentially we could do the whole thing in a single process.
+
+
     // Call downsample and store as latest + "downsampled"
+    // samples = transpack(
+    //     HichStats,
+    //     [to_downsample, samples],
+    //     ["id", "latest", orig_stats, target_stats],
+    //     ["id", downsampled_pairs],
+    //     ["latest":downsampled_pairs],
+    //     "id"
+    // )
 
     emit:
     samples
