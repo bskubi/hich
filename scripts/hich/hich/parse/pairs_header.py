@@ -2,10 +2,11 @@ from pathlib import Path
 
 class PairsHeader:
     version_prefix = "## pairs format v"
-    def __init__(self):
-        self.chromsizes = {}
-        self.columns = []
-        self.command = []
+
+    def __init__(self, chromsizes = {}, columns = [], command = []):
+        self.chromsizes = chromsizes
+        self.columns = columns
+        self.command = command
 
     def to_dict(self):
         return self.__dict__
@@ -63,3 +64,9 @@ class PairsHeader:
                 else:
                     header.__dict__[field_name].append(rest)
         return header
+    
+    def __repr__(self):
+        return repr(str(self))
+
+    def __str__(self):
+        return self.to_string()

@@ -1,302 +1,289 @@
-from hich.parse.pairs_file import PairsFile
-from hich.coverage.pairs_space import PairsSpace
-from hich.coverage.trans_cis_thresholds import TransCisThresholds
-from hich.coverage.pairs_histogram import PairsHistogram
-from hich.sample.sampler import Sampler
-
-import click
-from dataclasses import dataclass, field
 from collections import defaultdict
-from json import dumps, loads
+from dataclasses import dataclass, field
+from hich.coverage.pairs_sampler import PairsSampler
+from hich.parse.pairs_file import PairsFile
+from hich.stats.discrete_distribution import DiscreteDistribution
+from hich.stats.pairs_category import PairsCategorizer
+from itertools import chain, filterfalse
 from pathlib import Path
+from pypeln.process import run
+from statistics import mean
+from typing import Callable, Generator, Tuple
+import os
 import polars as pl
-import re
+import pypeln.process as pr
+import pypeln.thread as pt
 
-default_cis_thresholds = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000, 5000000]
+@dataclass
+class Collector:
+    """Collect required items based on identity and yield collection when ready."""
+    collect: list
+    identify: Callable
+    collection: dict = field(default_factory = dict)
 
-def extract_integers(input_string):
-    # Use regex to find all sequences of digits
-    return [int(num) for num in re.findall(r'\d+', input_string)]
+    def __call__(self, item: object) -> Generator:
+        """Collect the required items based on their identity and yield the collection when ready
 
-class DownsampleOption(click.ParamType):
-    name = "downsample_option"
+        Args:
+            item (object): An item that may be collected based on its identity
 
-    def convert(self, value, param, ctx):
-        # Check for allowed strings first
-        if value in ["min_in_group", "min_all_groups"]:
-            return value
-
-        # Check for a number between 0 and 1 (inclusive)
-        if re.fullmatch(r'0(\.\d+)?|1(\.0+)?', value):
-            return float(value)
+        Yields:
+            Generator: Yields a list of items when the last one is collected, or returns None otherwise.
         
-        # Check for an integer 1 or greater
-        if re.fullmatch(r'[1-9]\d*', value):
-            return int(value)
+        """
 
-        msg = "\n".join([
-            f"{value} is not a valid option for --downsample. Must be chosen from:",
-            "\t- [0.0-1.0]: Exact fraction of read count",
-            "\t- 1+, integer: Exact number of final reads",
-            "\t- min_in_group: Downsample to size of smallest sample in the read group",
-            "\t- min_all_groups: Downsample to size of smallest sample across all read groups"
-        ])
-        self.fail(msg, param, ctx)
+        # Use the identify function to get the identity of the item. If it should
+        # be collected, then add it to the collection. If adding it completes
+        # the collection, yield the collection. Otherwise return None.
+        identity = self.identify(item)
+        if identity in self.collect:
+            self.collection[identity] = item
+            if self.ready():
+                yield self.items()
 
-def load_groups(groups: str, sep: str = "\t", list_sep: str = ",") -> dict[str, str]:
-    # This should first consider the groups as a list of pairs
-    # if not, then a filename for a csv
-    # if not, a JSON string
-    if Path(groups).exists():
-        pass
-        #groups = pl.read_csv(groups, separator = sep, has_header = False).to_dict()
-    else:
+    def ready(self) -> bool:
+        """Whether or not all items to be collected have been found"""
+        return all([identity_to_collect in self.collected_identities() for identity_to_collect in self.collect])
+    
+    def collected_identities(self) -> list[object]:
+        """Returns a list of the identities collected so far"""
+        return list(self.collection.keys())
+
+    def items(self):
+        """Returns a list of the items collected so far"""
+        return list(self.collection.values())
+
+@dataclass
+class Grouper:
+    """Accumulate subgroups from a string of objects and emit subgroups when ready
+    
+    fields:
+        groups (list[tuple]): A list of subgroup-defining tuples containing identifiers
+                              for each subgroup item.
+        identify (Callable): A function mapping an item to its identifier
+        collection (dict):
+            Key: a tuple of subgroup identifiers
+            Value: A list of collected items in the order they were collected
+    """
+    groups: list[tuple]
+    identify: Callable
+    collection: dict = field(default_factory = dict)
+
+    def __call__(self, item: object) -> Generator:
+        """Accumulate subgroups and emit when ready.
+
+        Subgroups are deemed ready to yield when at an instance of each
+        subgroup item identifier has been collected. If the same ID is seen
+        twice, all subgroups it belongs to will contain the most recent item
+        associated with that ID.
+
+        Args:
+            item (object): An item whose identity can be extracted from the
+                           assigned identify method. Will be stored with any
+                           groups containing its ID.
+
+        Yields:
+            Generator: Yields a list of subgroup items when all items collected,
+                        and returns None.
+        """
+        # Extract ID from item
+        ID = self.identify(item)
+
+        # Update the collection with the new ID and item
+        groups_needing_ID = filter(lambda group: ID in group, self.groups)
+
+        unready_groups_needing_ID = filterfalse(lambda group: self.ready(group),
+                                                groups_needing_ID)
+
+        map(self.add_item_to_group, unready_groups_needing_ID)
+
+        # Yield any newly ready groups
+        newly_ready_groups = filter(lambda group: self.ready(group),
+                                    unready_groups_needing_ID)
+
+        for group in newly_ready_groups:
+            yield self.group_items(group)
+    
+    def add_item_to_group(self, group, ID, item):
+        print(group, ID, item)
+        self.collection.setdefault(group, dict())
+        self.collection[group][ID] = item
+
+    def group_items(self, group):
+        return [item for item in self.collection[group].values()]
+        
+
+    def ready(self, subgroup_IDs: Tuple) -> bool:
+        """Returns whether all members of a specific subgroup have been found.
+
+        Args:
+            group (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        unique_collected_IDs = set(self.collection[subgroup_IDs].keys())
+        unique_subgroup_IDs = set(subgroup_IDs)
+        return unique_collected_IDs == unique_subgroup_IDs
+
+
+class View:
+    def __call__(self, item):
+        print(item)
+        yield item
+
+@dataclass
+class Closure:
+    closure: Callable
+
+    def __call__(self, item):
+        yield self.closure(item)
+
+@dataclass
+class ToCount:
+    count: int
+
+    def __call__(self, item):
+        yield item.to_count(self.count)
+
+@dataclass
+class Flatten:
+    def __call__(self, items):
+        for item in items:
+            yield item
+
+@dataclass
+class DownsamplePairsFile:
+    input_path: str
+    sampler: PairsSampler
+    ID: int
+    read_stats: str = ""
+    write_stats: str = ""
+    output_path: str = ""
+    outlier: bool = False
+
+    def __post_init__(self):
+        if self.output_path == "":
+            path = Path(self.input_path)
+            parent = path.parent
+            name = "downsampled_" + path.name
+            self.output_path = str(parent / name) 
+
+    def __str__(self):
+        return f"ID: {self.ID}\n\tOutput: {self.output_path}\n\t{self.sampler.full}\n\t{self.sampler.target}\n"
+
+@dataclass
+class ComputePairsStats:
+    max_records: int = float('inf')
+
+    def __call__(self, item: DownsamplePairsFile):
+        
+        if Path(item.read_stats).expanduser().exists():
+            read_stats = str(Path(item.read_stats).expanduser())
+            df = pl.read_csv(read_stats, separator = "\t", has_header = True)
+            item.sampler.full = item.sampler.rv.from_polars(df)
+        else:
+            pairs_file = PairsFile(item.input_path)
+            item.sampler.count_events(pairs_file, self.max_records)
+            if item.write_stats:
+                df = item.sampler.rv.to_polars(item.sampler.full)
+                df.write_csv(item.write_stats, separator = "\t", include_header = True)
+        item.sampler.target = item.sampler.full.copy()
+        yield item
+
+class ToMeanMass:
+    def __call__(self, items: list[DownsamplePairsFile]):
+        targets = [item.sampler.target for item in items if not item.outlier]
+        mean_mass = DiscreteDistribution.mean_mass(targets)
+        for i in range(len(items)):
+            items[i].sampler.target = items[i].sampler.target.downsample_to_probabilities(mean_mass)
+        yield items
+
+class ToMinGroupCount:
+    def __call__(self, items: list[DownsamplePairsFile]):
+        target_distributions = [item.sampler["target"] for item in items]
+        min_count = min(target_distributions)
+        for i, item in enumerate(items):
+            items[i].sampler["target"] = items[i].sampler["target"].to_count(min_count)
+        yield items
+
+@dataclass
+class WritePairsSample:
+    max_records: int = float('inf')
+
+    def __call__(self, item):
+        pairs_file = PairsFile(item.input_path)
+        item.sampler.write_sample(pairs_file, item.output_path, self.max_records)
+        yield item
+
+@dataclass
+class ToCount:
+    count: int
+
+    def __call__(self, item: DownsamplePairsFile):
+        item.sampler.target = item.sampler.target.to_count(self.count)
+        yield item
+
+def run_downsample_pipeline(files: list[DownsamplePairsFile],
+               groups: list[tuple],
+               mean_mass: bool = False,
+               count: str = None,
+               n_records: int = float('inf')):
+    count = str(count)
+
+    get_id = lambda item: item.ID
+    compute_pairs_stats = ComputePairsStats(n_records)
+    
+    flatten = Flatten()
+    
+    to_group_min = ToMinGroupCount()
+    view = View()
+
+    write_sample = WritePairsSample(n_records)
+
+    pipeline = (files | pr.flat_map(view) | pr.flat_map(compute_pairs_stats))
+
+    if groups:
+        to_sample_groups = Grouper(groups, lambda item: item.ID)
+        pipeline = pipeline | pr.flat_map(to_sample_groups)
+    
+    if mean_mass:
+        to_mean_mass = ToMeanMass()
+        pipeline = pipeline | pr.flat_map(to_mean_mass)
+    
+    if count == "group_min":
+        pipeline = pipeline | pr.flat_map(to_group_min)
+
+    pipeline = pipeline | pr.flat_map(flatten)
+    
+    if count == "min":
+        pipeline = pipeline | pr.flat_map(to_group_min)
+    elif count.isnumeric():
+        to_count = ToCount(int(count))
+        pipeline = pipeline | pr.flat_map(to_count)
+    elif count:
         try:
-            groups = loads(groups)
-        except:
-            start = f"--groups is '{groups}', but must be either of:"
-            csv = f"{repr(sep)}-delimited headerless two-column file with files in column 1 and groups in column 2"
-            json = "JSON dict with filenames as keys and group ids as values."
-            msg = start + f"\n\t- {csv}" + f"\n\t- {json}"
-            print(msg)
-            exit()
-    return groups
-
-def read_counts_histogram(data: tuple[PairsFile, PairsHistogram, int]) -> PairsHistogram:
-    pairs_file, histogram, lines = data
-    for i, pair in enumerate(pairs_file):
-        histogram.count_pair(pair)
-        if lines is not None and i >= lines:
-            break
-    return histogram
-
-
-@dataclass
-class PairsData:
-    filename: str
-    outlier: bool
-    pairs_file: PairsFile = None
-    counts: PairsHistogram = None
-    target_dist: PairsHistogram = None
-    target_count: int = None
-    samplers: defaultdict(Sampler) = None
-
-    def compute_counts(self):
-        for i, pair in enumerate(self.pairs_file):
-            self.counts.count_pair(pair)
-            if i > 1000:
-                break
+            pipeline = pipeline | pr.flat_map(float(to_count))
+        except ValueError:
+            pass
     
-    def create_samplers(self):
-        self.samplers = defaultdict(Sampler)
-        for event in self.target_dist.events():
-            orig_count = self.counts.distribution[event]
-            target_count = self.target_dist.distribution[event]
-            self.samplers[event] = Sampler(orig_count, target_count)
-    
-    def write_samples(self, write_file):
-        read_from = PairsFile(self.filename)
-        write_to = PairsFile(write_file, header = read_from.header, mode = "w")
-        for pair in read_from:
-            event = str(self.counts.space.event(pair))
-            if self.samplers[event].sample(): write_to.write(pair)
-            if all([sampler.finished() for sampler in self.samplers.values()]):
-                break
+    pipeline = pipeline | pr.flat_map(write_sample) | pr.flat_map(view)
 
-    def __str__(self):
-        s = []
-        s.append(self.filename)
-        s.append(f"\t- outlier: {self.outlier}")
-        s.append(f"\t- counts: " + str(self.counts))
-        s.append(f"\t- target_dist: " + str(self.target_dist))
-        s.append(f"\t- target_count: " + str(self.target_count))
-        return "\n".join(s)
+    run(pipeline)
 
-@dataclass
-class PairsComparison:
-    space: PairsSpace
-    groups: defaultdict[list[PairsData]]
+grouper = Grouper([(1, 2), (3, 4)], lambda item: item["ID"])
+next(grouper({"ID":1, "val": "one"}))
 
-    def __init__(self, space: PairsSpace, groups: dict[str: object], target_count: str = None):
-        self.space = space
-        self.groups = defaultdict(list[PairsData])
-        for file, group in groups.items():
-            data = PairsData(file, False, PairsFile(file), PairsHistogram(self.space), target_count = target_count)
-            self.groups[str(group)].append(data)
+#
 
-    def compute_counts(self):
-        for group, data in self.groups.items():
-            for datum in data:
-                datum.compute_counts()
+# wd = "~/Documents/hich/prototype/data/"
+# rv = PairsRV(["record.chr1", "record.chr2", "record.pair_type", "stratum"], [10, 20, 50, 100, 200, 500, 1000, 2000, 5000])
+# file1 = DownsamplePairsFile(wd + "file1.pairs.gz", PairsSampler(rv = rv), ID = 1, read_stats = wd + "file1.stats", write_stats = wd + "file1.stats")
+# file2 = DownsamplePairsFile(wd + "file2.pairs.gz", PairsSampler(rv = rv), ID = 2, read_stats = wd + "file2.stats", write_stats = wd + "file2.stats")
+# file3 = DownsamplePairsFile(wd + "file3.pairs.gz", PairsSampler(rv = rv), ID = 3, read_stats = wd + "file3.stats", write_stats = wd + "file3.stats")
+# file4 = DownsamplePairsFile(wd + "file4.pairs.gz", PairsSampler(rv = rv), ID = 4, read_stats = wd + "file4.stats", write_stats = wd + "file4.stats")
+# files = [file1, file2, file3, file4]
+# groups = [(1, 2), (3, 4)]
+# run_downsample_pipeline(files, groups, True, 1000, 1000000)
 
-    def compute_central_distributions(self):
-        for group, data in self.groups.items():
-            non_outliers = [datum.counts for datum in data if not datum.outlier]
-            center = PairsHistogram.center(non_outliers)
-            for i, datum in enumerate(data):
-                self.groups[group][i].target_dist = center
-    
-    def downsample_to_target_probdist(self):
-        for group, data in self.groups.items():
-            for datum in data:
-                datum.target_dist = datum.counts.downsample_to_probdist(datum.target_dist)
-    
-    def compute_target_count(self):
-        min_in_groups = {}
-        min_all_groups = 0
-        positive_int = lambda v: isinstance(v, int) and v >= 0
-        zero_to_one = lambda v: isinstance(v, float) and v >= 0 and v <= 1
-        valid_number = lambda v: positive_int(v) or zero_to_one(v)
-
-        for group, data in self.groups.items():
-            min_in_groups[group] = 0
-            for datum in data:
-                count = datum.target_dist.total()
-                min_in_groups[group] = min(count, min_in_groups[group])
-                min_all_groups = min(count, min_all_groups)
-        for group, data in self.groups.items():
-            for datum in data:
-                if datum.target_count == "min_in_groups": datum.target_count = min_in_groups[group]
-                elif datum.target_count == "min_all_groups": datum.target_count = min_all_groups
-                else: assert valid_number(datum.target_count), f"{datum.filename} had invalid target count {datum.target_count}"
-
-    def downsample_to_target_count(self):
-        for group, data in self.groups.items():
-            for datum in data:
-                datum.target_dist = datum.target_dist.to_count(datum.target_count)
-    
-    def create_samplers(self):
-        for group, data in self.groups.items():
-            for datum in data:
-                datum.create_samplers()
-    
-    def write_samples(self):
-        for group, data in self.groups.items():
-            for datum in data:
-                new_file = Path(datum.filename)
-                parent = Path(datum.filename).parent
-                new_filename = "downsample_" + Path(datum.filename).name
-                print(new_filename)
-                new_path = parent / new_filename
-                print(new_path)
-                datum.write_samples(str(new_path))
-
-    def __str__(self):
-        s = []
-        for group, data in self.groups.items():
-            s.append(f"Group {group}")
-            for datum in data:
-                s.append(str(datum))
-        return "\n".join(s)
-
-
-
-@click.command
-@click.option("--groups", "-g", "--sample_groups", type = str, default = {})
-@click.option("--downsample-to", "--to", type=DownsampleOption(), default = "min_all_groups")
-@click.option("--outlier", multiple = True)
-@click.option("--ignore-contig", "--ic", multiple = True)
-@click.option("--ignore-cis", type = bool, default = False, show_default = True)
-@click.option("--ignore-trans", type = bool, default = False, show_default = True)
-@click.option("--cis-thresholds", "--thresholds", "--cis-strata", "--strata", type = str, default = default_cis_thresholds, show_default = True)
-@click.option("--sep", default = "\t")
-@click.option("--list-sep", default = ",")
-def coverage(groups, downsample_to, outlier, ignore_contig, ignore_cis, ignore_trans, cis_thresholds, sep, list_sep):
-    groups = load_groups(groups, sep, list_sep)
-    space = TransCisThresholds("not pair.ur()", [10, 20, 50, 100])
-    comparison = PairsComparison(space, groups, downsample_to)
-    comparison.compute_counts() # Heavy processing - read through all lines in all files, also can probably be a separate function
-    comparison.compute_central_distributions()
-    comparison.downsample_to_target_probdist()
-    comparison.compute_target_count()
-    comparison.downsample_to_target_count()
-    comparison.create_samplers()
-    comparison.write_samples() # Heavy processing - write all sampled lines to all files
-
-from collections import Counter
-
-from numpy import searchsorted
-from pathlib import Path
-
-def pair_stats(pairs_file: PairsFile, output = None, columns = list[str], cis_strata = None):
-    events = Counter()
-
-    cols = ', '.join(columns)
-    event_code = f"({cols})"
-    event_code_compiled = compile(event_code, '<string>', 'eval')
-
-    nat_partition = lambda cuts: sorted(list(set(cuts + [float('inf')]))) if cuts else None
-    strata = nat_partition(cis_strata)
-
-    if strata:
-        get_stratum = lambda pair: strata[searchsorted(strata, pair.distance)] if pair.is_cis() else ""
-    else:
-        get_stratum = lambda pair: None
-
-    for i, pair in enumerate(pairs_file):
-        stratum = get_stratum(pair)
-        event = eval(event_code_compiled)
-        events[event] += 1
-        if i > 10000:
-            break
-    
-    stats_dict = defaultdict(list)
-    for event, count in events.most_common():
-        for col, row in zip(columns, event):
-            stats_dict[col].append(str(row))
-        stats_dict["count"].append(count)
-    stats_df = pl.DataFrame(stats_dict)
-    if output is None: print(stats_df)
-    else: stats_df.write_csv(output, separator = "\t")
-    
-
-if __name__ == "__main__":
-    pairs_file = PairsFile("data/240802_Arima_reseq_dedup.pairs.gz")
-    stats(pairs_file, "stats.tsv", columns = ["pair.chr1", "pair.chr2", "stratum"], cis_strata = [10, 20, 50, 100])
-
-"""
-For stats, a space should define a way to map pair objects to a dict object
-That dict gets 
-"""
-
-"""
-0. On input
-    Associate samples with downsampling groups
-        Default: all in their own target profile group
-
-    Specify a minimum number of reads per contig.
-        - Above: follow normal methods
-        - Below: either retain all or drop all
-
-1. To form target probdist PairHistograms, convert count PairHistograms to
-probabilities and average them, leaving profiles unchanged if they are alone
-in the sample group.
-    - Can also provide an explicit target for each sample group
-    - Specify some sample files and/or contigs to ignore
-
-2. The user can specify:
-    2a) (optional) Downsample to target probdist for sample group
-    2b) (optional) Downsample to any of:
-        - Specific size
-        - Specific fraction
-        - Minimum sample size within sample group
-        - Minimum sample size across sample groups
-
-3. This yields new PairsHistograms for each sample. We then use MultiSampler
-to selection sample the pairs files.
-
-Architecture for setting up the run
-
-Filename -> Pairs file + Histogram + Group
-Set of groups ->
-    -> Compute histograms
-    -> Compute central histograms and assign as target histograms for files
-    -> Adjust histogram to target profile
-    -> Adjust histogram to specific size/fraction/sample size
-    -> Downsample based on histogram
-
-1. PairsSpace, {filename: group} -> {filename}
-2. Extract 
-
-"""
 

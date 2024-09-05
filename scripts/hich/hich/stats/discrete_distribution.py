@@ -1,11 +1,10 @@
 from collections import Counter
-import numpy as np
-from numpy.typing import NDArray
 from copy import deepcopy
-from statistics import mean
-from numbers import Number
 from functools import reduce
+from numbers import Number
 from scipy.optimize import linprog
+from statistics import mean
+import numpy as np
 
 class DiscreteDistribution(Counter):
     @classmethod
@@ -50,21 +49,22 @@ class DiscreteDistribution(Counter):
         # Get value of N - total number of downsampled events
         N = round(result.x[0])
 
-        return self.to_count(N)
+        return probdist.to_count(N)
 
-    def probabilities(self) -> NDArray[np.float_]:
-        probs = self.copy()
-        total = probs.total()
-        for event in probs: probs[event] /= total
-        return probs
+    def probabilities(self) -> "DiscreteDistribution":
+        return self.copy() / self.total()
 
-    def __lt__(self, other: 'DiscreteDistribution') -> bool: return self.total() < other.total()
+    def __lt__(self, other: 'DiscreteDistribution') -> bool:
+        return self.total() < other.total()
 
-    def __le__(self, other: 'DiscreteDistribution') -> bool: return self.total() <= other.total()
+    def __le__(self, other: 'DiscreteDistribution') -> bool:
+        return self.total() <= other.total()
 
-    def __gt__(self,other: 'DiscreteDistribution') -> bool: return self.total() > other.total()
+    def __gt__(self,other: 'DiscreteDistribution') -> bool:
+        return self.total() > other.total()
 
-    def __ge__(self, other: 'DiscreteDistribution') -> bool: return self.total() >= other.total()
+    def __ge__(self, other: 'DiscreteDistribution') -> bool:
+        return self.total() >= other.total()
 
     def __add__(self, other: 'DiscreteDistribution') -> 'DiscreteDistribution':
         support = set(self.events() + other.events())
@@ -73,7 +73,7 @@ class DiscreteDistribution(Counter):
     
     def __truediv__(self, denom: Number) -> 'DiscreteDistribution':
         result = self.copy()
-        for event in self:
+        for event in self.events():
             result[event] /= denom
         return result
 
@@ -83,4 +83,5 @@ class DiscreteDistribution(Counter):
         if not events: return list(self.values())
         else: return [self[event] for event in events]
 
-    def events(self) -> list[object]: return list(self.keys())
+    def events(self) -> list[object]:
+        return list(self.keys())

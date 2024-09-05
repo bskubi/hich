@@ -17,3 +17,4 @@ scripts/hich/Mock*
 scripts/hich/GRCh38*
 scripts/hich/mock*
 scripts/hich/*.bw
+.hypothesis

@@ -1,22 +1,30 @@
+import time
 class PairsSegment:
-    reserved = {"readID": str, "chr1": str, "pos1": int, "chr2": str, "pos2": int, "strand1": str, "strand2": str}
+    reserved = {"readID": str, "chr1": str, "pos1": int,
+                "chr2": str, "pos2": int, "strand1": str, "strand2": str}
     required = {"chr1": str, "pos1": int, "chr2": str, "pos2": int}
     alt = {"chrom1":"chr1", "chrom2":"chr2"}
-    computed = {"distance": lambda pair: setattr(pair, "distance", abs(pair.pos1 - pair.pos2) if pair.is_cis() else None)}
 
     def __init__(self, **kwargs):
-        for k, v in kwargs.items():
-            if k in PairsSegment.reserved:
-                cast = PairsSegment.reserved[k]
-                v = cast(v)
-            setattr(self, k,v)
+        self.__dict__ = kwargs
+        self.cast_reserved()
+        self.alt_to_main()
+    
+    def cast_reserved(self):
+        self.pos1 = int(self.pos1) if "pos1" in self.__dict__ else 0
+        self.pos2 = int(self.pos2) if "pos2" in self.__dict__ else 0
+    
+    def alt_to_main(self):
         for alt, main in PairsSegment.alt.items():
-            if alt not in self.__dict__ and main in self.__dict__:
-                setattr(self, alt, self.__dict__[main])
-            elif main not in self.__dict__ and alt in self.__dict__:
-                setattr(self, main, self.__dict__[alt])
-        for func in PairsSegment.computed.values():
-            func(self)
+            # Access self.__dict__ directly for faster lookups
+            alt_val = self.__dict__.get(alt)
+            main_val = self.__dict__.get(main)
+
+            if alt_val is None and main_val is not None:
+                self.__dict__[alt] = main_val
+            elif main_val is None and alt_val is not None:
+                self.__dict__[main] = alt_val
+    
 
     def to_dict(self, columns = None):
         if columns:
@@ -26,7 +34,6 @@ class PairsSegment:
                  if k in self.__dict__}
             non_reserved = {k:v for k, v in self.__dict__.items()
                     if k not in PairsSegment.alt
-                    and k not in PairsSegment.computed
                     and k not in reserved}
             reserved.update(non_reserved)
             return reserved
@@ -34,12 +41,27 @@ class PairsSegment:
     def to_string(self, columns = None):
         return "\t".join(str(v) for v in self.to_dict(columns).values())
 
+    @property
+    def distance(self):
+        return abs(self.pos1 - self.pos2) if hasattr(self, 'chr1') and self.is_cis else None
+    
+    @property
+    def meets_spec(self):
+        return all([hasattr(self, requirement) for requirement in PairsSegment.required])
+
+    @property
     def is_cis(self): return self.chr1 == self.chr2
     
+    @property
     def is_trans(self): return self.chr1 != self.chr2
 
-    def intrachr(self): return self.is_cis()
+    @property
+    def intrachr(self): return self.is_cis
 
-    def interchr(self): return self.is_trans()
+    @property
+    def interchr(self): return self.is_trans
 
-    def ur(self): return self.pair_type in ["UU", "RU", "UR"]
+    @property
+    def is_ur(self): return self.pair_type in ["UU", "RU", "UR"]
+
+    def __str__(self): return self.to_string()

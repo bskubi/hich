@@ -1,17 +1,20 @@
+from collections import defaultdict
 from hich.cli import BooleanList, IntList, PathList, StrList
-import hich.digest as _digest
+from hich.compartments import write_compartment_scores
 from hich.fragtag import tag_restriction_fragments
 from hich.hicrep_combos import hicrep_combos
-from hich.compartments import write_compartment_scores
 from hich.visuals import view_hicrep
-
-import click
-from collections import defaultdict
-from polars import DataFrame
-import polars as pl
 from pathlib import Path
-
-
+from polars import DataFrame
+import click
+import hich.digest as _digest
+import polars as pl
+from polars import DataFrame
+from hich.pairs import PairsClassifier, PairsFile
+from hich.sample import SelectionSampler
+from hich.stats import DiscreteDistribution, compute_pairs_stats_on_path_list
+from numbers import Number
+from itertools import combinations
 
 @click.group
 def hich():
@@ -33,12 +36,74 @@ def compartments(chroms, exclude_chroms, keep_chroms_when, n_eigs, reference, ma
 
     write_compartment_scores(prefix, matrix, reference, resolution, chroms, exclude_chroms, keep_chroms_when, n_eigs)
 
-@hich.command()
-@click.option("--strata", type = IntList, default = "0")
-@click.option("--fraction", type = float, default = 1.0)
-@click.argument("filenames", nargs = -1)
-def coverage(strata, fraction, filenames):
-    raise NotImplementedError("Hich coverage is not implemented yet")
+@hich.command
+@click.option("--conjuncts",
+    type = str,
+    default = "record.chr1 record.chr2 record.pair_type stratum",
+    show_default = True,
+    help = "PairsSegment traits that define the category for each record (space-separated string list)")
+@click.option("--cis_strata",
+    type = str,
+    default = "10 20 50 100 200 500 1000 2000 5000 10000 20000 50000 100000 200000 500000 1000000 2000000 5000000",
+    show_default = True,
+    help = "PairsSegment cis distance strata boundaries (space-separated string list)")
+@click.option("--orig_stats",
+    type = str,
+    default = "",
+    show_default = True,
+    help = ("Stats file containing original count distribution. Can be produced with hich stats. "
+            "Computed from conjuncts and cis_strata if not supplied. Overrides default conjuncts and cis_strata if they are supplied."))
+@click.option("--target_stats",
+    type = str,
+    default = "",
+    show_default = True,
+    help = "Stats file containing target count distribution.")
+@click.option("--to_count",
+    type = str,
+    default = "",
+    show_default = True,
+    help = ("Float on [0.0, 1.0] for fraction of records to sample, or positive integer number of counts to sample. "
+            "If a target stats file is supplied, further downsamples it to the given count."))
+@click.argument("input_pairs_path", type = str)
+@click.argument("output_pairs_path", type = str)
+def downsample(conjuncts, cis_strata, orig_stats, target_stats, to_count, input_pairs_path, output_pairs_path):
+    orig_classifier, orig_distribution = load_stats_and_classifier_from_file(orig_stats) if orig_stats else (None, None)
+    target_classifier, target_distribution = load_stats_and_classifier_from_file(target_stats) if target_stats else (None, None)
+    
+    if orig_classifier and target_classifier:
+        assert orig_classifier.conjuncts == target_classifier.conjuncts, f"Original and target conjuncts do not match for {orig_stats} and {target_stats}."
+        conjuncts = orig_classifier.conjuncts
+        if "stratum" in orig_classifier and "stratum" in target_classifier:
+            cis_strata = list(set(orig_classifier["stratum"] + target_classifier["stratum"]))        
+    elif orig_classifier:
+        conjuncts = orig_classifier.conjuncts
+    elif target_classifier:
+        conjuncts = target_classifier.conjuncts
+    
+    classifier = PairsClassifier(conjuncts, cis_strata)
+    
+    if to_count.isdigit():
+        to_count = int(to_count)
+    else:
+        try:
+            to_count = float(to_count)
+        except ValueError:
+            to_count = None
+    
+    if not orig_distribution:
+        _, orig_distribution = compute_pairs_stats_on_path((classifier, pairs_path))
+    if not target_distribution:
+        assert to_count is not None, "No target distribution or count supplied for downsampling."
+        target_distribution = orig_distribution.to_count(to_count)
+    
+    sampler = SelectionSampler(orig_distribution, target_distribution)
+    input_pairs_file = PairsFile(input_pairs_path)
+    output_pairs_file = PairsFile(output_pairs_path, mode = "w", header = input_pairs_file.header)
+
+    for record in input_pairs_file:
+        outcome = classifier.classify(record)
+        if sampler.sample(outcome):
+            output_pairs_file.write(record)
 
 @hich.command()
 @click.option("--output", default = None, show_default = True, help = "Output file. Compression autodetected by file extension. If None, prints to stdout.")
@@ -147,27 +212,81 @@ def hicrep(resolutions, chroms, exclude, chromFilter, h, d_bp_max, b_downsample,
         click.echo(result)
 
 @hich.command
-@click.option("--conjuncts", "--event", "--columns", default = "pair.chr1 pair.chr2 stratum pair.pair_type")
-@click.option("--output", type = str, default = "")
-@click.option("--strata", type = str, default = "10 20 50 100 200 500 1000 2000 5000 10000 20000 50000 100000 200000 500000 1000000 2000000 5000000")
-@click.argument("pairs_file", type = str)
-def stats(conjuncts, output, strata, pairs_file):
-    raise NotImplementedError("stats is not implemented yet")
-    # conjuncts = conjuncts.split()
-    # cuts = []
-    # if all([stratum.isnumeric() for stratum in strata.split()]): strata = [int(stratum) for stratum in strata.split()]
-    # else: strata = list(eval(strata))
+@click.option("--conjuncts",
+    type = str,
+    default = "record.chr1 record.chr2 record.pair_type stratum",
+    show_default = True,
+    help = "PairsSegment traits that define the category for each record (space-separated string list)")
+@click.option("--cis_strata",
+    type = str,
+    default = "10 20 50 100 200 500 1000 2000 5000 10000 20000 50000 100000 200000 500000 1000000 2000000 5000000",
+    show_default = True,
+    help = "PairsSegment cis distance strata boundaries (space-separated string list)")
+@click.option("--stats_directory",
+    type = str,
+    default = "",
+    show_default = True,
+    help = "Stats tab-separated file saved at [stats_directory]/[pairs_path].stats.tsv")
+@click.argument("pairs_paths",
+                type = str,
+                nargs = -1)
+def stats(conjuncts, cis_strata, stats_directory, pairs_paths):
+    assert pairs_paths, "No pairs paths supplied."
+    conjuncts = conjuncts.split()
+    split_strata = lambda: [int(stratum) for stratum in cis_strata.split()]
+    cis_strata = split_strata() if cis_strata else None
+    classifier = PairsClassifier(conjuncts, cis_strata)
 
-    # events = pair_stats(PairsFile(pairs_file), output, conjuncts, strata)
+    result = compute_pairs_stats_on_path_list(classifier, pairs_paths)
     
-    # stats_dict = defaultdict(list)
-    # for event, count in events.most_common():
-    #     for col, row in zip(conjuncts, event):
-    #         stats_dict[col].append(str(row))
-    #     stats_dict["count"].append(count)
-    # df = DataFrame(stats_dict)
-    # if output: df.write_csv(output, separator = "\t")
-    # else: print(df) 
+    for pairs_path, distribution in result:
+        df = classifier.to_polars(distribution)
+        output_path = str(Path(stats_directory) / f"{pairs_path}.stats.tsv")
+        print(output_path)
+        df.write_csv(output_path, separator="\t", include_header=True)
+
+
+@hich.command
+@click.option("--to_group_mean", is_flag = True, default = False)
+@click.option("--to_group_min", is_flag = True, default = False)
+@click.option("--to_count", type = Number, default = None)
+@click.option("--prefix", type = str, default = None)
+@click.argument("stats_paths", type = str, nargs = -1)
+def stats_aggregate(to_group_mean, to_group_min, to_count, stats_paths):
+    """Aggregate hich stats files for .pairs
+
+    """
+    classifier, distributions = aggregate_classifier(stats_paths)
+    targets = [d for d in distributions]
+    build_prefix = ""
+    if to_group_mean:
+        group_mean = DiscreteDistribution.mean_mass(distributions)
+        targets = [d.downsample_to_probabilities(group_mean) for d in distributions]
+        if prefix is None:
+            build_prefix += "to_group_mean"
+    if to_group_min:
+        total = min(targets)
+        targets = [d.to_count(total) for d in targets]
+        if prefix is None:
+            build_prefix += "to_group_min"
+    if to_count:
+        targets = [d.to_count(to_count) for d in targets]
+        if prefix is None:
+            build_prefix += f"to_{to_count}"
+    if prefix is None:
+        prefix = build_prefix + "_"
+    for d, stats_path in zip(targets, stats_paths):
+        df = classifier.to_polars(d)
+        path = str(Path(stats_path).parent / prefix / Path(stast_path).name)
+        df.write_csv(path, separator = "\t", include_header = True)
+    
+
+
+
+    
+
+
+
 
 @hich.group 
 def view(): pass
