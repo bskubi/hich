@@ -21,6 +21,7 @@ import hich.digest as _digest
 import io
 import logging
 import pandas as pd
+from parse import parse as _parse
 import polars as pl
 import polars as pl
 import smart_open_with_pbgzip
