@@ -250,7 +250,6 @@ def reshape(read_from, output_to, parse, placeholder, regex, drop, select, batch
         pl.lit(lit).alias(col)
         for col, lit in placeholder
     ]
-    
     update_cols = parse_cols + regex_cols + placeholder_cols
     select = select.split()
     
