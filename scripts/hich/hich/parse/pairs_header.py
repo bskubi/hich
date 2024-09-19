@@ -1,9 +1,11 @@
 from pathlib import Path
+from parse import parse
 
 class PairsHeader:
     version_prefix = "## pairs format v"
 
-    def __init__(self, chromsizes = {}, columns = [], command = []):
+    def __init__(self, text = "", chromsizes = {}, columns = [], command = []):
+        self.text = text
         self.chromsizes = chromsizes
         self.columns = columns
         self.command = command
@@ -31,15 +33,19 @@ class PairsHeader:
         header_lines = [version_line] + chromsizes_lines + other_lines + [columns_line]
         return "\n".join(header_lines)
 
-    @classmethod
-    def from_dict(self, header_dict):
-        header = PairsHeader()
-        header.update(header_dict)
-    
+    def set_columns(self, columns: list[str]):
+        new_columns_line = "#columns: " + " ".join(columns) + "\n"
+        self.columns = columns
+        header = parse("{start}#columns: {columns}\n{end}", self.text) or parse("{start}#columns: {columns}", self.text)
+        start = header["start"]
+        end = header["end"] if "end" in header else ""
+        self.text = start + new_columns_line + end
+
     @classmethod
     def from_text(self, from_text):
         header = PairsHeader()
-        lines = from_text.split("\n")
+        header.text = from_text
+        lines = header.text.split("\n")
         assert lines[0].startswith(PairsHeader.version_prefix), f"Pairs must start with ## pairs format v1.0 but first line was {line}"
         header.pairs_format_version = lines[0].removeprefix("## pairs format v")
         for line in lines[1:]:

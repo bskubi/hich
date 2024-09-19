@@ -1,7 +1,113 @@
+from hich.parse.pbgzip import *
+from smart_open import smart_open
+from typing import Union
+import click
+import io
+import pandas as pd
+import polars as pl
 import polars as pl
 import smart_open
+import smart_open_with_pbgzip
+import sys
 import warnings
-from hich.parse.pbgzip import *
+
+def read_pairs(read_from, 
+batch_size: int = 10000, 
+yield_columns_line: bool = True, 
+exception_on_4dn_violation: bool = True) -> Union[str, pl.DataFrame]:
+    """
+    Generator that reads 4DN .pairs format in batches.
+    https://github.com/4dn-dcic/pairix/blob/master/pairs_format_specification.md
+
+    The first yielded item is the header as a string. If yield_columns_line is True,
+    then the complete header will be returned. Otherwise, any lines starting with
+    #columns: will be excluded from the header. This is to facilitate changing
+    the header if the pairs table is to be reshaped.
+
+    Subsequent yielded items are Polars DataFrames containing up to
+    batch_size .pairs records. The fields will be named according to the
+    #columns: line, whether or not yield_columns_line is True or False. All
+    types will be strings. If more than one #columns: line is present, the last
+    one before teh 
+    """
+    # Used to accumulate header lines or records for a batch
+    header_lines = []
+    records = []
+    columns = None
+
+    # Iterate through all the lines in the iterable
+    for i, line in enumerate(read_from):
+        
+        if exception_on_4dn_violation:
+            # Optionally, raise an exception on 4DN spec violations
+
+            # Enforce that file starts with '## pairs format v1.0'
+            if header_lines and not header_lines[0].startswith("## pairs format v1.0"):
+                raise Exception((
+                    f"4DN spec violation found in {read_from}, line {i}: {line}\n"
+                    f"first header line is {header_lines[0]} but must start "
+                    "with '## pairs format v1.0'"
+                ))
+            if header_lines is None:
+                # Enforce that all header lines come before the first data line
+                if line.startswith("#"):
+                    raise Exception(
+                        (f"4DN spec violation found in {read_from}, line {i}: {line}\n"
+                        "header line starting with '#' "
+                        "appears on line {i}, after the first data line. All header "
+                        "lines must come before data lines.")
+                    )
+        
+        if line.startswith("#columns:"):
+            # When a #columns: line is found, use the subsequent
+            # whitespace-separated strings as column names, with String type
+            # for the polars schema. Add the line to the header lines.
+            columns = line.split()[1:]
+            schema = {col: pl.String for col in columns}
+
+            if yield_columns_line:
+                # We give the option not to add #columns: lines into the header
+                # because this lets the client conveniently reshape the yielded
+                # DataFrames to have a different schema and write the #columns:
+                # line based on the result.
+                header_lines.append(line)
+        elif line.startswith("#"):
+            # Add other header lines
+            header_lines.append(line)
+        else:
+            if exception_on_4dn_violation and columns is None:
+                # Enforce that there is a #columns: line somewhere in the
+                # .pairs file header. Note that per the spec, the #columns:
+                # line does NOT have to go immediately before the data entries.
+                raise Exception((
+                    f"4DN spec violation found in {read_from}, line {i}: {line}\n"
+                    "No #columns: line found prior to first data line."
+                ))
+
+            # We are in the data entries now, so split the entries into individual
+            # fields and accumulate in the growing batch.
+            records.append(line.split())
+
+            if header_lines is not None:
+                # header_lines is a list prior to finding the first data entry.
+                # If we enter this block, it means we just found the first
+                # data entry, meaning we need to build the complete header
+                # string and yield it. Then we set header_lines to None to
+                # mark that we've exited the header region.
+                header = "".join(header_lines)
+                header_lines = None
+                yield header
+            elif len(records) == batch_size:
+                # We have reached the target batch size, so build a dataframe
+                # with the accumulated records and yield it as the latest batch.
+                # Then reset the records to start accumulating another batch.
+                result = pl.DataFrame(records, orient='row', schema=schema)
+                records = []
+                yield result
+    if records:
+        # If we have accumulated a partial batch when we run out of records,
+        # yield them in a final partial batch.
+        yield pl.DataFrame(records, orient='row', schema=schema)
 
 
 class PairsParser:
