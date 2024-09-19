@@ -34,9 +34,7 @@ workflow Hicrep {
     samples
 
     main:
-
-    print(params.comparisonSets)
-
+    
     parameterize("hicrep",
                  samples,
                  params.comparisonSets,
