@@ -59,7 +59,8 @@ workflow IngestPairs {
         ["id", "pairs", "chromsizes", "reshapeParams"],
         ["id", "pairs"],
         ["latest":"pairs"],
-        "id"
+        "id",
+        ["nullOk":["reshapeParams"]]
     )
 
     if ("IngestPairs" in params.general.get("qcAfter")) {

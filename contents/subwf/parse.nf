@@ -103,7 +103,8 @@ workflow Parse {
         ["id", "sambam", "chromsizes", "assembly", "parseParams", "reshapeParams"],
         ["id", "pairs"],
         ["latest":"pairs"],
-        "id"
+        "id",
+        ["nullOk":["reshapeParams", "parseParams"]]
         )
 
     // It might be good to simplify these workflow control steps since they

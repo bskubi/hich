@@ -1,5 +1,28 @@
 include {transpack; isTechrep; isBiorep; isCondition; emptyOnLastStep} from './extraops.nf'
 
+/*
+    1. Compute stats over the pairs file with hich stats as --orig-stats
+        This is a single process call and attaches the stats file to the sample
+
+    2. Set strata and aggregate the stats to obtain target stats as --target-stats
+        This is possibly multiple process calls (?) and attaches the stats file to the sample
+
+    3. Use hich downsample with --orig_stats and --target_stats
+        This is a single function call with transpack that specifies the new id, similar to merge
+    
+    There was an idea to modify transpack so that you could pass in a groupTuple output
+    and have it collect the parameters from each sample in each group and pass it in. This
+    could be used for the merge steps as well as here.
+        We pass in one or more channels to transpack/transact
+        Transpack would just pass through the first channel as normal, no modifications necessary.
+        Transact would be modified during the map step.
+            If the channel items are HashMaps, do things as normal
+            If the channel items are two-element tuples [groupBy, [HashMaps]]
+            then:
+                Collect the values from each HashMap associated with the input arguments
+                Pass to the function
+*/
+
 process HichDownsample {
     input:
     tuple val(id), path(pairs), path(orig_stats), path(target_stats)

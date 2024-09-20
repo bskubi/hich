@@ -318,6 +318,14 @@ def toHashMap(keys, vals) {
                        .collectEntries { [it[0], it[1]] }
 }
 
+def groupedSamples = {
+    (it instanceof ArrayList
+    && it.size() == 2
+    && it[1] instanceof nextflow.util.ArrayBag
+    && it[1].size() > 0
+    && it[1][0] instanceof LinkedHashMap)
+}
+
 def transact (proc, ch, input, output, tags, options) {
     /* Extract process inputs from hashmap channel items, call the process,
     and rebuild a hashmap with process outputs. "Tag" some outputs by assigning
@@ -326,22 +334,26 @@ def transact (proc, ch, input, output, tags, options) {
     
     extracted = ch
         | map {
-            hashmap ->
+            item ->
+
+            // item can be either a HashMap or the output of groupTuple.
+            // If the latter, combine the HashMap elements into lists
+
             def proc_inputs = input.collect{
                 key ->
                 
                 err = [
-                    "In ${proc} with tags ${tags} and options ${options}, ${key} is required but is '${hashmap.get(key)}' for:",
-                    "${hashmap}",
+                    "In ${proc} with tags ${tags} and options ${options}, ${key} is required but is '${item.get(key)}' for:",
+                    "${item}",
                     "\nOne possible cause is a mismatched resource file or processing parameters for a biological replicate or condition produced by a merge.",
                     "If so, you can fix this either by making all resource files and processing parameters identical for all input samples for the condition or",
                     "by specifying specific resource files and processing parameters for the biological replicate or condition in nextflow.config"
                 ].join("\n")
                 nullOk = options.get("nullOk")
-                            ? hashmap.get(key) in options.get("nullOk") || key == options.get("nullOk")
+                            ? item.get(key) in options.get("nullOk") || key == options.get("nullOk")
                             : false
-                assert nullOk || hashmap.get(key), err
-                hashmap.get(key)
+                assert nullOk || item.get(key), err
+                item.get(key)
             }
 
             proc_inputs.size() == 1 ? proc_inputs[0] : tuple(*proc_inputs)
