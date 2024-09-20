@@ -60,7 +60,7 @@ workflow AlignerIndex {
             {["alignerIndexPrefix":it.assembly]},
             "alignerIndexPrefix",
             {it.datatype in ["fq", "fastq"] && it.aligner == "bwa-mem2"},
-            ["keep":["indealignerIndexDirx_dir", "alignerIndexPrefix"]]
+            ["select":["indealignerIndexDirx_dir", "alignerIndexPrefix"]]
         ) | set{samples}
 
         sourcePrefix(
@@ -73,7 +73,7 @@ workflow AlignerIndex {
             {["alignerIndexPrefix":it.assembly]},
             "alignerIndexPrefix",
             {it.datatype in ["fq", "fastq"] && it.aligner == "bwa"},
-            ["keep":["alignerIndexDir", "alignerIndexPrefix"]]
+            ["select":["alignerIndexDir", "alignerIndexPrefix"]]
         ) | set{samples}
 
     samples = emptyOnLastStep("AlignerIndex", samples)

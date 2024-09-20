@@ -318,7 +318,7 @@ def toHashMap(keys, vals) {
                        .collectEntries { [it[0], it[1]] }
 }
 
-def groupedSamples = {
+def groupArrayList(it) {
     (it instanceof ArrayList
     && it.size() == 2
     && it[1] instanceof nextflow.util.ArrayBag
@@ -326,53 +326,118 @@ def groupedSamples = {
     && it[1][0] instanceof LinkedHashMap)
 }
 
+def coalesceGroupArrayList(ch, keys, nullOk = [:], defaultValues = [:], groupArrayListToHashMap = true) {
+    def result = ch | map {
+        channel_item ->
+
+        if (groupArrayList(channel_item)) {
+            // Extract parameters to list
+            def params_list = keys.collectEntries{[(it): []]}
+            def group = channel_item[0]
+            def sample_list = channel_item[1]
+
+            keys.each {
+                key ->
+
+                sample_list.each {
+                    sample ->
+
+                    def value = sample[(key)] ?: defaultValues[(key)]
+                    assert value || key in nullOk, "Missing ${key} in ${sample.id} or default value in coalesceGroupTuple, and nullOk[${key}] = false. Sample:\n${sample}"
+                    def update_value = params_list[(key)] + [value]
+                    def update = [(key): update_value]
+                    params_list += update
+                }
+            }
+            def coalesced = groupArrayListToHashMap ? params_list : [group, params_list]
+            coalesced
+        } else {
+            keys.each {
+                key ->
+
+                assert key in channel_item || key in nullOk, "Missing ${key} in ${channel_item.id} or default value in coalesceGroupTuple, and nullOk[${key}] = false. Sample:\n${channel_item}"
+            }
+            return channel_item.subMap(keys)
+        }
+    }
+    return result
+}
+
+
 def transact (proc, ch, input, output, tags, options) {
-    /* Extract process inputs from hashmap channel items, call the process,
-    and rebuild a hashmap with process outputs. "Tag" some outputs by assigning
-    them to a second key.
+    /*
+        If a channel item is in the format [group, [HashMaps]], reshape it into:
+        HashMap where the only keys are 'input'. The value for each key is a list
+        of the values from each HashMap from [HashMaps] or options.nullDefault[key]
+        if supplied.
+
+        Channel items that are HashMaps are left unchanged.
     */
-    
-    extracted = ch
+    def coalesced = coalesceGroupArrayList(ch, input, options.nullOk ?: [:], options.nullDefault ?: [:])
+
+    /*
+        All channel items should be HashMaps now. Extract values for the 'input' keys
+        to a tuple in the order specified by 'input'.
+    */
+    def extracted = coalesced
         | map {
             item ->
+            // Ensure all items are HashMaps
+            assert item instanceof HashMap, "Input channel item expected to be HashMap, is ${item.getClass()}:\n${item}"
 
-            // item can be either a HashMap or the output of groupTuple.
-            // If the latter, combine the HashMap elements into lists
+            // Collect the 'input' key-associated values in order, ensuring they
+            // are all present or a default is supplied or nullOk is true.
+            def proc_inputs = input.collect { key ->
+                def value = item.get(key) ?: options.nullDefault?.get(key)
+                def nullOk = options.get("nullOk")?.with { it.contains(key) || it == key } ?: false
 
-            def proc_inputs = input.collect{
-                key ->
-                
-                err = [
-                    "In ${proc} with tags ${tags} and options ${options}, ${key} is required but is '${item.get(key)}' for:",
-                    "${item}",
-                    "\nOne possible cause is a mismatched resource file or processing parameters for a biological replicate or condition produced by a merge.",
-                    "If so, you can fix this either by making all resource files and processing parameters identical for all input samples for the condition or",
-                    "by specifying specific resource files and processing parameters for the biological replicate or condition in nextflow.config"
-                ].join("\n")
-                nullOk = options.get("nullOk")
-                            ? key in options.get("nullOk") || key == options.get("nullOk")
-                            : false
-                assert nullOk || item.get(key), err
-                item.get(key)
+                assert nullOk || value, """
+                    In ${proc} with tags ${tags} and options ${options}, ${key} is required but is '${value}' for:
+                    ${item}
+                    
+                    One possible cause is a mismatched resource file or processing parameters for a biological replicate or condition produced by a merge.
+                    If so, you can fix this by either making all resource files and processing parameters identical for all input samples for the condition,
+                    or by specifying specific resource files and processing parameters for the biological replicate or condition in nextflow.config
+                """.trim()
+
+                value
             }
 
+            // If there's more than one input, make it a tuple. Otherwise,
+            // use that single input value directly rather than using a 1-element list.
             proc_inputs.size() == 1 ? proc_inputs[0] : tuple(*proc_inputs)
         }
     
-    extracted = options.get("filter_unique") ? extracted | unique : extracted
+    // If the filterUnique option is set, filter non-unique items
+    extracted = options.filterUnique ? extracted | unique : extracted
 
-    return extracted
-        | proc
+    // Feed the extracted values into the process.
+    def raw_proc_outputs = extracted | proc
+
+    // If options.transpose is specified, transpose the process outputs. This is useful
+    // if the process should emit multiple samples where each output is a single key:value
+    // pair for the sample. This transposes them so that all the values for each sample are grouped.
+    // Example: if a process outputs tuple([1, 2], [3, 4]) then transposing yields [1, 3], [2, 4]
+    // which can then have the appropriate keys applied to turn them into sample HashMaps.
+    raw_proc_outputs = options.transpose ? raw_proc_outputs | transpose : raw_proc_outputs
+
+    // Assign labels to (possibly transposed) process outputs
+    raw_proc_outputs
         | map{
             proc_outputs ->
+
+            // 'output' are the keys, 'proc_outputs' are the associated values in the same order.
+            // result is a HashMap [output[0]: proc_outputs[0], ... output[n]: proc_outputs[n]]
             def result_map = toHashMap(output, proc_outputs)
             
-            options.get("keep") ? result_map = result_map.subMap(options.get("keep")) : null
-            options.get("remove") ? result_map -= options.get("remove") : null
+            // If specified, select only keys in options.select, then drop keys in options.drop
+            if (options.get("select")) result_map = result_map.subMap(options.get("select"))
+            if (options.get("drop")) result_map -= options.get("drop")
 
+            // Set the value of supplied tags to the corresponding original tag
             tags.each {
                 tag, orig ->
-                result_map[tag] = result_map[orig]
+                result_map = result_map + [(tag):result_map[orig]]
             }
             
             result_map
@@ -448,7 +513,7 @@ def source (produceProc, ch, key, input, output, namer, by, needsTest) {
 
     // Create the needed resource file and pack it into all the hashmaps that
     // were missing it.
-    def made = transpack(produceProc, missing.yes, input, output, tags = [:], by = by, [filter_unique: true])
+    def made = transpack(produceProc, missing.yes, input, output, tags = [:], by = by, [filterUnique: true])
 
     // Concatenate the channels containing the made resources, those that
     // needed it but were not missing, and those that did not need it.
@@ -487,7 +552,7 @@ def sourcePrefix (produceProc, ch, dir, prefix, input, output, namer, by, needsT
 
     // Create the needed resource file and pack it into all the hashmaps that
     // were missing it.
-    def made = transpack(produceProc, missing.yes, input, output, tags = [:], by = by, options + [filter_unique: true])
+    def made = transpack(produceProc, missing.yes, input, output, tags = [:], by = by, options + [filterUnique: true])
     
     // Concatenate the channels containing the made resources, those that
     // needed it but were not missing, and those that did not need it.
