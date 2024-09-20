@@ -350,7 +350,7 @@ def transact (proc, ch, input, output, tags, options) {
                     "by specifying specific resource files and processing parameters for the biological replicate or condition in nextflow.config"
                 ].join("\n")
                 nullOk = options.get("nullOk")
-                            ? item.get(key) in options.get("nullOk") || key == options.get("nullOk")
+                            ? key in options.get("nullOk") || key == options.get("nullOk")
                             : false
                 assert nullOk || item.get(key), err
                 item.get(key)
