@@ -73,7 +73,7 @@ workflow Deduplicate {
         ["id", "dedup_pairs"],
         ["latest":"dedup_pairs"],
         "id",
-        ["nullOk":"pairtoolsDedupParams"]
+        ["nullOk":["pairtoolsDedupParams", "isSingleCell"]]
     )
     
     samples = emptyOnLastStep("Deduplicate", samples)
