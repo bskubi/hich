@@ -558,6 +558,7 @@ def label(hashmap, lbl) {
 def isTechrep(map) {return label(map, "techrep") && label(map, "biorep") && label(map, "condition")}
 def isBiorep(map) {return (!label(map, "techrep")) && label(map, "biorep") && label(map, "condition")}
 def isCondition(map) {return (!label(map, "techrep")) && (!label(map, "biorep")) && label(map, "condition")}
+def isSingleCell(map) {return map.cellBarcodeField || map.isSingleCell}
 
 def combinations(samples, comboKeys, renameComboKeys, constKeys) {
     toCombine = samples

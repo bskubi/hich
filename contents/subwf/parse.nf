@@ -5,11 +5,11 @@ process PairtoolsParse2 {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",
                saveAs: {params.general.publish.parse ? it : null},
                mode: params.general.publish.mode
-    conda "bioconda::pairtools bioconda::sambamba"     // This won't actually be enough if we start using sambamba, but sambamba is available via mamba
+    conda "bioconda::pairtools bioconda::samtools"
     container "bskubi/hich:latest"
 
     input:
-    tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseParams)
+    tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseParams), val(reshapeParams)
 
     output:
     tuple val(id), path("${id}.pairs.gz")
@@ -56,16 +56,19 @@ process PairtoolsParse2 {
     // The parseParams are typically a list of individual pairtools parse flags.
     // Join them separated by spaces to use in the parse2Cmd
     parseParams = parseParams.join(" ")
+    reshapeParams = reshapeParams.join(" ")
 
     // Set up the individual commands in lists to make them easier to combine with pipes into a complete command
-    sortCmd = ["sambamba sort -n ${sambam}"]
+    // sambamba is both slower than samtools as of 2017, and also can't pipe to stdout, so we use samtools
+    samSortCmd = ["samtools sort -n ${sambam}"]
     parse2Cmd = ["pairtools parse2 --assembly ${assembly} --chroms-path ${chromsizes} ${parseParams}"]
-    reshapeCmd = []
-    sortCmd = ["pairtools sort --output ${id}.pairs.gz"]
+    reshapeCmd = reshapeParams ? ["hich reshape ${reshapeParams}"] : []
+    pairsSortCmd = ["pairtools sort --output ${id}.pairs.gz"]
 
     // Combine the individual commands, then join with a pipe to form the full command
-    cmdParts = sortCmd + parse2Cmd + reshapeCmd + sortCmd
+    cmdParts = samSortCmd + parse2Cmd + reshapeCmd + pairsSortCmd
     cmd = cmdParts.join(" | ")
+    
 
     // Execute the full command
     cmd
@@ -79,11 +82,17 @@ workflow Parse {
     samples
 
     main:
-
     // This should give an error if the file does not exist
     samples
-        | filter{it.get("sambam") && file(it.sambam).exists()}
-        | map{it.sambam = file(it.sambam); it}
+        | filter{it.datatype == "sambam"}
+        | map{
+            sample ->
+            if (!sample.sambam || !file(sample.sambam).exists()) {
+                error "In sample with id ${sample.id}, sambam file is specified but does not exist"
+            }
+
+            sample
+        }
         | set {sambam}
 
 
@@ -91,7 +100,7 @@ workflow Parse {
     samples = transpack(
         PairtoolsParse2,
         [sambam, samples],
-        ["id", "sambam", "chromsizes", "assembly", "parseParams"],
+        ["id", "sambam", "chromsizes", "assembly", "parseParams", "reshapeParams"],
         ["id", "pairs"],
         ["latest":"pairs"],
         "id"

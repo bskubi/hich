@@ -5,9 +5,16 @@ WORKDIR /hich
 USER root
 
 RUN apt-get update && apt-get install -y gcc g++ make build-essential
+
+# Install libcurl and zlib, needed by hic-straw
+RUN apt-get update && \
+    apt-get install -y libcurl4-openssl-dev zlib1g-dev && \
+    rm -rf /var/lib/apt/lists/*
+    
+# Install hich dependencies
 COPY ./environment.yml /hich
 RUN mamba env update --name base environment.yml
-RUN mamba install bzip2 pbgzip samtools bwa bwa-mem2 sambamba  -c conda-forge -c bioconda -y
+RUN mamba install bzip2 pbgzip samtools bwa bwa-mem2  -c conda-forge -c bioconda -y
 
 COPY . /hich
 RUN poetry config virtualenvs.create false \

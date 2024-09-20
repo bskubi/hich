@@ -54,7 +54,6 @@ workflow {
         | FastqHead
 
         | Align                 // Align .fastq -> .bam
-
         | Parse                 // .bam -> .pairs and read-level filters
         | IngestPairs
         | TagFragments

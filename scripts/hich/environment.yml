@@ -16,8 +16,17 @@ dependencies:
   - biopython
   - ucsc-bedgraphtobigwig
   - pyBigWig
+  - scipy
+  - pysam
+  - dash
+  - h5py
+  - natsort
+  - seaborn
+  - matplotlib
   - pip:
     - hicrep
     - cooltools
     - git+https://github.com/open2c/MultiQC.git
     - hic-straw
+    - smart_open_with_pbgzip
+    - parse
