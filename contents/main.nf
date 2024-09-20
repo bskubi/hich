@@ -19,11 +19,6 @@ include {emptyOnLastStep} from './subwf/extraops.nf'
 
 
 workflow {
-    ch = channel.of([1], [1], [2, [C:'c']], [2, [D:'d']])
-    ch
-    | groupTuple  | view
-    /*
-
     LoadSampleFile              // Setup workflow inputs
         | Setup
         | FastqHead
@@ -51,6 +46,5 @@ workflow {
         | set{samples}
 
     samples = emptyOnLastStep("End", samples)
-    */
 }
 
