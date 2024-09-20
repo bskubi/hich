@@ -318,49 +318,30 @@ def toHashMap(keys, vals) {
                        .collectEntries { [it[0], it[1]] }
 }
 
-def groupArrayList(it) {
-    (it instanceof ArrayList
-    && it.size() == 2
-    && it[1] instanceof nextflow.util.ArrayBag
-    && it[1].size() > 0
-    && it[1][0] instanceof LinkedHashMap)
-}
+def transposeHashMapList(hashMapListChannel, keys, nullOk = [:], defaultValues = [:]) {
+    def transposedChannel = hashMapListChannel | map {
+        hashMapList ->
 
-def coalesceGroupArrayList(ch, keys, nullOk = [:], defaultValues = [:], groupArrayListToHashMap = true) {
-    def result = ch | map {
-        channel_item ->
+        // Extract parameters to list
+        def transposed = keys.collectEntries{[(it): []]}
 
-        if (groupArrayList(channel_item)) {
-            // Extract parameters to list
-            def params_list = keys.collectEntries{[(it): []]}
-            def group = channel_item[0]
-            def sample_list = channel_item[1]
+        keys.each {
+            key ->
 
-            keys.each {
-                key ->
+            hashMapList.each {
+                sample ->
 
-                sample_list.each {
-                    sample ->
-
-                    def value = sample[(key)] ?: defaultValues[(key)]
-                    assert value || key in nullOk, "Missing ${key} in ${sample.id} or default value in coalesceGroupTuple, and nullOk[${key}] = false. Sample:\n${sample}"
-                    def update_value = params_list[(key)] + [value]
-                    def update = [(key): update_value]
-                    params_list += update
-                }
+                def value = sample[(key)] ?: defaultValues[(key)]
+                assert value || key in nullOk, "Missing ${key} in ${sample.id} or default value in coalesceGroupTuple, and nullOk[${key}] = false. Sample:\n${sample}"
+                def update_value = transposed[(key)] + [value]
+                def update = [(key): update_value]
+                transposed += update
             }
-            def coalesced = groupArrayListToHashMap ? params_list : [group, params_list]
-            coalesced
-        } else {
-            keys.each {
-                key ->
-
-                assert key in channel_item || key in nullOk, "Missing ${key} in ${channel_item.id} or default value in coalesceGroupTuple, and nullOk[${key}] = false. Sample:\n${channel_item}"
-            }
-            return channel_item.subMap(keys)
         }
+        
+        transposed
     }
-    return result
+    return transposedChannel
 }
 
 
@@ -373,13 +354,12 @@ def transact (proc, ch, input, output, tags, options) {
 
         Channel items that are HashMaps are left unchanged.
     */
-    def coalesced = coalesceGroupArrayList(ch, input, options.nullOk ?: [:], options.nullDefault ?: [:])
 
     /*
         All channel items should be HashMaps now. Extract values for the 'input' keys
         to a tuple in the order specified by 'input'.
     */
-    def extracted = coalesced
+    def extracted = ch
         | map {
             item ->
             // Ensure all items are HashMaps
