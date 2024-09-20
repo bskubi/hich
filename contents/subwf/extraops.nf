@@ -522,13 +522,14 @@ def parameterize(processName, samples, parameterizations, sampleKeys, inputOrder
                 def hasProcess = sample.get(processName)
                 def hasParameterization = argsName in sample.get(processName)
 
-                if (hasProcess && !hasKeys) {
-                    error [
-                        "For ${processName} ${argsName}, the following sample does not have all required keys ${sampleKeys}:",
-                        "${sample}",
-                        "It only has ${sample.subMap(sampleKeys)}"
-                    ].join("\n")
-                }
+                assert hasProcess,
+                ("For ${processName} ${argsName}, the following sample does not have process ${processName}:\n",
+                "${sample}")
+
+                assert hasKeys,
+                ("For ${processName} ${argsName}, the following sample does not have all required keys ${sampleKeys}:\n",
+                "${sample}\n",
+                "It only has ${sample.subMap(sampleKeys)}")
 
                 hasKeys && hasProcess && hasParameterization
             }
