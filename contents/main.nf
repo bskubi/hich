@@ -15,7 +15,7 @@ include {CompartmentScore} from './subwf/compartmentScore.nf'
 include {DifferentialLoops} from './subwf/differentialLoops.nf'
 include {InsulationScore} from './subwf/insulationScore.nf'
 include {emptyOnLastStep} from './subwf/extraops.nf'
-
+include {AggregateTechreps} from './subwf/aggregate.nf'
 
 
 workflow {
@@ -29,6 +29,9 @@ workflow {
         | TagFragments
         | Select
 
+        | AggregateTechreps
+
+/*
         //| DownsampleTechreps    // Condition/biorep/techrep coverage control and merge
         | TechrepsToBioreps
         | Deduplicate
@@ -43,6 +46,7 @@ workflow {
         | CompartmentScore
         | DifferentialLoops
         | InsulationScore
+*/
         | set{samples}
 
     samples = emptyOnLastStep("End", samples)

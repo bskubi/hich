@@ -1,4 +1,4 @@
-include {transpack; isTechrep; isBiorep; isCondition; emptyOnLastStep} from './extraops.nf'
+include {transpack; isTechrep; isBiorep; isCondition; emptyOnLastStep; transposeHashMapList} from './extraops.nf'
 
 /*
     1. Compute stats over the pairs file with hich stats as --orig-stats
@@ -10,17 +10,91 @@ include {transpack; isTechrep; isBiorep; isCondition; emptyOnLastStep} from './e
     3. Use hich downsample with --orig_stats and --target_stats
         This is a single function call with transpack that specifies the new id, similar to merge
     
-    There was an idea to modify transpack so that you could pass in a groupTuple output
-    and have it collect the parameters from each sample in each group and pass it in. This
-    could be used for the merge steps as well as here.
-        We pass in one or more channels to transpack/transact
-        Transpack would just pass through the first channel as normal, no modifications necessary.
-        Transact would be modified during the map step.
-            If the channel items are HashMaps, do things as normal
-            If the channel items are two-element tuples [groupBy, [HashMaps]]
-            then:
-                Collect the values from each HashMap associated with the input arguments
-                Pass to the function
+    We can now use transposeHashMapList to get the input stats file for a given group in column order
+    and use the options = [transpose:true] flag to get multiple outputs.
+
+    WHY have separate workflows for downsampling techreps, bioreps, and conditions?
+        BECAUSE if we want to let the user provide equal techrep input sizes when merging to bioreps,
+        or equal biorep input sizes when merging to conditions, we need to have downsampled these
+        groups before the merge happens.
+
+    FEATURES
+        Let the user set samples as outliers and declare whether that carriers over during the merge
+    
+    The basic feature set we've been trying to build is something like:
+        Let the user use outlier-aware stratified downsampling to the minimum group size
+        Let the user downsample to a specific integer or % size
+
+        One way to approach this would be to give options for:
+
+        
+        Define 1+ sets of conjuncts -> match all techreps within a biorep (yes, no, both) -> then downsample to a specific size
+        Define 1+ sets of conjuncts -> match all bioreps within a condition (yes, no both) -> then downsample to a specific size
+        Define 1+ sets of conjuncts -> match all conditions (yes no both) -> then downsample to a specific size
+
+        Of course the user might want all combinations of these, or only a subset.
+        Usually we just deliver all combinations. However this could lead to very long runtimes.
+
+        One option is to deliver all combinations, and require the user to define small subsets of the combinations
+        and rerun if they don't want all possible combinations.
+
+        Another is to require the user to specify each combination individually.
+        This is something the user can also do with Hich directly. I think if they have specific requirements they can just do that.
+
+Example with defining each combination individually:
+
+coverageControl {
+    all {}
+
+    downsampleByHalf {
+        Any samples matching any of the HashMaps in outliers will be treated as such
+        outliers = [[condition: Mock, biorep: 2, techrep: [1, 2, 3]]]
+
+        For all techreps in the same condition + biorep, downsample and label with "downsampleByHalf"
+        as their coverageControl profile. Samples are merged based on their coverageControl profile.
+        The default coverageControl profile is 'all', which means no downsampling.
+
+        Plausibly users might want to not process the 'all', perhaps not merging it and not turning it into a contact matrix.
+        This suggests an overall feature of skipping specific steps for specific samples. We were already going to implement
+        a step skipping feature. We could make both the lastStep and the skipStep features sample specific. This would let the user
+        use --lastStep CoverageControl [coverageProfile: all].
+
+        One tricky aspect is figuring out how to pass these sorts of arguments to Nextflow. Possibly this would just have to be done in the config.
+
+        The other possible issue here though is that you could have a coverage profile that, let's say, doesn't downsample techreps or bioreps,
+        just conditions. That means 'all' techreps need to be merged. But if you set --lastStep CoverageControl [coverageProfile: all] you wouldn't have
+        the 'all' bioreps.
+
+        There's an inefficiency here which is that if two downsampling profiles have the same starting steps, they have to be done repeatedly (I think?)
+        unless we can set up the process so that the inputs would be identical in either case so it just uses the cached results.
+
+        Another possibility is that we bundle the downsampling AND merge steps into one merge profile.
+        That way we can define the needed inputs for both steps.
+
+        Here, we have no downsampling parameters over the techreps so we just merge the 'all' samples to bioreps.
+        mergeTechrepsToBioreps: true
+        
+        Because we define ways of downsampling the bioreps, they do get downsampled after being merged. However, since there is no
+        mergeBiorepsToConditions, they don't get merged.
+        biorepsConjuncts = ['record.chr1 record.chr2 stratum']
+        matchCoverage: "subgroup" or "all"
+        downsampleBioreps: .5
+    }
+}
+
+I think this looks very good as an interface. Explicit, controlled, and sparse, which I think is the default mode most people will want.
+
+So then, we can combine the downsample and merge steps.
+We only need to produce stats IF we are downsampling.
+
+
+Downsampling: true -> Collect stats using *Conjuncts
+    matchCoverage: "subgroup" -> aggregate subgroups  "min"     We can simply have this be a process
+                   "all"      -> aggregate all groups "min"     And this be a process
+    downsample*: true         -> aggregate .5                   And this be a process
+    downsample                                                  And this be a process
+Merge: true -> Merge                                            And this be a process
+
 */
 
 process HichDownsample {

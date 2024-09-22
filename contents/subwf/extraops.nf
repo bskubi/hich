@@ -553,9 +553,25 @@ def sourcePrefix (produceProc, ch, dir, prefix, input, output, namer, by, needsT
 */
 
 def parameterize(processName, samples, parameterizations, sampleKeys, inputOrder) {
+    /*
+        In Nextflow, the only ways to call a process multiple times is:
+            Duplicate the process with a new name, either by reimporting it with two names or by copying the code
+            Call the process from workflows with two different names
+        
+        We are trying to let the user parameterize processes an unlimited number of times,
+        and we can't create a hardcoded process or workflow for each.
+
+        The parameterize extraop gets around this by creating a concatenated channel
+        containing samples with all the different needed parameterizations in advance,
+        which can then be passed to a single process call.
+    */
+
+
     def argSets = parameterizations.get(processName)
 
     def resultChannels = channel.empty()
+
+    // Iterate through each of the profiles to use for the process
     argSets.each {
         argsName, args ->
         
@@ -563,10 +579,18 @@ def parameterize(processName, samples, parameterizations, sampleKeys, inputOrder
             | filter{
                 sample ->
 
+                // Get samples that have:
+                //    1) the keys required to run the process
+                //    2) the process name and parameterization
+                // create an error if the process isn't present for any of the samples.
+                // this means that samples have to be pre-filtered for those having the given process.
+                // maybe this is undesirable? it seems like we'd just want to filter the samples if they
+                // don't meet the criteria.
+                // create an error if any samples don't have the required keys
+                // 
                 def hasKeys = sampleKeys.every{sampleKey -> sample.get(sampleKey)}
                 def hasProcess = sample.get(processName)
                 def hasParameterization = argsName in sample.get(processName)
-
                 assert hasProcess : "For ${processName} ${argsName}, the following sample does not have process ${processName}:\n${sample}"
 
                 assert hasKeys : "For ${processName} ${argsName}, the following sample does not have all required keys ${sampleKeys}." +
@@ -574,9 +598,9 @@ def parameterize(processName, samples, parameterizations, sampleKeys, inputOrder
 
                 hasKeys && hasProcess && hasParameterization
             }
-            | map{sample -> sample.subMap(sampleKeys)}
-            | collect
-            | map {
+            | map{sample -> sample.subMap(sampleKeys)}  // get just the required keys
+            | collect                                   // collect all the samples that fit the current argSet into a list of samples
+            | map {                                     // transpose the samples, this can be done now with the groupTuple functionality we established
                 sampleList ->
 
                 // Coalesce the samples
@@ -593,20 +617,18 @@ def parameterize(processName, samples, parameterizations, sampleKeys, inputOrder
                 result
             }
             | map {
-                sampleKeySubMap ->
+                sampleKeySubMap ->                      // add the parameterizations into the submap (it won't be a table format any more because we only add the one copy)
 
                 (sampleKeySubMap + args).subMap(inputOrder)
             }
-        resultChannels = resultChannels.concat(newChannel)
+        resultChannels = resultChannels.concat(newChannel)  // append the channel
     }
 
-    return resultChannels
+    return resultChannels    // return the result channel
 }
 
-def label(hashmap, lbl) {
-    return (hashmap.containsKey(lbl) &&
-            hashmap.get(lbl) != null &&
-            hashmap.get(lbl).toString().trim().length() >= 1)
+def label(map, lbl) {
+    return map?[(lbl)]?.toString().length() > 0
 }
 
 def isTechrep(map) {return label(map, "techrep") && label(map, "biorep") && label(map, "condition")}
@@ -649,3 +671,113 @@ def emptyOnLastStep(step, samples) {
     }
     return isExplicitLastStep ? channel.empty() : samples
 }
+
+// New extraops
+
+def groupHashMap(ch, by) {ch | map{tuple(it.subMap(by), it)} | groupTuple | map{it[1]}}
+
+// Called from within map function on transposedSamples
+def coalesce (transposedSample, defaultWhenDifferent = "_unchanged", whenDifferent = [:]) {
+    // effects of whenDifferent values:
+    // _shrink -> take unique values in original order of first apperance
+    // _drop -> drop the key:value pair
+    // _nullify -> keep the key, set value to null
+    // _error -> throw an exception
+    // anything else -> replace the value
+    // empty values are retained unchanged
+
+    
+    def result = [:]
+    transposedSample.each {
+        key, value ->
+
+        // LinkedHashSet preserves the original order of the ArrayList
+        def valueSet = value instanceof ArrayList ? value as LinkedHashSet : [value] as LinkedHashSet
+
+        // Coalesce if all entries are identical. [k:[1, 1, 1]] coalesces to [k:1]
+        if (valueSet.size() == 1) {
+            result += [(key):valueSet.first()]
+        } else if (valueSet.size() > 1) {
+            // Determine strategy for this key when value is non-homogeneous
+            def todo = whenDifferent.get(key, defaultWhenDifferent)
+
+            // Error if specified
+            assert todo != 'error', "In coalesce, ${key} is set to error when values are non unique. Values are ${value} for sample:\n${sample}"
+
+            // Otherwise, use the 'todo' strategy to decide how to alter the value
+            switch (todo) {
+                case "_unchanged":
+                    result += [(key): value]        // Leave unaltered
+                    break
+                case "_shrink":
+                    result += [(key): valueSet]     // Keep first instance of each distinct item in value in original order of first appearance
+                    break
+                case "_drop":                       // Drop it from the result
+                    break
+                default:
+                    result += [(key): todo]         // Replace with value of 'todo'
+            }
+
+        } else if (valueSet.size() == 0) {
+            result += [(key): value]                // If there is nothing in value, keep the empty list as the value
+        }
+    }
+    return result
+}
+
+def columns (mapList, options = [:]) {
+    // Get set of all keys from all maps
+    def allKeys = mapList.collectMany{it.keySet()}.toSet()
+
+    // Extract parameters to list
+    def transposed = [:]
+
+    // Iterate through all maps in the mapList
+    mapList.each {
+        map ->
+
+        // Iterate through all keys from all maps
+        allKeys.each {
+            key ->
+
+            /* For each key, get the current map's value or a default if supplied.
+               Verify the value is non-null/missing or is OK to be null.
+               Add it to the previous value list and update the transposed map.
+            */
+            def value = map.get(key, options.defaults?[(key)])
+            def previous = transposed.get(key, [])
+            assert value != null || options.nullOK?.contains(key), "In call to 'columns', '${key}' is not in nullOK and is missing/null for:\n${map}"
+            def valueList = previous + [value]
+            def updatedItem = [(key): valueList]
+            transposed += updatedItem
+        }
+    }
+
+    // Return the transposed map
+    transposed
+}
+
+def rows (columnsMap, options = [:]) {
+    // Get the keys and the transposed values
+    def keys = columnsMap.keySet().toList()
+    def transposed = columnsMap.values().toList().transpose()
+
+    // Create N hashmaps, each containing the values at index i for the corresponding keys
+    def result = transposed.collect { row ->
+        [keys, row].transpose().collectEntries()  // Build a new map for each row
+    }
+    result
+}
+
+def updateChannel(previous, update, by = "id") {
+    def previousTuple = previous | map{tuple(it.subMap(by), it)}
+    def updateTuple = update | map{tuple(it.subMap(by), it)}
+    return updateTuple | cross(previousTuple) | map{it[1][1] + it[0][1]}
+}
+
+
+def rowsChannel(ch) {
+    ch | map{rows(it)} | flatten
+}
+
+def constructIdentifier(map) {return map.subMap("condition", "biorep", "techrep", "downsampleProfile").values().join("_")}

@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {transpack; emptyOnLastStep} from './extraops.nf'
+include {transpack; emptyOnLastStep; updateChannel} from './extraops.nf'
 
 process PairtoolsSelect {
     publishDir params.general.publish.select ? params.general.publish.select : "results",
@@ -69,7 +69,8 @@ workflow Select {
     take:
     samples
     
-    main:        
+    main:      
+    /*  
     transpack (
         PairtoolsSelect,
         samples,
@@ -79,6 +80,16 @@ workflow Select {
         "id",
         ["nullOk":"pairtoolsSelectParams"]
     ) | set{samples}
+    */
+
+    samples | branch{yes: it.pairtoolsSelectParams || it.selectFilters; no: true} | set {run}
+    run.yes
+        | map{tuple(it.id, it.latestPairs, it.pairtoolsSelectParams, it.selectFilters)}
+        | PairtoolsSelect
+        | map{[id:it[0], selectPairs:it[1], latest:it[1], latestPairs:it[1]]}
+        | set{runResult}
+    updateChannel(run.yes, runResult) | concat(run.no) | set{samples}
+
     
     if ("Select" in params.general.get("qcAfter")) {
         QCReads(samples, "Select")

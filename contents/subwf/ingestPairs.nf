@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {transpack; emptyOnLastStep} from './extraops.nf'
+include {transpack; emptyOnLastStep; updateChannel} from './extraops.nf'
 
 process PairtoolsFlipSort {
     publishDir params.general.publish.flip_sort ? params.general.publish.flip_sort : "results",
@@ -51,6 +51,7 @@ workflow IngestPairs {
         samples
 
     main:
+    /*
     samples | filter{it.datatype == "pairs"} | set{ingest}
 
     samples = transpack(
@@ -61,7 +62,15 @@ workflow IngestPairs {
         ["latest":"pairs"],
         "id",
         ["nullOk":["reshapeParams"]]
-    )
+    )*/
+
+    samples | branch{yes: it.datatype == "sambam"; no: true} | set {run}
+    run.yes
+        | map{tuple(it.id, it.pairs, it.chromsizes, it.reshapeParams)}
+        | PairtoolsFlipSort
+        | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
+        | set{runResult}
+    updateChannel(run.yes, runResult) | concat(run.no) | set{samples}
 
     if ("IngestPairs" in params.general.get("qcAfter")) {
         samples = QCReads(samples, "IngestPairs")

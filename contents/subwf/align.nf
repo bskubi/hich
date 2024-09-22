@@ -1,4 +1,4 @@
-include {transpack; emptyOnLastStep} from './extraops.nf'
+include {transpack; emptyOnLastStep; updateChannel} from './extraops.nf'
 
 process BwaAlign {
     publishDir params.general.publish.align ? params.general.publish.align : "results",
@@ -47,18 +47,26 @@ workflow Align {
     main:
     // and BSBolt (for methylation + hi-c alignment)
 
-    samples
-        | filter{it.datatype == "fastq"}
-        | set {to_align}    
+    // samples
+    //     | filter{it.datatype == "fastq"}
+    //     | set {to_align}    
 
-    samples = transpack(
-        BwaAlign,
-        [to_align, samples],
-        ["id", "alignerIndexDir", "alignerIndexPrefix", "fastq1", "fastq2",
-         "aligner", "alignerThreads", "bwaFlags"],
-        ["id", "sambam"],
-        ["latest":"sambam"],
-        "id")
+    // samples = transpack(
+    //     BwaAlign,
+    //     [to_align, samples],
+    //     ["id", "alignerIndexDir", "alignerIndexPrefix", "fastq1", "fastq2",
+    //      "aligner", "alignerThreads", "bwaFlags"],
+    //     ["id", "sambam"],
+    //     ["latest":"sambam"],
+    //     "id")
+
+    samples | branch{yes: it.datatype == "fastq"; no: true} | set {run}
+    run.yes
+        | map{tuple(it.id, it.alignerIndexDir, it.alignerIndexPrefix, it.fastq1, it.fastq2, it.aligner, it.alignerThreads, it.bwaFlags)}
+        | BwaAlign
+        | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
+        | set{runResult}
+    updateChannel(run.yes, runResult) | concat(run.no) | set{samples}
 
     samples = emptyOnLastStep("Align", samples)
 
