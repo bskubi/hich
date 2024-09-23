@@ -628,7 +628,7 @@ def parameterize(processName, samples, parameterizations, sampleKeys, inputOrder
 }
 
 def label(map, lbl) {
-    return map?[(lbl)]?.toString().length() > 0
+    return map?[(lbl)]?.toString()?.length() > 0
 }
 
 def isTechrep(map) {return label(map, "techrep") && label(map, "biorep") && label(map, "condition")}
@@ -745,11 +745,13 @@ def columns (mapList, options = [:]) {
                Add it to the previous value list and update the transposed map.
             */
             def value = map.get(key, options.defaults?[(key)])
-            def previous = transposed.get(key, [])
-            assert value != null || options.nullOK?.contains(key), "In call to 'columns', '${key}' is not in nullOK and is missing/null for:\n${map}"
-            def valueList = previous + [value]
-            def updatedItem = [(key): valueList]
-            transposed += updatedItem
+            if (value != null || !options.dropNull) {
+                def previous = transposed.get(key, [])
+                assert value != null || options.nullOK?.contains(key), "In call to 'columns' without dropNull, '${key}' is not in nullOK, and is missing/null for:\n${map}"
+                def valueList = previous + [value]
+                def updatedItem = [(key): valueList]
+                transposed += updatedItem
+            }
         }
     }
 
@@ -760,7 +762,14 @@ def columns (mapList, options = [:]) {
 def rows (columnsMap, options = [:]) {
     // Get the keys and the transposed values
     def keys = columnsMap.keySet().toList()
-    def transposed = columnsMap.values().toList().transpose()
+    // Nextflow has an annoying behavior where if you pass to a Path process output a list with a single item,
+    // it silently converts it to a file object instead of keeping it a list of file objects. To avoid weird
+    // bugs when this happens, convert non-ArrayList values to ArrayList.
+    
+    def values = columnsMap.values().toList()
+    assert values.every {it instanceof ArrayList} || values.every {(it instanceof ArrayList && it.size() == 1) || !(it instanceof ArrayList)}
+    def formattedValues = values.collect({it instanceof ArrayList ? it : [it]})
+    def transposed = formattedValues.transpose()
 
     // Create N hashmaps, each containing the values at index i for the corresponding keys
     def result = transposed.collect { row ->
@@ -780,4 +789,4 @@ def rowsChannel(ch) {
     ch | map{rows(it)} | flatten
 }
 
-def constructIdentifier(map) {return map.subMap("condition", "biorep", "techrep", "downsampleProfile").values().join("_")}
+def constructIdentifier(map) {return map.subMap("condition", "biorep", "techrep", "aggregateProfileName").values().join("_")}

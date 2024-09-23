@@ -1,4 +1,4 @@
-include {updateChannel; coalesce; rows; columns; groupHashMap; isTechrep; constructIdentifier} from './extraops.nf'
+include {updateChannel; coalesce; rows; columns; groupHashMap; isTechrep; isBiorep; isCondition; constructIdentifier} from './extraops.nf'
 
 process HichDownsampleStatsFrom {
     input:
@@ -8,7 +8,7 @@ process HichDownsampleStatsFrom {
     tuple val(id), path(stats)
 
     stub:
-    stats = "${id}.stats.tsv"
+    stats = "${id}.from.stats.tsv"
     "touch ${stats}"
 }
 
@@ -20,7 +20,7 @@ process HichDownsampleStatsTo {
     tuple val(ids), path(targetStats)
 
     shell:
-    targetStats = ids.collect{"${it}.target.stats.tsv"}
+    targetStats = ids.collect{"${it}.to.stats.tsv"}
     "touch ${targetStats.join(" ")}"
 }
 
@@ -65,89 +65,282 @@ process PairtoolsDedup {
     Todo: Create AggregateBioreps and AggregateConditions
     Todo: Redo Hich stats, stats-aggregate, and downsample interface
     Todo: Implement stats, stats-aggregate, downsample, merge and dedup
+
+    If you have a large block of code that's only called once, should you
+    split the parts out into functions? Or just label their overall purpose
+    with a comment?
 */
 
-workflow AggregateTechreps {
-take:
-samples
+workflow CreateAggregatePairProfiles {
+    take:
+    levelSamples
+    levelParams
 
-main:
+    main:
+    // Split raw samples from the current level vs. those already associated with an aggregation profile
+    levelSamples | branch{
+        YES: it.aggregateProfileName == null
+        NO: true
+    } | set{raw}
 
-samples | filter{isTechrep(it) && it.aggregateProfile == null} | set{rawTechreps}
-
-
-channel.empty() | set{downsampleTechreps}
-params.comparisonSets.aggregateProfiles.each {
-    profile, profileParams ->
+    // From the raw samples, create new samples associated with each aggregation profile
+    // This may need to be redone putting the aggregateProfiles into a channel of their own and using combinations.
 
     
-    rawTechreps
-    | map{it + [aggregateProfile:profile] + profileParams}
-    | map{it + [techrepToMeanDistribution: it.subMap(it.techrepToMeanDistribution) ?: null] + [id: "${it.id}_${it.aggregateProfile}"]}
-    | concat(downsampleTechreps)
-    | set{downsampleTechreps}
-}
-
-downsampleTechreps
-    | map{tuple(it.id, it.techrepReadConjuncts, it.techrepCisStrata)}
-    | HichDownsampleStatsFrom
-    | map{[id:it[0], techrepDownsampleStatsFrom:it[1]]}
-    | set{downsampleStatsFromResult}
-updateChannel(downsampleTechreps, downsampleStatsFromResult) | set {fromStatsCalculated}
-
-groupHashMap(fromStatsCalculated, 'techrepToMeanDistribution')
-    | map{columns(it)}
-    | map{tuple(it.id, it.techrepDownsampleStatsFrom, it.techrepToSize, it.outlier)}
-    | HichDownsampleStatsTo
-    | map{[id:it[0], techrepDownsampleStatsTo:it[1]]}
+    aggregateProfiles = channel.of(params.comparisonSets.aggregateProfiles)
+    | map{[profileName: it.keySet().toList(), profileParams: it.values().toList()]}
     | map{rows(it)}
     | flatten
-    | set {downsampleStatsToResult}
-updateChannel(fromStatsCalculated, downsampleStatsToResult) | set{toStatsCalculated}
-
-toStatsCalculated
-    | map{tuple(it.id, it.techrepReadConjuncts, it.techrepCisStrata, it.techrepDownsampleStatsFrom, it.techrepDownsampleStatsTo)}
-    | HichDownsamplePairs
-    | map{[id:it[0], techrepDownsampledPairs:it[1], latest:it[1], latestPairs:it[1]]}
-    | set{downsampledResult}
-updateChannel(toStatsCalculated, downsampledResult) | set {downsampled}
-
-downsampled | branch {
-    yes: it.includeInMerge != false
-    no: true}
-| set{merge}
-
+    | combine(raw.YES)
+    | map {
+        profile = it[0]
+        sample = it[1]
+        sample += [aggregateProfileName: profile.profileName] + profile.profileParams
+        sample
+    }
+    | map{
+        downsampleToMeanDistributionGroup = it.subMap((levelParams.downsampleToMeanDistribution)) ?: null
+        it + [(levelParams.downsampleToMeanDistribution): downsampleToMeanDistributionGroup] + [id: "${it.id}_${it.aggregateProfileName}"]
+    }
+    | concat(raw.NO)
+    | set{result}
 
 
-groupHashMap(merge.yes, ['condition', 'biorep', 'aggregateProfile'])
-    | map{coalesce(columns(it))}
+    emit:
+    result
+    levelParams
+}
 
-    | map{tuple(constructIdentifier(coalesce(it, "_drop")), it.latestPairs)}
-    | PairtoolsMerge
-    | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
-    | set{biorepsFromMerge}
+workflow DownsamplePairs {
+    take:
+    levelSamples
+    levelParams
+
+    main:
+    // levelParams gets converted to a DataflowVariable when emitted from the previous workflow,
+    // so extract the LinkedHashMap value so we can use it more conveniently
+    levelParams = levelParams.value
+
+    levelSamples | branch {
+        YES: it.aggregateProfileName != null
+        NO: true
+    } | set{downsample}
+
+    // Compute from stats
+    downsample.YES
+        | map{tuple(it.id, it.get(levelParams.readConjuncts), it.get(levelParams.cisStrata))}
+        | HichDownsampleStatsFrom
+        | map{[id:it[0], (levelParams.downsampleStatsFrom):it[1]]}
+        | set{downsampleStatsFromResult}
+    updateChannel(downsample.YES, downsampleStatsFromResult) | set {fromStatsCalculated}
+
+    // Compute to stats
+    groupHashMap(fromStatsCalculated, [levelParams.downsampleToMeanDistribution, 'aggregateProfileName'])
+        | map{columns(it, ["dropNull":true])}
+        | map{tuple(it.id, it.get(levelParams.downsampleStatsFrom), it.get(levelParams.downsampleToSize), it.outlier)}
+        | HichDownsampleStatsTo
+        | map{[id:it[0], (levelParams.downsampleStatsTo):it[1]]}
+        | map{rows(it)}
+        | flatten
+        | set {downsampleStatsToResult}
+    updateChannel(fromStatsCalculated, downsampleStatsToResult) | set{toStatsCalculated}
+    toStatsCalculated
+        | map{tuple(it.id, it.get(levelParams.readConjuncts), it.get(levelParams.cisStrata), it.get(levelParams.downsampleStatsFrom), it.get(levelParams.downsampleStatsTo))}
+        | HichDownsamplePairs
+        | map{[id:it[0], (levelParams.downsamplePairs):it[1], latest:it[1], latestPairs:it[1]]}
+        | set{downsampledResult}
+    updateChannel(toStatsCalculated, downsampledResult) | set {downsampled}
+
+    downsampled | concat(downsample.NO) | set{result}
+
+    emit:
+    result
+    levelParams
+}
+
+workflow MergePairs {
+    take:
+    levelSamples
+    levelParams
+
+    main:
+
+    // levelParams gets converted to a DataflowVariable when emitted from the previous workflow,
+    // so extract the LinkedHashMap value so we can use it more conveniently
+    levelParams = levelParams.value
+
+    levelSamples | branch {
+        YES: it.includeInMerge != false && it.get(levelParams.doMerge)
+        NO: true}
+    | set{merge}
+
+    // Merge
+    groupHashMap(merge.YES, levelParams.mergeGroupIdentifiers)
+        | map{coalesce(columns(it, ["dropNull":true]))}
+        | map{tuple(constructIdentifier(coalesce(it, "_drop")), it.latestPairs)}
+        | PairtoolsMerge
+        | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
+        | set{fromMerge}
+
+    groupHashMap(merge.YES, levelParams.mergeGroupIdentifiers)
+        | map{coalesce(columns(it, ["dropNull":true]), '_drop')}
+        | map{it += [id:constructIdentifier(it)]}
+        | set{inheritedMergeAttributes}
+    updateChannel(inheritedMergeAttributes, fromMerge) | set{merged}
+
+    merged | concat(levelSamples) | set{result}
+
+    /*
+    !The merge outputs need to be passed through the setup protocol
+    */
+
+    emit:
+    result
+    levelParams
+}
+
+workflow DeduplicatePairs {
+    take:
+    levelSamples
+    levelParams
+
+    main:
+    
+    // levelParams gets converted to a DataflowVariable when emitted from the previous workflow,
+    // so extract the LinkedHashMap value so we can use it more conveniently
+    levelParams = levelParams.value
+
+    levelSamples
+        | branch {
+            YES: it.deduplicate && !it.alreadyDeduplicated && levelParams.levelFilter(it) && it.get(levelParams.doDedup)
+            NO: true
+    } | set{deduplicate}
+
+    deduplicate.YES
+        | map{tuple(it.id, it.latestPairs, it.dedupSingleCell, it.dedupMaxMismatch, it.dedupMethod)}
+        | PairtoolsDedup
+        | map{[id:it[0], dedupPairs:it[1], latest:it[1], latestPairs:it[1], alreadyDeduplicated:true]}
+        | set{dedupResult}
+    updateChannel(deduplicate.YES, dedupResult) | concat(deduplicate.NO) | set{result}
+
+    emit:
+    result
+}
+
+workflow AggregateTechreps {
+    take:
+    samples
+
+    main:
+
+    aggregateParams = [
+        dedupSingleCell: 'dedupSingleCell',
+        dedupMaxMismatch: 'dedupMaxMismatch',
+        dedupMethod: 'max',
+        cisStrata: 'techrepCisStrata',
+        readConjuncts: 'techrepReadConjuncts',
+        downsampleToMeanDistribution: 'techrepDownsampleToMeanDistribution',
+        downsampleToSize: 'techrepDownsampleToSize',
+        downsampleStatsFrom: 'techrepDownsampleStatsFrom',
+        downsampleStatsTo: 'techrepDownsampleStatsTo',
+        downsamplePairs: 'techrepDownsamplePairs',
+        doMerge: 'mergeTechrepToBiorep',
+        doDedup: 'techrepDedup',
+        mergeGroupIdentifiers: ['condition', 'biorep', 'aggregateProfileName'],
+        levelFilter: {it.condition && it.biorep && it.techrep}
+    ]
+
+    samples | branch {
+        techrep: isTechrep(it)
+        other: true
+    } | set{sampleType}
+
+    CreateAggregatePairProfiles(sampleType.techrep, aggregateParams)
+    | DownsamplePairs
+    | MergePairs
+    | DeduplicatePairs
+    | concat(sampleType.other)
+    | set{result}
 
 
-groupHashMap(merge.yes, ['condition', 'biorep', 'aggregateProfile'])
-    | map{coalesce(columns(it), '_drop')}
-    | map{it += [id:constructIdentifier(it)]}
-    | set{inheritedBiorepsAttributes}
-updateChannel(inheritedBiorepsAttributes, biorepsFromMerge) | set{biorepsFromMerge}
+    emit:
+    result
+}
 
-rawTechreps
-    | concat(merge.yes, merge.no)
-    | branch {
-    yes: it.deduplicate
-    no: true
-} | set{deduplicate}
+workflow AggregateBioreps {
+    take:
+    samples
 
-deduplicate.yes
-    | map{tuple(it.id, it.latestPairs, it.singleCell, it.dedupMaxMismatch, it.dedupMethod)}
-    | PairtoolsDedup
-    | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
-    | set{dedupResult}
-updateChannel(deduplicate.yes, dedupResult) | concat(deduplicate.no, biorepsFromMerge) | set{samples}
+    main:
 
-emit:
-samples
+    aggregateParams = [
+        dedupSingleCell: 'dedupSingleCell',
+        dedupMaxMismatch: 'dedupMaxMismatch',
+        dedupMethod: 'max',
+        cisStrata: 'biorepCisStrata',
+        readConjuncts: 'biorepReadConjuncts',
+        downsampleToMeanDistribution: 'biorepDownsampleToMeanDistribution',
+        downsampleToSize: 'biorepDownsampleToSize',
+        downsampleStatsFrom: 'biorepDownsampleStatsFrom',
+        downsampleStatsTo: 'biorepDownsampleStatsTo',
+        downsamplePairs: 'biorepDownsamplePairs',
+        doMerge: 'mergeBiorepToCondition',
+        doDedup: 'biorepDedup',
+        mergeGroupIdentifiers: ['condition', 'aggregateProfileName'],
+        levelFilter: {it.condition && it.biorep && !it.techrep}
+    ]
+
+    samples | branch {
+        biorep: isBiorep(it)
+        other: true
+    } | set{sampleType}
+
+    CreateAggregatePairProfiles(sampleType.biorep, aggregateParams)
+    | DownsamplePairs
+    | MergePairs
+    | DeduplicatePairs
+    | concat(sampleType.other)
+    | set{result}
+
+    emit:
+    result
+}
+
+workflow AggregateConditions {
+    take:
+    samples
+
+    main:
+
+    aggregateParams = [
+        dedupSingleCell: 'dedupSingleCell',
+        dedupMaxMismatch: 'dedupMaxMismatch',
+        dedupMethod: 'max',
+        cisStrata: 'conditionCisStrata',
+        readConjuncts: 'conditionReadConjuncts',
+        downsampleToMeanDistribution: 'conditionDownsampleToMeanDistribution',
+        downsampleToSize: 'conditionDownsampleToSize',
+        downsampleStatsFrom: 'conditionDownsampleStatsFrom',
+        downsampleStatsTo: 'conditionDownsampleStatsTo',
+        downsamplePairs: 'conditionDownsamplePairs',
+        doMerge: 'mergeCondition',
+        doDedup: 'conditionDedup',
+        mergeGroupIdentifiers: ['aggregateProfileName'],
+        levelFilter: {it.condition && !it.biorep && !it.techrep}
+    ]
+
+    samples | branch {
+        condition: isCondition(it)
+        other: true
+    } | set{sampleType}
+
+    CreateAggregatePairProfiles(sampleType.condition, aggregateParams)
+    | DownsamplePairs
+    | MergePairs
+    | DeduplicatePairs
+    | concat(sampleType.other)
+    | set{result}
+
+    emit:
+    result
 }
