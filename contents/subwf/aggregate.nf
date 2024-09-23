@@ -122,7 +122,7 @@ workflow DownsamplePairs {
     levelParams = levelParams.value
 
     levelSamples | branch {
-        YES: it.aggregateProfileName != null && (it.get(levelParams.downsampleToMeanDistribution) != null || it.get(levelParams.downsampleToSize) != 1.0)
+        YES: it.aggregateProfileName != null && (it.get(levelParams.downsampleToMeanDistribution) != null || !(it.get(levelParams.downsampleToSize) in [1.0, null]))
         NO: true
     } | set{downsample}
 
