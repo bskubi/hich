@@ -3,7 +3,7 @@ include {parameterize} from './extraops.nf'
 process HicrepCombos{
     publishDir "results/hicrep",
                mode: params.general.publish.mode
-    container "bskubi/hich:latest"
+    //container "bskubi/hich:latest"
 
     input:
     tuple path(mcools), val(resolutions), val(chroms), val(exclude), val(chromFilter), val(h), val(dBPMax), val(bDownSample)
@@ -17,10 +17,10 @@ process HicrepCombos{
            resolutions ? "--resolutions ${resolutions.join(",")}" : "",
            chroms ? "--chroms ${chroms.join(",")}" : "",
            exclude ? "--exclude ${exclude.join(",")}" : "",
-           chromFilter ? "--chrom_filter '${chromFilter}'" : "",
+           chromFilter ? "--chrom-filter '${chromFilter}'" : "",
            "--h ${h.join(",")}",
-           "--d_bp_max ${dBPMax.join(",")}",
-           "--b_downsample ${bDownSample.join(",")}",
+           "--d-bp-max ${dBPMax.join(",")}",
+           "--b-downsample ${bDownSample.join(",")}",
            "--output hicrep.tsv",
            "${mcools.join(" ")}"].join(" ")
     cmd

@@ -142,7 +142,7 @@ workflow CreateAggregatePairProfiles {
         downsampleToMeanDistributionGroup = it.subMap((levelParams.downsampleToMeanDistribution)) ?: null
         it + [(levelParams.downsampleToMeanDistribution): downsampleToMeanDistributionGroup] + [id: "${it.id}_${it.aggregateProfileName}"]
     }
-    | concat(raw.NO)
+    | concat(raw.YES, raw.NO)
     | set{result}
 
 

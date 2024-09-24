@@ -32,14 +32,6 @@ workflow {
         | AggregateTechreps
         | AggregateBioreps
         | AggregateConditions
-
-/*
-        //| DownsampleTechreps    // Condition/biorep/techrep coverage control and merge
-        | TechrepsToBioreps
-        | Deduplicate
-        //| DownsampleBioreps
-        | BiorepsToConditions
-        //| DownsampleConditions
         
         | HicMatrix             // Create contact matrices
         | McoolMatrix
@@ -48,9 +40,9 @@ workflow {
         | CompartmentScore
         | DifferentialLoops
         | InsulationScore
-*/
-        // | set{samples}
 
-    // samples = emptyOnLastStep("End", samples)
+        | set{samples}
+
+    samples = emptyOnLastStep("End", samples)
 }
 
