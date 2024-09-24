@@ -14,24 +14,7 @@ class PairsHeader:
         return self.__dict__
     
     def to_string(self):
-        version_line = PairsHeader.version_prefix + str(self.pairs_format_version)
-        chromsizes_lines = [
-            f"#chromsize: {chrom} {size}"
-            for chrom, size
-            in self.chromsizes.items()
-        ]
-        columns_line = "#columns: " + " ".join(self.columns)
-        other_lines = []
-        for key, val in self.to_dict().items():
-
-            if key not in ["pairs_format_version", "chromsizes", "columns"]:
-                if isinstance(val, list):
-                    for elem in val:
-                        other_lines.append(f"#{key}: {elem}")
-                else:
-                    other_lines.append(f"#{key}: {val}")
-        header_lines = [version_line] + chromsizes_lines + other_lines + [columns_line]
-        return "\n".join(header_lines)
+        return self.text
 
     def set_columns(self, columns: list[str]):
         new_columns_line = "#columns: " + " ".join(columns) + "\n"

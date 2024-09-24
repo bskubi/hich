@@ -36,7 +36,7 @@ process HichStatsAggregateToMinGroupSize {
 
 process HichDownsamplePairs {
     input:
-    tuple val(id), path(fullPairs), path(statsFrom), path(statsTo), val(conjuncts), val(cisStrata)
+    tuple val(id), path(fullPairs), path(statsFrom), path(statsTo), val(conjuncts), val(cisStrata), val(toSize)
 
     output:
     tuple val(id), path(downsampledPairs)
@@ -45,7 +45,7 @@ process HichDownsamplePairs {
     downsampledPairs = "${id}.downsampled.pairs.gz"
     conjunctsArg = conjuncts ? "--conjuncts '${conjuncts.join(' ')}'" : ""
     cisStrataArg = cisStrata ? "--cis-strata '${cisStrata.join(' ')}'" : ""
-    toSizeArg = ""
+    toSizeArg = toSize ? "--to-size ${toSize}" : ""
     //toSizeArg = toSize ? "--to-size ${toSize}" : ""
 
     "hich downsample ${conjunctsArg} ${cisStrataArg} --orig-stats ${statsFrom} --target-stats ${statsTo} ${toSizeArg} ${fullPairs} ${downsampledPairs}"
@@ -186,8 +186,10 @@ workflow DownsamplePairs {
     updateChannel(fromStatsCalculated, downsampleToGroupMinResult) | set{toGroupMinResult}
 
     toGroupMinResult
-        | map{tuple(it.id, it.latestPairs, it.get(levelParams.downsampleStatsFrom), it.get(levelParams.downsampleStatsTo),
-              it.get(levelParams.readConjuncts), it.get(levelParams.cisStrata))}
+        | map{
+            toSize = it.toSize ?: levelParams.downsampleToSize
+            tuple(it.id, it.latestPairs, it.get(levelParams.downsampleStatsFrom), it.get(levelParams.downsampleStatsTo),
+              it.get(levelParams.readConjuncts), it.get(levelParams.cisStrata), toSize)}
         | HichDownsamplePairs
         | map{[id:it[0], (levelParams.downsamplePairs):it[1], latest:it[1], latestPairs:it[1]]}
         | set{downsampledResult}
@@ -286,6 +288,7 @@ workflow AggregateTechreps {
         downsampleStatsFrom: 'techrepDownsampleStatsFrom',
         downsampleStatsTo: 'techrepDownsampleStatsTo',
         downsamplePairs: 'techrepDownsamplePairs',
+        downsampleToSize: 'techrepDownsampleToSize',
         doMerge: 'mergeTechrepToBiorep',
         doDedup: 'techrepDedup',
         mergeGroupIdentifiers: ['condition', 'biorep', 'aggregateProfileName'],
@@ -326,6 +329,7 @@ workflow AggregateBioreps {
         downsampleStatsFrom: 'biorepDownsampleStatsFrom',
         downsampleStatsTo: 'biorepDownsampleStatsTo',
         downsamplePairs: 'biorepDownsamplePairs',
+        downsampleToSize: 'biorepDownsampleToSize',
         doMerge: 'mergeBiorepToCondition',
         doDedup: 'biorepDedup',
         mergeGroupIdentifiers: ['condition', 'aggregateProfileName'],
@@ -365,6 +369,7 @@ workflow AggregateConditions {
         downsampleStatsFrom: 'conditionDownsampleStatsFrom',
         downsampleStatsTo: 'conditionDownsampleStatsTo',
         downsamplePairs: 'conditionDownsamplePairs',
+        downsampleToSize: 'conditionDownsampleToSize',
         doMerge: 'mergeCondition',
         doDedup: 'conditionDedup',
         mergeGroupIdentifiers: ['aggregateProfileName'],

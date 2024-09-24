@@ -37,9 +37,9 @@ class PairsFile:
 
         if "r" in self.mode:
             self.read_header(header)
-        elif "w" in self.mode or "a" in self.mode: 
+        elif "w" in self.mode or "a" in self.mode:
             self.header = header
-            file_is_empty = self.filepath_or_object.tell() == 0
+            file_is_empty = ("a" in self.mode and self.filepath_or_object.seekable() and self.filepath_or_object.tell() == 0) or "w" in self.mode
             if file_is_empty:
                 self.filepath_or_object.write(self.header.to_string())
 
