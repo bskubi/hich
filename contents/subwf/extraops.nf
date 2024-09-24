@@ -674,7 +674,26 @@ def emptyOnLastStep(step, samples) {
 
 // New extraops
 
-def groupHashMap(ch, by) {ch | map{tuple(it.subMap(by), it)} | groupTuple | map{it[1]}}
+def groupHashMap(ch, by, sortBy = ["id"]) {
+    ch
+    | map{tuple(it.subMap(by), it)}
+    | groupTuple
+    | map{it[1]}
+    | map{
+        mapList ->              // Sort the hashmaps to ensure same output for same set of samples on repeated runs
+        if (sortBy) {
+                mapList.sort {
+                map1, map2 ->
+                sortBy.collect {    // sortBy is a list of keys to sort by, in descending order of priority
+                    key ->
+                    map1[key] <=> map2[key]     // -1, 0, 1 depending on comparison outcome
+                }.findResult {it != 0 ? it : null} ?: 0 // We collect all the comparisons for each sortBy key, then take the first nonzero as the sort order
+            }
+        } else {
+            mapList
+        }
+    }
+}
 
 // Called from within map function on transposedSamples
 def coalesce (transposedSample, defaultWhenDifferent = "_unchanged", whenDifferent = [:]) {

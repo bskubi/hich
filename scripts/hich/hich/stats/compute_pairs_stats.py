@@ -20,20 +20,29 @@ def compute_pairs_stats_on_path(data):
     return result
 
 def aggregate_classifier(pairs_stats_paths: list[str]) -> Tuple["PairsClassifier", list["DiscreteDistribution"]]:
+    """
+    """
     from hich.pairs import PairsClassifier
     from hich.stats import DiscreteDistribution
     dfs = []
     conjuncts = None
     raw_strata = set()
+
+    # Collect dataframes of all input stats files
     for path in pairs_stats_paths:
         df = pl.read_csv(path, separator = "\t", infer_schema_length = None)
         dfs.append(df)
+
+        # Ensure conjuncts match for all stats files.
         new_conjuncts = [col for col in df.columns if col and col != "count"]
         conjuncts = conjuncts or new_conjuncts
         assert conjuncts == new_conjuncts, "Conjuncts do not match for all hich stats files."
+
+        # Get unique strata listed in "stratum" column if present
         if "stratum" in conjuncts:
-            strata = set(df["stratum"].unique().to_list())
-            raw_strata.update(strata)
+            strata = set(s for s in df["stratum"].unique().to_list() if s is not None)
+
+    # Sort strata from lowest to highest; extract to integer or float.
     raw_strata = sorted(list(raw_strata))
     cis_strata = []
     for stratum in raw_strata:
@@ -44,6 +53,9 @@ def aggregate_classifier(pairs_stats_paths: list[str]) -> Tuple["PairsClassifier
                 cis_strata.append(float(stratum))
             except ValueError:
                 pass
+
+    # Build a classifier using the conjuncts and complete collection of cis strata
+    # Then use the classifier to convert all the dataframes into DiscreteDistributions
     classifier = PairsClassifier(conjuncts, cis_strata)
     distributions = []
     for df in dfs:
@@ -55,26 +67,28 @@ def aggregate_classifier(pairs_stats_paths: list[str]) -> Tuple["PairsClassifier
 def load_stats_and_classifier_from_file(pairs_stats_header_tsv_path):
     from hich.stats import DiscreteDistribution
     from hich.pairs import PairsClassifier, PairsFile
-    df = DataFrame(pairs_stats_header_tsv_path, separator = "\t", infer_schema_length = None)
+    df = pl.read_csv(pairs_stats_header_tsv_path, separator = "\t", infer_schema_length = None)
     conjuncts = [col for col in df.columns if col != "count"]
     cis_strata = None
     if "stratum" in conjuncts:
         raw_strata = df["stratum"].unique().to_list()
         cis_strata = []
         for s in raw_strata:
-            if s.isdigit():
+            if str(s).isdigit():
                 cis_strata.append(int(s))
-            elif s == "inf":
-                cis_strata.append(float(s))
-            else:
-                cis_strata.append(s)
+            elif s is not None:
+                try:
+                    cis_strata.append(float(str(s)))
+                except ValueError:
+                    print("Not integer or float", s)
+                    cis_strata.append(s)
     classifier = PairsClassifier(conjuncts, cis_strata)
     distribution = DiscreteDistribution()
     for row in df.iter_rows(named = True):
         count = row["count"]
         outcome = (row[conjunct] for conjunct in conjuncts)
         distribution[outcome] = count
-    return distribution, classifier
+    return classifier, distribution
 
 def compute_pairs_stats_on_path_list(classifier, pairs_paths):
     data = [(classifier, path) for path in pairs_paths]

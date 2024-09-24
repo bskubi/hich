@@ -35,7 +35,10 @@ class PairsClassifier:
         """Creates and compiles Python classification code that converts conjuncts into a tuple"""
 
         # Create a comma-separated list of the conjuncts and add parenthesis
-        tuple_center = ", ".join(self.conjuncts) if self.conjuncts else None
+        prefix = lambda conjunct: not (conjunct.strip().startswith("record.") or conjunct in ["strata", "stratum"])
+        ensure_format = lambda conjunct: f"record.{conjunct.strip()}" if prefix(conjunct) else conjunct
+        formatted_conjuncts = [ensure_format(conjunct) for conjunct in self.conjuncts]
+        tuple_center = ", ".join(formatted_conjuncts) if formatted_conjuncts else None
         self.classification_code = "(" + tuple_center + ",)" if tuple_center else ""
 
         # Compile to Python bytecode

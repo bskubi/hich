@@ -2,60 +2,100 @@ include {updateChannel; coalesce; rows; columns; groupHashMap; isTechrep; isBior
 
 process HichDownsampleStatsFrom {
     input:
-    tuple val(id), val(conjuncts), val(cisStrata)
+    tuple val(id), path(pairs), val(conjuncts), val(cisStrata)
 
     output:
     tuple val(id), path(stats)
 
-    stub:
+    shell:
     stats = "${id}.from.stats.tsv"
+    conjunctsArg = conjuncts ? "--conjuncts '${conjuncts.join(' ')}'" : ""
+    cisStrataArg = cisStrata ? "--cis-strata '${cisStrata.join(' ')}'" : ""
+    "hich stats ${conjunctsArg} ${cisStrataArg} --output ${stats} ${pairs}"
+
+    stub:
+    stats = "${id}.stats.tsv"
     "touch ${stats}"
 }
 
-process HichDownsampleStatsTo {
+process HichStatsAggregateToMinGroupSize {
     input:
-    tuple val(ids), path(stats), val(toSizes), val(outliers)
+    tuple val(ids), path(stats), val(outliers)
 
     output:
     tuple val(ids), path(targetStats)
 
     shell:
-    targetStats = ids.collect{"${it}.to.stats.tsv"}
-    "touch ${targetStats.join(" ")}"
+    targetStats = stats.collect{"aggregate_${it}"}
+    "hich stats-aggregate --to-group-mean --to-group-min --prefix aggregate_ ${stats.join(' ')}"
+    
+    stub:
+    targetStats = stats.collect{"aggregate_${it}"}
+    "touch ${targetStats.join(' ')}"
 }
 
 process HichDownsamplePairs {
     input:
-    tuple val(id), val(conjuncts), val(cisStrata), path(statsFrom), path(statsTo)
+    tuple val(id), path(fullPairs), path(statsFrom), path(statsTo), val(conjuncts), val(cisStrata)
 
     output:
     tuple val(id), path(downsampledPairs)
 
     shell:
+    downsampledPairs = "${id}.downsampled.pairs.gz"
+    conjunctsArg = conjuncts ? "--conjuncts '${conjuncts.join(' ')}'" : ""
+    cisStrataArg = cisStrata ? "--cis-strata '${cisStrata.join(' ')}'" : ""
+    toSizeArg = ""
+    //toSizeArg = toSize ? "--to-size ${toSize}" : ""
+
+    "hich downsample ${conjunctsArg} ${cisStrataArg} --orig-stats ${statsFrom} --target-stats ${statsTo} ${toSizeArg} ${fullPairs} ${downsampledPairs}"
+
+    stub:
     downsampledPairs = "${id}.downsampled.pairs.tsv"
     "touch ${downsampledPairs}"
 }
 
 process PairtoolsMerge {
     input:
-    tuple val(id), path(pairs)
+    tuple val(id), path(to_merge)
 
     output:
     tuple val(id), path(merged)
 
     shell:
     merged = "${id}.merged.pairs.gz"
+    "pairtools merge --output ${merged} ${to_merge.join(' ')}"
+
+    stub:
+    merged = "${id}.merged.pairs.gz"
     "touch ${merged}"
 }
 
 process PairtoolsDedup {
+    publishDir params.general.publish.parse ? params.general.publish.dedup : "results",
+               saveAs: {params.general.publish.dedup ? it : null},
+               mode: params.general.publish.mode
+    conda "bioconda::pairtools bioconda::samtools"
+    container "bskubi/hich:latest"
+
     input:
-    tuple val(id), path(pairs), val(singleCell), val(maxMismatch), val(method)
+    tuple val(id), path(pairs), val(singleCell), val(maxMismatch), val(method), val(pairtoolsDedupParams)
 
     output:
     tuple val(id), path(deduplicated)
 
     shell:
+    deduplicated = "${id}.dedup.pairs.gz"
+    
+    
+    if (singleCell) pairtoolsDedupParams += ["--extra-col-pair cellID cellID --backend cython --chunksize 1000000"]
+    if (maxMismatch != null) pairtoolsDedupParams += ["--max-mismatch ${maxMismatch}"]
+    if (method != null) pairtoolsDedupParams += ["--method ${method}"]
+
+    cmd = "pairtools dedup --output ${deduplicated} ${pairtoolsDedupParams.join(' ')} ${pairs}"
+    cmd
+
+    stub:
     deduplicated = "${id}.dedup.pairs.gz"
     "touch ${deduplicated}"
 }
@@ -128,7 +168,7 @@ workflow DownsamplePairs {
 
     // Compute from stats
     downsample.YES
-        | map{tuple(it.id, it.get(levelParams.readConjuncts), it.get(levelParams.cisStrata))}
+        | map{tuple(it.id, it.latestPairs, it.get(levelParams.readConjuncts), it.get(levelParams.cisStrata))}
         | HichDownsampleStatsFrom
         | map{[id:it[0], (levelParams.downsampleStatsFrom):it[1]]}
         | set{downsampleStatsFromResult}
@@ -137,19 +177,21 @@ workflow DownsamplePairs {
     // Compute to stats
     groupHashMap(fromStatsCalculated, [levelParams.downsampleToMeanDistribution, 'aggregateProfileName'])
         | map{columns(it, ["dropNull":true])}
-        | map{tuple(it.id, it.get(levelParams.downsampleStatsFrom), it.get(levelParams.downsampleToSize), it.outlier)}
-        | HichDownsampleStatsTo
+        | map{tuple(it.id, it.get(levelParams.downsampleStatsFrom), it.outlier)}
+        | HichStatsAggregateToMinGroupSize
         | map{[id:it[0], (levelParams.downsampleStatsTo):it[1]]}
         | map{rows(it)}
         | flatten
-        | set {downsampleStatsToResult}
-    updateChannel(fromStatsCalculated, downsampleStatsToResult) | set{toStatsCalculated}
-    toStatsCalculated
-        | map{tuple(it.id, it.get(levelParams.readConjuncts), it.get(levelParams.cisStrata), it.get(levelParams.downsampleStatsFrom), it.get(levelParams.downsampleStatsTo))}
+        | set {downsampleToGroupMinResult}
+    updateChannel(fromStatsCalculated, downsampleToGroupMinResult) | set{toGroupMinResult}
+
+    toGroupMinResult
+        | map{tuple(it.id, it.latestPairs, it.get(levelParams.downsampleStatsFrom), it.get(levelParams.downsampleStatsTo),
+              it.get(levelParams.readConjuncts), it.get(levelParams.cisStrata))}
         | HichDownsamplePairs
         | map{[id:it[0], (levelParams.downsamplePairs):it[1], latest:it[1], latestPairs:it[1]]}
         | set{downsampledResult}
-    updateChannel(toStatsCalculated, downsampledResult) | set {downsampled}
+    updateChannel(toGroupMinResult, downsampledResult) | set {downsampled}
 
     downsampled | concat(downsample.NO) | set{result}
 
@@ -217,7 +259,7 @@ workflow DeduplicatePairs {
     } | set{deduplicate}
 
     deduplicate.YES
-        | map{tuple(it.id, it.latestPairs, it.dedupSingleCell, it.dedupMaxMismatch, it.dedupMethod)}
+        | map{tuple(it.id, it.latestPairs, it.dedupSingleCell, it.dedupMaxMismatch, it.dedupMethod, it.pairtoolsDedupParams)}
         | PairtoolsDedup
         | map{[id:it[0], dedupPairs:it[1], latest:it[1], latestPairs:it[1], alreadyDeduplicated:true]}
         | set{dedupResult}

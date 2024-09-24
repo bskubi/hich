@@ -28,7 +28,7 @@ class DiscreteDistribution(Counter):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def to_count(self, n: int) -> 'DiscreteDistribution':
+    def to_size(self, n: int) -> 'DiscreteDistribution':
         total = n if isinstance(n, int) else self.total() * n
         new_counts = {event: DiscreteDistribution.probabilistic_round(prob*total) for event, prob in self.probabilities().items()}
         return DiscreteDistribution(new_counts)
@@ -62,7 +62,7 @@ class DiscreteDistribution(Counter):
         # Get value of N - total number of downsampled events
         N = DiscreteDistribution.probabilistic_round(result.x[0])
 
-        return probdist.to_count(N)
+        return probdist.to_size(N)
 
     def probabilities(self) -> "DiscreteDistribution":
         return self.copy() / self.total()
