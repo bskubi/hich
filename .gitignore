@@ -9,8 +9,6 @@ hisham
 results
 prototype/data
 .gitignore
-samples.csv
-samples.tsv
 scripts/hich/Mock*
 scripts/hich/GRCh38*
 scripts/hich/mock*
