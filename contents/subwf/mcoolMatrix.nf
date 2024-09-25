@@ -30,6 +30,7 @@ process CoolerZoomify {
            "&& cooler zoomify"] + coolerZoomifyParams +
            ["--resolutions '${bins}'",
            "--out ${id}.mcool",
+           "--nproc ${task.cpus}"
            "${id}.cool"]
     cmd.removeAll([null])
     cmd = cmd.join(" ")

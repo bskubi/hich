@@ -54,7 +54,8 @@ workflow DifferentialLoops {
             Which aggregation levels to compare
             Which samples to exclude from comparisons
         
-        This might look like
+        This might look like:
+            
     */
 
     samples
