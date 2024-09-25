@@ -19,6 +19,7 @@ include {AggregateTechreps; AggregateBioreps; AggregateConditions} from './subwf
 
 
 workflow {
+    
     LoadSampleFile              // Setup workflow inputs
         | Setup
         | FastqHead
