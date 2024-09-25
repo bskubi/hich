@@ -11,6 +11,7 @@ process JuicerToolsPre {
                saveAs: {params.general.publish.hic ? it : null},
                mode: params.general.publish.mode
     container "bskubi/juicer_tools:1.22.01"
+    label 'createMatrix'
     cpus 5
     memory {2.GB * task.attempt}
 

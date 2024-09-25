@@ -11,9 +11,6 @@ process BwaAlign {
     label 'whenLocal_allConsuming'
     label 'align'
     
-    memory {15.GB + 15.GB * (task.attempt-1)}
-    debug true
-
     // NOTE: Alignment speed is trivially parallelizeable and does not benefit
     // from running alignment in parallel multiple files at once. Each instance
     // of bwa-mem2 uses about 15 gigs of memory. For these two reasons we 

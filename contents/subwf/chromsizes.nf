@@ -7,8 +7,8 @@ process ChromsizesProc {
 
     conda "bioconda::ucsc-fasize"
     container 'quay.io/biocontainers/ucsc-fasize:332--0'
+    label 'smallResource'
     memory 8.GB
-    time '2hr'
 
     input:
     tuple path(reference), val(assembly), val(chromsizes)

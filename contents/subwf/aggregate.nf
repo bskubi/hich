@@ -2,6 +2,7 @@ include {updateChannel; coalesce; rows; columns; groupHashMap; isTechrep; isBior
 
 process HichDownsampleStatsFrom {
     container "bskubi/hich:latest"
+    label 'pairs'
 
     input:
     tuple val(id), path(pairs), val(conjuncts), val(cisStrata)
@@ -22,6 +23,7 @@ process HichDownsampleStatsFrom {
 
 process HichStatsAggregateToMinGroupSize {
     container "bskubi/hich:latest"
+    label 'pairs'
 
     input:
     tuple val(ids), path(stats), val(outliers)
@@ -40,6 +42,7 @@ process HichStatsAggregateToMinGroupSize {
 
 process HichDownsamplePairs {
     container "bskubi/hich:latest"
+    label 'pairs'
 
     input:
     tuple val(id), path(fullPairs), path(statsFrom), path(statsTo), val(conjuncts), val(cisStrata), val(toSize)
@@ -63,6 +66,7 @@ process HichDownsamplePairs {
 
 process PairtoolsMerge {
     container "bskubi/hich:latest"
+    label 'pairs'
     cpus 8
     
     input:
@@ -86,6 +90,7 @@ process PairtoolsDedup {
                mode: params.general.publish.mode
     conda "bioconda::pairtools bioconda::samtools"
     container "bskubi/hich:latest"
+    label 'pairs'
     cpus 8
 
     input:

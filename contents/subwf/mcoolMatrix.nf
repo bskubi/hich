@@ -7,7 +7,7 @@ process CoolerZoomify {
                mode: params.general.publish.mode
     conda "bioconda::cooler"
     container "bskubi/hich:latest"
-    maxForks 2
+    label 'createMatrix'
 
     input:
     tuple val(id), path(infile), path(chromsizes), val(pairsFormat), val(assembly), val(matrix), val(coolerCloadParams), val(coolerZoomifyParams)

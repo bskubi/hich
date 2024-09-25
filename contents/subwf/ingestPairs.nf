@@ -8,6 +8,7 @@ process PairtoolsFlipSort {
     conda "bioconda::pairtools"
     container "bskubi/hich:latest"
     label 'doJobArray'
+    label 'pairs'
     cpus 8
 
     input:

@@ -47,6 +47,16 @@ workflow DifferentialLoops {
     samples
 
     main:
+
+    /*
+        We need to alter this so that the user can control:
+            Which aggregation profiles to run it on
+            Which aggregation levels to compare
+            Which samples to exclude from comparisons
+        
+        This might look like
+    */
+
     samples
         | branch {
             sample ->

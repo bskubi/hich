@@ -4,6 +4,7 @@ process PairtoolsStats {
                mode: params.general.publish.mode
     conda "bioconda::pairtools"
     container "bskubi/hich:latest"
+    label 'pairs'
     cpus 8
 
     input:

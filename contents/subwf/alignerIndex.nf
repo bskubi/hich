@@ -8,8 +8,6 @@ process BwaMem2Index {
                mode: params.general.publish.mode
     label 'whenLocal_allConsuming'
     label 'index'
-    memory {80.GB + 40.GB * task.attempt}
-
 
     input:
     tuple path(genomeReference), val(prefix)

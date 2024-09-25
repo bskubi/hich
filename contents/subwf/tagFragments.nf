@@ -7,6 +7,7 @@ process HichFragtag {
                mode: params.general.publish.mode
     container "bskubi/hich:latest"
     label 'doJobArray'
+    label 'pairs'
 
     input:
     tuple val(id), path(pairs), path(fragmentIndex)

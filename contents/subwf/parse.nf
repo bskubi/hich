@@ -8,8 +8,8 @@ process PairtoolsParse2 {
     conda "bioconda::pairtools bioconda::samtools"
     container "bskubi/hich:latest"
     label 'doJobArray'
+    label 'pairs'
     cpus 8
-    debug true
 
     input:
     tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseParams), val(reshapeParams)

@@ -5,6 +5,7 @@ process FragmentIndexProc {
                saveAs: {params.general.publish.fragmentIndex ? it : null},
                mode: params.general.publish.mode
     container "bskubi/hich:latest"
+    label 'smallResource'
     
     input:
     tuple path(genomeReference), val(restrictionEnzymes), val(fragmentIndex), val(assembly)
