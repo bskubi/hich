@@ -6,6 +6,8 @@ process BwaMem2Index {
     publishDir params.general.publish.bwa_mem2Index ? params.general.publish.bwa_mem2Index : "results",
                saveAs: {params.general.publish.bwa_mem2Index ? it : null},
                mode: params.general.publish.mode
+    maxForks 1
+    memory 80.GB
 
     input:
     tuple path(genomeReference), val(prefix)
@@ -28,6 +30,9 @@ process BwaMemIndex {
     publishDir params.general.publish.bwaIndex ? params.general.publish.bwaIndex : "results",
                saveAs: {params.general.publish.bwaIndex ? it : null},
                mode: params.general.publish.mode
+    maxForks 1
+    memory 24.GB
+
 
     input:
     tuple path(genomeReference), val(prefix)
