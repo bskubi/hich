@@ -9,7 +9,8 @@ process Stage {
     publishDir params.general.publish.genomeReference ? params.general.publish.genomeReference : "results",
                saveAs: {params.general.publish.genomeReference ? it : null},
                mode: params.general.publish.mode
-    
+    time '1hr'
+
     input:
     tuple val(assembly), path(url)
 

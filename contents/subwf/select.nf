@@ -7,6 +7,8 @@ process PairtoolsSelect {
                mode: params.general.publish.mode
     conda "bioconda::pairtools"
     container "bskubi/hich:latest"
+    label 'doJobArray'
+    cpus 8
 
     input:
     tuple val(id), path(pairs), val(pairtoolsSelectParams), val(condition)
@@ -57,7 +59,7 @@ process PairtoolsSelect {
     write_chroms = condition.chroms ? "echo '${condition.chroms.join('\n')}' > __chroms__.bed &&" : ""
     chroms_file = condition.chroms ? "--chrom-subset __chroms__.bed" : ""
 
-    cmd = """${write_chroms} pairtools select --output ${id}_select.pairs.gz ${chroms_file} ${pairtoolsSelectParams} "${filters}" ${pairs}"""
+    cmd = """${write_chroms} pairtools select --output ${id}_select.pairs.gz ${chroms_file} ${pairtoolsSelectParams} "${filters}"  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${pairs}"""
     
     cmd
 

@@ -8,8 +8,11 @@ process BwaAlign {
     conda "bioconda::bwa bioconda::bwa-mem2 bioconda::samtools"
     container "bskubi/hich:latest"
     
-    maxRetries 6
+    label 'whenLocal_allConsuming'
+    label 'align'
+    
     memory {15.GB + 15.GB * (task.attempt-1)}
+    debug true
 
     // NOTE: Alignment speed is trivially parallelizeable and does not benefit
     // from running alignment in parallel multiple files at once. Each instance
@@ -19,10 +22,9 @@ process BwaAlign {
     // NOTE 2: I need to decide on how to work with the possibility that users
     // will run multiple aligners (bwa-mem2, bwa, bsbolt, etc). We should still
     // only run one at a time.
-    maxForks 1
 
     input:
-    tuple val(id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2), val(aligner), val(threads), val(bwaFlags)
+    tuple val(id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2), val(aligner), val(bwaFlags)
 
     output:
     tuple val(id), path("${id}.bam")
@@ -30,10 +32,11 @@ process BwaAlign {
     shell:
     align = ""
     if (aligner in ["bwa-mem2", "bwa"]) {
-        align = "${aligner} mem -t ${threads} ${bwaFlags} ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
+        align = "${aligner} mem -t ${task.cpus} ${bwaFlags} ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
     }
     
     tobam = "samtools view -b -o ${id}.bam"
+
     "${align} | ${tobam}"
 
     stub:
@@ -45,24 +48,10 @@ workflow Align {
     samples
 
     main:
-    // and BSBolt (for methylation + hi-c alignment)
-
-    // samples
-    //     | filter{it.datatype == "fastq"}
-    //     | set {to_align}    
-
-    // samples = transpack(
-    //     BwaAlign,
-    //     [to_align, samples],
-    //     ["id", "alignerIndexDir", "alignerIndexPrefix", "fastq1", "fastq2",
-    //      "aligner", "alignerThreads", "bwaFlags"],
-    //     ["id", "sambam"],
-    //     ["latest":"sambam"],
-    //     "id")
 
     samples | branch{yes: it.datatype == "fastq"; no: true} | set {run}
     run.yes
-        | map{tuple(it.id, it.alignerIndexDir, it.alignerIndexPrefix, it.fastq1, it.fastq2, it.aligner, it.alignerThreads, it.bwaFlags)}
+        | map{tuple(it.id, it.alignerIndexDir, it.alignerIndexPrefix, it.fastq1, it.fastq2, it.aligner, it.bwaFlags)}
         | BwaAlign
         | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
         | set{runResult}

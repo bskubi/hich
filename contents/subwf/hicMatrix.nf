@@ -10,8 +10,9 @@ process JuicerToolsPre {
     publishDir params.general.publish.hic ? params.general.publish.hic : "results",
                saveAs: {params.general.publish.hic ? it : null},
                mode: params.general.publish.mode
-    container "bskubi/hich:latest"
-    maxForks 2
+    container "bskubi/juicer_tools:1.22.01"
+    cpus 5
+    memory {2.GB * task.attempt}
 
     input:
     tuple val(id), path(infile), path(chromsizes), val(pairsFormat), val(matrix), val(juicerToolsPreParams)
@@ -24,7 +25,7 @@ process JuicerToolsPre {
     min_bin = matrix.resolutions.min()
     bins = matrix.resolutions ? "-r ${matrix.resolutions.join(',')}" : ""
 
-    cmd = ["java -Xmx20g -jar /app/juicer_tools_1.22.01.jar pre",
+    cmd = ["java -Xmx2g -jar /app/juicer_tools_1.22.01.jar pre",
             bins] + juicerToolsPreParams + ["${infile} ${outfile} ${chromsizes}"]
     cmd.removeAll([null])
     cmd.join(" ")

@@ -7,6 +7,8 @@ process PairtoolsFlipSort {
                mode: params.general.publish.mode
     conda "bioconda::pairtools"
     container "bskubi/hich:latest"
+    label 'doJobArray'
+    cpus 8
 
     input:
     tuple val(id), path(pairs), path(chromsizes), val(reshapeParams)
@@ -23,8 +25,8 @@ process PairtoolsFlipSort {
     reshapeParams = reshapeParams.join(" ")
 
     reshapeCmd = reshapeParams ? ["hich reshape ${reshapeParams}"] : []
-    flipCmd = ["pairtools flip --chroms-path ${chromsizes}"]
-    sortCmd = ["pairtools sort --output ${id}.pairs.gz"]
+    flipCmd = ["pairtools flip --chroms-path ${chromsizes}  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
+    sortCmd = ["pairtools sort --output ${id}.pairs.gz  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
 
     if (reshapeParams) {
         reshapeCmd = reshapeCmd + ["--read_from ${pairs}"]

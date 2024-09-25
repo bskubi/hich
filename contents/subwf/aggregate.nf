@@ -1,6 +1,8 @@
 include {updateChannel; coalesce; rows; columns; groupHashMap; isTechrep; isBiorep; isCondition; constructIdentifier} from './extraops.nf'
 
 process HichDownsampleStatsFrom {
+    container "bskubi/hich:latest"
+
     input:
     tuple val(id), path(pairs), val(conjuncts), val(cisStrata)
 
@@ -19,6 +21,8 @@ process HichDownsampleStatsFrom {
 }
 
 process HichStatsAggregateToMinGroupSize {
+    container "bskubi/hich:latest"
+
     input:
     tuple val(ids), path(stats), val(outliers)
 
@@ -35,6 +39,8 @@ process HichStatsAggregateToMinGroupSize {
 }
 
 process HichDownsamplePairs {
+    container "bskubi/hich:latest"
+
     input:
     tuple val(id), path(fullPairs), path(statsFrom), path(statsTo), val(conjuncts), val(cisStrata), val(toSize)
 
@@ -56,6 +62,9 @@ process HichDownsamplePairs {
 }
 
 process PairtoolsMerge {
+    container "bskubi/hich:latest"
+    cpus 8
+    
     input:
     tuple val(id), path(to_merge)
 
@@ -64,7 +73,7 @@ process PairtoolsMerge {
 
     shell:
     merged = "${id}.merged.pairs.gz"
-    "pairtools merge --output ${merged} ${to_merge.join(' ')}"
+    "pairtools merge --output ${merged}  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${to_merge.join(' ')}"
 
     stub:
     merged = "${id}.merged.pairs.gz"
@@ -77,6 +86,7 @@ process PairtoolsDedup {
                mode: params.general.publish.mode
     conda "bioconda::pairtools bioconda::samtools"
     container "bskubi/hich:latest"
+    cpus 8
 
     input:
     tuple val(id), path(pairs), val(singleCell), val(maxMismatch), val(method), val(pairtoolsDedupParams)
@@ -92,7 +102,7 @@ process PairtoolsDedup {
     if (maxMismatch != null) pairtoolsDedupParams += ["--max-mismatch ${maxMismatch}"]
     if (method != null) pairtoolsDedupParams += ["--method ${method}"]
 
-    cmd = "pairtools dedup --output ${deduplicated} ${pairtoolsDedupParams.join(' ')} ${pairs}"
+    cmd = "pairtools dedup --output ${deduplicated} ${pairtoolsDedupParams.join(' ')}  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${pairs}"
     cmd
 
     stub:
