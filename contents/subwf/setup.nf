@@ -2,7 +2,7 @@ include {Chromsizes} from './chromsizes.nf'
 include {GenomeReference} from './genomeReference.nf'
 include {AlignerIndex} from './alignerIndex.nf'
 include {FragmentIndex} from './fragmentIndex.nf'
-include {emptyOnLastStep} from './extraops.nf'
+include {emptyOnLastStep; isTechrep; isBiorep; isCondition; aggregateLevelLabel} from './extraops.nf'
 
 // Returns true if it is truthy/non-null, and its string representation has
 // at least one non-whitespace character, false otherwise
@@ -164,6 +164,7 @@ workflow UpdateSamples
         // This refers to the original input datatype.
         sample += ["datatype": getDatatype(sample)]
 
+
         /*
             Ensure that the condition, biorep, and techrep are either null
             or that they have at least one non-whitespace character.
@@ -172,7 +173,8 @@ workflow UpdateSamples
         if (sample.biorep) sample += ["biorep": sample.get("biorep").toString().trim()]
         if (sample.techrep) sample += ["techrep": sample.get("techrep").toString().trim()]
 
-
+        // Set a marker for the aggregationLevel
+        sample += ["aggregateLevle" : aggregateLevelLabel(sample)]
         /////////////////////////////////
         // If an id is not explicitly given by the user for the sample,
         // Or is just whitespace, create one based on its condition, biorep, and techrep

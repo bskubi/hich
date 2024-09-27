@@ -1,3 +1,6 @@
+include {createCompositeStrategy; filterSamplesByStrategy} from './extraops.nf'
+
+
 process HichCompartments {
     publishDir "results/compartments",
                mode: params.general.publish.mode
@@ -26,10 +29,17 @@ workflow CompartmentScore {
     samples
 
     main:
-    samples
-        | filter {it.get("compartments") != null && it.get("latestMatrix") != null}
-        | map{tuple(it.id, it.genomeReference, it.latestMatrix, it.compartments.resolution, it.compartments.hichCompartmentsParams)}
-        | HichCompartments
+    params.compartments.each {
+        planName, analysisPlan ->
+
+        strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
+        filterSamplesByStrategy(samples, strategy)
+            | map{
+                sample ->
+                tuple(sample.id, sample.genomeReference, sample.latestMatrix, analysisPlan.resolution, analysisPlan.hichCompartmentsParams)
+            }
+            | HichCompartments
+    }
 
     emit:
     samples

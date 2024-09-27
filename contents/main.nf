@@ -12,6 +12,7 @@ include {HicMatrix} from './subwf/hicMatrix.nf'
 include {McoolMatrix} from './subwf/mcoolMatrix.nf'
 include {Hicrep} from './subwf/hicrep.nf'
 include {CompartmentScore} from './subwf/compartmentScore.nf'
+include {Loops} from './subwf/loops.nf'
 include {DifferentialLoops} from './subwf/differentialLoops.nf'
 include {InsulationScore} from './subwf/insulationScore.nf'
 include {emptyOnLastStep} from './subwf/extraops.nf'
@@ -19,6 +20,7 @@ include {AggregateTechreps; AggregateBioreps; AggregateConditions} from './subwf
 
 
 workflow {
+
     
     LoadSampleFile              // Setup workflow inputs
         | Setup
@@ -37,8 +39,9 @@ workflow {
         | HicMatrix             // Create contact matrices
         | McoolMatrix
 
-        | Hicrep                // Call features
+//        | Hicrep                // Call features
         | CompartmentScore
+        | Loops
         | DifferentialLoops
         | InsulationScore
 

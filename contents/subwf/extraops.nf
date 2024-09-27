@@ -809,3 +809,80 @@ def rowsChannel(ch) {
 }
 
 def constructIdentifier(map) {return map.subMap("condition", "biorep", "techrep", "aggregateProfileName").values().join("_")}
+
+
+def configParamToHashSet(val) {
+    if (val instanceof ArrayList) return new HashSet(val)
+    if (val instanceof HashSet) return val
+    return new HashSet([val])
+}
+
+
+def createCompositeStrategy(strategyKeys, strategyMap, combineHow = [:]) {
+
+    def compositeStrategy = [:]
+    subStrategies = strategyKeys ? strategyMap.subMap(strategyKeys) : [:]
+    subStrategies.each {
+        _, subStrategy ->
+        subStrategy.each {
+            key, val ->
+            
+            def newVals = configParamToHashSet(val)
+            def oldVals = compositeStrategy.get(key, new HashSet())
+            def updated = combineHow.get(key, {a, b -> b})(oldVals, newVals)
+            compositeStrategy += [(key): updated]
+        }
+    }
+
+    return compositeStrategy
+}
+
+def filterSamplesByStrategy(samples, strategy) {
+    if (!strategy) return samples
+
+    def reservedKeywords = ["same", "different"]
+    def sampleAttributeFilter = strategy.findAll {key, value -> !(key in reservedKeywords)}
+    return samples | filter {
+        sample ->
+
+        def filterOn = sample.subMap(sampleAttributeFilter.keySet())
+        def passesFilter = sampleAttributeFilter.every {key, select ->
+            sample.get(key) in select
+        }
+
+        passesFilter
+    }
+}
+
+def combineSamplesByStrategy(samples, strategy) {
+    def same = strategy.get("same", [])
+    def different = strategy.get("different", [])
+    def sameAndDifferent = same.intersect(different)
+    if (!sameAndDifferent.isEmpty()) {
+        System.err.println("Warning: In filterSamplesByStrategy, comparisons on ${sameAndDifferent} are required to be same and different, so no result is obtained")
+        return channel.empty()
+    }
+
+    def filtered = filterSamplesByStrategy(samples, strategy)
+
+    def combined = filtered
+    | combine(filtered)
+    | filter{it[0].id <= it[1].id}
+    | unique
+    | filter {
+        s1, s2 ->
+
+        def sameOK = same.every {key -> s1.get(key) == s2.get(key)}
+        def differentOK = different.every {key -> s1.get(key) != s2.get(key)}
+        sameOK && differentOK
+ 
+    }
+    return combined
+}
+
+def aggregateLevelLabel(sample) {
+    if (isTechrep(sample)) return "techrep"
+    if (isBiorep(sample)) return "biorep"
+    if (isCondition(sample)) return "condition"
+    return "unknown"
+}

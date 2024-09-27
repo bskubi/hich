@@ -1,4 +1,5 @@
-include {updateChannel; coalesce; rows; columns; groupHashMap; isTechrep; isBiorep; isCondition; constructIdentifier} from './extraops.nf'
+include {updateChannel; coalesce; rows; columns; groupHashMap; isTechrep; isBiorep; isCondition; constructIdentifier; emptyOnLastStep; aggregateLevelLabel} from './extraops.nf'
+include {Setup} from './setup.nf'
 
 process HichDownsampleStatsFrom {
     container "bskubi/hich:latest"
@@ -142,7 +143,7 @@ workflow CreateAggregatePairProfiles {
     // This may need to be redone putting the aggregateProfiles into a channel of their own and using combinations.
 
     
-    aggregateProfiles = channel.of(params.comparisonSets.aggregateProfiles)
+    aggregateProfiles = channel.of(params.aggregate)
     | map{[profileName: it.keySet().toList(), profileParams: it.values().toList()]}
     | map{rows(it)}
     | flatten
@@ -247,11 +248,7 @@ workflow MergePairs {
         | set{inheritedMergeAttributes}
     updateChannel(inheritedMergeAttributes, fromMerge) | set{merged}
 
-    merged | concat(levelSamples) | set{result}
-
-    /*
-    !The merge outputs need to be passed through the setup protocol
-    */
+    merged | map {it += ["aggregateLevel" : aggregateLevelLabel(it)]} | concat(levelSamples) | set{result}
 
     emit:
     result
@@ -322,6 +319,7 @@ workflow AggregateTechreps {
     | concat(sampleType.other)
     | set{result}
 
+     samples = emptyOnLastStep("AggregateTechreps", samples)
 
     emit:
     result
@@ -363,6 +361,8 @@ workflow AggregateBioreps {
     | concat(sampleType.other)
     | set{result}
 
+    samples = emptyOnLastStep("AggregateBioreps", samples)
+
     emit:
     result
 }
@@ -402,6 +402,8 @@ workflow AggregateConditions {
     | DeduplicatePairs
     | concat(sampleType.other)
     | set{result}
+
+    samples = emptyOnLastStep("AggregateConditions", samples)
 
     emit:
     result

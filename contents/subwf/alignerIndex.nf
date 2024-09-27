@@ -32,7 +32,7 @@ process BwaMemIndex {
                mode: params.general.publish.mode
     label 'whenLocal_allConsuming'
     label 'index'
-    memory {22.GB + 10.GB * task.attempt}
+    memory {20.GB + 10.GB * (task.attempt - 1)}
     
 
 
