@@ -39,7 +39,7 @@ workflow {
         | HicMatrix             // Create contact matrices
         | McoolMatrix
 
-//        | Hicrep                // Call features
+        | Hicrep                // Call features
         | CompartmentScore
         | Loops
         | DifferentialLoops
