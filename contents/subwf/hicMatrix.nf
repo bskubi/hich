@@ -1,4 +1,4 @@
-include {transpack; emptyOnLastStep} from './extraops.nf'
+include {transpack; emptyOnLastStep; pack2} from './extraops.nf'
 
 process JuicerToolsPre {
     /*
@@ -40,17 +40,13 @@ workflow HicMatrix {
     samples
     
     main:
-    samples | filter{it.matrix.makeHicFileFormat} | set{hic}
-
-    transpack (
-        JuicerToolsPre,
-        [hic, samples],
-        ["id", "latest", "chromsizes", "pairsFormat", "matrix", "juicerToolsPreParams"],
-        ["id", "hic"],
-        ["latestMatrix":"hic"],
-        "id",
-        ["nullOk":"juicerToolsPreParams"]
-    ) | set{samples}
+    samples
+        | filter{it.matrix.makeHicFileFormat}
+        | map{tuple(it.id, it.latest, it.chromsizes, it.pairsFormat, it.matrix, it.juicerToolsPreParams)}
+        | JuicerToolsPre
+        | map{id, hic -> [id: id, hic: hic, latestMatrix: hic]}
+        | set{result}
+    pack2(samples, result) | set{samples}
 
     samples = emptyOnLastStep("HicMatrix", samples)
 

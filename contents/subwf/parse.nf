@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {transpack; emptyOnLastStep; updateChannel} from './extraops.nf'
+include {transpack; emptyOnLastStep; updateChannel; pack2} from './extraops.nf'
 
 process PairtoolsParse2 {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",
@@ -47,39 +47,13 @@ workflow Parse {
     samples
 
     main:
-    // This should give an error if the file does not exist
-    
-    // samples
-    //     | filter{it.datatype == "sambam"}
-    //     | map{
-    //         sample ->
-    //         if (!sample.sambam || !file(sample.sambam).exists()) {
-    //             error "In sample with id ${sample.id}, sambam file is specified but does not exist"
-    //         }
-
-    //         sample
-    //     }
-    //     | set {sambam}
-
-    samples | branch{yes: it.datatype in ["fastq", "sambam"]; no: true} | set {run}
-    run.yes
+    samples
+        | filter{it.datatype in ["fastq", "sambam"]}
         | map{tuple(it.id, it.sambam, it.chromsizes, it.assembly, it.parseParams, it.reshapeParams)}
         | PairtoolsParse2
         | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
-        | set{runResult}
-    updateChannel(run.yes, runResult) | concat(run.no) | set{samples}
-    
-
-    // samples = transpack(
-    //     PairtoolsParse2,
-    //     [sambam, samples],
-    //     ["id", "sambam", "chromsizes", "assembly", "parseParams", "reshapeParams"],
-    //     ["id", "pairs"],
-    //     ["latest":"pairs"],
-    //     "id",
-    //     ["nullOk":["reshapeParams", "parseParams"]]
-    //     )
-    
+        | set{result}
+    pack2(samples, result) | set{samples}
 
     // It might be good to simplify these workflow control steps since they
     // are repeated frequently.

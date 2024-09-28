@@ -1,4 +1,4 @@
-include {transpack; emptyOnLastStep} from './extraops.nf'
+include {transpack; emptyOnLastStep; pack2} from './extraops.nf'
 
 process ZcatHeadFastq {
     input:
@@ -21,22 +21,16 @@ workflow FastqHead {
     samples
 
     main:
-    // We should get a feature to downsample ingested bam and pairs files as well
-    // to facilitate the --humid parameter
-    // Also this needs to work on plaintext fastq files
+    // !TODO: Plaintext, other compression, other seq data formats
     
     samples
         | filter{it.datatype == "fastq" && it.get("n_reads") && it.get("n_reads").toString() != "all"}
-        | set{head}
+        | map{tuple(it.id, it.fastq1, it.fastq2, it.n_reads)}
+        | ZcatHeadFastq
+        | map{id, fastq1, fastq2 -> [id: id, fastq1: fastq1, fastq2: fastq2]}
+        | set{result}
 
-    samples = transpack(
-        ZcatHeadFastq,
-        [head, samples],
-        ["id", "fastq1", "fastq2", "n_reads"],
-        ["id", "fastq1", "fastq2"],
-        [:],
-        "id"
-    )
+    pack2(samples, result) | set{samples}
 
     samples = emptyOnLastStep("FastqHead", samples)
 

@@ -16,9 +16,7 @@ include {InsulationScores} from './subwf/insulationScores.nf'
 include {emptyOnLastStep} from './subwf/extraops.nf'
 include {AggregateTechreps; AggregateBioreps; AggregateConditions} from './subwf/aggregate.nf'
 
-
 workflow {
-
     
     LoadSampleFile              // Setup workflow inputs
         | Setup

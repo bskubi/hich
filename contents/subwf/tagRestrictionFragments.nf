@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {transpack; emptyOnLastStep; updateChannel} from './extraops.nf'
+include {transpack; emptyOnLastStep; updateChannel; pack2} from './extraops.nf'
 
 process HichFragtag {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
@@ -32,13 +32,13 @@ workflow TagRestrictionFragments {
 
     main:
 
-    samples | branch{yes: fragmentIndexExists(it); no: true} | set {run}
-    run.yes
+    samples
+        | filter{fragmentIndexExists(it)}
         | map{tuple(it.id, it.pairs, it.fragmentIndex)}
         | HichFragtag
         | map{[id:it[0], fragPairs:it[1], latest:it[1], latestPairs:it[1]]}
-        | set{runResult}
-    updateChannel(run.yes, runResult) | concat(run.no) | set{samples}
+        | set{result}
+    pack2(samples, result) | set{samples}
 
     if ("TagFragments" in params.general.get("qcAfter")) {
         samples = QCReads(samples, "TagFragments")

@@ -39,22 +39,9 @@ workflow Hicrep {
 
     main:
 
-    /*
-        The sampleSelectionStrategy pattern should generalize to larger groups just by
-        columnizing the results of filterSamplesByStrategy.
-
-    */
-    
-    // parameterize("hicrep",
-    //              samples,
-    //              params.comparisonSets,
-    //              ["mcool"],
-    //              ["mcool", "resolutions", "chroms", "exclude", "chromFilter", "h", "dBPMax", "bDownSample"])
-    //     | HicrepCombos
 
     params.hicrep.each {
         planName, analysisPlan ->
-    //tuple path(mcools), val(resolutions), val(chroms), val(exclude), val(chromFilter), val(h), val(dBPMax), val(bDownSample)
 
         strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
         filterSamplesByStrategy(samples, strategy)

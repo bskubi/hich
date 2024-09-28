@@ -454,6 +454,10 @@ def pack(channels, joinBy = "id") {
     return result
 }
 
+def pack2(addTo, addMe, by = "id") {
+    sqljoin(addTo, addMe, [by:by, suffix: ""])
+}
+
 def transpack (proc, channels, input, output, tags = [:], by = "id", options = [:]) {
     // Convenience function to call transact followed by pack.
     def channelsList = channels instanceof List ? channels : [channels]

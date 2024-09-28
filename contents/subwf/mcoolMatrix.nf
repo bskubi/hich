@@ -1,4 +1,4 @@
-include {transpack; emptyOnLastStep} from './extraops.nf'
+include {transpack; emptyOnLastStep; pack2} from './extraops.nf'
 
 
 process CoolerZoomify {
@@ -42,23 +42,19 @@ process CoolerZoomify {
 
 workflow McoolMatrix {
     take:
-        samples
+    samples
     
     main:
-        samples | filter{it.matrix.makeMcoolFileFormat} | set{mcool}
-
-        transpack (
-            CoolerZoomify,
-            [mcool, samples],
-            ["id", "latest", "chromsizes", "pairsFormat", "assembly", "matrix", "coolerCloadParams", "coolerZoomifyParams"],
-            ["id", "mcool"],
-            ["latestMatrix":"mcool"],
-            "id",
-            ["nullOk":"coolerCloadParams"]
-        ) | set{samples}
+    samples
+    | filter{it.matrix.makeMcoolFileFormat}
+    | map{tuple(it.id, it.latest, it.chromsizes, it.pairsFormat, it.assembly, it.matrix, it.coolerCloadParams, it.coolerZoomifyParams)}
+    | CoolerZoomify
+    | map{id, mcool -> [id: id, mcool: mcool, latestMatrix: mcool]}
+    | set{result}
+    pack2(result, samples) | set{samples}
     
     samples = emptyOnLastStep("McoolMatrix", samples)
 
     emit:
-        samples
+    samples
 }
