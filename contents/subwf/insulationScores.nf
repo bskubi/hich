@@ -24,7 +24,7 @@ process CooltoolsInsulation {
     "touch ${id}_insulation.tsv ${id}_insulation.tsv.${resolution}.bw"
 }
 
-workflow InsulationScore {
+workflow InsulationScores {
     take:
     samples
 

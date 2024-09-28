@@ -24,7 +24,7 @@ process HichCompartments {
     "touch ${id}_0.bw ${id}_1.bw ${id}_2.bw"
 }
 
-workflow CompartmentScore {
+workflow CompartmentScores {
     take:
     samples
 

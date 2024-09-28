@@ -11,10 +11,10 @@ include {Select} from './subwf/select.nf'
 include {HicMatrix} from './subwf/hicMatrix.nf'
 include {McoolMatrix} from './subwf/mcoolMatrix.nf'
 include {Hicrep} from './subwf/hicrep.nf'
-include {CompartmentScore} from './subwf/compartmentScore.nf'
+include {CompartmentScores} from './subwf/compartmentScores.nf'
 include {Loops} from './subwf/loops.nf'
 include {DifferentialLoops} from './subwf/differentialLoops.nf'
-include {InsulationScore} from './subwf/insulationScore.nf'
+include {InsulationScores} from './subwf/insulationScores.nf'
 include {emptyOnLastStep} from './subwf/extraops.nf'
 include {AggregateTechreps; AggregateBioreps; AggregateConditions} from './subwf/aggregate.nf'
 
@@ -29,7 +29,7 @@ workflow {
         | Align                 // Align .fastq -> .bam
         | Parse                 // .bam -> .pairs and read-level filters
         | IngestPairs
-        | TagRestrictionFragments
+        | TagRestrictionFragments   // Only affects sames with "restrictionEnzymes"
         | Select
 
         | AggregateTechreps     // Downsample, deduplicate, merge
@@ -40,10 +40,10 @@ workflow {
         | McoolMatrix
 
         | Hicrep                // Call features
-        | CompartmentScore
+        | CompartmentScores
         | Loops
         | DifferentialLoops
-        | InsulationScore
+        | InsulationScores
 
         | set{samples}
 
