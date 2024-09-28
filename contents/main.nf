@@ -3,7 +3,7 @@ include {Setup} from './subwf/setup.nf'
 include {Align} from './subwf/align.nf'
 include {FastqHead} from './subwf/fastqHead.nf'
 include {Parse} from './subwf/parse.nf'
-include {TagFragments} from './subwf/tagFragments.nf'
+include {TagRestrictionFragments} from './subwf/tagRestrictionFragments.nf'
 include {TechrepsToBioreps; BiorepsToConditions} from './subwf/mergePairs.nf'
 include {IngestPairs} from './subwf/ingestPairs.nf'
 include {Deduplicate} from './subwf/deduplicate.nf'
@@ -29,10 +29,10 @@ workflow {
         | Align                 // Align .fastq -> .bam
         | Parse                 // .bam -> .pairs and read-level filters
         | IngestPairs
-        | TagFragments
+        | TagRestrictionFragments
         | Select
 
-        | AggregateTechreps
+        | AggregateTechreps     // Downsample, deduplicate, merge
         | AggregateBioreps
         | AggregateConditions
         

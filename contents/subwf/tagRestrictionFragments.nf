@@ -16,12 +16,7 @@ process HichFragtag {
     tuple val(id), path("${id}_fragtag.pairs.gz")
 
     shell:
-    // ["pairtools restrict",
-    //  "--frags ${fragfile}",
-    //  "--output ${tagged_pairs}",
-    //  "${pairs}"].join(" ")
-    cmd = "hich fragtag ${fragmentIndex} ${id}_fragtag.pairs.gz ${pairs}"
-    cmd
+    "hich fragtag ${fragmentIndex} ${id}_fragtag.pairs.gz ${pairs}"
 
     stub:
     "touch ${id}_fragtag.pairs.gz"
@@ -31,13 +26,11 @@ def hasFragmentIndexName = {it.get("fragmentIndex").toString().trim().length() >
 
 def fragmentIndexExists = {hasFragmentIndexName(it) && file(it.fragmentIndex).exists()}
 
-workflow TagFragments {
+workflow TagRestrictionFragments {
     take:
         samples
 
     main:
-
-    //samples | filter{fragmentIndexExists(it)} | set{fragtag}
 
     samples | branch{yes: fragmentIndexExists(it); no: true} | set {run}
     run.yes
@@ -46,16 +39,6 @@ workflow TagFragments {
         | map{[id:it[0], fragPairs:it[1], latest:it[1], latestPairs:it[1]]}
         | set{runResult}
     updateChannel(run.yes, runResult) | concat(run.no) | set{samples}
-
-/*    samples = transpack(
-        HichFragtag,
-        [fragtag, samples],
-        ["id", "pairs", "fragmentIndex"],
-        ["id", "frag_pairs"],
-        ["latest":"frag_pairs"],
-        "id"
-    )
-*/
 
     if ("TagFragments" in params.general.get("qcAfter")) {
         samples = QCReads(samples, "TagFragments")
