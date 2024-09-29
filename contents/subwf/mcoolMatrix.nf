@@ -46,12 +46,12 @@ workflow McoolMatrix {
     
     main:
     samples
-    | filter{it.matrix.makeMcoolFileFormat}
+    | filter{it.matrix.makeMcoolFileFormat && (it.pairs || it.latestPairs) && !it.mcool}
     | map{tuple(it.id, it.latest, it.chromsizes, it.pairsFormat, it.assembly, it.matrix, it.coolerCloadParams, it.coolerZoomifyParams)}
     | CoolerZoomify
     | map{id, mcool -> [id: id, mcool: mcool, latestMatrix: mcool]}
     | set{result}
-    pack2(result, samples) | set{samples}
+    pack2(samples, result) | set{samples}
     
     samples = emptyOnLastStep("McoolMatrix", samples)
 

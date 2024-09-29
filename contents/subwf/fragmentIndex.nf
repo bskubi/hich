@@ -1,4 +1,4 @@
-include {source; emptyOnLastStep} from "./extraops.nf"
+include {source; emptyOnLastStep; pack2} from "./extraops.nf"
 
 process FragmentIndexProc {
     publishDir params.general.publish.fragmentIndex ? params.general.publish.fragmentIndex : "results",
@@ -26,14 +26,16 @@ workflow FragmentIndex {
     
     main:
     
-    source(FragmentIndexProc,
-           samples,
-           "fragmentIndex",
-            ["genomeReference", "restrictionEnzymes", "fragmentIndex", "assembly"],
-            ["restrictionEnzymes", "fragmentIndex", "assembly"],
-           {"${it.assembly}_${it.restrictionEnzymes.replace(" ", "_")}.bed"},
-           [["assembly", "restrictionEnzymes"]],
-           {it.restrictionEnzymes}) | set{samples}
+    samples
+        | filter{it.restrictionEnzymes && !(it.fragmentIndex instanceof nextflow.file.http.XPath && it.fragmentIndex.exists())}
+        | map{it.fragmentIndex = it.fragmentIndex ?: "${it.assembly}_${it.restrictionEnzymes.replace(" ", "_")}.bed"; it}
+        | map{tuple(it.genomeReference, it.restrictionEnzymes, it.fragmentIndex, it.assembly)}
+        | unique
+        | FragmentIndexProc
+        | map{restrictionEnzymes, fragmentIndex, assembly -> 
+              [restrictionEnzymes: restrictionEnzymes, fragmentIndex: fragmentIndex, assembly: assembly]}
+        | set{result}
+    pack2(samples, result, ["assembly", "restrictionEnzymes"]) | set{samples}
     
     samples = emptyOnLastStep("FragmentIndex", samples)
     

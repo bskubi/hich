@@ -8,6 +8,7 @@ include {IngestPairs} from './subwf/ingestPairs.nf'
 include {Select} from './subwf/select.nf'
 include {HicMatrix} from './subwf/hicMatrix.nf'
 include {McoolMatrix} from './subwf/mcoolMatrix.nf'
+include {IngestMatrix} from './subwf/ingestMatrix.nf'
 include {Hicrep} from './subwf/hicrep.nf'
 include {CompartmentScores} from './subwf/compartmentScores.nf'
 include {Loops} from './subwf/loops.nf'
@@ -17,7 +18,7 @@ include {emptyOnLastStep} from './subwf/extraops.nf'
 include {AggregateTechreps; AggregateBioreps; AggregateConditions} from './subwf/aggregate.nf'
 
 workflow {
-    
+
     LoadSampleFile              // Setup workflow inputs
         | Setup
         | FastqHead
@@ -31,9 +32,10 @@ workflow {
         | AggregateTechreps     // Downsample, deduplicate, merge
         | AggregateBioreps
         | AggregateConditions
-        
+
         | HicMatrix             // Create contact matrices
         | McoolMatrix
+        | IngestMatrix
 
         | Hicrep                // Call features
         | CompartmentScores

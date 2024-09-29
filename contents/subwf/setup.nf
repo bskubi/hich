@@ -73,7 +73,7 @@ def getDatatype = {
     // We will either extract or infer the value of datatype.
     // Only fastq, sambam, and pairs datatypes are handled by Hich at present.
     def datatype = ""
-    def handledDatatypes = ["fastq", "sambam", "pairs"]
+    def handledDatatypes = ["fastq", "sambam", "pairs", "matrix"]
 
     if (truthyString(sample.datatype)) {
         // Use the given value of datatype if it is explicitly specified by the user
@@ -86,7 +86,10 @@ def getDatatype = {
                 [
                     ["fastq1", "fastq2"]:"fastq",
                     ["sambam"]:"sambam",
-                    ["pairs"]:"pairs"
+                    ["pairs"]:"pairs",
+                    ["hic"]:"matrix",
+                    ["mcool"]:"matrix",
+                    ["hic", "mcool"]:"matrix"
                 ],
                 "unknown")
         datatype = inferredDatatype
@@ -174,7 +177,7 @@ workflow UpdateSamples
         if (sample.techrep) sample += ["techrep": sample.get("techrep").toString().trim()]
 
         // Set a marker for the aggregationLevel
-        sample += ["aggregateLevle" : aggregateLevelLabel(sample)]
+        sample += ["aggregateLevel" : aggregateLevelLabel(sample)]
         /////////////////////////////////
         // If an id is not explicitly given by the user for the sample,
         // Or is just whitespace, create one based on its condition, biorep, and techrep
@@ -233,7 +236,7 @@ workflow UpdateSamples
         
         ///////////////////////////////////////////////////////////////
         // Convert string paths to data files into file objects
-        ingest = ["fastq1", "fastq2", "sambam", "pairs"]
+        ingest = ["fastq1", "fastq2", "sambam", "pairs", "hic", "mcool"]
         ingest.each {
             key ->
             // This should give an error if the file does not exist

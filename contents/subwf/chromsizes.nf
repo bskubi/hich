@@ -1,4 +1,4 @@
-include {source; emptyOnLastStep} from './extraops.nf'
+include {source; emptyOnLastStep; pack2} from './extraops.nf'
 
 process ChromsizesProc {
     publishDir params.general.publish.chromsizes ? params.general.publish.chromsizes : "results",
@@ -28,16 +28,16 @@ workflow Chromsizes {
     samples
 
     main:
-
-    source(ChromsizesProc,
-           samples,
-           "chromsizes",
-           ["genomeReference", "assembly", "chromsizes"],
-           ["assembly", "chromsizes"],
-           {"${it.assembly}.sizes"},
-           "assembly",
-            {true}) | set{samples}
     
+    samples
+        | filter {!(it.chromsizes instanceof nextflow.file.http.XPath && it.chromsizes.exists())}
+        | map{tuple(it.genomeReference, it.assembly, "${it.assembly}.sizes")}
+        | unique
+        | ChromsizesProc
+        | map{assembly, chromsizes -> [assembly: assembly, chromsizes: chromsizes]}
+        | set{result}
+    pack2(samples, result, "assembly") | set{samples}
+
     samples = emptyOnLastStep("Chromsizes", samples)
 
     emit:

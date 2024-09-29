@@ -8,7 +8,7 @@ Install
 
 .. code-block:: c
 
-    mamba create -qy -n hich bioconda::nextflow conda-forge::squashfuse conda-forge::apptainer
+    mamba create -qy -n hich bioconda::nextflow conda-forge::squashfuse conda-forge::apptainer conda-forge::openjdk=21
 
 Activate environment (each time you log in, prior to running Hich)
 
@@ -23,7 +23,7 @@ Install
 
 .. code-block:: c
 
-    conda create -qy -n hich bioconda::nextflow conda-forge::squashfuse conda-forge::apptainer
+    conda create -qy -n hich bioconda::nextflow conda-forge::squashfuse conda-forge::apptainer conda-forge::openjdk=21
 
 Activate environment (each time you log in, prior to running Hich)
 

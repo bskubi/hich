@@ -57,6 +57,16 @@ workflow AlignerIndex {
         samples
     
     main:
+        // samples
+        //     | filter {it.datatype == "fastq" && it.aligner == "bwa-mem2"}
+        //     | filter {!(it.alignerIndexDir instanceof nextflow.file.http.XPath && it.alignerIndexDir.exists())}
+        //     | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
+        //     | map{tuple(it.genomeReference, it.alignerIndexPrefix)}
+        //     | BwaMem2Index
+        //     | map{genomeReference, alignerIndexPrefix, prefix_0123, prefix_amb, prefix_ann, prefix_bwt_2bit_64, prefix_pac ->
+        //           [genomeReference: genomeReference, alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
+        //     | set{result}
+        
         sourcePrefix(
             BwaMem2Index,
             samples,

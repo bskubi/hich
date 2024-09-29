@@ -1,4 +1,4 @@
-include {source; emptyOnLastStep} from './extraops.nf'
+include {source; emptyOnLastStep; pack2} from './extraops.nf'
 
 process Stage {
     /*  When a URL is passed to a Nextflow function, the resource will be
@@ -12,10 +12,10 @@ process Stage {
     label 'smallResource'
 
     input:
-    tuple val(assembly), path(url)
+    tuple val(assembly), path(uri)
 
     output:
-    tuple val(assembly), path(url)
+    tuple val(assembly), path(uri)
 
     shell:
     ":"
@@ -66,14 +66,37 @@ workflow GenomeReference {
             5. Download
             6. Set file as output path
         */
-    source(Stage,
-           samples,
-           "genomeReference",
-           ["assembly", "genomeReference"],
-           ["assembly", "genomeReference"],
-           {urls[synonyms[it.assembly]]},
-           "assembly",
-            {true}) | set{samples}
+    samples
+        | filter{!(it.genomeReference instanceof nextflow.file.http.XPath && it.genomeReference.exists())}
+        | map{
+            errorMessage = """
+            Sample ${it.id} with assembly '${it.assembly}' had genomeReference '${it.genomeReference}' which is either null or nonexistent.
+            Hich can automatically download genomeReference for common model organisms based on assembly nickname, but this only supports
+            the following options: ${synonyms.keySet()}. You can search on https://www.ncbi.nlm.nih.gov/home/genomes/ for genomes for your organism,
+            manually download, and specify the path to the filename in the sample file under the genomeReference column. 
+            """
+
+            it.genomeReference = it.genomeReference ?: urls.get(synonyms.get(it.assembly))
+            
+            assert it.genomeReference, errorMessage
+            it
+        }
+        | map{tuple(it.assembly, it.genomeReference)}
+        | unique
+        | Stage
+        | map{assembly, genomeReference -> [assembly: assembly, genomeReference: genomeReference]}
+        | set{result}
+    pack2(samples, result) | set{samples}
+
+        
+    // source(Stage,
+    //        samples,
+    //        "genomeReference",
+    //        ["assembly", "genomeReference"],
+    //        ["assembly", "genomeReference"],
+    //        {urls[synonyms[it.assembly]]},
+    //        "assembly",
+    //         {true}) | set{samples}
 
     samples = emptyOnLastStep("GenomeReference", samples)
 

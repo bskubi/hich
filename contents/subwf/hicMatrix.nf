@@ -41,7 +41,7 @@ workflow HicMatrix {
     
     main:
     samples
-        | filter{it.matrix.makeHicFileFormat}
+        | filter{it.matrix.makeHicFileFormat && (it.pairs || it.latestPairs) && !it.hic}
         | map{tuple(it.id, it.latest, it.chromsizes, it.pairsFormat, it.matrix, it.juicerToolsPreParams)}
         | JuicerToolsPre
         | map{id, hic -> [id: id, hic: hic, latestMatrix: hic]}

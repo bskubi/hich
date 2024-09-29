@@ -33,7 +33,7 @@ workflow TagRestrictionFragments {
     main:
 
     samples
-        | filter{fragmentIndexExists(it)}
+        | filter{fragmentIndexExists(it) && (it.pairs || it.latestPairs)}
         | map{tuple(it.id, it.pairs, it.fragmentIndex)}
         | HichFragtag
         | map{[id:it[0], fragPairs:it[1], latest:it[1], latestPairs:it[1]]}

@@ -21,7 +21,7 @@ process BwaAlign {
     // only run one at a time.
 
     input:
-    tuple val(id), path(index_dir), val(index_prefix), path(fastq1), path(fastq2), val(aligner), val(bwaFlags)
+    tuple val(id), path(indexDir), val(indexPrefix), path(fastq1), path(fastq2), val(aligner), val(bwaFlags)
 
     output:
     tuple val(id), path("${id}.bam")
@@ -29,7 +29,7 @@ process BwaAlign {
     shell:
     align = ""
     if (aligner in ["bwa-mem2", "bwa"]) {
-        align = "${aligner} mem -t ${task.cpus} ${bwaFlags} ${index_dir}/${index_prefix} ${fastq1} ${fastq2}"
+        align = "${aligner} mem -t ${task.cpus} ${bwaFlags} ${indexDir}/${indexPrefix} ${fastq1} ${fastq2}"
     }
     
     tobam = "samtools view -b -o ${id}.bam"
