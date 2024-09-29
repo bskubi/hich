@@ -53,7 +53,6 @@ process McoolToHic {
     mcoolFileName = mcoolFile.getFileName().toString()
     prefix = mcoolFileName.substring(0, mcoolFileName.lastIndexOf("."))
     hicFile = "${prefix}.hic"
-    print(task.cpus)
     cpus = task.cpus >= 2 ? task.cpus : 2
     threads = task.cpus ? "-t ${cpus}" : ""
     "hictk convert ${threads} ${mcoolFile} ${hicFile}"
