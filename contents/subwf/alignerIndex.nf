@@ -59,7 +59,7 @@ workflow AlignerIndex {
     main:
     samples
         | filter {it.datatype == "fastq" && it.aligner == "bwa-mem2"}
-        | filter {!(isExistingFile(it.alignerIndexDir))}
+        | filter {!isExistingFile(it.alignerIndexDir)}
         | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
         | map{tuple(it.genomeReference, it.alignerIndexPrefix)}
         | unique
@@ -70,7 +70,7 @@ workflow AlignerIndex {
 
     samples
         | filter {it.datatype == "fastq" && it.aligner == "bwa"}
-        | filter {!(isExistingFile(it.alignerIndexDir))}
+        | filter {!isExistingFile(it.alignerIndexDir)}
         | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
         | map{tuple(it.genomeReference, it.alignerIndexPrefix)}
         | unique

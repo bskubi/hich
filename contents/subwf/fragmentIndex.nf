@@ -1,4 +1,4 @@
-include {source; emptyOnLastStep; pack2} from "./extraops.nf"
+include {source; emptyOnLastStep; pack2; isExistingFile} from "./extraops.nf"
 
 process FragmentIndexProc {
     publishDir params.general.publish.fragmentIndex ? params.general.publish.fragmentIndex : "results",
@@ -27,7 +27,7 @@ workflow FragmentIndex {
     main:
     
     samples
-        | filter{it.restrictionEnzymes && !(it.fragmentIndex instanceof nextflow.file.http.XPath && it.fragmentIndex.exists())}
+        | filter{it.restrictionEnzymes && !it.isExistingFile(it.fragmentIndex)}
         | map{it.fragmentIndex = it.fragmentIndex ?: "${it.assembly}_${it.restrictionEnzymes.replace(" ", "_")}.bed"; it}
         | map{tuple(it.genomeReference, it.restrictionEnzymes, it.fragmentIndex, it.assembly)}
         | unique

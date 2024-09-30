@@ -1,4 +1,4 @@
-include {source; emptyOnLastStep; pack2} from './extraops.nf'
+include {source; emptyOnLastStep; pack2; isExistingFile} from './extraops.nf'
 
 process ChromsizesProc {
     publishDir params.general.publish.chromsizes ? params.general.publish.chromsizes : "results",
@@ -30,7 +30,7 @@ workflow Chromsizes {
     main:
     
     samples
-        | filter {!(it.chromsizes instanceof nextflow.file.http.XPath && it.chromsizes.exists())}
+        | filter {!isExistingFile(it.chromsizes)}
         | map{tuple(it.genomeReference, it.assembly, "${it.assembly}.sizes")}
         | unique
         | ChromsizesProc

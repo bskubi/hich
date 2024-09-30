@@ -1,4 +1,4 @@
-include {source; emptyOnLastStep; pack2} from './extraops.nf'
+include {source; emptyOnLastStep; pack2; isExistingFile} from './extraops.nf'
 
 process Stage {
     /*  When a URL is passed to a Nextflow function, the resource will be
@@ -67,7 +67,7 @@ workflow GenomeReference {
             6. Set file as output path
         */
     samples
-        | filter{!(it.genomeReference instanceof nextflow.file.http.XPath && it.genomeReference.exists())}
+        | filter{!isExistingFile(it.genomeReference)}
         | map{
             errorMessage = """
             Sample ${it.id} with assembly '${it.assembly}' had genomeReference '${it.genomeReference}' which is either null or nonexistent.
