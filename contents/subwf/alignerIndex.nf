@@ -1,4 +1,4 @@
-include {sourcePrefix; emptyOnLastStep} from './extraops.nf'
+include {sourcePrefix; emptyOnLastStep; isExistingFile; pack2} from './extraops.nf'
 
 process BwaMem2Index {
     conda "bioconda::bwa-mem2"
@@ -57,41 +57,30 @@ workflow AlignerIndex {
         samples
     
     main:
-        // samples
-        //     | filter {it.datatype == "fastq" && it.aligner == "bwa-mem2"}
-        //     | filter {!(it.alignerIndexDir instanceof nextflow.file.http.XPath && it.alignerIndexDir.exists())}
-        //     | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
-        //     | map{tuple(it.genomeReference, it.alignerIndexPrefix)}
-        //     | BwaMem2Index
-        //     | map{genomeReference, alignerIndexPrefix, prefix_0123, prefix_amb, prefix_ann, prefix_bwt_2bit_64, prefix_pac ->
-        //           [genomeReference: genomeReference, alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
-        //     | set{result}
-        
-        sourcePrefix(
-            BwaMem2Index,
-            samples,
-            "alignerIndexDir",
-            "alignerIndexPrefix",
-            ["genomeReference", "alignerIndexPrefix"],
-            ["index_dir", "alignerIndexPrefix", ".0123", ".amb", ".ann", ".bwt.2bit.64", ".pac"],
-            {["alignerIndexPrefix":it.assembly]},
-            "alignerIndexPrefix",
-            {it.datatype in ["fq", "fastq"] && it.aligner == "bwa-mem2"},
-            ["select":["indealignerIndexDirx_dir", "alignerIndexPrefix"]]
-        ) | set{samples}
+    samples
+        | filter {it.datatype == "fastq" && it.aligner == "bwa-mem2"}
+        | filter {!(isExistingFile(it.alignerIndexDir))}
+        | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
+        | map{tuple(it.genomeReference, it.alignerIndexPrefix)}
+        | unique
+        | BwaMem2Index
+        | map{genomeReference, alignerIndexPrefix, prefix_0123, prefix_amb, prefix_ann, prefix_bwt_2bit_64, prefix_pac ->
+                [genomeReference: genomeReference, alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
+        | set{resultBwaMem2Index}
 
-        sourcePrefix(
-            BwaMemIndex,
-            samples,
-            "alignerIndexDir",
-            "alignerIndexPrefix",
-            ["genomeReference", "alignerIndexPrefix"],
-            ["alignerIndexDir", "alignerIndexPrefix", ".0123", ".ann", ".amb", ".pac", ".bwt", ".sa"],
-            {["alignerIndexPrefix":it.assembly]},
-            "alignerIndexPrefix",
-            {it.datatype in ["fq", "fastq"] && it.aligner == "bwa"},
-            ["select":["alignerIndexDir", "alignerIndexPrefix"]]
-        ) | set{samples}
+    samples
+        | filter {it.datatype == "fastq" && it.aligner == "bwa"}
+        | filter {!(isExistingFile(it.alignerIndexDir))}
+        | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
+        | map{tuple(it.genomeReference, it.alignerIndexPrefix)}
+        | unique
+        | BwaMemIndex
+        | map{genomeReference, alignerIndexPrefix, prefix_ann, prefix_amb, prefix_pac, prefix_bwt, prefix_sa ->
+                [genomeReference: genomeReference, alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
+        | set{resultBwaMemIndex}
+    
+    pack2(samples, resultBwaMem2Index, "genomeReference") | set{samples}
+    pack2(samples, resultBwaMemIndex, "genomeReference") | set{samples}
 
     samples = emptyOnLastStep("AlignerIndex", samples)
 

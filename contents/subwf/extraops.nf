@@ -890,3 +890,7 @@ def aggregateLevelLabel(sample) {
     if (isCondition(sample)) return "condition"
     return "unknown"
 }
+
+def isExistingFile(it) {
+    return it && it.metaClass.respondsTo(it, 'exists') && it.exists()
+}

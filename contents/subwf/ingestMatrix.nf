@@ -9,6 +9,7 @@ process HicToMcool {
     container "ghcr.io/paulsengroup/hictk:1.0.0"
     label 'doJobArray'
     label 'convertHicToMcool'
+    cpus 2
     maxForks 1  // Necessary due to unexplained bug in hictk
 
     input:
@@ -22,9 +23,7 @@ process HicToMcool {
     hicFileName = hicFile.getFileName().toString()
     prefix = hicFileName.substring(0, hicFileName.lastIndexOf("."))
     mcoolFile = "${prefix}.mcool"
-    cpus = task.cpus >= 2 ? task.cpus : 2
-    threads = task.cpus ? "-t ${cpus}" : ""
-    "hictk convert ${threads} ${hicFile} ${mcoolFile}"
+    "hictk convert ${hicFile} ${mcoolFile}"
 
     stub:
     hicFileName = hicFile.getFileName().toString()
@@ -55,8 +54,8 @@ process McoolToHic {
     mcoolFileName = mcoolFile.getFileName().toString()
     prefix = mcoolFileName.substring(0, mcoolFileName.lastIndexOf("."))
     hicFile = "${prefix}.hic"
-    cpus = task.cpus >= 2 ? task.cpus : 2
-    threads = task.cpus ? "-t ${cpus}" : ""
+    cpus = task.cpus && task.cpus >= 2 ? task.cpus : 2
+    threads = cpus > 2 ? "-t ${cpus}" : ""
     "hictk convert ${threads} ${mcoolFile} ${hicFile}"
 
     stub:
