@@ -1,3 +1,7 @@
+def isExistingFile(it) {
+    return it && it.metaClass.respondsTo(it, 'exists') && it.exists()
+}
+
 workflow keydiff {
     take:
         left
@@ -491,7 +495,7 @@ def source (produceProc, ch, key, input, output, namer, by, needsTest) {
         | branch {
             hashmap ->
 
-            yes: !file(hashmap.get(key)).exists() || file(hashmap.get(key)).getClass() == nextflow.file.http.XPath
+            yes: !isExistingFile(hashmap.get(key))
             no: true
         }
 
@@ -530,7 +534,7 @@ def sourcePrefix (produceProc, ch, dir, prefix, input, output, namer, by, needsT
         | branch {
             hashmap ->
 
-            yes: !hashmap.get(dir) || !file(hashmap.get(dir)).exists()
+            yes: !isExistingFile(hashmap.get(dir))
             no: true
         }
 
@@ -891,6 +895,3 @@ def aggregateLevelLabel(sample) {
     return "unknown"
 }
 
-def isExistingFile(it) {
-    return it && it.metaClass.respondsTo(it, 'exists') && it.exists()
-}
