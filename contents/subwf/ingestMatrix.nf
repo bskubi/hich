@@ -9,6 +9,7 @@ process HicToMcool {
     container "ghcr.io/paulsengroup/hictk:1.0.0"
     label 'doJobArray'
     label 'convertHicToMcool'
+    maxForks 1  // Necessary due to unexplained bug in hictk
 
     input:
     tuple val(id), path(hicFile)
@@ -41,6 +42,7 @@ process McoolToHic {
     container "ghcr.io/paulsengroup/hictk:1.0.0"
     label 'doJobArray'
     label 'convertMcoolToHic'
+    maxForks 1  // Necessary due to unexplained bug in hictk
 
     input:
     tuple val(id), path(mcoolFile)
