@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {transpack; emptyOnLastStep; updateChannel; pack2} from './extraops.nf'
+include {emptyOnLastStep; pack} from './extraops.nf'
 
 process HicToMcool {
     publishDir params.general.publish.mcool ? params.general.publish.mcool : "results",
@@ -90,8 +90,8 @@ workflow IngestMatrix {
             [id:id, mcool:mcoolFile, latest:mcoolFile, latestMatrix:mcoolFile]}
         | set{hicToMcool}
     
-    pack2(samples, mcoolToHic) | set{samples}
-    pack2(samples, hicToMcool) | set{samples}
+    pack(samples, mcoolToHic) | set{samples}
+    pack(samples, hicToMcool) | set{samples}
 
     samples = emptyOnLastStep("IngestMatrix", samples)
 

@@ -1,4 +1,3 @@
-//include {parameterize} from './extraops.nf'
 include {createCompositeStrategy; filterSamplesByStrategy; columns} from './extraops.nf'
 
 process HicrepCombos{

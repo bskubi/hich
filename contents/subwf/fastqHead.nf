@@ -1,4 +1,4 @@
-include {transpack; emptyOnLastStep; pack2} from './extraops.nf'
+include {emptyOnLastStep; pack} from './extraops.nf'
 
 process ZcatHeadFastq {
     input:
@@ -30,7 +30,7 @@ workflow FastqHead {
         | map{id, fastq1, fastq2 -> [id: id, fastq1: fastq1, fastq2: fastq2]}
         | set{result}
 
-    pack2(samples, result) | set{samples}
+    pack(samples, result) | set{samples}
 
     samples = emptyOnLastStep("FastqHead", samples)
 

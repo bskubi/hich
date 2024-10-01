@@ -1,4 +1,4 @@
-include {transpack; emptyOnLastStep; pack2} from './extraops.nf'
+include {emptyOnLastStep; pack} from './extraops.nf'
 
 
 process CoolerZoomify {
@@ -51,7 +51,7 @@ workflow McoolMatrix {
     | CoolerZoomify
     | map{id, mcool -> [id: id, mcool: mcool, latestMatrix: mcool]}
     | set{result}
-    pack2(samples, result) | set{samples}
+    pack(samples, result) | set{samples}
     
     samples = emptyOnLastStep("McoolMatrix", samples)
 

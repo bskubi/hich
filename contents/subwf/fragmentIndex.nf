@@ -1,4 +1,4 @@
-include {source; emptyOnLastStep; pack2; isExistingFile} from "./extraops.nf"
+include {emptyOnLastStep; pack; isExistingFile} from "./extraops.nf"
 
 process FragmentIndexProc {
     publishDir params.general.publish.fragmentIndex ? params.general.publish.fragmentIndex : "results",
@@ -8,10 +8,10 @@ process FragmentIndexProc {
     label 'smallResource'
     
     input:
-    tuple path(genomeReference), val(restrictionEnzymes), val(fragmentIndex), val(assembly)
+    tuple val(genomeReferenceString), path(genomeReference), val(restrictionEnzymes), val(fragmentIndex), val(assembly)
 
     output:
-    tuple val(restrictionEnzymes), path(fragmentIndex), val(assembly)
+    tuple val(genomeReferenceString), val(restrictionEnzymes), path(fragmentIndex), val(assembly)
 
     script:
     "hich digest --output ${fragmentIndex} ${genomeReference} ${restrictionEnzymes}"
@@ -27,15 +27,15 @@ workflow FragmentIndex {
     main:
     
     samples
-        | filter{it.restrictionEnzymes && !it.isExistingFile(it.fragmentIndex)}
+        | filter{it.restrictionEnzymes && !isExistingFile(it.fragmentIndex)}
         | map{it.fragmentIndex = it.fragmentIndex ?: "${it.assembly}_${it.restrictionEnzymes.replace(" ", "_")}.bed"; it}
-        | map{tuple(it.genomeReference, it.restrictionEnzymes, it.fragmentIndex, it.assembly)}
+        | map{tuple(it.genomeReference, it.genomeReference, it.restrictionEnzymes, it.fragmentIndex, it.assembly)}
         | unique
         | FragmentIndexProc
-        | map{restrictionEnzymes, fragmentIndex, assembly -> 
-              [restrictionEnzymes: restrictionEnzymes, fragmentIndex: fragmentIndex, assembly: assembly]}
+        | map{genomeReference, restrictionEnzymes, fragmentIndex, assembly -> 
+              [genomeReference: file(genomeReference), restrictionEnzymes: restrictionEnzymes, fragmentIndex: fragmentIndex, assembly: assembly]}
         | set{result}
-    pack2(samples, result, ["assembly", "restrictionEnzymes"]) | set{samples}
+    pack(samples, result, ["genomeReference", "assembly", "restrictionEnzymes"]) | set{samples}
     
     samples = emptyOnLastStep("FragmentIndex", samples)
     

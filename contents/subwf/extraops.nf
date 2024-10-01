@@ -1,4 +1,5 @@
 def isExistingFile(it) {
+    // Type-agnostic way to check if file exists for any file class having an exists() method.
     return it && it.metaClass.respondsTo(it, 'exists') && it.exists()
 }
 
@@ -11,28 +12,33 @@ workflow keydiff {
 
     main:
     /*
-        Motivation and implementation logic:
+        CONTEXT:
 
-        When Nextflow channel items are LinkedHashMaps ("hashmaps"), they are
-        similar to un-normalized tables. Items are rows, keys represent the
-        column name for that row, and values represent cell entries.
+        Facilitate sql-like joins on Nextflow channels containing LinkedHashMaps
 
-        We can therefore do an SQL-like join on them. A left join, for example,
-        keeps all 'left' rows, adding 'right' rows where there is a matching]
-        key and null or default values where there is no matching 'right' key.
+        PURPOSE:
 
-        This workflow is used to determine which key column values are missing
-        in the left table, right table, or in neither table.
+        During a left or right join, identify missing keys that should be replaced
+        by default values.
 
-        'by': the set of hashmap keys (i.e. table columns) to join on
-        'keyset': the values in the by keys of a particular channel item (i.e. table row)
-        
+        IMPLEMENTATION:
+
+        Take two channels LEFT and RIGHT joined on a subset of keys BY
+            Channel items should be HashMaps
+        Return:
+            LEFT KEYS not in RIGHT
+            RIGHT KEYS not in LEFT
     */
-
-    /* Extract unique keysets from left and right tables.
-
-    This also adds a 'true' value which will be used in the next step to detect
-    unmatched keysets.
+    
+    /* 
+        PURPOSE:
+        
+        Extract unique BY values from LEFT and RIGHT channels
+        
+        IMPLEMENTATION:
+        
+        Add a 'true' value as this will help keep track of whether a BY value
+        was left-only, right-only, or in both.
     */
     left_keys = left
         | map{it.subMap(by)}
@@ -43,16 +49,22 @@ workflow keydiff {
         | map{it.subMap(by)}
         | unique
         | map{[it, true]}
-    
-    /* Determine left ∩ right, left - right, and right - left keysets
-    
-    Nextflow join operator matches on first element of each item (the keyset)
-    The remainder argument keeps unmatched items, regardless of which
-    channel they were in. It adds a null value as a placeholder which is groovy
-    falsey. If the keyset is missing in neither (found in both), the output
-    will be [keyset, true, true] from the true values added in the previous
-    step. If the keyset is missing in the left, [keyset, null, true] will be
-    emitted, or [keyset, true, null] if it is missing in the right.
+
+    /*
+        PURPOSE:
+
+        Split which BY-values are missing in the left (i.e. right-only), missing
+        in the right (i.e. left-only), or missing in neither (i.e. found in both)
+
+        IMPLEMENTATION:
+        unique operator above means left_keys and right_keys are non-redundant
+
+        remainder: true emits [left, null] or [null, right] when a BY value is
+        left-only or right-only.
+
+        join will result in a 3-element tuple [BY-value, inLeft, inRight]
+        where inLeft and inRight are either true or null (null is the default
+        Nextflow substitutes for joins when 'remainder' is true).
     */
     missing =
         left_keys
@@ -64,9 +76,16 @@ workflow keydiff {
         }
 
     /*
-        Extract the keyset for rows found only in the left or only in the right
-        depending on the 'how' argument, so that default values can be added
-        where necessary during the join.
+        CONTEXT:
+
+        For left joins, return any right-only values
+        For right joins, return any left-only values
+
+        PURPOSE:
+
+        Return the missing BY-values that are needed depending on the join type.
+
+        IMPLEMENTATION:
     */
     if (how == "right") {
         missing.right | map{it[0]} | set{result}
@@ -85,6 +104,51 @@ workflow sqljoin {
     condition
 
     main:
+
+    /*
+        MOTIVATION: HashMap-based traceability
+
+        A traceable workflow tracks every file and attribute produced for each
+        sample in a single per-sample HashMap under meaningful keys. For example,
+        the initial fastq files are under sample.fastq1 and sample.fastq2. When
+        alignment producs a bam file, the file handle is stored at sample.sambam. 
+
+        CONTEXT:
+
+        Nextflow poses a few challenges for traceable workflows.
+            If the entire sample HashMap is passed in as a process input,
+            Nextflow will yield a different task cache for the process any time
+            irrelevant Hashmap attributes change, breaking the -resume feature.
+
+            In order to be staged, Nextflow requires paths to be extracted from
+            the HashMap and passed in the format path(pathVariable) in the input
+            and output sections.
+
+        Hich solves this by assigning each sample or resource file a unique ID.
+        This, along with the necessary process inputs, are extracted from the
+        HashMap, then the outputs (inluding the ID) are built into a new HashMap,
+        and the ID can be used as a join key to associate the process outputs
+        with the original per-sample HashMap.
+
+        The problem is that Nextflow's standard 'join' operator does not really
+        implement a true SQL inner join (contrary to the documentation's claims)
+        and does not work directly on HashMap keys.
+
+        PURPOSE:
+
+        Implement a true SQL-like inner, full, left, and right join.
+
+        IMPLEMENTATION:
+
+        ARGUMENTS:
+        left
+        right
+        condition
+            by
+            suffix
+            how
+    */
+
     /* Similar to a SQL inner join
 
     Tables are represented as channels emitting LinkedHashMap 'rows'
@@ -162,16 +226,26 @@ workflow sqljoin {
             is provided) we overwrite.
     */
 
+    /*
+        SETUP: Extract and format by, suffix, and how
+    */
+
+    // Get the BY-values to join on and convert to an ArrayList if it's not already
     by = condition.get("by")
     by = by instanceof List ? by : [by]
+
+    // Get the suffix for non-BY values that are found in the left and right channels.
     suffix = condition.get("suffix", "_right")
+
+    // Determine what type of join to do, defaulting to a left join.
     how = condition.get("how", "left")
 
-    /* 1. Depending on join type, determine missing keysets that would
-       inappropriately lead to rows being dropped and add in empty placeholders.
-       For example, for a left join all left rows should be kept. So any keysets
-       in the left table not present in the right table must be added as
-       placeholders to the right table.
+    /*
+        1. Depending on join type, determine missing keysets that would
+        inappropriately lead to rows being dropped and add in empty placeholders.
+        For example, for a left join all left rows should be kept. So any keysets
+        in the left table not present in the right table must be added as
+        placeholders to the right table.
     */
     if (how == "full" || how == "left") {
         // Add any keys in left that are missing in right to right.
@@ -184,78 +258,90 @@ workflow sqljoin {
         left = left | concat(missing)
     }
 
-    /* 2. Group the left channel by keyset, giving a [keyset: [list of items]]
-       channel. This is necessary because the Nextflow join operator returns
-       only the first item from the left channel for each specific keyset.
+    /*
+        2.
+
+        PURPOSE:
+
+        Extract BY values in preparation for cross, grouping the LEFT hashmaps
+        that have the same BY value since this is a requirement of
+        Nextflow's cross operator.
+
+        IMPLEMENTATION:
+
+        This leaves the channels formatted as follows:
+
+        LEFT:
+        channel([BY1, [HASHMAP1, HASHMAP2, ...]], [BY2, [HASHMAP3, HASHMAP4, ...]])
+
+        RIGHT:
+        channel([BY1, HASHMAP1], [BY2, HASHMAP2])
     */
 
     left = left | map{[it.subMap(by), it]} | groupTuple
     right = right | map{[it.subMap(by), it]}
 
-    /* 3. Use Nextflow cross operator to get pairwise combinations of left
-       channel items and right channel items with matching keysets. For example,
-       if there are two left items and two right items with a particular
-       keyset we obtain:
-           [[keyset, [left_1, left_2]], [keyset, right_1]]
-           [[keyset, [left_1, left_2]], [keyset, right_2]]
-    */
+    dominant = condition.dominant ?: "left"
+    assert dominant in ["left", "right"], "In sqljoin, condition.dominant must be 'left' (default) or 'right' but was ${dominant}"
+    /*
+        CONTEXT:
 
+        At this point, LEFT items with a matching BY value are grouped as a
+        single LEFT channel item (see above). We need to associate all samples
+        with matching BY values and reshape them into single, joined HashMap
+        items.
+
+        IMPLEMENTATION:
+        
+        Nextflow's cross operator will associate each LEFT item with any RIGHT
+        items having the same BY value. For example, if there are two LEFT and
+        two RIGHT samples having the BY value BY1, cross yields:
+
+            channel(
+                [[BY1, [LEFT_MAP1, LEFT_MAP2]], [BY1, RIGHT_MAP1]],
+                [[BY1, [LEFT_MAP1, LEFT_MAP2]], [BY1, RIGHT_MAP2]]
+            )
+        
+        For each item, we loosely want to emit items in the format:
+
+            [LEFT_MAP1 + RIGHT_MAP1]
+            [LEFT_MAP2 + RIGHT_MAP1]
+            [LEFT_MAP1 + RIGHT_MAP2]
+            [LEFT_MAP2 + RIGHT_MAP2]
+
+        The caveat is that we have to deal with a situation where a LEFT_MAP
+        and its RIGHT_MAP share non-BY keys. To handle this, we declare one of
+        the channels "dominant" (left by default) and a suffix to add one or
+        more times to the non-dominant channel. If the suffix is blank, then
+        the non-dominant channels' non-BY items are replaced by the dominant
+        channel's non-BY items at the same key. Otherwise, the suffix is added
+        to the non-dominant non-BY keys until they don't match any keys in the
+        dominant-channel HashMap.
+    */
     left
     | cross(right)
     | map{
-        /* Reformat item format
-           
-           from [[keyset, [left_1, left_2]], [keyset, right]]
+        joinedMapList = []
+        leftMapList = it[0][1]
+        rightMap = it[1][1]
 
-           to   [left_1 + right]
-                [left_2 + right]
+        // Iterate through each leftrow and combine with rightMap
+        leftMapList.each() {
+            leftMap ->
 
-            These are hashmaps with keyset represented only once
-        */
-        result = []
+            joinedMap = dominant == "left" ? leftMap : rightMap
 
-        /* Drop the key (which is still preserved in the hashmaps)
-           and extract the hashmaps from the [keyset, hashmap] elements to get:
-           left = [leftrow1, leftrow2, ...]
-           rightrow = rightrow
-
-           it[0] = [keyset, [left_1, left_2, ...]]
-           it[1] = [keyset, right]
-           
-           drop(1) means to drop 1 item from the beginning of the list, so it
-           will drop the keyset.
-        */
-
-        /* This is an old implementation. I'm pretty sure it is unnecessary
-        to drop and then extract the first element, but I'm leaving it in
-        case it introduces bugs.
-        */
-        //left = it[0].drop(1)[0]       
-        //rightrow = it[1].drop(1)[0]
-        
-        /* The new version just extracts the desired elements directly*/
-        left = it[0][1]
-        rightrow = it[1][1]
-
-        // Iterate through each leftrow and combine with rightrow
-        left.each() {
-            leftrow ->
-            combined = [:]
-
-            // Put all items (including key) from leftrow into combined
-            combined.putAll(leftrow)
-
-            // Iterate through each key in rightrow,
+            // Iterate through each key in rightMap,
             // appending suffix if needed to avoid clashes with leftrow
-            // and adding it to the combined row.
-            rightrow.each() {
+            // and adding it to the joinedMap.
+            (dominant == "left" ? rightMap : leftMap).each() {
                 key, value ->
 
                 // Add non-keyset keys from right to left.
                 if (!by.contains(key)) {
                     
                     // Add as many suffixes as necessary to avoid clash
-                    while (suffix != "" && combined.containsKey(key)) {
+                    while (suffix != "" && joinedMap.containsKey(key)) {
                         key = key + suffix
                     }
 
@@ -263,376 +349,28 @@ workflow sqljoin {
                         - There is no name clash, or
                         - The left table is not declared dominant
                     */
-                    if (condition.get("dominant") != "left" || !combined.containsKey(key)) {
-                        combined[key] = value
+                    if (!joinedMap.containsKey(key)) {
+                        joinedMap += [(key):value]
                     }
                 }
             }
             // Add the new hashmap to the list of hashmaps
-            result.add(combined)
+            joinedMapList += [joinedMap]
         }
 
         // List of per-keyset joins
-        result
+        joinedMapList
     }
     | collect       // Currently, channel items are lists of per-keyset joins.
-    | flatMap{it}   // Collects to a single list of lists, then flattens
+    | flatMap       // Collects to a single list of lists, then flattens
     | set{joined}   // Yielding the desired result of single-hashmap join items.
     
     emit:
-        joined
+    joined
 }
 
-def hashmapdiff(ch1, ch2, by, how = "left", suffix = "__joindiff__") {
-    def joined = sqljoin(ch1, ch2, [by: by, how:how, suffix:"__joindiff__"])
-    def keyIsInBy = {k -> by instanceof List ? k in by : k == by}
-
-    return joined.collect {
-        hashmap ->
-
-        def diff = [:]
-        hashmap.each {
-            k1, v1 ->
-            if (!k1.endsWith("__joindiff__") && !keyIsInBy(k1)) {
-                def k2 = k1 + "__joindiff__"
-                if (!k2 in hashmap.keySet()) {
-                    diff[k1] = [v1]
-                } else if (hashmap[k2] != v1) {
-                    v2 = hashmap[k2]
-                    if (v1 instanceof Path && v2 instanceof Path) {
-                        if (v1.getFileName().toString() != v2.getFileName().toString()) {
-                            diff[k1] = [v1, hashmap[k2]]
-                        }
-                    } else {
-                        diff[k1] = [v1, hashmap[k2]]
-                    }
-                    
-                }
-            }
-        }
-        diff
-    }
-}
-
-def toHashMap(keys, vals) {
-    if (!(vals instanceof ArrayList) || vals.size() == 1) {
-        return [keys:vals]
-    }
-    return [keys, vals].transpose()
-                       .collectEntries { [it[0], it[1]] }
-}
-
-def transposeHashMapList(hashMapListChannel, keys, nullOk = [:], defaultValues = [:]) {
-    def transposedChannel = hashMapListChannel | map {
-        hashMapList ->
-
-        // Extract parameters to list
-        def transposed = keys.collectEntries{[(it): []]}
-
-        keys.each {
-            key ->
-
-            hashMapList.each {
-                sample ->
-
-                def value = sample[(key)] ?: defaultValues[(key)]
-                assert value || key in nullOk, "Missing ${key} in ${sample.id} or default value in coalesceGroupTuple, and nullOk[${key}] = false. Sample:\n${sample}"
-                def update_value = transposed[(key)] + [value]
-                def update = [(key): update_value]
-                transposed += update
-            }
-        }
-        
-        transposed
-    }
-    return transposedChannel
-}
-
-
-def transact (proc, ch, input, output, tags, options) {
-    /*
-        If a channel item is in the format [group, [HashMaps]], reshape it into:
-        HashMap where the only keys are 'input'. The value for each key is a list
-        of the values from each HashMap from [HashMaps] or options.nullDefault[key]
-        if supplied.
-
-        Channel items that are HashMaps are left unchanged.
-    */
-
-    /*
-        All channel items should be HashMaps now. Extract values for the 'input' keys
-        to a tuple in the order specified by 'input'.
-    */
-    def extracted = ch
-        | map {
-            item ->
-            // Ensure all items are HashMaps
-            assert item instanceof HashMap, "Input channel item expected to be HashMap, is ${item.getClass()}:\n${item}"
-
-            // Collect the 'input' key-associated values in order, ensuring they
-            // are all present or a default is supplied or nullOk is true.
-            def proc_inputs = input.collect { key ->
-                def value = item.get(key) ?: options.nullDefault?.get(key)
-                def nullOk = options.get("nullOk")?.with { it.contains(key) || it == key } ?: false
-
-                assert nullOk || value, """
-                    In ${proc} with tags ${tags} and options ${options}, ${key} is required but is '${value}' for:
-                    ${item}
-                    
-                    One possible cause is a mismatched resource file or processing parameters for a biological replicate or condition produced by a merge.
-                    If so, you can fix this by either making all resource files and processing parameters identical for all input samples for the condition,
-                    or by specifying specific resource files and processing parameters for the biological replicate or condition in nextflow.config
-                """.trim()
-
-                value
-            }
-
-            // If there's more than one input, make it a tuple. Otherwise,
-            // use that single input value directly rather than using a 1-element list.
-            proc_inputs.size() == 1 ? proc_inputs[0] : tuple(*proc_inputs)
-        }
-    
-    // If the filterUnique option is set, filter non-unique items
-    extracted = options.filterUnique ? extracted | unique : extracted
-
-    // Feed the extracted values into the process.
-    def raw_proc_outputs = extracted | proc
-
-    // If options.transpose is specified, transpose the process outputs. This is useful
-    // if the process should emit multiple samples where each output is a single key:value
-    // pair for the sample. This transposes them so that all the values for each sample are grouped.
-    // Example: if a process outputs tuple([1, 2], [3, 4]) then transposing yields [1, 3], [2, 4]
-    // which can then have the appropriate keys applied to turn them into sample HashMaps.
-    raw_proc_outputs = options.transpose ? raw_proc_outputs | transpose : raw_proc_outputs
-
-    // Assign labels to (possibly transposed) process outputs
-    raw_proc_outputs
-        | map{
-            proc_outputs ->
-
-            // 'output' are the keys, 'proc_outputs' are the associated values in the same order.
-            // result is a HashMap [output[0]: proc_outputs[0], ... output[n]: proc_outputs[n]]
-            def result_map = toHashMap(output, proc_outputs)
-            
-            // If specified, select only keys in options.select, then drop keys in options.drop
-            if (options.get("select")) result_map = result_map.subMap(options.get("select"))
-            if (options.get("drop")) result_map -= options.get("drop")
-
-            // Set the value of supplied tags to the corresponding original tag
-            tags.each {
-                tag, orig ->
-                result_map = result_map + [(tag):result_map[orig]]
-            }
-            
-            result_map
-        }
-}
-
-def pack(channels, joinBy = "id") {
-    // Extract first and remaining channels
-    def first = channels[0]
-    def rest = channels[1..-1]
-
-    
-
-    // Iteratively join the channels from first to last.
-    // If joinBy is a list, join on the joinBy element corresponding to each
-    // item. Otherwise, join on joinBy every time.
-    sizeMatch = !(joinBy instanceof List)
-                || joinBy.size() == channels.size() - 1
-    assert sizeMatch, "In extraops.nf, there must be a single non-list joinBy or one joinBy for every join"
-    result = rest.inject(
-        first,
-        {
-            addMe, addTo ->
-            // Get the key to join on
-            idxOfAddMe = channels.indexOf(addMe)
-            def by = joinBy instanceof List ? joinBy[idxOfAddMe] : joinBy            
-
-            // Join the previous results (addMe) to the new (presumably larger)
-            // hashmaps in addTo. On overlapping columns for a given
-            // channel item, addMe's values replace addTo's values.
-            sqljoin(addTo, addMe, [by: by, suffix: ""])
-        }
-    )
-    return result
-}
-
-def pack2(addTo, addMe, by = "id") {
-    sqljoin(addTo, addMe, [by:by, suffix: ""])
-}
-
-def transpack (proc, channels, input, output, tags = [:], by = "id", options = [:]) {
-    // Convenience function to call transact followed by pack.
-    def channelsList = channels instanceof List ? channels : [channels]
-    def obtained = transact(proc, channelsList[0], input, output, tags, options)
-    return pack([obtained] + channelsList, by)
-}
-
-def source (produceProc, ch, key, input, output, namer, by, needsTest) {
-    // Identify channel items that need the resource file
-    def needs = ch
-        | branch {
-            hashmap ->
-
-            yes: needsTest(hashmap)
-            no: true
-        }
-    
-    // Give a default filename to channel items that need the resource but
-    // do not have a filename already. Then filter for those having no
-    // existing filename.
-    def missing = needs.yes
-        | map {
-            hashmap ->
-            
-            def filename = hashmap.get(key)
-            hashmap += filename ? [(key):file(filename)] : [(key):namer(hashmap)]
-            def err = "During source, a hashmap needed a filename but filename given by namer function was '${filename}' at '${key}' for:\n${hashmap}"
-            assert file(hashmap.get(key))?.name.length() > 0, err
-            hashmap
-        }
-        | branch {
-            hashmap ->
-
-            yes: !isExistingFile(hashmap.get(key))
-            no: true
-        }
-
-    // Create the needed resource file and pack it into all the hashmaps that
-    // were missing it.
-    def made = transpack(produceProc, missing.yes, input, output, tags = [:], by = by, [filterUnique: true])
-
-    // Concatenate the channels containing the made resources, those that
-    // needed it but were not missing, and those that did not need it.
-    return made | concat(missing.no) | concat(needs.no)
-}
-
-def sourcePrefix (produceProc, ch, dir, prefix, input, output, namer, by, needsTest, options = [:]) {
-    // Identify channel items that need the resource file
-    def needs = ch
-        | branch {
-            hashmap ->
-
-            yes: needsTest(hashmap)
-            no: true
-        }
-    
-    // Give a default filename to channel items that need the resource but
-    // do not have a filename already. Then filter for those having no
-    // existing filename.
-    def missing = needs.yes
-        | map {
-            hashmap ->
-            
-            hashmap += hashmap.get(dir) ? [(dir):file(hashmap.get(dir))] : [:]
-            hashmap += hashmap.get(prefix) ? [:] : namer(hashmap)
-            def err = "During sourcePrefix, ${hashmap.subMap(dir, prefix)} in:\n${hashmap}"
-            assert hashmap.get(prefix), err
-            hashmap
-        }
-        | branch {
-            hashmap ->
-
-            yes: !isExistingFile(hashmap.get(dir))
-            no: true
-        }
-
-    // Create the needed resource file and pack it into all the hashmaps that
-    // were missing it.
-    def made = transpack(produceProc, missing.yes, input, output, tags = [:], by = by, options + [filterUnique: true])
-    
-    // Concatenate the channels containing the made resources, those that
-    // needed it but were not missing, and those that did not need it.
-    return made | concat(missing.no) | concat(needs.no)
-}
-
-/*
-    We can't extract the requested information from the samples and process in groovy.
-    Instead we will need to do something like:
-    For each profile
-        Filter for samples having that profile
-        subMap the samples
-        collect the samples
-        coalesce the samples
-        add the args to the hashmap
-        submap it on the complete set of args
-    The caller will call the process and collect the results
-*/
-
-def parameterize(processName, samples, parameterizations, sampleKeys, inputOrder) {
-    /*
-        In Nextflow, the only ways to call a process multiple times is:
-            Duplicate the process with a new name, either by reimporting it with two names or by copying the code
-            Call the process from workflows with two different names
-        
-        We are trying to let the user parameterize processes an unlimited number of times,
-        and we can't create a hardcoded process or workflow for each.
-
-        The parameterize extraop gets around this by creating a concatenated channel
-        containing samples with all the different needed parameterizations in advance,
-        which can then be passed to a single process call.
-    */
-
-
-    def argSets = parameterizations.get(processName)
-
-    def resultChannels = channel.empty()
-
-    // Iterate through each of the profiles to use for the process
-    argSets.each {
-        argsName, args ->
-        
-        def newChannel = samples
-            | filter{
-                sample ->
-
-                // Get samples that have:
-                //    1) the keys required to run the process
-                //    2) the process name and parameterization
-                // create an error if the process isn't present for any of the samples.
-                // this means that samples have to be pre-filtered for those having the given process.
-                // maybe this is undesirable? it seems like we'd just want to filter the samples if they
-                // don't meet the criteria.
-                // create an error if any samples don't have the required keys
-                // 
-                def hasKeys = sampleKeys.every{sampleKey -> sample.get(sampleKey)}
-                def hasProcess = sample.get(processName)
-                def hasParameterization = argsName in sample.get(processName)
-                assert hasProcess : "For ${processName} ${argsName}, the following sample does not have process ${processName}:\n${sample}"
-
-                assert hasKeys : "For ${processName} ${argsName}, the following sample does not have all required keys ${sampleKeys}." +
-                 "It only has ${sample.subMap(sampleKeys)}. Sample:\n${sample}"
-
-                hasKeys && hasProcess && hasParameterization
-            }
-            | map{sample -> sample.subMap(sampleKeys)}  // get just the required keys
-            | collect                                   // collect all the samples that fit the current argSet into a list of samples
-            | map {                                     // transpose the samples, this can be done now with the groupTuple functionality we established
-                sampleList ->
-
-                // Coalesce the samples
-                def result = [:]
-                sampleList.each {
-                    sample ->
-
-                    sample.each {
-                        k, v ->
-
-                        result.get(k, []) << v
-                    }
-                }
-                result
-            }
-            | map {
-                sampleKeySubMap ->                      // add the parameterizations into the submap (it won't be a table format any more because we only add the one copy)
-
-                (sampleKeySubMap + args).subMap(inputOrder)
-            }
-        resultChannels = resultChannels.concat(newChannel)  // append the channel
-    }
-
-    return resultChannels    // return the result channel
+def pack(addTo, addMe, by = "id") {
+    sqljoin(addTo, addMe, [by:by, suffix: "", dominant:"right"])
 }
 
 def label(map, lbl) {
@@ -643,27 +381,6 @@ def isTechrep(map) {return label(map, "techrep") && label(map, "biorep") && labe
 def isBiorep(map) {return (!label(map, "techrep")) && label(map, "biorep") && label(map, "condition")}
 def isCondition(map) {return (!label(map, "techrep")) && (!label(map, "biorep")) && label(map, "condition")}
 def isSingleCell(map) {return map.cellBarcodeField || map.isSingleCell}
-
-def combinations(samples, comboKeys, renameComboKeys, constKeys) {
-    toCombine = samples
-        | map{sample -> sample.subMap(comboKeys).values().toList().transpose().toSet()}
-        | flatten
-        | collate(comboKeys.size())
-    
-    constPart = samples
-        | map{sample -> sample.subMap(constKeys)}
-    
-    return toCombine
-        | combine(toCombine)
-        | filter{it[0] > it[comboKeys.size()]}
-        | map {
-            sample ->
-
-            [renameComboKeys, sample].transpose().collectEntries{[(it[0]): it[1]]}
-        }
-        | combine(constPart)
-        | map{it[0] + it[1]}
-}
 
 def emptyOnLastStep(step, samples) {
     def isExplicitLastStep = (params.containsKey("lastStep") && params.get("lastStep") == step)
@@ -803,17 +520,6 @@ def rows (columnsMap, options = [:]) {
         [keys, row].transpose().collectEntries()  // Build a new map for each row
     }
     result
-}
-
-def updateChannel(previous, update, by = "id") {
-    def previousTuple = previous | map{tuple(it.subMap(by), it)}
-    def updateTuple = update | map{tuple(it.subMap(by), it)}
-    return updateTuple | cross(previousTuple) | map{it[1][1] + it[0][1]}
-}
-
-
-def rowsChannel(ch) {
-    ch | map{rows(it)} | flatten
 }
 
 def constructIdentifier(map) {return map.subMap("condition", "biorep", "techrep", "aggregateProfileName").values().join("_")}

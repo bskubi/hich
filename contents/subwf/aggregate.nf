@@ -1,4 +1,4 @@
-include {updateChannel; pack2; coalesce; rows; columns; groupHashMap; isTechrep; isBiorep; isCondition; constructIdentifier; emptyOnLastStep; aggregateLevelLabel} from './extraops.nf'
+include {pack; coalesce; rows; columns; groupHashMap; isTechrep; isBiorep; isCondition; constructIdentifier; emptyOnLastStep; aggregateLevelLabel} from './extraops.nf'
 include {Setup} from './setup.nf'
 
 process HichDownsampleStatsFrom {
@@ -188,7 +188,7 @@ workflow DownsamplePairs {
         | HichDownsampleStatsFrom
         | map{[id:it[0], (levelParams.downsampleStatsFrom):it[1]]}
         | set{downsampleStatsFromResult}
-    pack2(downsample.YES, downsampleStatsFromResult) | set {fromStatsCalculated}
+    pack(downsample.YES, downsampleStatsFromResult) | set {fromStatsCalculated}
 
     // Compute to stats
     groupHashMap(fromStatsCalculated, [levelParams.downsampleToMeanDistribution, 'aggregateProfileName'])
@@ -199,7 +199,7 @@ workflow DownsamplePairs {
         | map{rows(it)}
         | flatten
         | set {downsampleToGroupMinResult}
-    pack2(fromStatsCalculated, downsampleToGroupMinResult) | set{toGroupMinResult}
+    pack(fromStatsCalculated, downsampleToGroupMinResult) | set{toGroupMinResult}
 
     toGroupMinResult
         | map{
@@ -209,7 +209,7 @@ workflow DownsamplePairs {
         | HichDownsamplePairs
         | map{[id:it[0], (levelParams.downsamplePairs):it[1], latest:it[1], latestPairs:it[1]]}
         | set{downsampledResult}
-    pack2(toGroupMinResult, downsampledResult) | set {downsampled}
+    pack(toGroupMinResult, downsampledResult) | set {downsampled}
 
     downsampled | concat(downsample.NO) | set{result}
 
@@ -246,7 +246,7 @@ workflow MergePairs {
         | map{coalesce(columns(it, ["dropNull":true]), '_drop')}
         | map{it += [id:constructIdentifier(it)]}
         | set{inheritedMergeAttributes}
-    pack2(inheritedMergeAttributes, fromMerge) | set{merged}
+    pack(inheritedMergeAttributes, fromMerge) | set{merged}
 
     merged | map {it += ["aggregateLevel" : aggregateLevelLabel(it)]} | concat(levelSamples) | set{result}
 
@@ -277,7 +277,7 @@ workflow DeduplicatePairs {
         | PairtoolsDedup
         | map{[id:it[0], dedupPairs:it[1], latest:it[1], latestPairs:it[1], alreadyDeduplicated:true]}
         | set{dedupResult}
-    pack2(deduplicate.YES, dedupResult) | concat(deduplicate.NO) | set{result}
+    pack(deduplicate.YES, dedupResult) | concat(deduplicate.NO) | set{result}
 
     emit:
     result

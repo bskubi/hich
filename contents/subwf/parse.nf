@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {transpack; emptyOnLastStep; updateChannel; pack2} from './extraops.nf'
+include {emptyOnLastStep; pack} from './extraops.nf'
 
 process PairtoolsParse2 {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",
@@ -53,7 +53,7 @@ workflow Parse {
         | PairtoolsParse2
         | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
         | set{result}
-    pack2(samples, result) | set{samples}
+    pack(samples, result) | set{samples}
 
     // It might be good to simplify these workflow control steps since they
     // are repeated frequently.

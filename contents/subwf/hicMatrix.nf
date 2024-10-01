@@ -1,4 +1,4 @@
-include {transpack; emptyOnLastStep; pack2} from './extraops.nf'
+include {emptyOnLastStep; pack} from './extraops.nf'
 
 process JuicerToolsPre {
     /*
@@ -46,7 +46,7 @@ workflow HicMatrix {
         | JuicerToolsPre
         | map{id, hic -> [id: id, hic: hic, latestMatrix: hic]}
         | set{result}
-    pack2(samples, result) | set{samples}
+    pack(samples, result) | set{samples}
 
     samples = emptyOnLastStep("HicMatrix", samples)
 

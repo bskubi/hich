@@ -1,4 +1,4 @@
-include {source; emptyOnLastStep; pack2; isExistingFile} from './extraops.nf'
+include {emptyOnLastStep; pack; isExistingFile} from './extraops.nf'
 
 process Stage {
     /*  When a URL is passed to a Nextflow function, the resource will be
@@ -10,6 +10,7 @@ process Stage {
                saveAs: {params.general.publish.genomeReference ? it : null},
                mode: params.general.publish.mode
     label 'smallResource'
+    debug true
 
     input:
     tuple val(assembly), path(uri)
@@ -86,17 +87,8 @@ workflow GenomeReference {
         | Stage
         | map{assembly, genomeReference -> [assembly: assembly, genomeReference: genomeReference]}
         | set{result}
-    pack2(samples, result) | set{samples}
 
-        
-    // source(Stage,
-    //        samples,
-    //        "genomeReference",
-    //        ["assembly", "genomeReference"],
-    //        ["assembly", "genomeReference"],
-    //        {urls[synonyms[it.assembly]]},
-    //        "assembly",
-    //         {true}) | set{samples}
+    pack(samples, result, "assembly") | set{samples}
 
     samples = emptyOnLastStep("GenomeReference", samples)
 

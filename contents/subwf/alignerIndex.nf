@@ -1,4 +1,4 @@
-include {sourcePrefix; emptyOnLastStep; isExistingFile; pack2} from './extraops.nf'
+include {emptyOnLastStep; isExistingFile; pack} from './extraops.nf'
 
 process BwaMem2Index {
     conda "bioconda::bwa-mem2"
@@ -13,15 +13,17 @@ process BwaMem2Index {
     tuple path(genomeReference), val(prefix)
 
     output:
-    tuple path("bwa-mem2/index"), val(prefix), path("bwa-mem2/index/${prefix}.0123"), path("bwa-mem2/index/${prefix}.amb"),
+    tuple val(genomeReference), path("bwa-mem2/index"), val(prefix), path("bwa-mem2/index/${prefix}.0123"), path("bwa-mem2/index/${prefix}.amb"),
           path("bwa-mem2/index/${prefix}.ann"), path("bwa-mem2/index/${prefix}.bwt.2bit.64"),
           path("bwa-mem2/index/${prefix}.pac")
 
     shell:
-    "bwa-mem2 index -p ${prefix} ${genomeReference} && mkdir -p bwa-mem2/index && mv ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac bwa-mem2/index"
+    alignerIndexDir = "bwa-mem2/index"
+    "bwa-mem2 index -p ${prefix} ${genomeReference} && mkdir -p ${alignerIndexDir} && mv ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac ${alignerIndexDir}"
 
     stub:
-    "mkdir -p bwa-mem2/index && cd bwa-mem2/index && touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
+    alignerIndexDir = "bwa-mem2/index"
+    "mkdir -p ${alignerIndexDir} && cd ${alignerIndexDir} && touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
 }
 
 process BwaMemIndex {
@@ -37,17 +39,46 @@ process BwaMemIndex {
 
 
     input:
-    tuple path(genomeReference), val(prefix)
+    tuple val(genomeReferenceString), path(genomeReference), val(prefix)
 
     output:
-    tuple path("bwa/index"), val(prefix), path("bwa/index/${prefix}.ann"), path("bwa/index/${prefix}.amb"),
-          path("bwa/index/${prefix}.pac"), path("bwa/index/${prefix}.bwt"), path("bwa/index/${prefix}.sa")
+    tuple val(genomeReferenceString), path(alignerIndexDir), val(prefix), path("${alignerIndexDir}/${prefix}.ann"), path("${alignerIndexDir}/${prefix}.amb"),
+          path("${alignerIndexDir}/${prefix}.pac"), path("${alignerIndexDir}/${prefix}.bwt"), path("${alignerIndexDir}/${prefix}.sa")
 
     shell:
-    "bwa index -p ${prefix} ${genomeReference} && mkdir -p bwa/index && mv ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa bwa/index"
+    alignerIndexDir = "bwa/index"
+    "bwa index -p ${prefix} ${genomeReference} && mkdir -p ${alignerIndexDir} && mv ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa ${alignerIndexDir}"
 
     stub:
-    "mkdir -p bwa/index && cd bwa/index && touch ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa"
+    alignerIndexDir = "bwa/index"
+    "mkdir -p ${alignerIndexDir} && cd ${alignerIndexDir} && touch ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa"
+}
+
+process BSBoltIndex {
+    container "bskubi/hich:latest"
+    publishDir params.general.publish.indexBSBolt ? params.general.publish.indexBSBolt : "results",
+               saveAs: {params.general.publish.indexBSBolt ? it : null},
+               mode: params.general.publish.mode
+    label 'whenLocal_allConsuming'
+    label 'index'
+    memory {20.GB + 10.GB * (task.attempt - 1)}
+    
+
+
+    input:
+    tuple val(genomeReferenceString), path(genomeReference), val(prefix)
+
+    output:
+    tuple val(genomeReferenceString), path(alignerIndexDir), val(prefix), path("${alignerIndexDir}/${prefix}.ann"), path("${alignerIndexDir}/${prefix}.amb"),
+          path("${alignerIndexDir}/${prefix}.pac"), path("${alignerIndexDir}/${prefix}.bwt"), path("${alignerIndexDir}/${prefix}.sa")
+
+    shell:
+    alignerIndexDir = "bsbolt/index"
+    "bsbolt Index -G ${genomeReference} && mkdir -p ${alignerIndexDir} && mv ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa ${alignerIndexDir}"
+
+    stub:
+    alignerIndexDir = "bsbolt/index"
+    "mkdir -p ${alignerIndexDir} && cd ${alignerIndexDir} && touch ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa"
 }
 
 
@@ -64,23 +95,23 @@ workflow AlignerIndex {
         | map{tuple(it.genomeReference, it.alignerIndexPrefix)}
         | unique
         | BwaMem2Index
-        | map{genomeReference, alignerIndexPrefix, prefix_0123, prefix_amb, prefix_ann, prefix_bwt_2bit_64, prefix_pac ->
-                [genomeReference: genomeReference, alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
+        | map{genomeReference, alignerIndexDir, alignerIndexPrefix, prefix_0123, prefix_amb, prefix_ann, prefix_bwt_2bit_64, prefix_pac ->
+                [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
         | set{resultBwaMem2Index}
 
     samples
         | filter {it.datatype == "fastq" && it.aligner == "bwa"}
         | filter {!isExistingFile(it.alignerIndexDir)}
         | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
-        | map{tuple(it.genomeReference, it.alignerIndexPrefix)}
+        | map{tuple(it.genomeReference, it.genomeReference, it.alignerIndexPrefix)}
         | unique
         | BwaMemIndex
-        | map{genomeReference, alignerIndexPrefix, prefix_ann, prefix_amb, prefix_pac, prefix_bwt, prefix_sa ->
-                [genomeReference: genomeReference, alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
+        | map{genomeReference, alignerIndexDir, alignerIndexPrefix, prefix_ann, prefix_amb, prefix_pac, prefix_bwt, prefix_sa ->
+                [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
         | set{resultBwaMemIndex}
     
-    pack2(samples, resultBwaMem2Index, "genomeReference") | set{samples}
-    pack2(samples, resultBwaMemIndex, "genomeReference") | set{samples}
+    pack(samples, resultBwaMem2Index, "genomeReference") | set{samples}
+    pack(samples, resultBwaMemIndex, "genomeReference") | set{samples}
 
     samples = emptyOnLastStep("AlignerIndex", samples)
 
