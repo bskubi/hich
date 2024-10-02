@@ -23,7 +23,7 @@ process HicToMcool {
     hicFileName = hicFile.getFileName().toString()
     prefix = hicFileName.substring(0, hicFileName.lastIndexOf("."))
     mcoolFile = "${prefix}.mcool"
-    "hictk convert ${hicFile} ${mcoolFile}"
+    "mkdir ./tmp && hictk convert --tmpfile ./tmp ${hicFile} ${mcoolFile}"
 
     stub:
     hicFileName = hicFile.getFileName().toString()
@@ -41,7 +41,6 @@ process McoolToHic {
     container "ghcr.io/paulsengroup/hictk:1.0.0"
     label 'doJobArray'
     label 'convertMcoolToHic'
-    maxForks 1  // Necessary due to unexplained bug in hictk
 
     input:
     tuple val(id), path(mcoolFile)
@@ -56,7 +55,7 @@ process McoolToHic {
     hicFile = "${prefix}.hic"
     cpus = task.cpus && task.cpus >= 2 ? task.cpus : 2
     threads = cpus > 2 ? "-t ${cpus}" : ""
-    "hictk convert ${threads} ${mcoolFile} ${hicFile}"
+    "mkdir ./tmp && hictk convert --tmpfile ./tmp ${threads} ${mcoolFile} ${hicFile}"
 
     stub:
     mcoolFileName = mcoolFile.getFileName().toString()
