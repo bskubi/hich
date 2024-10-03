@@ -1,11 +1,71 @@
-include {emptyOnLastStep} from './extraops.nf'
+include {emptyOnLastStep; parsePattern; datatypeFromExtension} from './extraops.nf'
 
 workflow LoadSampleFile {
     main:
-    samples = channel.fromPath(params.sampleFile, checkIfExists: true)
-        | splitCsv(header: true, sep: params.sampleFileSep)
-        
-    samples = emptyOnLastStep("LoadSampleFile", samples)
+    samples = channel.empty()
+
+    if (params.containsKey("sampleFile")) {
+        channel.fromPath(params.sampleFile, checkIfExists: true)
+            | splitCsv(header: true, sep: params.sampleFileSep)
+            | set{fromSampleFile}
+        samples | concat(fromSampleFile) | set{samples}
+    }
+
+    if (params.containsKey("fastqPairs")) {
+        channel.fromFilePairs(params.fastqPairs)
+            | map{
+                header, files ->
+                file1 = files[0]
+                file2 = files[1]
+
+                bothFastq = datatypeFromExtension(file1) == "fastq" && datatypeFromExtension(file2) == "fastq"
+                assert bothFastq, "--fastqPairs grouped ${file1} and ${file2}, but these do not contain a .fastq or .fq extension as expected."
+                sample = [fastq1:file1, fastq2: file2, datatype: "fastq"]
+
+                if (params.containsKey("paramsFromPath")) {
+                    f1Params = parsePattern(file1.toString(), params.paramsFromPath)
+                    f2Params = parsePattern(file2.toString(), params.paramsFromPath)
+                    sameParams = f1Params == f2Params
+                    assert sameParams, "--paramsFromPath yielded different params for ${file1} and ${file2}:\n${f1Params}\n${f2Params}"
+                    sample += f1Params
+                }
+                else if (params.containsKey("paramsFromFilename")) {
+                    f1Params = parsePattern(file1.name.toString(), params.paramsFromFilename)
+                    f2Params = parsePattern(file2.name.toString(), params.paramsFromFilename)
+                    sameParams = f1Params == f2Params
+                    assert sameParams, "--paramsFromFilename yielded different params for ${file1} and ${file2}:\n${f1Params}\n${f2Params}"
+                    sample += f1Params
+                }
+
+                sample
+            }
+            | set{fromFilePairsChannel}
+        samples | concat(fromFilePairsChannel) | set{samples}
+    }
+
+    if (params.containsKey("samples")) {
+        channel.fromPath(params.samples)
+            | map {
+                file ->
+                datatype = datatypeFromExtension(file.toString())
+                sample = [(datatype):file, datatype: datatype]
+
+                if (params.containsKey("paramsFromPath")) {
+                    fileParams = parsePattern(file.toString(), params.paramsFromPath)
+                    sample += fileParams
+                }
+
+                sample
+            }
+            | set{fromFileChannel}
+        samples | concat(fromFileChannel) | set{samples}
+    }
+
+    if (params.containsKey("samplesFromSRA")) {
+        channel.fromSRA(params.fromSRA) | view
+    }
+
+    samples = emptyOnLastStep("ParseArgs", samples)
 
     emit:
     samples

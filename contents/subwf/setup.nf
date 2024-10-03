@@ -2,7 +2,7 @@ include {Chromsizes} from './chromsizes.nf'
 include {GenomeReference} from './genomeReference.nf'
 include {AlignerIndex} from './alignerIndex.nf'
 include {FragmentIndex} from './fragmentIndex.nf'
-include {emptyOnLastStep; isTechrep; isBiorep; isCondition; aggregateLevelLabel} from './extraops.nf'
+include {emptyOnLastStep; isTechrep; isBiorep; isCondition; aggregateLevelLabel; datatypeFromExtension} from './extraops.nf'
 
 // Returns true if it is truthy/non-null, and its string representation has
 // at least one non-whitespace character, false otherwise
@@ -252,6 +252,7 @@ workflow UpdateSamples
                 }
             }
         }
+
 
         /*
             Samples that include cellBarcodeIndex, cellBarcodeRegexPattern, or cellBarcodeParsePattern need to have their

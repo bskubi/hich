@@ -601,3 +601,43 @@ def aggregateLevelLabel(sample) {
     return "unknown"
 }
 
+def datatypeFromExtension(path) {
+    extensions = [".fastq": "fastq",
+                  ".fq": "fastq",
+                  ".sam": "sambam",
+                  ".bam": "sambam",
+                  ".pairs": "pairs",
+                  ".mcool": "mcool",
+                  ".hic": "hic"]
+    pathString = path.toString()
+    foundExtension = extensions.keySet().find {
+        ext ->
+        pathString.endsWith(ext) || pathString.contains("${ext}.")
+    }
+    return foundExtension ? extensions[foundExtension] : null
+}
+
+def parsePattern(String str, String parsePattern) {
+    def patternPlaceholders = []
+
+    def pattern = parsePattern.replaceAll(/\{([^{}]*)\}/) { match ->
+        if (match[1].trim()) {
+            patternPlaceholders << match[1]  // Track the placeholder name
+            "(?<${match[1]}>.+?)"
+        } else {
+            ""  // Ignore empty placeholders
+        }
+    }
+    
+    def matcher = str =~ pattern
+    def result = [:]
+    
+    if (matcher) {
+        patternPlaceholders.eachWithIndex { placeholder, index ->
+            result[placeholder] = matcher.group(index + 1)  // Retrieve group by index
+        }
+    }
+    
+    
+    return result ?: null
+}
