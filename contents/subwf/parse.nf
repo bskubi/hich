@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {emptyOnLastStep; pack} from './extraops.nf'
+include {emptyOnLastStep; pack; skip} from './extraops.nf'
 
 process PairtoolsParse2 {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",
@@ -48,7 +48,7 @@ workflow Parse {
 
     main:
     samples
-        | filter{it.datatype in ["fastq", "sambam"]}
+        | filter{!skip("parse") && it.datatype in ["fastq", "sambam"]}
         | map{tuple(it.id, it.sambam, it.chromsizes, it.assembly, it.parseParams, it.reshapeParams)}
         | PairtoolsParse2
         | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
@@ -57,11 +57,11 @@ workflow Parse {
 
     // It might be good to simplify these workflow control steps since they
     // are repeated frequently.
-    if ("Parse" in params.general.get("qcAfter")) {
-        QCReads(samples, "Parse")
+    if ("parse" in params.general.get("qcAfter")) {
+        QCReads(samples, "parse")
     }
 
-    samples = emptyOnLastStep("Parse", samples)
+    samples = emptyOnLastStep("parse", samples)
 
     emit:
         samples

@@ -1,4 +1,4 @@
-include {emptyOnLastStep; pack} from './extraops.nf'
+include {emptyOnLastStep; pack; skip} from './extraops.nf'
 
 process BwaAlign {
     publishDir params.general.publish.align ? params.general.publish.align : "results",
@@ -45,14 +45,14 @@ workflow Align {
     main:
 
     samples
-        | filter{it.datatype == "fastq"}
+        | filter{!skip("align") && it.datatype == "fastq"}
         | map{tuple(it.id, it.alignerIndexDir, it.alignerIndexPrefix, it.fastq1, it.fastq2, it.aligner, it.bwaFlags)}
         | BwaAlign
         | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
         | set{result}
     pack(samples, result) | set{samples}
 
-    samples = emptyOnLastStep("Align", samples)
+    samples = emptyOnLastStep("align", samples)
 
     emit:
     samples

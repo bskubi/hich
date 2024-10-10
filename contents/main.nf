@@ -1,4 +1,4 @@
-include {LoadSampleFile} from './subwf/loadSampleFile.nf'
+include {ParseArgs} from './subwf/parseArgs.nf'
 include {Setup} from './subwf/setup.nf'
 include {Align} from './subwf/align.nf'
 include {FastqHead} from './subwf/fastqHead.nf'
@@ -14,12 +14,12 @@ include {CompartmentScores} from './subwf/compartmentScores.nf'
 include {Loops} from './subwf/loops.nf'
 include {DifferentialLoops} from './subwf/differentialLoops.nf'
 include {InsulationScores} from './subwf/insulationScores.nf'
-include {emptyOnLastStep} from './subwf/extraops.nf'
+include {emptyOnLastStep; skip} from './subwf/extraops.nf'
 include {AggregateTechreps; AggregateBioreps; AggregateConditions} from './subwf/aggregate.nf'
 
 workflow {
 
-    LoadSampleFile              // Setup workflow inputs
+    ParseArgs              // Setup workflow inputs
         | Setup
         | FastqHead
 

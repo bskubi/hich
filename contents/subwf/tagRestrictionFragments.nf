@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {emptyOnLastStep; pack} from './extraops.nf'
+include {emptyOnLastStep; pack; isExistingFile; skip} from './extraops.nf'
 
 process HichFragtag {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
@@ -22,10 +22,6 @@ process HichFragtag {
     "touch ${id}_fragtag.pairs.gz"
 }
 
-def hasFragmentIndexName = {it.get("fragmentIndex").toString().trim().length() > 0}
-
-def fragmentIndexExists = {hasFragmentIndexName(it) && file(it.fragmentIndex).exists()}
-
 workflow TagRestrictionFragments {
     take:
         samples
@@ -33,18 +29,18 @@ workflow TagRestrictionFragments {
     main:
 
     samples
-        | filter{fragmentIndexExists(it) && (it.pairs || it.latestPairs)}
-        | map{tuple(it.id, it.pairs, it.fragmentIndex)}
+        | filter{!skip("tagRestrictionFragments") && isExistingFile(it.fragmentIndex) && isExistingFile(it.latestPairs)}
+        | map{tuple(it.id, it.latestPairs, it.fragmentIndex)}
         | HichFragtag
         | map{[id:it[0], fragPairs:it[1], latest:it[1], latestPairs:it[1]]}
         | set{result}
     pack(samples, result) | set{samples}
 
-    if ("TagFragments" in params.general.get("qcAfter")) {
-        samples = QCReads(samples, "TagFragments")
+    if ("tagRestrictionFragments" in params.general.get("qcAfter")) {
+        samples = QCReads(samples, "tagRestrictionFragments")
     }
 
-    samples = emptyOnLastStep("TagFragments", samples)
+    samples = emptyOnLastStep("tagRestrictionFragments", samples)
 
     emit:
         samples

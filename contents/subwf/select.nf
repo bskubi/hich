@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {emptyOnLastStep; pack} from './extraops.nf'
+include {emptyOnLastStep; pack; skip} from './extraops.nf'
 
 process PairtoolsSelect {
     publishDir params.general.publish.select ? params.general.publish.select : "results",
@@ -72,21 +72,10 @@ workflow Select {
     take:
     samples
     
-    main:      
-    /*  
-    transpack (
-        PairtoolsSelect,
-        samples,
-        ["id", "latest", "pairtoolsSelectParams", "selectFilters"],
-        ["id", "select_pairs"],
-        ["latest":"select_pairs"],
-        "id",
-        ["nullOk":"pairtoolsSelectParams"]
-    ) | set{samples}
-    */
+    main:
 
     samples
-        | filter{(it.pairtoolsSelectParams || it.selectFilters) && (it.pairs || it.latestPairs)}
+        | filter{!skip("select") && (it.pairtoolsSelectParams || it.selectFilters) && (it.pairs || it.latestPairs)}
         | map{tuple(it.id, it.latestPairs, it.pairtoolsSelectParams, it.selectFilters)}
         | PairtoolsSelect
         | map{[id:it[0], selectPairs:it[1], latest:it[1], latestPairs:it[1]]}
@@ -94,11 +83,11 @@ workflow Select {
     pack(samples, result) | set{samples}
 
     
-    if ("Select" in params.general.get("qcAfter")) {
-        QCReads(samples, "Select")
+    if ("select" in params.general.get("qcAfter")) {
+        QCReads(samples, "select")
     }
 
-    samples = emptyOnLastStep("Select", samples)
+    samples = emptyOnLastStep("select", samples)
 
 
 

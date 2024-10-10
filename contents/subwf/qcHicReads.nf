@@ -1,3 +1,6 @@
+include {skip} from './extraops.nf'
+
+
 process PairtoolsStats {
     publishDir params.general.publish.pairStats ? params.general.publish.pairStats : "results",
                saveAs: {params.general.publish.pairStats ? it : null},
@@ -47,6 +50,7 @@ workflow QCReads {
     
     main:
     samples
+    | filter{!skip("qcReads")}
     | map{
         sample ->
         pairs = ["pairs",

@@ -1,4 +1,4 @@
-include {createCompositeStrategy; filterSamplesByStrategy} from './extraops.nf'
+include {createCompositeStrategy; filterSamplesByStrategy; skip} from './extraops.nf'
 
 
 process HichCompartments {
@@ -29,16 +29,18 @@ workflow CompartmentScores {
     samples
 
     main:
-    params.compartments.each {
-        planName, analysisPlan ->
+    if (!skip("compartmentScores")) {
+        params.compartments.each {
+            planName, analysisPlan ->
 
-        strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
-        filterSamplesByStrategy(samples, strategy)
-            | map{
-                sample ->
-                tuple(sample.id, sample.genomeReference, sample.latestMatrix, analysisPlan.resolution, analysisPlan.hichCompartmentsParams)
-            }
-            | HichCompartments
+            strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
+            filterSamplesByStrategy(samples, strategy)
+                | map{
+                    sample ->
+                    tuple(sample.id, sample.genomeReference, sample.latestMatrix, analysisPlan.resolution, analysisPlan.hichCompartmentsParams)
+                }
+                | HichCompartments
+        }
     }
 
     emit:

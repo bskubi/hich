@@ -1,4 +1,4 @@
-include {createCompositeStrategy; filterSamplesByStrategy} from './extraops.nf'
+include {createCompositeStrategy; filterSamplesByStrategy; skip} from './extraops.nf'
 
 process MustacheLoops{
     publishDir "results/loops",
@@ -26,18 +26,21 @@ workflow Loops {
 
     main:
     
-    params.loops.each {
-        planName, analysisPlan ->
+    if (!skip("loops")) {
+        params.loops.each {
+            planName, analysisPlan ->
 
-        strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
+            strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
 
-        filterSamplesByStrategy(samples, strategy)
-            | map{
-                sample ->
-                tuple(sample.id, sample.latestMatrix, analysisPlan.mustacheParams)
-            }
-            | MustacheLoops
+            filterSamplesByStrategy(samples, strategy)
+                | map{
+                    sample ->
+                    tuple(sample.id, sample.latestMatrix, analysisPlan.mustacheParams)
+                }
+                | MustacheLoops
+        }
     }
+
 
     emit:
     samples

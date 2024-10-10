@@ -1,4 +1,4 @@
-include {emptyOnLastStep; pack; isExistingFile} from './extraops.nf'
+include {emptyOnLastStep; pack; isExistingFile; skip} from './extraops.nf'
 
 process Stage {
     /*  When a URL is passed to a Nextflow function, the resource will be
@@ -48,7 +48,8 @@ workflow GenomeReference {
          "dm6":"dm6",
          "galGal5":"galGal5",
          "bGalGal5":"galGal5",
-         "danRer11":"danRer11"]
+         "danRer11":"danRer11",
+         "ce10":"ce10"]
 
         /*
             Reference genome URLs for human and for common model organisms
@@ -57,7 +58,8 @@ workflow GenomeReference {
                 "mm10":"https://www.encodeproject.org/files/mm10_no_alt_analysis_set_ENCODE/@@download/mm10_no_alt_analysis_set_ENCODE.fasta.gz",
                 "dm6":"https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/215/GCF_000001215.4_Release_6_plus_ISO1_MT/GCF_000001215.4_Release_6_plus_ISO1_MT_genomic.fna.gz",
                 "galGal5":"https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/027/408/225/GCA_027408225.1_bGalGal5.pri/GCA_027408225.1_bGalGal5.pri_genomic.fna.gz",
-                "danRer11":"https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/002/035/GCF_000002035.6_GRCz11/GCF_000002035.6_GRCz11_genomic.fna.gz"]
+                "danRer11":"https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/002/035/GCF_000002035.6_GRCz11/GCF_000002035.6_GRCz11_genomic.fna.gz",
+                "ce10":"https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/002/985/GCF_000002985.6_WBcel235/GCF_000002985.6_WBcel235_genomic.fna.gz"]
         
         /*
             1. Filter for samples tagged with datatype 'fastq'
@@ -68,7 +70,7 @@ workflow GenomeReference {
             6. Set file as output path
         */
     samples
-        | filter{!isExistingFile(it.genomeReference)}
+        | filter{!skip("genomeReference") && !isExistingFile(it.genomeReference)}
         | map{
             errorMessage = """
             Sample ${it.id} with assembly '${it.assembly}' had genomeReference '${it.genomeReference}' which is either null or nonexistent.
@@ -90,7 +92,7 @@ workflow GenomeReference {
 
     pack(samples, result, "assembly") | set{samples}
 
-    samples = emptyOnLastStep("GenomeReference", samples)
+    samples = emptyOnLastStep("genomeReference", samples)
 
     emit:
         samples

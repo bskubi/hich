@@ -25,7 +25,7 @@ def sampleFromFastqPairs(files) {
     return sample
 }
 
-workflow LoadSampleFile {
+workflow ParseArgs {
     main:
     samples = channel.empty()
 
@@ -40,6 +40,14 @@ workflow LoadSampleFile {
         channel.fromFilePairs(params.fastqPairs)
             | map{
                 header, files ->
+
+                datatype = "fastq"
+                sample = [fastq1: files[0], fastq2: files[1], datatype: "fastq"]
+
+                if (params.containsKey("paramsFromPath")) {
+                    fileParams = parsePattern(file[0].toString(), params.paramsFromPath)
+                    sample += fileParams
+                }
 
 
                 sample
@@ -80,7 +88,7 @@ workflow LoadSampleFile {
         samples | concat(fromSRAChannel) | set{samples}
     }
 
-    samples = emptyOnLastStep("ParseArgs", samples)
+    samples = emptyOnLastStep("parseArgs", samples)
 
     emit:
     samples

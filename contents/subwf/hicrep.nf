@@ -1,4 +1,4 @@
-include {createCompositeStrategy; filterSamplesByStrategy; columns} from './extraops.nf'
+include {createCompositeStrategy; filterSamplesByStrategy; columns; skip} from './extraops.nf'
 
 process HicrepCombos{
     publishDir "results/hicrep",
@@ -38,28 +38,31 @@ workflow Hicrep {
 
     main:
 
+    if (!skip("hicrep")) {
+        params.hicrep.each {
+            planName, analysisPlan ->
 
-    params.hicrep.each {
-        planName, analysisPlan ->
-
-        strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
-        filterSamplesByStrategy(samples, strategy)
-            | collect
-            | map{columns(it, ["dropNull":true])}
-            | map{
-                samples ->
-                tuple(planName,
-                      samples.latestMatrix,
-                      analysisPlan.resolutions,
-                      analysisPlan.chroms,
-                      analysisPlan.exclude,
-                      analysisPlan.chromFilter,
-                      analysisPlan.h,
-                      analysisPlan.dBPMax,
-                      analysisPlan.bDownSample)
-            }
-            | HicrepCombos
+            strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
+            filterSamplesByStrategy(samples, strategy)
+                | collect
+                | filter{it.size() >= 2}
+                | map{columns(it, ["dropNull":true])}
+                | map{
+                    samples ->
+                    tuple(planName,
+                        samples.latestMatrix,
+                        analysisPlan.resolutions,
+                        analysisPlan.chroms,
+                        analysisPlan.exclude,
+                        analysisPlan.chromFilter,
+                        analysisPlan.h,
+                        analysisPlan.dBPMax,
+                        analysisPlan.bDownSample)
+                }
+                | HicrepCombos
+        }
     }
+
 
     emit:
     samples

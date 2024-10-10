@@ -3,6 +3,13 @@ def isExistingFile(it) {
     return it && it.metaClass.respondsTo(it, 'exists') && it.exists()
 }
 
+def skip(step) {
+    
+    def excluded = params.containsKey("runOnly") && !params.runOnly.split().contains(step)
+    def skipped = params.containsKey("skip") && params.skip.split().contains(step)
+    return excluded || skipped
+}
+
 workflow keydiff {
     take:
         left

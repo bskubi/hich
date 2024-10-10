@@ -1,4 +1,4 @@
-include {createCompositeStrategy; filterSamplesByStrategy} from './extraops.nf'
+include {createCompositeStrategy; filterSamplesByStrategy; skip} from './extraops.nf'
 
 process CooltoolsInsulation {
     publishDir "results/insulation",
@@ -30,17 +30,20 @@ workflow InsulationScores {
 
     main:
 
-    params.insulation.each {
-        planName, analysisPlan ->
+    if (!skip("insulationScores")) {
+        params.insulation.each {
+            planName, analysisPlan ->
 
-        strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
-        filterSamplesByStrategy(samples, strategy)
-            | map{
-                sample ->
-                tuple(sample.id, sample.latestMatrix, analysisPlan.resolution, analysisPlan.cooltoolsInsulationParams)
-            }
-            | CooltoolsInsulation
+            strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
+            filterSamplesByStrategy(samples, strategy)
+                | map{
+                    sample ->
+                    tuple(sample.id, sample.latestMatrix, analysisPlan.resolution, analysisPlan.cooltoolsInsulationParams)
+                }
+                | CooltoolsInsulation
+        }
     }
+
 
     emit:
     samples

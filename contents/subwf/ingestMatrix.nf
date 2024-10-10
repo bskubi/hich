@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {emptyOnLastStep; pack} from './extraops.nf'
+include {emptyOnLastStep; pack; skip} from './extraops.nf'
 
 process HicToMcool {
     publishDir params.general.publish.mcool ? params.general.publish.mcool : "results",
@@ -72,7 +72,7 @@ workflow IngestMatrix {
     main:
 
     samples
-        | filter{it.datatype == "matrix" && it.mcool && !it.hic}
+        | filter{!skip("ingestMatrix") && it.datatype == "matrix" && it.mcool && !it.hic}
         | map{tuple(it.id, it.mcool)}
         | McoolToHic
         | map{
@@ -81,7 +81,7 @@ workflow IngestMatrix {
         | set{mcoolToHic}
     
     samples
-        | filter{it.datatype == "matrix" && it.hic && !it.mcool}
+        | filter{!skip("ingestMatrix") && it.datatype == "matrix" && it.hic && !it.mcool}
         | map{tuple(it.id, it.hic)}
         | HicToMcool
         | map{
@@ -92,7 +92,7 @@ workflow IngestMatrix {
     pack(samples, mcoolToHic) | set{samples}
     pack(samples, hicToMcool) | set{samples}
 
-    samples = emptyOnLastStep("IngestMatrix", samples)
+    samples = emptyOnLastStep("ingestMatrix", samples)
 
     emit:
         samples

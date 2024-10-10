@@ -32,7 +32,7 @@ workflow FastqHead {
 
     pack(samples, result) | set{samples}
 
-    samples = emptyOnLastStep("FastqHead", samples)
+    samples = emptyOnLastStep("fastqHead", samples)
 
     emit:
     samples

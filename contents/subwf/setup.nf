@@ -236,7 +236,7 @@ workflow UpdateSamples
         
         ///////////////////////////////////////////////////////////////
         // Convert string paths to data files into file objects
-        ingest = ["fastq1", "fastq2", "sambam", "pairs", "hic", "mcool"]
+        ingest = ["genomeReference", "chromsizes", "alignerIndexDir", "fragmentIndex", "fastq1", "fastq2", "sambam", "pairs", "hic", "mcool"]
         ingest.each {
             key ->
             // This should give an error if the file does not exist
@@ -405,7 +405,7 @@ workflow Setup {
         | FragmentIndex
         | set{samples}
 
-    samples = emptyOnLastStep("Setup", samples)
+    samples = emptyOnLastStep("setup", samples)
 
     emit:
         samples

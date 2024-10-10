@@ -1,4 +1,4 @@
-include {emptyOnLastStep; isExistingFile; pack} from './extraops.nf'
+include {emptyOnLastStep; isExistingFile; pack; skip} from './extraops.nf'
 
 process BwaMem2Index {
     conda "bioconda::bwa-mem2"
@@ -89,7 +89,7 @@ workflow AlignerIndex {
     
     main:
     samples
-        | filter {it.datatype == "fastq" && it.aligner == "bwa-mem2"}
+        | filter {!skip("alignerIndex") && it.datatype == "fastq" && it.aligner == "bwa-mem2"}
         | filter {!isExistingFile(it.alignerIndexDir)}
         | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
         | map{tuple(it.genomeReference, it.alignerIndexPrefix)}
@@ -100,7 +100,7 @@ workflow AlignerIndex {
         | set{resultBwaMem2Index}
 
     samples
-        | filter {it.datatype == "fastq" && it.aligner == "bwa"}
+        | filter {!skip("alignerIndex") && it.datatype == "fastq" && it.aligner == "bwa"}
         | filter {!isExistingFile(it.alignerIndexDir)}
         | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
         | map{tuple(it.genomeReference, it.genomeReference, it.alignerIndexPrefix)}
@@ -113,7 +113,7 @@ workflow AlignerIndex {
     pack(samples, resultBwaMem2Index, "genomeReference") | set{samples}
     pack(samples, resultBwaMemIndex, "genomeReference") | set{samples}
 
-    samples = emptyOnLastStep("AlignerIndex", samples)
+    samples = emptyOnLastStep("alignerIndex", samples)
 
     emit:
         samples

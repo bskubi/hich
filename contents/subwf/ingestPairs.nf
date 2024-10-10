@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {emptyOnLastStep; pack} from './extraops.nf'
+include {emptyOnLastStep; pack; skip} from './extraops.nf'
 
 process PairtoolsFlipSort {
     publishDir params.general.publish.flip_sort ? params.general.publish.flip_sort : "results",
@@ -53,18 +53,18 @@ workflow IngestPairs {
 
 
     samples
-        | filter{it.datatype == "sambam"}
+        | filter{!skip("ingestPairs") && it.datatype == "pairs"}
         | map{tuple(it.id, it.pairs, it.chromsizes, it.reshapeParams)}
         | PairtoolsFlipSort
         | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
         | set{result}
     pack(samples, result) | set{samples}
 
-    if ("IngestPairs" in params.general.get("qcAfter")) {
-        samples = QCReads(samples, "IngestPairs")
+    if ("ingestPairs" in params.general.get("qcAfter")) {
+        samples = QCReads(samples, "ingestPairs")
     }
 
-    samples = emptyOnLastStep("IngestPairs", samples)
+    samples = emptyOnLastStep("ingestPairs", samples)
 
     emit:
         samples

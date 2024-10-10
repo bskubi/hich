@@ -1,4 +1,4 @@
-include {createCompositeStrategy; combineSamplesByStrategy} from './extraops.nf'
+include {createCompositeStrategy; combineSamplesByStrategy; skip} from './extraops.nf'
 
 process MustacheDiffloops{
     publishDir "results/loops",
@@ -28,19 +28,22 @@ workflow DifferentialLoops {
 
     main:
     
-    params.diffloops.each {
-        planName, analysisPlan ->
+    if (!skip("differentialLoops")) {
+        params.diffloops.each {
+            planName, analysisPlan ->
 
-        strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
+            strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
 
-        combineSamplesByStrategy(samples, strategy)
-            | map{
-                s1, s2 ->
-                prefix = "${s1.id}_${s2.id}"
-                tuple(prefix, s1.latestMatrix, s2.latestMatrix, analysisPlan.mustacheParams)
-            }
-            | MustacheDiffloops
+            combineSamplesByStrategy(samples, strategy)
+                | map{
+                    s1, s2 ->
+                    prefix = "${s1.id}_${s2.id}"
+                    tuple(prefix, s1.latestMatrix, s2.latestMatrix, analysisPlan.mustacheParams)
+                }
+                | MustacheDiffloops
+        }
     }
+
 
     emit:
     samples

@@ -1,4 +1,4 @@
-include {pack; coalesce; rows; columns; groupHashMap; isTechrep; isBiorep; isCondition; constructIdentifier; emptyOnLastStep; aggregateLevelLabel} from './extraops.nf'
+include {pack; skip; coalesce; rows; columns; groupHashMap; isTechrep; isBiorep; isCondition; constructIdentifier; emptyOnLastStep; aggregateLevelLabel} from './extraops.nf'
 include {Setup} from './setup.nf'
 
 process HichDownsampleStatsFrom {
@@ -103,7 +103,7 @@ process PairtoolsDedup {
     shell:
     deduplicated = "${id}.dedup.pairs.gz"
     
-    
+    if (!pairtoolsDedupParams) pairtoolsDedupParams = []
     if (singleCell) pairtoolsDedupParams += ["--extra-col-pair cellID cellID --backend cython --chunksize 1000000"]
     if (maxMismatch != null) pairtoolsDedupParams += ["--max-mismatch ${maxMismatch}"]
     if (method != null) pairtoolsDedupParams += ["--method ${method}"]
@@ -133,33 +133,42 @@ workflow CreateAggregatePairProfiles {
     levelParams
 
     main:
-    // Split raw samples from the current level vs. those already associated with an aggregation profile
-    levelSamples | branch{
-        YES: it.aggregateProfileName == null
-        NO: true
-    } | set{raw}
 
-    // From the raw samples, create new samples associated with each aggregation profile
-    // This may need to be redone putting the aggregateProfiles into a channel of their own and using combinations.
+    levelSamples | set{result}
 
-    
-    aggregateProfiles = channel.of(params.aggregate)
-    | map{[profileName: it.keySet().toList(), profileParams: it.values().toList()]}
-    | map{rows(it)}
-    | flatten
-    | combine(raw.YES)
-    | map {
-        profile = it[0]
-        sample = it[1]
-        sample += [aggregateProfileName: profile.profileName] + profile.profileParams
-        sample
+    if (params.containsKey("aggregate")) {
+        // Split raw samples from the current level vs. those already associated with an aggregation profile
+        levelSamples | branch{
+            YES: it.aggregateProfileName == null
+            NO: true
+        } | set{raw}
+
+        // From the raw samples, create new samples associated with each aggregation profile
+        // This may need to be redone putting the aggregateProfiles into a channel of their own and using combinations.
+
+        
+        aggregateProfiles = channel.of(params.aggregate)
+        | map{[profileName: it.keySet().toList(), profileParams: it.values().toList()]}
+        | map{rows(it)}
+        | flatten
+        | combine(raw.YES)
+        | map {
+            profile = it[0]
+            sample = it[1]
+            sample += [aggregateProfileName: profile.profileName] + profile.profileParams
+            sample
+        }
+        | map{
+            downsampleToMeanDistributionGroup = it.subMap((levelParams.downsampleToMeanDistribution)) ?: null
+            it + [(levelParams.downsampleToMeanDistribution): downsampleToMeanDistributionGroup] + [id: "${it.id}_${it.aggregateProfileName}"]
+        }
+        | set{result}
+
+        if (params.containsKey("keepUnaggregated")) {
+            result | concat(raw.NO) | set{result}
+        }
     }
-    | map{
-        downsampleToMeanDistributionGroup = it.subMap((levelParams.downsampleToMeanDistribution)) ?: null
-        it + [(levelParams.downsampleToMeanDistribution): downsampleToMeanDistributionGroup] + [id: "${it.id}_${it.aggregateProfileName}"]
-    }
-    | concat(raw.YES, raw.NO)
-    | set{result}
+
 
 
     emit:
@@ -268,7 +277,7 @@ workflow DeduplicatePairs {
 
     levelSamples
         | branch {
-            YES: it.deduplicate && !it.alreadyDeduplicated && levelParams.levelFilter(it) && it.get(levelParams.doDedup)
+            YES: !it.alreadyDeduplicated && levelParams.levelFilter(it) && it.get(levelParams.doDedup)
             NO: true
     } | set{deduplicate}
 
@@ -308,7 +317,7 @@ workflow AggregateTechreps {
     ]
 
     samples | branch {
-        techrep: isTechrep(it) && (it.pairs || it.latestPairs)
+        techrep: !skip("aggregate") && !skip("aggregateTechreps") && isTechrep(it) && (it.pairs || it.latestPairs)
         other: true
     } | set{sampleType}
 
@@ -319,7 +328,7 @@ workflow AggregateTechreps {
     | concat(sampleType.other)
     | set{result}
 
-     samples = emptyOnLastStep("AggregateTechreps", samples)
+     samples = emptyOnLastStep("aggregateTechreps", samples)
 
     emit:
     result
@@ -350,7 +359,7 @@ workflow AggregateBioreps {
     ]
 
     samples | branch {
-        biorep: isBiorep(it) && (it.pairs || it.latestPairs)
+        biorep: !skip("aggregate") && !skip("aggregateBioreps") && isBiorep(it) && (it.pairs || it.latestPairs)
         other: true
     } | set{sampleType}
 
@@ -361,7 +370,7 @@ workflow AggregateBioreps {
     | concat(sampleType.other)
     | set{result}
 
-    samples = emptyOnLastStep("AggregateBioreps", samples)
+    samples = emptyOnLastStep("aggregateBioreps", samples)
 
     emit:
     result
@@ -392,7 +401,7 @@ workflow AggregateConditions {
     ]
 
     samples | branch {
-        condition: isCondition(it) && (it.pairs || it.latestPairs)
+        condition: !skip("aggregate") && !skip("aggregateConditions") && isCondition(it) && (it.pairs || it.latestPairs)
         other: true
     } | set{sampleType}
 
@@ -403,7 +412,7 @@ workflow AggregateConditions {
     | concat(sampleType.other)
     | set{result}
 
-    samples = emptyOnLastStep("AggregateConditions", samples)
+    samples = emptyOnLastStep("aggregateConditions", samples)
 
     emit:
     result

@@ -1,4 +1,4 @@
-include {emptyOnLastStep; pack; isExistingFile} from './extraops.nf'
+include {emptyOnLastStep; pack; skip; isExistingFile} from './extraops.nf'
 
 process ChromsizesProc {
     publishDir params.general.publish.chromsizes ? params.general.publish.chromsizes : "results",
@@ -30,7 +30,7 @@ workflow Chromsizes {
     main:
     
     samples
-        | filter {!isExistingFile(it.chromsizes)}
+        | filter {!skip("chromsizes") && !isExistingFile(it.chromsizes)}
         | map{tuple(it.genomeReference, it.genomeReference, it.assembly, "${it.assembly}.sizes")}
         | unique
         | ChromsizesProc
@@ -38,7 +38,7 @@ workflow Chromsizes {
         | set{result}
     pack(samples, result, ["genomeReference", "assembly"]) | set{samples}
 
-    samples = emptyOnLastStep("Chromsizes", samples)
+    samples = emptyOnLastStep("chromsizes", samples)
 
     emit:
     samples
