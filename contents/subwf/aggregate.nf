@@ -1,6 +1,83 @@
 include {pack; skip; coalesce; rows; columns; groupHashMap; isTechrep; isBiorep; isCondition; constructIdentifier; emptyOnLastStep; aggregateLevelLabel} from './extraops.nf'
 include {Setup} from './setup.nf'
 
+/*
+    Aggregation can involve downsampling, deduplicating, and merging samples, all
+    steps being optional. In the config, the params.aggregate section defines
+    aggregateProfiles that define how samples should be downsampled, deduplicated and merged
+    at each level. An aggregateLevel is techreps, bioreps, or conditions.
+
+    Individual downsampling
+    -----------------------
+    Downsampling can be simply to a specific fraction of original reads or exact number of reads.
+
+    Group downsampling
+    ------------------
+    Downsampling can also partition the reads in each sample according to conjuncts over PairsSegment
+    attributes specified by the user, such as chrom1, chrom2, and pair_type, as well as user-defined
+    cis-strata. The fraction of reads in each read partition block (outcome in read sample space)
+    can be computed, averaged (over samples not tagged as "outliers") and then used as a target
+    distribution for the input samples, which will be minimally downsampled to conform to this
+    target mean non-outlier distribution and then further downsampled to the size of the smallest
+    member of the comparison group. This exploits a triplicate replicate structure to filter
+    out technical noise while controlling for sample-sample coverage differences.
+
+    Group downsampling operates only within an aggregationProfile.
+
+    Downsampling implementation
+    ---------------------------
+    Downsampling begins by taking a list of conjuncts and calling hich stats, which counts the number
+    of reads for each outcome (conjunct combination).
+
+    hich stats-aggregate is then called on groups of stats files (which can be groups of size 1 if no real
+    group downsampling is scheduled for a particular aggregation profile). This handles computing the target
+    number of per-sample reads to retain and saves the results as a new batch of stats files, one for each
+    sample.
+
+    Often, reservoire sampling is used to sample a specific number of events in one pass through a dataset, but
+    since this workflow intrinsically requires counting the starting number of reads, we can instead use a much
+    simpler and lower-memory algorithm published by Donald Knuth in The Art of Computer Programming, Vol. 2, "Algorithm S".
+    The original and target distribution of read counts is passed for each individual sample to hich downsample,
+    which samples the specific number of reads and outputs to a new pairs file.
+
+    Level-specific downsampling
+    ---------------------------
+    Each aggregation profile can set the approach to downsampling differently for each aggregateLevel (techrep, biorep, condition)
+
+    Deduplication
+    -------------
+    Options include
+        No deduplication
+        Computing wobble as either
+            W = sum(abs(r1.pos1 - r2.pos1) + abs(r1.pos2 - r2.pos2))
+            W = max(abs(r1.pos1 - r2.pos1) + abs(r1.pos2 - r2.pos2))
+            Then requiring W < T for arbitrary non-negative T to call two reads as duplicates
+        Backend selection
+            KD Tree backend (default for non-single cell) is transitive, meaning that if
+            r1 and r2 are duplicates and r2 and r3 are duplicates, then r1 and r3 are duplicates.
+
+            Cython backend (default for single-cell for performance reasons) is non-transitive,
+            meaning that in the above scenario r1 and r3 are not necessarily duplicates
+        Single-cell deduplication
+            If a sample is marked "isSingleCell", it's expected that as it's parsed to pairs format,
+            it contains a cellID column containing a barcode corresponding to the cell from which it originates.
+            This will be used as an extra column that must match during deduplication for two reads to be
+            marked as duplicates.
+    Samples are individually deduplicated only after they have (optionally) been merged, meaning that there will
+    be no redundant deduplication. If T1 and T2 are merged to B1, then T1 and T2 will only subsequently be deduplicated.
+    Techreps are deduplicated on the AggregateTechreps step, bioreps on the AggregateBioreps step, conditions on
+    AggregateConditions, even though the bioreps and conditions are produced via a merge on the previous step.
+
+    Merge
+    -----
+    Merges operates only within an aggregationProfile and yield a sample promoted one aggregateLevel from the inputs.
+    It takes place on the lower level (i.e. for techreps -> bioreps, during AggregateTechreps).
+*/
+
+
+/*
+    Compute original read counts over conjuncts defined for the current agg level and profile with hich stats.
+*/
 process HichDownsampleStatsFrom {
     container "bskubi/hich:latest"
     label 'pairs'
@@ -22,8 +99,13 @@ process HichDownsampleStatsFrom {
     "touch ${stats}"
 }
 
+/*
+    Compute target read counts over groups and their common conjuncts defined for the current agg level and profile
+    with hich stats-aggregate
+*/
 process HichStatsAggregateToMinGroupSize {
-    container "bskubi/hich:latest"
+    //container "hich:latest"
+    //container "bskubi/hich:latest"
     label 'pairs'
 
     input:
@@ -34,15 +116,21 @@ process HichStatsAggregateToMinGroupSize {
 
     shell:
     targetStats = stats.collect{"aggregate_${it}"}
-    "hich stats-aggregate --to-group-mean --to-group-min --prefix aggregate_ ${stats.join(' ')}"
+    outlier_stats = stats.findAll { stats.indexOf(it) in outliers.findIndexValues { it } }
+    outlier_params = outlier_stats.collect{"--outlier ${it}"}.join(" ")
+    "hich stats-aggregate --to-group-mean --to-group-min --prefix aggregate_ ${outlier_params} ${stats.join(' ')}"
     
     stub:
     targetStats = stats.collect{"aggregate_${it}"}
     "touch ${targetStats.join(' ')}"
 }
 
+/*
+    Now that the original and target distribution is computed for each sample, individually downsample them to the target
+    distribution with hich downsample.
+*/
 process HichDownsamplePairs {
-    container "bskubi/hich:latest"
+    //container "bskubi/hich:latest"
     label 'pairs'
 
     input:
@@ -56,7 +144,6 @@ process HichDownsamplePairs {
     conjunctsArg = conjuncts ? "--conjuncts '${conjuncts.join(' ')}'" : ""
     cisStrataArg = cisStrata ? "--cis-strata '${cisStrata.join(' ')}'" : ""
     toSizeArg = toSize ? "--to-size ${toSize}" : ""
-    //toSizeArg = toSize ? "--to-size ${toSize}" : ""
 
     "hich downsample ${conjunctsArg} ${cisStrataArg} --orig-stats ${statsFrom} --target-stats ${statsTo} ${toSizeArg} ${fullPairs} ${downsampledPairs}"
 
@@ -65,25 +152,9 @@ process HichDownsamplePairs {
     "touch ${downsampledPairs}"
 }
 
-process PairtoolsMerge {
-    container "bskubi/hich:latest"
-    label 'pairs'
-    cpus 8
-    
-    input:
-    tuple val(id), path(to_merge)
-
-    output:
-    tuple val(id), path(merged)
-
-    shell:
-    merged = "${id}.merged.pairs.gz"
-    "pairtools merge --output ${merged}  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${to_merge.join(' ')}"
-
-    stub:
-    merged = "${id}.merged.pairs.gz"
-    "touch ${merged}"
-}
+/*
+    Deduplicate pairs files
+*/
 
 process PairtoolsDedup {
     publishDir params.general.publish.parse ? params.general.publish.dedup : "results",
@@ -117,16 +188,44 @@ process PairtoolsDedup {
 }
 
 /*
-    Todo: Refactor to keep as DRY as possible
-    Todo: Create AggregateBioreps and AggregateConditions
-    Todo: Redo Hich stats, stats-aggregate, and downsample interface
-    Todo: Implement stats, stats-aggregate, downsample, merge and dedup
-
-    If you have a large block of code that's only called once, should you
-    split the parts out into functions? Or just label their overall purpose
-    with a comment?
+    Merge pairs files to one level higher (techreps -> bioreps -> conditions)
 */
+process PairtoolsMerge {
+    container "bskubi/hich:latest"
+    label 'pairs'
+    cpus 8
+    
+    input:
+    tuple val(id), path(to_merge)
 
+    output:
+    tuple val(id), path(merged)
+
+    shell:
+    merged = "${id}.merged.pairs.gz"
+    "pairtools merge --output ${merged}  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${to_merge.join(' ')}"
+
+    stub:
+    merged = "${id}.merged.pairs.gz"
+    "touch ${merged}"
+}
+
+
+/*
+    The nextflow.config file may have a params.aggregate {} section defining
+    aggregate profiles. If so, create duplicates for each sample, one for each
+    profile, and label the sample with the aggregate profile, keeping it separate
+    from samples for other agg profiles going forward.
+
+    We generalize the main aggregation workflow steps but have an initial level-specific
+    workflow that assigns level-specific params with general names in a levelParams map
+    of [generalKey: levelSpecificKey].
+
+    levelSamples -- the samples filtered for the current level (i.e. techreps, bioreps, conditions)
+    levelParams -- the map from general aggregation keywords to the level-specific keywords contained in the sample map
+
+    Note that this calls no processes.
+*/
 workflow CreateAggregatePairProfiles {
     take:
     levelSamples
@@ -134,19 +233,28 @@ workflow CreateAggregatePairProfiles {
 
     main:
 
+    // Store current samples as the result in case there are no aggregation profiles defined
     levelSamples | set{result}
 
     if (params.containsKey("aggregate")) {
-        // Split raw samples from the current level vs. those already associated with an aggregation profile
+        /* The user may input samples from multiple aggregation levels. Raw samples not assigned
+            an aggregation profile need to be cloned for each aggregation level so this selects them
+            for this cloning process.
+        */
         levelSamples | branch{
             YES: it.aggregateProfileName == null
             NO: true
         } | set{raw}
 
-        // From the raw samples, create new samples associated with each aggregation profile
-        // This may need to be redone putting the aggregateProfiles into a channel of their own and using combinations.
+        /*
+            From the RAW SAMPLES ONLY, create new samples associated with each aggregation profile
 
-        
+            First, reshape the profiles to a columnar format like [profileName: [list of profile names], profileParams: [list of profile param maps]]
+            Then convert to a row format and integrate with the samples, ultimately resulting in samples with new parameters:
+            [original sample attributes] + [aggregateProfileName: profileName, profileParams: profileParams]
+
+            We give each newly created sample profile-specific id.
+        */
         aggregateProfiles = channel.of(params.aggregate)
         | map{[profileName: it.keySet().toList(), profileParams: it.values().toList()]}
         | map{rows(it)}
@@ -160,16 +268,20 @@ workflow CreateAggregatePairProfiles {
         }
         | map{
             downsampleToMeanDistributionGroup = it.subMap((levelParams.downsampleToMeanDistribution)) ?: null
-            it + [(levelParams.downsampleToMeanDistribution): downsampleToMeanDistributionGroup] + [id: "${it.id}_${it.aggregateProfileName}"]
+            it + [(levelParams.downsampleToMeanDistribution): downsampleToMeanDistributionGroup] + [id: constructIdentifier(it)]
         }
         | set{result}
+
+        /*
+            Typically, we will expect the user to drop the raw samples, specifying an explicit raw-like
+            aggregation profile if they want that. However, the user can also set a keepUnaggregated
+            flag in order to retain the raw samples.
+        */
 
         if (params.containsKey("keepUnaggregated")) {
             result | concat(raw.NO) | set{result}
         }
     }
-
-
 
     emit:
     result
@@ -212,9 +324,8 @@ workflow DownsamplePairs {
 
     toGroupMinResult
         | map{
-            toSize = it.toSize ?: levelParams.downsampleToSize
             tuple(it.id, it.latestPairs, it.get(levelParams.downsampleStatsFrom), it.get(levelParams.downsampleStatsTo),
-              it.get(levelParams.readConjuncts), it.get(levelParams.cisStrata), toSize)}
+              it.get(levelParams.readConjuncts), it.get(levelParams.cisStrata), it.get(levelParams.downsampleToSize))}
         | HichDownsamplePairs
         | map{[id:it[0], (levelParams.downsamplePairs):it[1], latest:it[1], latestPairs:it[1]]}
         | set{downsampledResult}
@@ -309,7 +420,6 @@ workflow AggregateTechreps {
         downsampleStatsFrom: 'techrepDownsampleStatsFrom',
         downsampleStatsTo: 'techrepDownsampleStatsTo',
         downsamplePairs: 'techrepDownsamplePairs',
-        downsampleToSize: 'techrepDownsampleToSize',
         doMerge: 'mergeTechrepToBiorep',
         doDedup: 'techrepDedup',
         mergeGroupIdentifiers: ['condition', 'biorep', 'aggregateProfileName'],
@@ -326,12 +436,12 @@ workflow AggregateTechreps {
     | MergePairs
     | DeduplicatePairs
     | concat(sampleType.other)
-    | set{result}
+    | set{samples}
 
-     samples = emptyOnLastStep("aggregateTechreps", samples)
+    samples = emptyOnLastStep("aggregateTechreps", samples)
 
     emit:
-    result
+    samples
 }
 
 workflow AggregateBioreps {
@@ -351,7 +461,6 @@ workflow AggregateBioreps {
         downsampleStatsFrom: 'biorepDownsampleStatsFrom',
         downsampleStatsTo: 'biorepDownsampleStatsTo',
         downsamplePairs: 'biorepDownsamplePairs',
-        downsampleToSize: 'biorepDownsampleToSize',
         doMerge: 'mergeBiorepToCondition',
         doDedup: 'biorepDedup',
         mergeGroupIdentifiers: ['condition', 'aggregateProfileName'],
@@ -368,12 +477,12 @@ workflow AggregateBioreps {
     | MergePairs
     | DeduplicatePairs
     | concat(sampleType.other)
-    | set{result}
+    | set{samples}
 
     samples = emptyOnLastStep("aggregateBioreps", samples)
 
     emit:
-    result
+    samples
 }
 
 workflow AggregateConditions {
@@ -393,7 +502,6 @@ workflow AggregateConditions {
         downsampleStatsFrom: 'conditionDownsampleStatsFrom',
         downsampleStatsTo: 'conditionDownsampleStatsTo',
         downsamplePairs: 'conditionDownsamplePairs',
-        downsampleToSize: 'conditionDownsampleToSize',
         doMerge: 'mergeCondition',
         doDedup: 'conditionDedup',
         mergeGroupIdentifiers: ['aggregateProfileName'],
@@ -410,10 +518,10 @@ workflow AggregateConditions {
     | MergePairs
     | DeduplicatePairs
     | concat(sampleType.other)
-    | set{result}
+    | set{samples}
 
     samples = emptyOnLastStep("aggregateConditions", samples)
 
     emit:
-    result
+    samples
 }

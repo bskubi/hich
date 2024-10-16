@@ -21,7 +21,7 @@ import hich.digest as _digest
 import io
 import logging
 import pandas as pd
-from parse import parse as _parse
+#from parse import parse as _parse
 import polars as pl
 import polars as pl
 import smart_open_with_pbgzip
@@ -106,8 +106,9 @@ def downsample(conjuncts, cis_strata, orig_stats, target_stats, to_size, input_p
     if not target_distribution:
         assert to_size is not None, "No target distribution or count supplied for downsampling."
         target_distribution = orig_distribution.to_size(to_size)
-    
-    sampler = SelectionSampler(orig_distribution, target_distribution)
+    if to_size:
+        target_distribution = target_distribution.to_size(to_size)
+    sampler = SelectionSampler(full = orig_distribution, target = target_distribution)
     input_pairs_file = PairsFile(input_pairs_path)
     output_pairs_file = PairsFile(output_pairs_path, mode = "w", header = input_pairs_file.header)
 
@@ -321,8 +322,9 @@ def stats(conjuncts, cis_strata, output, pairs):
 @click.option("--to-group-min", is_flag = True, default = False)
 @click.option("--to-size", type = str, default = None)
 @click.option("--prefix", type = str, default = "aggregate_")
+@click.option("--outlier", type = str, multiple=True)
 @click.argument("stats-paths", type = str, nargs = -1)
-def stats_aggregate(to_group_mean, to_group_min, to_size, prefix, stats_paths):
+def stats_aggregate(to_group_mean, to_group_min, to_size, prefix, outlier, stats_paths):
     """Aggregate hich stats files called over .pairs with same conjuncts
     """
 
@@ -339,8 +341,8 @@ def stats_aggregate(to_group_mean, to_group_min, to_size, prefix, stats_paths):
     build_prefix = ""
     if to_group_mean:
         # Get the mean probability mass for all distributions.
-        # !TODO we need to be able to specify which distributions are outliers and leave them out of this calculation.
-        group_mean = DiscreteDistribution.mean_mass(distributions)
+        non_outliers = [distribution for distribution, path in zip(distributions, stats_paths) if path not in outlier]
+        group_mean = DiscreteDistribution.mean_mass(non_outliers)
         
         # Downsample each individual sample by the minimum amount necessary to match its mean probabilities for the group.
         targets = [d.downsample_to_probabilities(group_mean) for d in distributions]

@@ -9,7 +9,7 @@ process PairtoolsParse2 {
     container "bskubi/hich:latest"
     label 'doJobArray'
     label 'pairs'
-    cpus 8
+    cpus 3
 
     input:
     tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseParams), val(reshapeParams)

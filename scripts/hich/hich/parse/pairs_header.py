@@ -1,5 +1,5 @@
 from pathlib import Path
-from parse import parse
+#from parse import parse
 
 class PairsHeader:
     version_prefix = "## pairs format v"

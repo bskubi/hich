@@ -4,7 +4,11 @@ def isExistingFile(it) {
 }
 
 def skip(step) {
-    
+    /*
+        Users may want to skip some steps, such as QC or forming a particular kind of contact matrix,
+        or run only certain steps. This uses both params to define a list of steps to be skipped
+        (the intersection of skip and runOnly's complement).
+    */
     def excluded = params.containsKey("runOnly") && !params.runOnly.split().contains(step)
     def skipped = params.containsKey("skip") && params.skip.split().contains(step)
     return excluded || skipped
@@ -377,18 +381,50 @@ workflow sqljoin {
 }
 
 def pack(addTo, addMe, by = "id") {
+    /*
+        A big feature of Hich is the ability to store sample attributes in hashmaps.
+        This requires extracting just the features specifically relevant to a particular
+        process and passing them in. Otherwise, irrelevant changes to the hashmap would trigger
+        reruns of the process. However, this then requires rejoining the outputs from the process
+        to the original hashmap. We therefore pass in a unique id for each sample. The sqljoin
+        function does most of the heavy lifting but is more general than required, so "pack"
+        provides a simpler gloss over this needed functionality.
+
+        Update the "addTo" channel of hashmaps with the "addMe" channel of hashmaps
+        dominant is "right" because this makes addMe overwrite corresponding keys
+        in addTo rather than the reverse. Suffix is blank so we overwrite rather than
+        adding new keys when addTo and addMe share keys.
+    */
     sqljoin(addTo, addMe, [by:by, suffix: "", dominant:"right"])
 }
 
 def label(map, lbl) {
+    // Return whether map.lbl contains a non-empty string, used below to determine
+    // if the techrep, biorep and condition keys are present and specified
     return map?[(lbl)]?.toString()?.length() > 0
 }
 
+/*
+    Determine if the techrep, biorep, condition fields are uniquely specified
+
+    For isSingleCell, the user has to specify a cellBarcodeField (which tag in a sam/bam
+    file holds the cell barcode in order to extract it to the pairs cellID field)
+    or has to specify isSingleCell (which can be used for pairs files where the cellID field
+    is already extracted).
+*/
 def isTechrep(map) {return label(map, "techrep") && label(map, "biorep") && label(map, "condition")}
 def isBiorep(map) {return (!label(map, "techrep")) && label(map, "biorep") && label(map, "condition")}
 def isCondition(map) {return (!label(map, "techrep")) && (!label(map, "biorep")) && label(map, "condition")}
 def isSingleCell(map) {return map.cellBarcodeField || map.isSingleCell}
 
+/*
+    emptyOnLastStep is used to control behavior when the workflow reaches the step specified by the --lastStep
+    param, if specified. It should get passed the main samples channel and returns an empty channel if it's the 
+    last step (halting execution) or the original samples channel otherwise.
+
+    If --viewLastStep is specified it will display the contents of the samples channel after the last step finishes.
+    If a space-separated string is specified, it will turn that into a list and submap just those sample attributes for viewing.
+*/
 def emptyOnLastStep(step, samples) {
     def isExplicitLastStep = (params.containsKey("lastStep") && params.get("lastStep") == step)
     def isLastStep = (step == "End") || isExplicitLastStep
@@ -404,15 +440,28 @@ def emptyOnLastStep(step, samples) {
     return isExplicitLastStep ? channel.empty() : samples
 }
 
-// New extraops
+/*
+    Used in the aggregation functions in order to group samples sharing a set of attributes.
 
+    ch -- the sample hashmap channel
+    by -- the set of attributes to group by
+    sortBy -- typically just use id. This function is often used to convert samples to columnar format where a single
+    hashmap containing lists of sample attributes under each attribute name is provided to the process. Changes in order
+    typically should not affect process behavior, but will trigger a Nextflow rerun unnecessarily. We therefore use sortBy
+    to sort the samples to prevent these unnecessary reruns.
+
+    NOTE -- We can probably repurpose this for sample selection strategies that should partition the samples
+    rather than defining individual blocks.
+*/
 def groupHashMap(ch, by, sortBy = ["id"]) {
     ch
-    | map{tuple(it.subMap(by), it)}
+    | map{tuple(it.subMap(by), it)} // Group maps to the format [[bySubmap], [list of samples]] and extract [list of samples]
     | groupTuple
     | map{it[1]}
     | map{
-        mapList ->              // Sort the hashmaps to ensure same output for same set of samples on repeated runs
+        mapList ->
+
+        // Sort the hashmaps to ensure same output for same set of samples on repeated runs
         if (sortBy) {
                 mapList.sort {
                 map1, map2 ->
@@ -529,10 +578,20 @@ def rows (columnsMap, options = [:]) {
     result
 }
 
-def constructIdentifier(map) {return map.subMap("condition", "biorep", "techrep", "aggregateProfileName").values().join("_")}
+/*
+    Hich depends on each sample having a unique sample.id attribute for joining process results to the
+    appropriate sample hashmap. A legible name is also convenient for troubleshooting. If the user
+    wants to let Hich build unique ids automatically, they should specify unique conditions, bioreps and techreps
+    and not use the _ character in order to ensure that all ids will be unique. The aggregateProfileName is also
+    included because new copies of the input samples are produced for each aggregateProfile.
+*/
+def constructIdentifier(map) {
+    return map.subMap("condition", "biorep", "techrep", "aggregateProfileName").values().join("_")
+}
 
 
-def configParamToHashSet(val) {
+def asHashSet(val) {
+    // Convert a non-HashSet val into a HashSet
     if (val instanceof ArrayList) return new HashSet(val)
     if (val instanceof HashSet) return val
     return new HashSet([val])
@@ -540,15 +599,31 @@ def configParamToHashSet(val) {
 
 
 def createCompositeStrategy(strategyKeys, strategyMap, combineHow = [:]) {
+    /* 
+        Users can define multiple potentially orthogonal sample selection strategies
+        and combine them by name into a single composite strategy.
+
+        strategyKeys -- keys in strategyMap for the sub-strategies to combine
+        strategyMap -- [strategyKey: selectionStrategy] map-of-maps, typically params.sampleSelectionStrategies
+        combineHow -- not currently used, but permits defining how to combine strategies when
+            there are conflicts by passing a [key: closure] map where
+            closure(oldVals, newVals) outputs the updated value for the key. By
+            default, the later-specified strategy has precedence.
+
+        Returns empty map if no keys or strategies are supplied.
+    */
 
     def compositeStrategy = [:]
-    subStrategies = strategyKeys ? strategyMap.subMap(strategyKeys) : [:]
+    subStrategies = strategyKeys ? strategyMap.subMap(strategyKeys).values() : []
     subStrategies.each {
-        _, subStrategy ->
+        subStrategy ->
         subStrategy.each {
             key, val ->
-            
-            def newVals = configParamToHashSet(val)
+
+            // Converts val from a single element or ArrayList into a HashSet of elements
+            // Then either replace the old value (default behavior) or apply a passed
+            // key-specific update method.
+            def newVals = asHashSet(val)
             def oldVals = compositeStrategy.get(key, new HashSet())
             def updated = combineHow.get(key, {a, b -> b})(oldVals, newVals)
             compositeStrategy += [(key): updated]
@@ -559,14 +634,22 @@ def createCompositeStrategy(strategyKeys, strategyMap, combineHow = [:]) {
 }
 
 def filterSamplesByStrategy(samples, strategy) {
+    /*  The strategy is a hashmap that defines sample attributes to filter on,
+        and acceptable values of those attributes.
+
+        samples - a channel of sample hashmaps
+        strategy - a hashmap as [attributeName: [permittedValues]]
+    */
+
+    // The config may not specify a sample selection strategy
     if (!strategy) return samples
 
+    // The strategy defines attribute values samples may match to be retained
     def reservedKeywords = ["same", "different"]
     def sampleAttributeFilter = strategy.findAll {key, value -> !(key in reservedKeywords)}
     return samples | filter {
         sample ->
 
-        def filterOn = sample.subMap(sampleAttributeFilter.keySet())
         def passesFilter = sampleAttributeFilter.every {key, select ->
             sample.get(key) in select
         }
@@ -575,17 +658,32 @@ def filterSamplesByStrategy(samples, strategy) {
     }
 }
 
-def combineSamplesByStrategy(samples, strategy) {
+def pairSamplesByStrategy(samples, strategy) {
+    /*
+        The diffloops workflow has to define a way to pair up samples, especially
+        by enforcing that certain attributes are the same or different.
+
+        samples -- channel of sample hashmaps
+        strategy -- a composite sample selection strategy [attribute: permittedValues]
+            two possible attributes are
+                same: a list of attributes which must be the same to pair two samples
+                different: a list of attributes which must differ to pair two samples
+            other attributes are used for filtering individual samples
+    */
+
+    // Ensure there's no conflict between "same" and "different"
     def same = strategy.get("same", [])
     def different = strategy.get("different", [])
-    def sameAndDifferent = same.intersect(different)
+    def sameAndDifferent = 
     if (!sameAndDifferent.isEmpty()) {
         System.err.println("Warning: In filterSamplesByStrategy, comparisons on ${sameAndDifferent} are required to be same and different, so no result is obtained")
         return channel.empty()
     }
 
+    // Filter individual samples before forming pairs of samples
     def filtered = filterSamplesByStrategy(samples, strategy)
 
+    // Obtain pairs of samples matching the "same" and "different" criteria
     def combined = filtered
     | combine(filtered)
     | filter{it[0].id <= it[1].id}
@@ -602,6 +700,7 @@ def combineSamplesByStrategy(samples, strategy) {
 }
 
 def aggregateLevelLabel(sample) {
+    // Return a magic string for the aggregateLevel
     if (isTechrep(sample)) return "techrep"
     if (isBiorep(sample)) return "biorep"
     if (isCondition(sample)) return "condition"
@@ -609,6 +708,12 @@ def aggregateLevelLabel(sample) {
 }
 
 def datatypeFromExtension(path) {
+    /*
+        Look for various known extensions to extract the datatype implicitly from the
+        input file so that Hich can ingest intermediate file formats appropriately
+        without explicit specification by the user. This is especially helpful in
+        permitting the user to use globs at the command line to feed files into Hich.
+    */
     extensions = [".fastq": "fastq",
                   ".fq": "fastq",
                   ".sam": "sambam",
@@ -625,8 +730,23 @@ def datatypeFromExtension(path) {
 }
 
 def parsePattern(String str, String parsePattern) {
+    /*
+        Used to extract sample attributes from filenames, such as condition, biorep, and techrep,
+        via a syntax similar to that offered by Python's parse library. In parse, users can
+        extract substrings into a map with patterns like: "{condition}_{biorep}_{techrep}.fastq",
+        which would take a string like "cond1_br1_tr1.fastq" and return ["condition": "cond1", "biorep": "br1", "techrep": "tr1"].
+        This is easier to specify at the command line than a regex but AFAIK has no Groovy equivalent.
+
+        This function implements this parsing functionality, returning the extracted map.
+    */
+
     def patternPlaceholders = []
 
+    // This regex searches the parsePattern string (i.e. "{condition}_{biorep}_{techrep}.fastq")
+    // for the placeholders between braces (i.e. condition, biorep, techrep) and adds them
+    // to the list of patternPlaceholders to become keys in the output map.
+
+    // It also yields in "pattern" the list of matchers to look for in the input string "str"
     def pattern = parsePattern.replaceAll(/\{([^{}]*)\}/) { match ->
         if (match[1].trim()) {
             patternPlaceholders << match[1]  // Track the placeholder name
@@ -636,15 +756,39 @@ def parsePattern(String str, String parsePattern) {
         }
     }
     
+    // This extracts the patterns from str
     def matcher = str =~ pattern
+
+    // Combine the patternPlaceholders with the corresponding matches from "str" into an output map "result"
     def result = [:]
-    
     if (matcher) {
         patternPlaceholders.eachWithIndex { placeholder, index ->
             result[placeholder] = matcher.group(index + 1)  // Retrieve group by index
         }
     }
     
-    
     return result ?: null
+}
+
+def formatArg(pattern, object, sep) {
+    /*
+        Some processes receive either a list of values or a single non-list element
+        as parameter values, but need to call a CLI command passing a delimiter-separated
+        list of the received values. Other times they get nothing and should
+        not pass an argument for that parameter at all. This facilitates this interconversion
+        and returns an empty string if the object passed was falsey.
+
+        NOTE this is a potential issue if the goal is to pass a boolean false
+        to the CLI command, but I don't think Hich currently does this...
+
+        pattern -- the string pattern to format the results into, like "--numbers {commaSeparatedNums}"
+        object -- the element or list of elements to join (where necessary) into a delimiter-separated list
+        sep -- the delimiter, like ","
+    */
+    // Put non-lists into a list so when join is called, it has something to (silently) operate on
+    def listed = (object instanceof List || object == null) ? object : [object]
+    def joined = listed ? listed.join(sep) : listed
+
+    // Format the string with the result or return 
+    return joined ? String.format(pattern, joined) : ""
 }

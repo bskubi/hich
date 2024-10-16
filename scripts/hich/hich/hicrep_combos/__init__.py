@@ -124,7 +124,6 @@ def hicrep_combos(resolutions, chroms, exclude, chromFilter, h, d_bp_max, b_down
     chroms = chroms or shared_chroms(paths, lambda chrom, size: eval(chromFilter))
     chroms = set(chroms) - set(exclude) if exclude else chroms
     assert chroms, "No chromosomes specified or no universally overlapping chromosomes found in hich hicrep"
-    print(exclude)
     callers = hicrep_callers(paths, resolutions, chroms, h = h, dBPMax = d_bp_max, bDownSample = b_downsample)
     result = parallel_hicrep(callers, max_workers = nproc)
     if output:

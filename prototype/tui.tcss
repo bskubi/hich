@@ -1,0 +1,5 @@
+#filename {dock: left;}
+
+#save {dock: left; content-align: center middle}
+
+#overwrite {dock:right;}

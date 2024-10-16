@@ -86,7 +86,7 @@ def load_stats_and_classifier_from_file(pairs_stats_header_tsv_path):
     distribution = DiscreteDistribution()
     for row in df.iter_rows(named = True):
         count = row["count"]
-        outcome = (row[conjunct] for conjunct in conjuncts)
+        outcome = tuple([row[conjunct] for conjunct in conjuncts])
         distribution[outcome] = count
     return classifier, distribution
 

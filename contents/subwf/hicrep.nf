@@ -1,10 +1,9 @@
-include {createCompositeStrategy; filterSamplesByStrategy; columns; skip} from './extraops.nf'
+include {createCompositeStrategy; filterSamplesByStrategy; columns; skip; formatArg} from './extraops.nf'
 
 process HicrepCombos{
-    publishDir "results/hicrep",
-               mode: params.general.publish.mode
+    publishDir "results/hicrep", mode: params.general.publish.mode
     //container "bskubi/hich:latest"
-
+    
     input:
     tuple val(planName), path(mcools), val(resolutions), val(chroms), val(exclude), val(chromFilter), val(h), val(dBPMax), val(bDownSample)
 
@@ -15,16 +14,15 @@ process HicrepCombos{
     outputFile = "${planName}.tsv"
 
     cmd = ["hich hicrep",
-           resolutions ? "--resolutions ${resolutions.join(",")}" : "",
-           chroms ? "--chroms ${chroms.join(",")}" : "",
-           exclude ? "--exclude ${exclude.join(",")}" : "",
-           chromFilter ? "--chrom-filter '${chromFilter}'" : "",
-           "--h ${h.join(",")}",
-           "--d-bp-max ${dBPMax.join(",")}",
-           "--b-downsample ${bDownSample.join(",")}",
+           formatArg("--resolutions %s", resolutions, ','),
+           formatArg("--chroms %s", chroms, ','),
+           formatArg("--exclude %s", exclude, ','),
+           formatArg("--chrom-filter '%s'", chromFilter, ''),
+           formatArg("--h %s", h, ','),
+           formatArg("--d-bp-max %s", dBPMax, ','),
+           formatArg("--b-downsample %s", bDownSample, ','),
            "--output ${outputFile}",
-           "${mcools.join(" ")}"].join(" ")
-    print(cmd)
+           formatArg("%s", mcools, ' ')].findAll{it}.join(" ")
     cmd
 
     stub:
@@ -39,10 +37,13 @@ workflow Hicrep {
     main:
 
     if (!skip("hicrep")) {
+        hicrepParameterizations = channel.empty()
+
         params.hicrep.each {
             planName, analysisPlan ->
 
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
+
             filterSamplesByStrategy(samples, strategy)
                 | collect
                 | filter{it.size() >= 2}
@@ -59,8 +60,11 @@ workflow Hicrep {
                         analysisPlan.dBPMax,
                         analysisPlan.bDownSample)
                 }
-                | HicrepCombos
+                | concat(hicrepParameterizations)
+                | set{hicrepParameterizations}
         }
+
+        hicrepParameterizations | HicrepCombos
     }
 
 
