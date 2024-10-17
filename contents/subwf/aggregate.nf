@@ -7,6 +7,9 @@ include {Setup} from './setup.nf'
     aggregateProfiles that define how samples should be downsampled, deduplicated and merged
     at each level. An aggregateLevel is techreps, bioreps, or conditions.
 
+    Overall workflow
+        Aggregate[Level] -> CreateAggregateSampleProfiles -> Downsample -> Deduplicate -> Merge to [Level + 1]
+
     Individual downsampling
     -----------------------
     Downsampling can be simply to a specific fraction of original reads or exact number of reads.
@@ -78,7 +81,7 @@ include {Setup} from './setup.nf'
 /*
     Compute original read counts over conjuncts defined for the current agg level and profile with hich stats.
 */
-process HichDownsampleStatsFrom {
+process HichStats {
     container "bskubi/hich:latest"
     label 'pairs'
 
@@ -103,7 +106,7 @@ process HichDownsampleStatsFrom {
     Compute target read counts over groups and their common conjuncts defined for the current agg level and profile
     with hich stats-aggregate
 */
-process HichStatsAggregateToMinGroupSize {
+process HichStatsAggregate {
     //container "hich:latest"
     //container "bskubi/hich:latest"
     label 'pairs'
@@ -129,7 +132,7 @@ process HichStatsAggregateToMinGroupSize {
     Now that the original and target distribution is computed for each sample, individually downsample them to the target
     distribution with hich downsample.
 */
-process HichDownsamplePairs {
+process HichDownsample {
     //container "bskubi/hich:latest"
     label 'pairs'
 
@@ -212,6 +215,9 @@ process PairtoolsMerge {
 
 
 /*
+    This process clones raw samples at the current agg level and assigns them
+    to an agg profile, applying the params for that profile to the sample.
+
     The nextflow.config file may have a params.aggregate {} section defining
     aggregate profiles. If so, create duplicates for each sample, one for each
     profile, and label the sample with the aggregate profile, keeping it separate
@@ -226,7 +232,7 @@ process PairtoolsMerge {
 
     Note that this calls no processes.
 */
-workflow CreateAggregatePairProfiles {
+workflow CreateAggregateSampleProfiles {
     take:
     levelSamples
     levelParams
@@ -306,7 +312,7 @@ workflow DownsamplePairs {
     // Compute from stats
     downsample.YES
         | map{tuple(it.id, it.latestPairs, it.get(levelParams.readConjuncts), it.get(levelParams.cisStrata))}
-        | HichDownsampleStatsFrom
+        | HichStats
         | map{[id:it[0], (levelParams.downsampleStatsFrom):it[1]]}
         | set{downsampleStatsFromResult}
     pack(downsample.YES, downsampleStatsFromResult) | set {fromStatsCalculated}
@@ -315,18 +321,19 @@ workflow DownsamplePairs {
     groupHashMap(fromStatsCalculated, [levelParams.downsampleToMeanDistribution, 'aggregateProfileName'])
         | map{columns(it, ["dropNull":true])}
         | map{tuple(it.id, it.get(levelParams.downsampleStatsFrom), it.outlier)}
-        | HichStatsAggregateToMinGroupSize
+        | HichStatsAggregate
         | map{[id:it[0], (levelParams.downsampleStatsTo):it[1]]}
         | map{rows(it)}
         | flatten
         | set {downsampleToGroupMinResult}
     pack(fromStatsCalculated, downsampleToGroupMinResult) | set{toGroupMinResult}
 
+    // Downsample
     toGroupMinResult
         | map{
             tuple(it.id, it.latestPairs, it.get(levelParams.downsampleStatsFrom), it.get(levelParams.downsampleStatsTo),
               it.get(levelParams.readConjuncts), it.get(levelParams.cisStrata), it.get(levelParams.downsampleToSize))}
-        | HichDownsamplePairs
+        | HichDownsample
         | map{[id:it[0], (levelParams.downsamplePairs):it[1], latest:it[1], latestPairs:it[1]]}
         | set{downsampledResult}
     pack(toGroupMinResult, downsampledResult) | set {downsampled}
@@ -431,7 +438,7 @@ workflow AggregateTechreps {
         other: true
     } | set{sampleType}
 
-    CreateAggregatePairProfiles(sampleType.techrep, aggregateParams)
+    CreateAggregateSampleProfiles(sampleType.techrep, aggregateParams)
     | DownsamplePairs
     | MergePairs
     | DeduplicatePairs
@@ -472,7 +479,7 @@ workflow AggregateBioreps {
         other: true
     } | set{sampleType}
 
-    CreateAggregatePairProfiles(sampleType.biorep, aggregateParams)
+    CreateAggregateSampleProfiles(sampleType.biorep, aggregateParams)
     | DownsamplePairs
     | MergePairs
     | DeduplicatePairs
@@ -513,7 +520,7 @@ workflow AggregateConditions {
         other: true
     } | set{sampleType}
 
-    CreateAggregatePairProfiles(sampleType.condition, aggregateParams)
+    CreateAggregateSampleProfiles(sampleType.condition, aggregateParams)
     | DownsamplePairs
     | MergePairs
     | DeduplicatePairs
