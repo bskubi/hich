@@ -5,19 +5,20 @@ class TestDiscreteDistribution(unittest.TestCase):
     def setUp(self):
         self.is_cis = DiscreteDistribution({(True,): 10, (False,): 20})
 
-    def test_to_count(self):
+    def test_to_size(self):
         original = DiscreteDistribution({(True,): 10, (False,): 20})
         target = DiscreteDistribution({(True,): 20, (False,): 40})
         with self.subTest(i=0):
-            self.assertEqual(original.to_count(60), target)
+            self.assertEqual(original.to_size(60), target)
         with self.subTest(i=1):
-            self.assertEqual(original.to_count(2.0), target)
+            self.assertEqual(original.to_size(2.0), target)
 
     def test_downsample_to_probabilities(self):
         original = DiscreteDistribution({(True,): 10, (False,): 40})
-        downsample = DiscreteDistribution({(True,): .1, (False,): .9})
-        target = DiscreteDistribution({(True,): 4, (False,): 40})
-        self.assertEqual(original.downsample_to_probabilities(downsample), target)
+        probabilities = DiscreteDistribution({(True,): .1, (False,): .9})
+        downsampled = original.downsample_to_probabilities(probabilities)
+        self.assertIn(downsampled[(True,)], [4, 5])
+        self.assertIn(downsampled[(False,)], [39, 40])
 
     def test_probabilities(self):
         distribution = DiscreteDistribution({True: 10, False: 30})

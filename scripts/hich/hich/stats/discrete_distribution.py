@@ -7,17 +7,27 @@ from statistics import mean
 import numpy as np
 import random
 import math
+from multipledispatch import dispatch
 
 class DiscreteDistribution(Counter):
     @classmethod
     def mean_mass(cls, distributions: list['DiscreteDistribution']) -> 'DiscreteDistribution':
-        combined = reduce(lambda a, b: a+b, distributions)
-        return combined/combined.total()
+        """Compute the mean probability mass over event space.
+
+        Sums the values assigned to each event in the sample space, defaulting to zero
+        if unspecified, and divides by the total to obtain mean probability mass of each event.
+        """
+        # If sum() is used, it attempts to add individual values from one DiscreteDistribution
+        # to another DiscreteDistribution, which isn't defined, so this is used instead.
+        combined = reduce(lambda a, b: a + b, distributions)
+        return combined / combined.total()
     
     @classmethod
-    def probabilistic_round(cls, n):
-        lower = math.floor(n)
-        upper = math.ceil(n)
+    def bounded_probabilistic_round(cls, n, n_min, n_max):
+        """Round n up or down probabilitistically within bounds (n_min, n_max)
+        """
+        lower = max(n_min, math.floor(n)) if n_min else math.floor(n)
+        upper = min(n_max, math.ceil(n)) if n_max else math.ceil(n)
         prob_up = n - lower
         if random.random() < prob_up:
             return upper
@@ -28,10 +38,21 @@ class DiscreteDistribution(Counter):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def to_size(self, n: int) -> 'DiscreteDistribution':
+    def to_size(self, n: Number, lower_bounds = {}, upper_bounds = {}) -> 'DiscreteDistribution':
+        """Downsample to a specific number of reads (n is integer) or multiple of reads (n is float)"""
         total = n if isinstance(n, int) else self.total() * n
-        new_counts = {event: DiscreteDistribution.probabilistic_round(prob*total) for event, prob in self.probabilities().items()}
+
+        new_counts = {}
+        for event, prob in self.probabilities().items():
+            lower_bound = lower_bounds.get(event, 0)
+            upper_bound = upper_bounds.get(event, float('inf'))
+            new_counts[event] = DiscreteDistribution.bounded_probabilistic_round(prob*total, lower_bound, upper_bound)
+        
         return DiscreteDistribution(new_counts)
+    
+    @property
+    def size(self) -> Number:
+        return sum(self.values())
 
     def downsample_to_probabilities(self, probdist: 'DiscreteDistribution') -> 'DiscreteDistribution':
         """Given a probability distribution, minimally downsample counts to match it.
@@ -60,9 +81,9 @@ class DiscreteDistribution(Counter):
         assert result.success, "No solution found attempting to match distribution"
 
         # Get value of N - total number of downsampled events
-        N = DiscreteDistribution.probabilistic_round(result.x[0])
+        N = DiscreteDistribution.bounded_probabilistic_round(result.x[0], 0, self.size)
 
-        return probdist.to_size(N)
+        return probdist.to_size(N, lower_bounds = {event: 0 for event in events}, upper_bounds = self)
 
     def probabilities(self) -> "DiscreteDistribution":
         return self.copy() / self.total()
