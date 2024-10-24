@@ -3,7 +3,8 @@ include {createCompositeStrategy; pairSamplesByStrategy; skip} from './extraops.
 process MustacheDiffloops{
     publishDir "results/loops",
                mode: params.general.publish.mode
-    container "bskubi/mustache:latest"
+    container params.general.mustacheContainer
+    label 'features'
 
     input:
     tuple val(prefix), path(mx1, stageAs: 'mx1/*'), path(mx2, stageAs: 'mx2/*'), val(mustacheParams)
@@ -29,7 +30,7 @@ workflow DifferentialLoops {
     main:
     
     if (!skip("differentialLoops")) {
-        params.diffloops.each {
+        params.differentialLoops.each {
             planName, analysisPlan ->
 
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)

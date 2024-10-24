@@ -82,7 +82,7 @@ include {Setup} from './setup.nf'
     Compute original read counts over conjuncts defined for the current agg level and profile with hich stats.
 */
 process HichStats {
-    container "bskubi/hich:latest"
+    container params.general.hichContainer
     label 'pairs'
 
     input:
@@ -93,8 +93,8 @@ process HichStats {
 
     shell:
     stats = "${id}.from.stats.tsv"
-    conjunctsArg = conjuncts ? "--conjuncts '${conjuncts.join(' ')}'" : ""
-    cisStrataArg = cisStrata ? "--cis-strata '${cisStrata.join(' ')}'" : ""
+    conjunctsArg = conjuncts ? "--conjuncts '${conjuncts.join(',')}'" : ""
+    cisStrataArg = cisStrata ? "--cis-strata '${cisStrata.join(',')}'" : ""
     "hich stats ${conjunctsArg} ${cisStrataArg} --output ${stats} ${pairs}"
 
     stub:
@@ -107,8 +107,7 @@ process HichStats {
     with hich stats-aggregate
 */
 process HichStatsAggregate {
-    //container "hich:latest"
-    //container "bskubi/hich:latest"
+    container params.general.hichContainer
     label 'pairs'
 
     input:
@@ -118,9 +117,12 @@ process HichStatsAggregate {
     tuple val(ids), path(targetStats)
 
     shell:
+    if (stats == null || !(stats.metaClass.respondsTo(stats, "indexOf"))) {stats = [stats]}
+    if (outliers == null || !(outliers.metaClass.respondsTo(outliers, "findIndexValues"))) {outliers = [outliers]}
+
     targetStats = stats.collect{"aggregate_${it}"}
     outlier_stats = stats.findAll { stats.indexOf(it) in outliers.findIndexValues { it } }
-    outlier_params = outlier_stats.collect{"--outlier ${it}"}.join(" ")
+    outlier_params = outlier_stats.collect{"--outlier ${it}"}.join(",")
     "hich stats-aggregate --to-group-mean --to-group-min --prefix aggregate_ ${outlier_params} ${stats.join(' ')}"
     
     stub:
@@ -133,7 +135,7 @@ process HichStatsAggregate {
     distribution with hich downsample.
 */
 process HichDownsample {
-    //container "bskubi/hich:latest"
+    container params.general.hichContainer
     label 'pairs'
 
     input:
@@ -163,10 +165,9 @@ process PairtoolsDedup {
     publishDir params.general.publish.parse ? params.general.publish.dedup : "results",
                saveAs: {params.general.publish.dedup ? it : null},
                mode: params.general.publish.mode
-    conda "bioconda::pairtools bioconda::samtools"
-    container "bskubi/hich:latest"
+    
+    container params.general.hichContainer
     label 'pairs'
-    cpus 8
 
     input:
     tuple val(id), path(pairs), val(singleCell), val(maxMismatch), val(method), val(pairtoolsDedupParams)
@@ -194,9 +195,8 @@ process PairtoolsDedup {
     Merge pairs files to one level higher (techreps -> bioreps -> conditions)
 */
 process PairtoolsMerge {
-    container "bskubi/hich:latest"
+    container params.general.hichContainer
     label 'pairs'
-    cpus 8
     
     input:
     tuple val(id), path(to_merge)

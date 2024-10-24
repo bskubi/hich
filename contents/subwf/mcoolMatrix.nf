@@ -6,7 +6,7 @@ process CoolerZoomify {
                saveAs: {params.general.publish.mcool ? it : null},
                mode: params.general.publish.mode
     conda "bioconda::cooler"
-    container "bskubi/hich:latest"
+    container params.general.hichContainer
     label 'createMatrix'
 
     input:

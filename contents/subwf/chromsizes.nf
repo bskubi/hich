@@ -6,7 +6,7 @@ process ChromsizesProc {
                mode: params.general.publish.mode
 
     conda "bioconda::ucsc-fasize"
-    container 'quay.io/biocontainers/ucsc-fasize:332--0'
+    container params.general.chromsizesContainer
     label 'smallResource'
     memory 8.GB
 

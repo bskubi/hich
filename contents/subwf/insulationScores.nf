@@ -3,11 +3,12 @@ include {createCompositeStrategy; filterSamplesByStrategy; skip} from './extraop
 process CooltoolsInsulation {
     publishDir "results/insulation",
                mode: params.general.publish.mode
-    container "bskubi/hich:latest"
+    container params.general.hichContainer
     conda "bioconda::cooltools"
+    label 'features'
 
     input:
-    tuple val(id), path(mcool), val(resolution), val(cooltoolsInsulationParams)
+    tuple val(id), path(mcool), val(resolution), val(cooltoolsInsulationParams), val(window)
 
     output:
     tuple val(id), path("${id}_insulation.tsv"), path("${id}_insulation.tsv.${resolution}.bw")
@@ -16,7 +17,7 @@ process CooltoolsInsulation {
     cmd = ["cooltools insulation", 
            "--output ${id}_insulation.tsv"] +
           cooltoolsInsulationParams +
-          ["${mcool}::/resolutions/${resolution} 100000"]
+          ["${mcool}::/resolutions/${resolution} ${window}"]
     cmd = cmd.join(" ")
     cmd
 
@@ -35,10 +36,13 @@ workflow InsulationScores {
             planName, analysisPlan ->
 
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
+
+            strategy += ["same": [], "different": []]
+
             filterSamplesByStrategy(samples, strategy)
                 | map{
                     sample ->
-                    tuple(sample.id, sample.latestMatrix, analysisPlan.resolution, analysisPlan.cooltoolsInsulationParams)
+                    tuple(sample.id, sample.latestMatrix, analysisPlan.resolution, analysisPlan.cooltoolsInsulationParams, analysisPlan.window)
                 }
                 | CooltoolsInsulation
         }

@@ -3,7 +3,8 @@ include {createCompositeStrategy; filterSamplesByStrategy; skip} from './extraop
 process MustacheLoops{
     publishDir "results/loops",
                mode: params.general.publish.mode
-    container "bskubi/mustache:latest"
+    container params.general.mustacheContainer
+    label 'features'
 
     input:
     tuple val(prefix), path(mx), val(mustacheParams)

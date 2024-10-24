@@ -2,7 +2,7 @@ include {createCompositeStrategy; filterSamplesByStrategy; columns; skip; format
 
 process HicrepCombos{
     publishDir "results/hicrep", mode: params.general.publish.mode
-    //container "bskubi/hich:latest"
+    container params.general.hichContainer
     
     input:
     tuple val(planName), path(mcools), val(resolutions), val(chroms), val(exclude), val(chromFilter), val(h), val(dBPMax), val(bDownSample)
@@ -43,9 +43,8 @@ workflow Hicrep {
             planName, analysisPlan ->
 
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
-
+            
             filterSamplesByStrategy(samples, strategy)
-                | collect
                 | filter{it.size() >= 2}
                 | map{columns(it, ["dropNull":true])}
                 | map{

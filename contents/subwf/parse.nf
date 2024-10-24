@@ -6,7 +6,7 @@ process PairtoolsParse2 {
                saveAs: {params.general.publish.parse ? it : null},
                mode: params.general.publish.mode
     conda "bioconda::pairtools bioconda::samtools"
-    container "bskubi/hich:latest"
+    container params.general.hichContainer
     label 'doJobArray'
     label 'pairs'
     cpus 3

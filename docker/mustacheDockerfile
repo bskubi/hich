@@ -9,15 +9,18 @@ RUN apt-get update && \
     git \
     g++ \
     zlib1g-dev \
-    ca-certificates && \
+    ca-certificates \
+    libcurl4-openssl-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
+  
 RUN git clone https://github.com/ay-lab/mustache /mustache
 RUN micromamba install -y -n base -f /mustache/environment.yml
 
 WORKDIR /mustache/mustache
 ENV PATH="/opt/conda/bin:${PATH}"
+
+ENV PYTHONPATH="/mustache/mustache"
 
 # Set a default command
 CMD ["bash"]

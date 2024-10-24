@@ -5,7 +5,7 @@ process HichFragtag {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
                saveAs: {params.general.publish.fragtag ? it : null},
                mode: params.general.publish.mode
-    container "bskubi/hich:latest"
+    container params.general.hichContainer
     label 'doJobArray'
     label 'pairs'
 

@@ -4,7 +4,7 @@ process FragmentIndexProc {
     publishDir params.general.publish.fragmentIndex ? params.general.publish.fragmentIndex : "results",
                saveAs: {params.general.publish.fragmentIndex ? it : null},
                mode: params.general.publish.mode
-    container "bskubi/hich:latest"
+    container params.general.hichContainer
     label 'smallResource'
     
     input:

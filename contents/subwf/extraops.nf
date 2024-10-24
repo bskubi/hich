@@ -647,7 +647,7 @@ def filterSamplesByStrategy(samples, strategy) {
     // The strategy defines attribute values samples may match to be retained
     def reservedKeywords = ["same", "different"]
     def sampleAttributeFilter = strategy.findAll {key, value -> !(key in reservedKeywords)}
-    return samples | filter {
+    filtered = samples | filter {
         sample ->
 
         def passesFilter = sampleAttributeFilter.every {key, select ->
@@ -656,6 +656,16 @@ def filterSamplesByStrategy(samples, strategy) {
 
         passesFilter
     }
+
+    // If "same" is specified, we group by those attributes
+    if (strategy.get("same", [])) {
+        return filtered
+                    | map{tuple(it.subMap(strategy.get("same", [])), it)}
+                    | groupTuple
+                    | map{it[1]}
+    }
+
+    return filtered
 }
 
 def pairSamplesByStrategy(samples, strategy) {
@@ -674,7 +684,7 @@ def pairSamplesByStrategy(samples, strategy) {
     // Ensure there's no conflict between "same" and "different"
     def same = strategy.get("same", [])
     def different = strategy.get("different", [])
-    def sameAndDifferent = 
+    def sameAndDifferent = same.intersect(different)
     if (!sameAndDifferent.isEmpty()) {
         System.err.println("Warning: In filterSamplesByStrategy, comparisons on ${sameAndDifferent} are required to be same and different, so no result is obtained")
         return channel.empty()
@@ -694,7 +704,6 @@ def pairSamplesByStrategy(samples, strategy) {
         def sameOK = same.every {key -> s1.get(key) == s2.get(key)}
         def differentOK = different.every {key -> s1.get(key) != s2.get(key)}
         sameOK && differentOK
- 
     }
     return combined
 }

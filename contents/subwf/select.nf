@@ -6,7 +6,7 @@ process PairtoolsSelect {
                saveAs: {params.general.publish.select ? it : null},
                mode: params.general.publish.mode
     conda "bioconda::pairtools"
-    container "bskubi/hich:latest"
+    container params.general.hichContainer
     label 'doJobArray'
     label 'pairs'
     cpus 8

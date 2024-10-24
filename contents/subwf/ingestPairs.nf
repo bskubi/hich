@@ -6,7 +6,7 @@ process PairtoolsFlipSort {
                saveAs: {params.general.publish.flip_sort ? it : null},
                mode: params.general.publish.mode
     conda "bioconda::pairtools"
-    container "bskubi/hich:latest"
+    container params.general.hichContainer
     label 'doJobArray'
     label 'pairs'
     cpus 8

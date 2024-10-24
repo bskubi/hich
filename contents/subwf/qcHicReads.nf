@@ -6,7 +6,7 @@ process PairtoolsStats {
                saveAs: {params.general.publish.pairStats ? it : null},
                mode: params.general.publish.mode
     conda "bioconda::pairtools"
-    container "bskubi/hich:latest"
+    container params.general.hichContainer
     label 'pairs'
     cpus 8
 

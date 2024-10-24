@@ -2,9 +2,9 @@ include {emptyOnLastStep; isExistingFile; pack; skip} from './extraops.nf'
 
 process BwaMem2Index {
     conda "bioconda::bwa-mem2"
-    container "bskubi/hich:latest"
-    publishDir params.general.publish.bwa_mem2Index ? params.general.publish.bwa_mem2Index : "results",
-               saveAs: {params.general.publish.bwa_mem2Index ? it : null},
+    container params.general.hichContainer
+    publishDir params.general.publish.bwaMem2Index ? params.general.publish.bwaMem2Index : "results",
+               saveAs: {params.general.publish.bwaMem2Index ? it : null},
                mode: params.general.publish.mode
     label 'whenLocal_allConsuming'
     label 'index'
@@ -28,7 +28,7 @@ process BwaMem2Index {
 
 process BwaMemIndex {
     conda "bioconda::bwa"
-    container "bskubi/hich:latest"
+    container params.general.hichContainer
     publishDir params.general.publish.bwaIndex ? params.general.publish.bwaIndex : "results",
                saveAs: {params.general.publish.bwaIndex ? it : null},
                mode: params.general.publish.mode
@@ -55,9 +55,9 @@ process BwaMemIndex {
 }
 
 process BSBoltIndex {
-    container "bskubi/hich:latest"
-    publishDir params.general.publish.indexBSBolt ? params.general.publish.indexBSBolt : "results",
-               saveAs: {params.general.publish.indexBSBolt ? it : null},
+    container params.general.hichContainer
+    publishDir params.general.publish.bsboltIndex ? params.general.publish.bsboltIndex : "results",
+               saveAs: {params.general.publish.bsboltIndex ? it : null},
                mode: params.general.publish.mode
     label 'whenLocal_allConsuming'
     label 'index'
@@ -66,19 +66,29 @@ process BSBoltIndex {
 
 
     input:
-    tuple val(genomeReferenceString), path(genomeReference), val(prefix)
+    tuple val(genomeReferenceString), path(genomeReference), val(alignerIndexPrefix)
 
     output:
-    tuple val(genomeReferenceString), path(alignerIndexDir), val(prefix), path("${alignerIndexDir}/${prefix}.ann"), path("${alignerIndexDir}/${prefix}.amb"),
-          path("${alignerIndexDir}/${prefix}.pac"), path("${alignerIndexDir}/${prefix}.bwt"), path("${alignerIndexDir}/${prefix}.sa")
+    tuple val(genomeReferenceString),
+          path(alignerIndexDir),
+          val(alignerIndexPrefix),
+          path("${alignerIndexDir}/${prefix}.fa"),
+          path("${alignerIndexDir}/${prefix}.fa.ann"),
+          path("${alignerIndexDir}/${prefix}.fa.amb"),
+          path("${alignerIndexDir}/${prefix}.fa.opac"),
+          path("${alignerIndexDir}/${prefix}.fa.pac"),
+          path("${alignerIndexDir}/${prefix}.fa.bwt"),
+          path("${alignerIndexDir}/${prefix}.fa.sa")
 
     shell:
-    alignerIndexDir = "bsbolt/index"
-    "bsbolt Index -G ${genomeReference} && mkdir -p ${alignerIndexDir} && mv ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa ${alignerIndexDir}"
+    alignerIndexDir = "bsbolt/index/${alignerIndexPrefix}"
+    prefix = "BSB_ref"
+    "python -m bsbolt Index -IA -G ${genomeReference} -DB ${alignerIndexDir}"
 
     stub:
-    alignerIndexDir = "bsbolt/index"
-    "mkdir -p ${alignerIndexDir} && cd ${alignerIndexDir} && touch ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa"
+    alignerIndexDir = "bsbolt/index/${alignerIndexPrefix}"
+    prefix = "BSB_ref"
+    "mkdir -p ${alignerIndexDir} && cd ${alignerIndexDir} && touch ${prefix}.fa ${prefix}.fa.amb ${prefix}.fa.ann ${prefix}.fa.opac ${prefix}.fa.pac ${prefix}.fa.bwt ${prefix}.fa.sa"
 }
 
 
@@ -109,7 +119,19 @@ workflow AlignerIndex {
         | map{genomeReference, alignerIndexDir, alignerIndexPrefix, prefix_ann, prefix_amb, prefix_pac, prefix_bwt, prefix_sa ->
                 [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
         | set{resultBwaMemIndex}
-    
+
+    samples
+        | filter {!skip("alignerIndex") && it.datatype == "fastq" && it.aligner == "bsbolt"}
+        | filter {!isExistingFile(it.alignerIndexDir)}
+        | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
+        | map{tuple(it.genomeReference, it.genomeReference, it.alignerIndexPrefix)}
+        | unique
+        | BSBoltIndex
+        | map{genomeReference, alignerIndexDir, alignerIndexPrefix,
+              prefix_fa, prefix_ann, prefix_amb, prefix_opac, prefix_pac, prefix_bwt, prefix_sa ->
+                [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
+        | set{resultBwaMemIndex}
+
     pack(samples, resultBwaMem2Index, "genomeReference") | set{samples}
     pack(samples, resultBwaMemIndex, "genomeReference") | set{samples}
 

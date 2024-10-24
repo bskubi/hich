@@ -1,8 +1,0 @@
-# Use an official base image
-FROM condaforge/mambaforge:4.10.3-9
-
-USER root
-
-RUN mamba install curl bzip2 samtools bwa bwa-mem2 -c conda-forge -c bioconda -y
-
-

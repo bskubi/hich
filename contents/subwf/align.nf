@@ -6,7 +6,7 @@ process BwaAlign {
                mode: params.general.publish.mode
 
     conda "bioconda::bwa bioconda::bwa-mem2 bioconda::samtools"
-    container "bskubi/hich:latest"
+    container params.general.hichContainer
     
     label 'whenLocal_allConsuming'
     label 'align'
@@ -23,16 +23,16 @@ process BwaAlign {
     tuple val(id), path("${id}.bam")
 
     shell:
-    align = ""
-    if (aligner in ["bwa-mem2", "bwa"]) {
+    cmd = ""
+    if (aligner in ["bwa-mem2", "bwa", ]) {
         align = "${aligner} mem -t ${task.cpus} ${bwaFlags} ${indexDir}/${indexPrefix} ${fastq1} ${fastq2}"
+        tobam = "samtools view -b -o ${id}.bam"
+        cmd = "${align} | ${tobam}"
     } else if (aligner == "bsbolt") {
-        align = "bsbolt Align -t ${task.cpus} -OT ${task.cpus} -DB ${indexDir}/${indexPrefix} ${bwaFlags} -F1 ${fastq1} -F2 ${fastq2}"
+        cmd = "python3 -m bsbolt Align -t ${task.cpus} -OT ${task.cpus} -O ${id} -DB ${indexDir} ${bwaFlags} -F1 ${fastq1} -F2 ${fastq2}"
     }
     
-    tobam = "samtools view -b -o ${id}.bam"
-
-    "${align} | ${tobam}"
+    cmd
 
     stub:
     "touch ${id}.bam"
