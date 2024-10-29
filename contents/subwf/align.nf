@@ -25,11 +25,11 @@ process BwaAlign {
     shell:
     cmd = ""
     if (aligner in ["bwa-mem2", "bwa", ]) {
-        align = "${aligner} mem -t ${task.cpus} ${bwaFlags} ${indexDir}/${indexPrefix} ${fastq1} ${fastq2}"
+        align = "${aligner} mem -t ${task.cpus} ${bwaFlags} '${indexDir}/${indexPrefix}' '${fastq1}' '${fastq2}'"
         tobam = "samtools view -b -o ${id}.bam"
         cmd = "${align} | ${tobam}"
     } else if (aligner == "bsbolt") {
-        cmd = "python3 -m bsbolt Align -t ${task.cpus} -OT ${task.cpus} -O ${id} -DB ${indexDir} ${bwaFlags} -F1 ${fastq1} -F2 ${fastq2}"
+        cmd = "python3 -m bsbolt Align -t ${task.cpus} -OT ${task.cpus} -O '${id}' -DB '${indexDir}' ${bwaFlags} -F1 '${fastq1}' -F2 '${fastq2}'"
     }
     
     cmd
