@@ -15,14 +15,14 @@ process CooltoolsInsulation {
 
     shell:
     cmd = ["cooltools insulation", 
-           "--output ${id}_insulation.tsv"] +
+           "--output '${id}_insulation.tsv'"] +
           cooltoolsInsulationParams +
-          ["${mcool}::/resolutions/${resolution} ${window}"]
+          ["'${mcool}::/resolutions/${resolution}' ${window}"]
     cmd = cmd.join(" ")
     cmd
 
     stub:
-    "touch ${id}_insulation.tsv ${id}_insulation.tsv.${resolution}.bw"
+    "touch '${id}_insulation.tsv' '${id}_insulation.tsv.${resolution}.bw'"
 }
 
 workflow InsulationScores {
@@ -36,8 +36,6 @@ workflow InsulationScores {
             planName, analysisPlan ->
 
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
-
-            strategy += ["same": [], "different": []]
 
             filterSamplesByStrategy(samples, strategy)
                 | map{

@@ -14,13 +14,13 @@ process MustacheDiffloops{
 
     shell:
     cmd = ["python /mustache/mustache/diff_mustache.py",
-           "-f1 ${mx1} -f2 ${mx2}",
-           "-o ${prefix}"] + mustacheParams
+           "-f1 '${mx1}' -f2 '${mx2}'",
+           "-o '${prefix}'"] + mustacheParams
     cmd = cmd.join(" ")
     cmd
 
     stub:
-    "touch ${prefix}.loop1 ${prefix}.loop2 ${prefix}.diffloop1 ${prefix}.diffloop2"
+    "touch '${prefix}.loop1' '${prefix}.loop2' '${prefix}.diffloop1' '${prefix}.diffloop2'"
 }
 
 workflow DifferentialLoops {

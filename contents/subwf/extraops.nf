@@ -527,7 +527,9 @@ def coalesce (transposedSample, defaultWhenDifferent = "_unchanged", whenDiffere
 
 def columns (mapList, options = [:]) {
     // Get set of all keys from all maps
-    def allKeys = mapList.collectMany{it.keySet()}.toSet()
+    def allKeys = mapList.collectMany{
+        it.keySet()
+    }.toSet()
 
     // Extract parameters to list
     def transposed = [:]
@@ -614,7 +616,7 @@ def createCompositeStrategy(strategyKeys, strategyMap, combineHow = [:]) {
     */
 
     def compositeStrategy = [:]
-    subStrategies = strategyKeys ? strategyMap.subMap(strategyKeys).values() : []
+    def subStrategies = strategyKeys ? strategyMap.subMap(strategyKeys).values() : []
     subStrategies.each {
         subStrategy ->
         subStrategy.each {
@@ -647,7 +649,7 @@ def filterSamplesByStrategy(samples, strategy) {
     // The strategy defines attribute values samples may match to be retained
     def reservedKeywords = ["same", "different"]
     def sampleAttributeFilter = strategy.findAll {key, value -> !(key in reservedKeywords)}
-    filtered = samples | filter {
+    def filtered = samples | filter {
         sample ->
 
         def passesFilter = sampleAttributeFilter.every {key, select ->
@@ -657,15 +659,20 @@ def filterSamplesByStrategy(samples, strategy) {
         passesFilter
     }
 
-    // If "same" is specified, we group by those attributes
-    if (strategy.get("same", [])) {
-        return filtered
-                    | map{tuple(it.subMap(strategy.get("same", [])), it)}
-                    | groupTuple
-                    | map{it[1]}
-    }
+    filtered
+        | collect
+        | {
+            assert it.size() > 0, "Error: In filterSamplesByStrategy with sample selection strategy ${strategy}, no samples matched this filter."
+        }
 
     return filtered
+}
+
+def groupSamplesByStrategy(samples, strategy) {
+    return samples
+        | map{tuple(it.subMap(strategy.get("same", [])), it)}
+        | groupTuple
+        | map{it[1]}
 }
 
 def pairSamplesByStrategy(samples, strategy) {
@@ -705,6 +712,13 @@ def pairSamplesByStrategy(samples, strategy) {
         def differentOK = different.every {key -> s1.get(key) != s2.get(key)}
         sameOK && differentOK
     }
+
+    combined
+    | collect
+    | map{
+        assert it.size() > 0, "In pairSamplesByStrategy with sample selection strategy ${strategy}, no samples were paired, likely due to 'same' or 'different' filter."
+    }
+
     return combined
 }
 
@@ -723,15 +737,15 @@ def datatypeFromExtension(path) {
         without explicit specification by the user. This is especially helpful in
         permitting the user to use globs at the command line to feed files into Hich.
     */
-    extensions = [".fastq": "fastq",
+    def extensions = [".fastq": "fastq",
                   ".fq": "fastq",
                   ".sam": "sambam",
                   ".bam": "sambam",
                   ".pairs": "pairs",
                   ".mcool": "mcool",
                   ".hic": "hic"]
-    pathString = path.toString()
-    foundExtension = extensions.keySet().find {
+    def pathString = path.toString()
+    def foundExtension = extensions.keySet().find {
         ext ->
         pathString.endsWith(ext) || pathString.contains("${ext}.")
     }

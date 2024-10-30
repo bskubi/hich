@@ -23,13 +23,13 @@ process HicToMcool {
     hicFileName = hicFile.getFileName().toString()
     prefix = hicFileName.substring(0, hicFileName.lastIndexOf("."))
     mcoolFile = "${prefix}.mcool"
-    "mkdir ./tmp && hictk convert --tmpfile ./tmp ${hicFile} ${mcoolFile}"
+    "mkdir ./tmp && hictk convert --tmpfile ./tmp '${hicFile}' '${mcoolFile}'"
 
     stub:
     hicFileName = hicFile.getFileName().toString()
     prefix = hicFileName.substring(0, hicFileName.lastIndexOf("."))
     mcoolFile = "${prefix}.mcool"
-    "touch ${hicFile} ${mcoolFile}"
+    "touch '${hicFile}' '${mcoolFile}'"
 
 }
 
@@ -55,13 +55,13 @@ process McoolToHic {
     hicFile = "${prefix}.hic"
     cpus = task.cpus && task.cpus >= 2 ? task.cpus : 2
     threads = cpus > 2 ? "-t ${cpus}" : ""
-    "mkdir ./tmp && hictk convert --tmpfile ./tmp ${threads} ${mcoolFile} ${hicFile}"
+    "mkdir ./tmp && hictk convert --tmpfile ./tmp ${threads} '${mcoolFile}' '${hicFile}'"
 
     stub:
     mcoolFileName = mcoolFile.getFileName().toString()
     prefix = mcoolFileName.substring(0, mcoolFileName.lastIndexOf("."))
     hicFile = "${prefix}.hic"
-    "touch ${hicFile}"
+    "touch '${hicFile}'"
 
 }
 

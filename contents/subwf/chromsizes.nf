@@ -17,10 +17,10 @@ process ChromsizesProc {
     tuple val(genomeReferenceString), val(assembly), path(chromsizes)
 
     shell:
-    "faSize -detailed -tab ${genomeReference} > ${chromsizes}"
+    "faSize -detailed -tab '${genomeReference}' > '${chromsizes}'"
 
     stub:
-    "touch ${chromsizes}"
+    "touch '${chromsizes}'"
 }
 
 workflow Chromsizes {

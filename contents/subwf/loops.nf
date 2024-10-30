@@ -13,12 +13,12 @@ process MustacheLoops{
     path("${prefix}.loop")
 
     shell:
-    cmd = ["python -m mustache -f ${mx} -o ${prefix}.loop"] + mustacheParams
+    cmd = ["python -m mustache -f '${mx}' -o '${prefix}.loop'"] + mustacheParams
     cmd = cmd.join(" ")
     cmd
 
     stub:
-    "touch ${prefix}.loop"
+    "touch '${prefix}.loop'"
 }
 
 workflow Loops {

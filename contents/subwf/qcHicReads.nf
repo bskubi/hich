@@ -17,10 +17,10 @@ process PairtoolsStats {
     tuple val(id), val(pairs_id), path("${id}.${pairs_id}.stats.txt")
 
     shell:
-    "pairtools stats --output ${id}.${pairs_id}.stats.txt  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${pairs}"
+    "pairtools stats --output '${id}.${pairs_id}.stats.txt'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
 
     stub:
-    "touch ${id}.${pairs_id}.stats.txt"
+    "touch '${id}.${pairs_id}.stats.txt'"
 }
 
 process MultiQC {
@@ -37,10 +37,10 @@ process MultiQC {
     path("${report_name}.multiqc_report.html")
 
     shell:
-    "multiqc --force --no-version-check --filename ${report_name}.multiqc_report.html --module pairtools . && chmod -R a+w ."
+    "multiqc --force --no-version-check --filename '${report_name}.multiqc_report.html' --module pairtools . && chmod -R a+w ."
 
     stub:
-    "touch ${report_name}.multiqc_report.html"
+    "touch '${report_name}.multiqc_report.html'"
 }
 
 workflow QCReads {

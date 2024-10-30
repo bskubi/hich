@@ -27,7 +27,7 @@ process JuicerToolsPre {
     bins = matrix.resolutions ? "-r ${matrix.resolutions.join(',')}" : ""
 
     cmd = ["java -Xmx2g -jar /app/juicer_tools_1.22.01.jar pre",
-            bins] + juicerToolsPreParams + ["${infile} ${outfile} ${chromsizes}"]
+            bins] + juicerToolsPreParams + ["'${infile}' '${outfile}' '${chromsizes}'"]
     cmd.removeAll([null])
     cmd.join(" ")
 

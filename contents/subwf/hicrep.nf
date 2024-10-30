@@ -1,4 +1,4 @@
-include {createCompositeStrategy; filterSamplesByStrategy; columns; skip; formatArg} from './extraops.nf'
+include {createCompositeStrategy; filterSamplesByStrategy; groupSamplesByStrategy; columns; skip; formatArg} from './extraops.nf'
 
 process HicrepCombos{
     publishDir "results/hicrep", mode: params.general.publish.mode
@@ -21,8 +21,8 @@ process HicrepCombos{
            formatArg("--h %s", h, ','),
            formatArg("--d-bp-max %s", dBPMax, ','),
            formatArg("--b-downsample %s", bDownSample, ','),
-           "--output ${outputFile}",
-           formatArg("%s", mcools, ' ')].findAll{it}.join(" ")
+           "--output '${outputFile}'",
+           formatArg("%s", mcools, ' ')].findAll{it}.collect{"'${it}'"}.join(" ")
     cmd
 
     stub:
@@ -44,7 +44,9 @@ workflow Hicrep {
 
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
             
-            filterSamplesByStrategy(samples, strategy)
+            filtered = filterSamplesByStrategy(samples, strategy)
+            grouped = groupSamplesByStrategy(filtered, strategy)
+            grouped
                 | filter{it.size() >= 2}
                 | map{columns(it, ["dropNull":true])}
                 | map{

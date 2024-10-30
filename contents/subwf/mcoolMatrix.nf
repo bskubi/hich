@@ -20,18 +20,18 @@ process CoolerZoomify {
     bins = matrix.resolutions.join(",")
 
     cmd = ["cooler cload pairs"] + coolerCloadParams +
-           ["--assembly ${assembly}",
+           ["--assembly '${assembly}'",
            "--chrom1 ${pairsFormat.chrom1}",
            "--pos1 ${pairsFormat.pos1}",
            "--chrom2 ${pairsFormat.chrom2}",
            "--pos2 ${pairsFormat.pos2}",
-           "${chromsizes}:${min_bin}",
-           "${infile} ${id}.cool",
+           "'${chromsizes}:${min_bin}'",
+           "'${infile}' '${id}.cool'",
            "&& cooler zoomify"] + coolerZoomifyParams +
            ["--resolutions '${bins}'",
-           "--out ${id}.mcool",
+           "--out '${id}.mcool'",
            "--nproc ${task.cpus}",
-           "${id}.cool"]
+           "'${id}.cool'"]
     cmd.removeAll([null])
     cmd = cmd.join(" ")
     cmd

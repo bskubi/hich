@@ -95,7 +95,7 @@ process HichStats {
     stats = "${id}.from.stats.tsv"
     conjunctsArg = conjuncts ? "--conjuncts '${conjuncts.join(',')}'" : ""
     cisStrataArg = cisStrata ? "--cis-strata '${cisStrata.join(',')}'" : ""
-    "hich stats ${conjunctsArg} ${cisStrataArg} --output ${stats} ${pairs}"
+    "hich stats ${conjunctsArg} ${cisStrataArg} --output '${stats}' '${pairs}'"
 
     stub:
     stats = "${id}.stats.tsv"
@@ -118,11 +118,13 @@ process HichStatsAggregate {
 
     shell:
     if (stats == null || !(stats.metaClass.respondsTo(stats, "indexOf"))) {stats = [stats]}
-    if (outliers == null || !(outliers.metaClass.respondsTo(outliers, "findIndexValues"))) {outliers = [outliers]}
+    stats = stats.collect { "'${it}'" }
 
-    targetStats = stats.collect{"aggregate_${it}"}
+    if (outliers == null || !(outliers.metaClass.respondsTo(outliers, "findIndexValues"))) {outliers = [outliers]}
+    outliers = outliers.collect { "'${it}'" }
+
     outlier_stats = stats.findAll { stats.indexOf(it) in outliers.findIndexValues { it } }
-    outlier_params = outlier_stats.collect{"--outlier ${it}"}.join(",")
+    outlier_params = outlier_stats.collect{"--outlier ${it}"}
     "hich stats-aggregate --to-group-mean --to-group-min --prefix aggregate_ ${outlier_params} ${stats.join(' ')}"
     
     stub:
@@ -150,11 +152,16 @@ process HichDownsample {
     cisStrataArg = cisStrata ? "--cis-strata '${cisStrata.join(' ')}'" : ""
     toSizeArg = toSize ? "--to-size ${toSize}" : ""
 
-    "hich downsample ${conjunctsArg} ${cisStrataArg} --orig-stats ${statsFrom} --target-stats ${statsTo} ${toSizeArg} ${fullPairs} ${downsampledPairs}"
+    fullPairs = fullPairs.collect { "'${it}'" }
+    statsFrom = statsFrom.collect { "'${it}'" }
+    statsTo = statsTo.collect { "'${it}'" }
+
+
+    "hich downsample ${conjunctsArg} ${cisStrataArg} --orig-stats ${statsFrom} --target-stats ${statsTo} ${toSizeArg} ${fullPairs} '${downsampledPairs}'"
 
     stub:
     downsampledPairs = "${id}.downsampled.pairs.tsv"
-    "touch ${downsampledPairs}"
+    "touch '${downsampledPairs}'"
 }
 
 /*
@@ -176,19 +183,17 @@ process PairtoolsDedup {
     tuple val(id), path(deduplicated)
 
     shell:
-    deduplicated = "${id}.dedup.pairs.gz"
-    
     if (!pairtoolsDedupParams) pairtoolsDedupParams = []
     if (singleCell) pairtoolsDedupParams += ["--extra-col-pair cellID cellID --backend cython --chunksize 1000000"]
     if (maxMismatch != null) pairtoolsDedupParams += ["--max-mismatch ${maxMismatch}"]
     if (method != null) pairtoolsDedupParams += ["--method ${method}"]
 
-    cmd = "pairtools dedup --output ${deduplicated} ${pairtoolsDedupParams.join(' ')}  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${pairs}"
+    cmd = "pairtools dedup --output '${deduplicated}' ${pairtoolsDedupParams.join(' ')}  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
     cmd
 
     stub:
     deduplicated = "${id}.dedup.pairs.gz"
-    "touch ${deduplicated}"
+    "touch '${deduplicated}'"
 }
 
 /*
@@ -199,23 +204,24 @@ process PairtoolsMerge {
     label 'pairs'
     
     input:
-    tuple val(id), path(to_merge)
+    tuple val(id), path(toMerge)
 
     output:
     tuple val(id), path(merged)
 
     shell:
     merged = "${id}.merged.pairs.gz"
-    "pairtools merge --output ${merged}  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${to_merge.join(' ')}"
+    toMerge = toMerge.collect { "'${it}'" }
+    "pairtools merge --output '${merged}'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${to_merge.join(' ')}"
 
     stub:
     merged = "${id}.merged.pairs.gz"
-    "touch ${merged}"
+    "touch '${merged}'"
 }
 
 
 /*
-    This process clones raw samples at the current agg level and assigns them
+    This workflow clones raw samples at the current agg level and assigns them
     to an agg profile, applying the params for that profile to the sample.
 
     The nextflow.config file may have a params.aggregate {} section defining

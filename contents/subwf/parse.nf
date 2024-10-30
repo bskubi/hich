@@ -25,10 +25,10 @@ process PairtoolsParse2 {
 
     // Set up the individual commands in lists to make them easier to combine with pipes into a complete command
     // sambamba is both slower than samtools as of 2017, and also can't pipe to stdout, so we use samtools
-    samSortCmd = ["samtools sort -n ${sambam}"]
-    parse2Cmd = ["pairtools parse2 --assembly ${assembly} --chroms-path ${chromsizes} ${parseParams}"]
+    samSortCmd = ["samtools sort -n '${sambam}'"]
+    parse2Cmd = ["pairtools parse2 --assembly '${assembly}' --chroms-path '${chromsizes}' ${parseParams}"]
     reshapeCmd = reshapeParams ? ["hich reshape ${reshapeParams}"] : []
-    pairsSortCmd = ["pairtools sort --output ${id}.pairs.gz --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
+    pairsSortCmd = ["pairtools sort --output '${id}.pairs.gz' --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
 
     // Combine the individual commands, then join with a pipe to form the full command
     cmdParts = samSortCmd + parse2Cmd + reshapeCmd + pairsSortCmd
@@ -39,7 +39,7 @@ process PairtoolsParse2 {
     cmd
 
     stub:
-    "touch ${id}.pairs.gz"
+    "touch '${id}.pairs.gz'"
 }
 
 workflow Parse {

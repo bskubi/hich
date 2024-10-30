@@ -10,10 +10,10 @@ process ZcatHeadFastq {
     shell:
     lines = (n_reads as Integer) * 4
 
-    "zcat ${fastq1} | head -n ${lines} | gzip -c > ${id}_R1.fastq.gz && zcat ${fastq2} | head -n ${lines} | gzip -c > ${id}_R2.fastq.gz"
+    "zcat '${fastq1}' | head -n ${lines} | gzip -c > '${id}_R1.fastq.gz' && zcat '${fastq2}' | head -n ${lines} | gzip -c > '${id}_R2.fastq.gz'"
 
     stub:
-    "touch ${id}_R1.fastq.gz ${id}_R2.fastq.gz"
+    "touch '${id}_R1.fastq.gz' '${id}_R2.fastq.gz'"
 }
 
 workflow FastqHead {

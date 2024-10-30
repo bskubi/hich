@@ -18,12 +18,12 @@ process HichCompartments {
     shell:
     cmd = ["hich compartments --n_eigs 3"] +
           hichCompartmentsParams +
-          ["${genomeReference} ${matrix} ${resolution}"]
+          ["'${genomeReference}' '${matrix}' ${resolution}"]
     cmd = cmd.join(" ")
     cmd
 
     stub:
-    "touch ${id}_0.bw ${id}_1.bw ${id}_2.bw"
+    "touch '${id}_0.bw' '${id}_1.bw' '${id}_2.bw'"
 }
 
 workflow CompartmentScores {

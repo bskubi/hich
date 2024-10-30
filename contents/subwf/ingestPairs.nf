@@ -22,14 +22,14 @@ process PairtoolsFlipSort {
     reshapeParams = reshapeParams.join(" ")
 
     reshapeCmd = reshapeParams ? ["hich reshape ${reshapeParams}"] : []
-    flipCmd = ["pairtools flip --chroms-path ${chromsizes}  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
-    sortCmd = ["pairtools sort --output ${id}.pairs.gz  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
+    flipCmd = ["pairtools flip --chroms-path '${chromsizes}'  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
+    sortCmd = ["pairtools sort --output '${id}.pairs.gz'  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
 
     if (reshapeParams) {
-        reshapeCmd = reshapeCmd + ["--read_from ${pairs}"]
+        reshapeCmd = reshapeCmd + ["--read_from '${pairs}'"]
         reshapeCmd = [reshapeCmd.join(" ")]
     } else {
-        flipCmd = flipCmd + ["${pairs}"]
+        flipCmd = flipCmd + ["'${pairs}'"]
         flipCmd = [flipCmd.join(" ")]
     }
 

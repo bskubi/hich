@@ -60,7 +60,7 @@ process PairtoolsSelect {
     write_chroms = condition.chroms ? "echo '${condition.chroms.join('\n')}' > __chroms__.bed &&" : ""
     chroms_file = condition.chroms ? "--chrom-subset __chroms__.bed" : ""
 
-    cmd = """${write_chroms} pairtools select --output ${id}_select.pairs.gz ${chroms_file} ${pairtoolsSelectParams} "${filters}"  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${pairs}"""
+    cmd = """${write_chroms} pairtools select --output '${id}_select.pairs.gz' '${chroms_file}' ${pairtoolsSelectParams} "${filters}"  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"""
     
     cmd
 

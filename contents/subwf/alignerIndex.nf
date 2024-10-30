@@ -19,11 +19,11 @@ process BwaMem2Index {
 
     shell:
     alignerIndexDir = "bwa-mem2/index"
-    "bwa-mem2 index -p ${prefix} ${genomeReference} && mkdir -p ${alignerIndexDir} && mv ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac ${alignerIndexDir}"
+    "bwa-mem2 index -p '${prefix}' '${genomeReference}' && mkdir -p '${alignerIndexDir}' && mv '${prefix}.0123' '${prefix}.amb' '${prefix}.ann' '${prefix}.bwt.2bit.64' '${prefix}.pac' '${alignerIndexDir}'"
 
     stub:
     alignerIndexDir = "bwa-mem2/index"
-    "mkdir -p ${alignerIndexDir} && cd ${alignerIndexDir} && touch ${prefix}.0123 ${prefix}.amb ${prefix}.ann ${prefix}.bwt.2bit.64 ${prefix}.pac"
+    "mkdir -p '${alignerIndexDir}' && cd '${alignerIndexDir}' && touch '${prefix}.0123' '${prefix}.amb' '${prefix}.ann' '${prefix}.bwt.2bit.64' '${prefix}.pac'"
 }
 
 process BwaMemIndex {
@@ -47,11 +47,11 @@ process BwaMemIndex {
 
     shell:
     alignerIndexDir = "bwa/index"
-    "bwa index -p ${prefix} ${genomeReference} && mkdir -p ${alignerIndexDir} && mv ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa ${alignerIndexDir}"
+    "bwa index -p '${prefix}' ${genomeReference} && mkdir -p '${alignerIndexDir}' && mv '${prefix}.amb' '${prefix}.ann' '${prefix}.pac' '${prefix}.bwt' '${prefix}.sa' '${alignerIndexDir}'"
 
     stub:
     alignerIndexDir = "bwa/index"
-    "mkdir -p ${alignerIndexDir} && cd ${alignerIndexDir} && touch ${prefix}.amb ${prefix}.ann ${prefix}.pac ${prefix}.bwt ${prefix}.sa"
+    "mkdir -p '${alignerIndexDir}' && cd '${alignerIndexDir}' && touch '${prefix}.amb' '${prefix}.ann' '${prefix}.pac' '${prefix}.bwt' '${prefix}.sa'"
 }
 
 process BSBoltIndex {
@@ -83,12 +83,12 @@ process BSBoltIndex {
     shell:
     alignerIndexDir = "bsbolt/index/${alignerIndexPrefix}"
     prefix = "BSB_ref"
-    "python -m bsbolt Index -IA -G ${genomeReference} -DB ${alignerIndexDir}"
+    "python -m bsbolt Index -IA -G '${genomeReference}' -DB '${alignerIndexDir}'"
 
     stub:
     alignerIndexDir = "bsbolt/index/${alignerIndexPrefix}"
     prefix = "BSB_ref"
-    "mkdir -p ${alignerIndexDir} && cd ${alignerIndexDir} && touch ${prefix}.fa ${prefix}.fa.amb ${prefix}.fa.ann ${prefix}.fa.opac ${prefix}.fa.pac ${prefix}.fa.bwt ${prefix}.fa.sa"
+    "mkdir -p '${alignerIndexDir}' && cd '${alignerIndexDir}' && touch '${prefix}.fa' '${prefix}.fa.amb' '${prefix}.fa.ann' '${prefix}.fa.opac' '${prefix}.fa.pac' '${prefix}.fa.bwt' '${prefix}.fa.sa'"
 }
 
 
@@ -130,10 +130,11 @@ workflow AlignerIndex {
         | map{genomeReference, alignerIndexDir, alignerIndexPrefix,
               prefix_fa, prefix_ann, prefix_amb, prefix_opac, prefix_pac, prefix_bwt, prefix_sa ->
                 [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
-        | set{resultBwaMemIndex}
+        | set{resultBSBoltIndex}
 
     pack(samples, resultBwaMem2Index, "genomeReference") | set{samples}
     pack(samples, resultBwaMemIndex, "genomeReference") | set{samples}
+    pack(samples, resultBSBoltIndex, "genomeReference") | set{samples}
 
     samples = emptyOnLastStep("alignerIndex", samples)
 
