@@ -22,7 +22,7 @@ process HicrepCombos{
            formatArg("--d-bp-max %s", dBPMax, ','),
            formatArg("--b-downsample %s", bDownSample, ','),
            "--output '${outputFile}'",
-           formatArg("%s", mcools, ' ')].findAll{it}.collect{"'${it}'"}.join(" ")
+           formatArg("%s", mcools, ' ')].findAll{it}.join(" ")
     cmd
 
     stub:

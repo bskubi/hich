@@ -118,13 +118,14 @@ process HichStatsAggregate {
 
     shell:
     if (stats == null || !(stats.metaClass.respondsTo(stats, "indexOf"))) {stats = [stats]}
-    stats = stats.collect { "'${it}'" }
+    stats = stats.collect { "${it}" }
 
     if (outliers == null || !(outliers.metaClass.respondsTo(outliers, "findIndexValues"))) {outliers = [outliers]}
     outliers = outliers.collect { "'${it}'" }
 
+    targetStats = stats.collect{"aggregate_${it}"}
     outlier_stats = stats.findAll { stats.indexOf(it) in outliers.findIndexValues { it } }
-    outlier_params = outlier_stats.collect{"--outlier ${it}"}
+    outlier_params = outlier_stats.collect{"--outlier ${it}"} ?: ""
     "hich stats-aggregate --to-group-mean --to-group-min --prefix aggregate_ ${outlier_params} ${stats.join(' ')}"
     
     stub:
@@ -152,12 +153,7 @@ process HichDownsample {
     cisStrataArg = cisStrata ? "--cis-strata '${cisStrata.join(' ')}'" : ""
     toSizeArg = toSize ? "--to-size ${toSize}" : ""
 
-    fullPairs = fullPairs.collect { "'${it}'" }
-    statsFrom = statsFrom.collect { "'${it}'" }
-    statsTo = statsTo.collect { "'${it}'" }
-
-
-    "hich downsample ${conjunctsArg} ${cisStrataArg} --orig-stats ${statsFrom} --target-stats ${statsTo} ${toSizeArg} ${fullPairs} '${downsampledPairs}'"
+    "hich downsample ${conjunctsArg} ${cisStrataArg} --orig-stats ${statsFrom} --target-stats ${statsTo} ${toSizeArg} ${fullPairs} ${downsampledPairs}"
 
     stub:
     downsampledPairs = "${id}.downsampled.pairs.tsv"
@@ -187,6 +183,7 @@ process PairtoolsDedup {
     if (singleCell) pairtoolsDedupParams += ["--extra-col-pair cellID cellID --backend cython --chunksize 1000000"]
     if (maxMismatch != null) pairtoolsDedupParams += ["--max-mismatch ${maxMismatch}"]
     if (method != null) pairtoolsDedupParams += ["--method ${method}"]
+    deduplicated = "${id}.dedup.pairs.gz"
 
     cmd = "pairtools dedup --output '${deduplicated}' ${pairtoolsDedupParams.join(' ')}  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
     cmd

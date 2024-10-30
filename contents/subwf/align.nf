@@ -35,7 +35,7 @@ process BwaAlign {
     cmd
 
     stub:
-    "touch ${id}.bam"
+    "touch '${id}.bam'"
 }
 
 workflow Align {
