@@ -65,7 +65,7 @@ process PairtoolsSelect {
     cmd
 
     stub:
-    "touch ${id}_select.pairs.gz"
+    "touch '${id}_select.pairs.gz'"
 }
 
 workflow Select {
