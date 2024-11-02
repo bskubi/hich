@@ -12,8 +12,6 @@ process JuicerToolsPre {
                mode: params.general.publish.mode
     container params.general.juicerContainer
     label 'createMatrix'
-    cpus 5
-    memory {2.GB * task.attempt}
 
     input:
     tuple val(id), path(infile), path(chromsizes), val(pairsFormat), val(matrix), val(juicerToolsPreParams)
@@ -26,8 +24,8 @@ process JuicerToolsPre {
     min_bin = matrix.resolutions.min()
     bins = matrix.resolutions ? "-r ${matrix.resolutions.join(',')}" : ""
 
-    cmd = ["java -Xmx2g -jar /app/juicer_tools_1.22.01.jar pre",
-            bins] + juicerToolsPreParams + ["'${infile}' '${outfile}' '${chromsizes}'"]
+    cmd = ["java -Xmx${task.memory.toGiga()}g -jar /app/juicer_tools_1.22.01.jar pre",
+            bins, "--threads ${task.cpus}"] + juicerToolsPreParams + ["'${infile}' '${outfile}' '${chromsizes}'"]
     cmd.removeAll([null])
     cmd.join(" ")
 

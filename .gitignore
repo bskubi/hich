@@ -18,3 +18,4 @@ vignettes/sciMET_GCC/*
 vignettes/sciMET_GCC/240802_T1_1_1_select.pairs.gz
 vignettes/hictk/*
 scripts/hich/hich/__pypycache/*
+nextflow2.config
