@@ -16,7 +16,7 @@ process HichFragtag {
     tuple val(id), path("${id}_fragtag.pairs.gz")
 
     shell:
-    "hich fragtag '${fragmentIndex}' ${id}_fragtag.pairs.gz '${pairs}'"
+    "hich fragtag '${fragmentIndex}' '${id}_fragtag.pairs.gz' '${pairs}'"
 
     stub:
     "touch '${id}_fragtag.pairs.gz'"
