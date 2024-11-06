@@ -63,7 +63,7 @@ workflow Parse {
     main:
     samples
         | filter{!skip("parse") && it.datatype in ["fastq", "sambam"]}
-        | map{tuple(it.id, it.sambam, it.chromsizes, it.assembly, it.pairtoolsParse2Params, it.reshapeParams, it.submap("minMapq"))}
+        | map{tuple(it.id, it.sambam, it.chromsizes, it.assembly, it.pairtoolsParse2Params, it.reshapeParams, it.subMap("minMapq"))}
         | PairtoolsParse2
         | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
         | set{result}

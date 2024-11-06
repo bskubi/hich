@@ -3,7 +3,7 @@ set -euo pipefail
 # Different assemblies, enzymes, aligners, aggregation profiles, sample selection strategies, feature calling parameterizations
 # Multiple versions for different -profile settings, containerization solutions
 
-logfile="test_localPC.log"
+logfile="test_localHPC.log"
 logged="| tee -a $logfile"
 
 
@@ -25,10 +25,10 @@ run() {
     eval "$command $logged" 
 }
 
-log "test_localPC" ""
+log "test_localHPC" ""
 
 # Define the initial part of the command in a variable
-base_command="/usr/bin/time nextflow run contents/main.nf -profile localHPC -c params/apptainer.config -w testwork -resume"
+base_command="/usr/bin/time nextflow run contents/main.nf -profile localHPC -c params/apptainer.config -w testwork -resume --apptainer.enabled true"
 
 # Tests: Making bwa aligner index and other input resources
 run "Run one HiC 3.0 (DdeI,DpnII) downsampled sample from Akgol 2021 with bwa." "$base_command --sampleFile vignettes/akgol2021/one_rep_bwa.tsv -params-file params/onerep_bulk.yml"

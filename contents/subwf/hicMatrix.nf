@@ -41,9 +41,7 @@ process JuicerToolsPre {
     outfile = "${id}.hic"
     memory = task.memory ? task.memory.toGiga() : "8"
 
-    cmd = ["java -Xmx${memory}g -jar /app/juicer_tools_1.22.01.jar pre --threads ${task.cpus}" ] 
-          + juicerToolsPreParams
-          + ["'${infile}' '${outfile}' '${chromsizes}'"]
+    cmd = ["java -Xmx${memory}g -jar /app/juicer_tools_1.22.01.jar pre --threads ${task.cpus}" ] + juicerToolsPreParams + ["'${infile}' '${outfile}' '${chromsizes}'"]
     cmd.removeAll([null])
     cmd.join(" ")
 
@@ -58,7 +56,7 @@ workflow HicMatrix {
     main:
     samples
         | filter{!skip("hicMatrix") && it.matrix.makeHicFileFormat && (it.pairs || it.latestPairs) && !it.hic}
-        | map{tuple(it.id, it.latest, it.chromsizes, it.pairsFormat, it.matrix, it.juicerToolsPreParams, it.submap("minMapq"))}
+        | map{tuple(it.id, it.latest, it.chromsizes, it.pairsFormat, it.matrix, it.juicerToolsPreParams, it.subMap("minMapq"))}
         | JuicerToolsPre
         | map{id, hic -> [id: id, hic: hic, latestMatrix: hic]}
         | set{result}

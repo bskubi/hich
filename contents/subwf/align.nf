@@ -102,7 +102,7 @@ workflow Align {
 
     samples
         | filter{!skip("align") && it.datatype == "fastq" && it.fastq1 && it.fastq2 && it.fastq1 != it.fastq2}
-        | map{tuple(it.id, it.alignerIndexDir, it.alignerIndexPrefix, it.fastq1, it.fastq2, it.aligner, it.submap("bwaFlags", "minMapq"))}
+        | map{tuple(it.id, it.alignerIndexDir, it.alignerIndexPrefix, it.fastq1, it.fastq2, it.aligner, it.subMap("bwaFlags", "minMapq"))}
         | BwaAlignMates
         | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
         | set{matesResult}
@@ -110,7 +110,7 @@ workflow Align {
 
     samples
         | filter{!skip("align") && it.datatype == "fastq" && it.fastq1 && (!it.fastq2 || it.fastq1 == it.fastq2)}
-        | map{tuple(it.id, it.alignerIndexDir, it.alignerIndexPrefix, it.fastq1, it.aligner, it.submap("bwaFlags", "minMapq"))}
+        | map{tuple(it.id, it.alignerIndexDir, it.alignerIndexPrefix, it.fastq1, it.aligner, it.subMap("bwaFlags", "minMapq"))}
         | BwaAlignSingle
         | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
         | set{singleResult}

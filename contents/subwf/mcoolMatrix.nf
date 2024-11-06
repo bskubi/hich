@@ -46,15 +46,15 @@ process CoolerZoomify {
     }
 
     assert bins, "In CoolerZoomify on id ${id}, matrix.resolutions is unspecified and no --resolutions is given."
-    assert bins.all{it instanceof Integer}, "In CoolerZoomify on id ${id}, resolutions ${resolutions}, matrix.resolutions ${matrix.resolutions}, bins was parsed as ${bins} which contains a non-integer"
+    assert bins.every{it instanceof Integer}, "In CoolerZoomify on id ${id}, resolutions ${resolutions}, matrix.resolutions ${matrix.resolutions}, bins was parsed as ${bins} which contains a non-integer"
     
     min_bin = bins.min()
 
-    cmd = ["cooler cload pairs"]
+    cmd = (["cooler cload pairs"]
            + coolerCloadParams
            + ["'${chromsizes}:${min_bin}'", "'${infile}' '${id}.cool'", "&& cooler zoomify"]
            + coolerZoomifyParams
-           + ["--out '${id}.mcool'", "'${id}.cool'"]
+           + ["--out '${id}.mcool'", "'${id}.cool'"])
     cmd.removeAll([null])
     cmd = cmd.join(" ")
     cmd
