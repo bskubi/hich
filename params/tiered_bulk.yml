@@ -17,7 +17,7 @@ defaults:
   # The datatype is inferred during sample ingestion.
   
   aligner: "bwa-mem2"
-  bwaFlags: "-SP5M"
+  bwaFlags: [ "-SP5M" ]
 
   # Default for extracting the cell barcode for each read and putting it in the column cellID.
   # This is done with `hich reshape`. Defaults are only applied for a given sample if
@@ -41,15 +41,8 @@ defaults:
       pattern: "^(.*?):.*"
       group: 1
 
-  pairsFormat:
-    chrom1: 2
-    pos1: 3
-    chrom2: 4
-    pos2: 5
-
   parseParams:
     - "--flip"
-    - "--min-mapq 30"
     - "--drop-readid"
     - "--drop-seq"
     - "--drop-sam"
@@ -72,7 +65,7 @@ defaults:
 
   juicerToolsPreParams: []
 
-  coolerCloadParams: []
+  coolerCloadParams: ["--chrom1 2", "--pos1 3", "--chrom2 4", "--pos2 5"]
 
   coolerZoomifyParams:
     - "--balance"

@@ -17,15 +17,24 @@ process BwaAlignMates {
     // tell nextflow to run one alignment process at a time with maxForks 1.
     
     input:
-    tuple val(id), path(indexDir), val(indexPrefix), path(fastq1), path(fastq2), val(aligner), val(bwaFlags)
+    tuple val(id), path(indexDir), val(indexPrefix), path(fastq1), path(fastq2), val(aligner), val(flags)
 
     output:
     tuple val(id), path("${id}.bam")
 
     shell:
+    flags.bwaFlags = flags.bwaFlags ?: []
+
+    // Use flags.minMapq if provided as default, or override with -T if present in bwaFlags.
+    if (flags.minMapq instanceof Integer && !flags.bwaFlags.any{it.contains("-T")}) {
+        flags.bwaFlags += ["'-T ${flags.minMapq}'"]
+    }
+    bwaFlags = flags.bwaFlags.collect{"'${it}'"}.join(" ")
+    
+
     cmd = ""
     if (aligner in ["bwa-mem2", "bwa", ]) {
-        align = "${aligner} mem -t ${task.cpus} '${indexDir}/${indexPrefix}' '${bwaFlags}' '${fastq1}' '${fastq2}'"
+        align = "${aligner} mem -t ${task.cpus} '${indexDir}/${indexPrefix}' ${bwaFlags} '${fastq1}' '${fastq2}'"
         tobam = "samtools view -b -o '${id}.bam'"
         cmd = "${align} | ${tobam}"
     } else if (aligner == "bsbolt") {
@@ -55,13 +64,22 @@ process BwaAlignSingle {
     // tell nextflow to run one alignment process at a time with maxForks 1.
     
     input:
-    tuple val(id), path(indexDir), val(indexPrefix), path(fastq1), val(aligner), val(bwaFlags)
+    tuple val(id), path(indexDir), val(indexPrefix), path(fastq1), val(aligner), val(flags)
 
     output:
     tuple val(id), path("${id}.bam")
 
     shell:
     cmd = ""
+ 
+    flags.bwaFlags = flags.bwaFlags ?: []
+
+    // Use flags.minMapq if provided as default, or override with -T if present in bwaFlags.
+    if (flags.minMapq && !flags.bwaFlags.any{it.contains("-T")}) {
+        flags.bwaFlags += ["'-T ${flags.minMapq}'"]
+    }
+    bwaFlags = flags.bwaFlags.collect{"'${it}'"}.join(" ")
+
     if (aligner in ["bwa-mem2", "bwa", ]) {
         align = "${aligner} mem -t ${task.cpus} '${bwaFlags}'' '${indexDir}/${indexPrefix}' '${fastq1}'"
         tobam = "samtools view -b -o '${id}.bam'"
@@ -84,7 +102,7 @@ workflow Align {
 
     samples
         | filter{!skip("align") && it.datatype == "fastq" && it.fastq1 && it.fastq2 && it.fastq1 != it.fastq2}
-        | map{tuple(it.id, it.alignerIndexDir, it.alignerIndexPrefix, it.fastq1, it.fastq2, it.aligner, it.bwaFlags)}
+        | map{tuple(it.id, it.alignerIndexDir, it.alignerIndexPrefix, it.fastq1, it.fastq2, it.aligner, it.submap("bwaFlags", "minMapq"))}
         | BwaAlignMates
         | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
         | set{matesResult}
@@ -92,7 +110,7 @@ workflow Align {
 
     samples
         | filter{!skip("align") && it.datatype == "fastq" && it.fastq1 && (!it.fastq2 || it.fastq1 == it.fastq2)}
-        | map{tuple(it.id, it.alignerIndexDir, it.alignerIndexPrefix, it.fastq1, it.aligner, it.bwaFlags)}
+        | map{tuple(it.id, it.alignerIndexDir, it.alignerIndexPrefix, it.fastq1, it.aligner, it.submap("bwaFlags", "minMapq"))}
         | BwaAlignSingle
         | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
         | set{singleResult}

@@ -11,12 +11,21 @@ process PairtoolsParse2 {
     label 'pairs'
 
     input:
-    tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseParams), val(reshapeParams)
+    tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseParams), val(reshapeParams), val(flags)
 
     output:
     tuple val(id), path("${id}.pairs.gz")
 
     shell:
+    parseParams = parseParams ?: []
+    reshapeParams = reshapeParams ?: []
+
+    // Use minMapq as default, but override with manually specified --min-mapq
+    if (flags.minMapq instanceof Integer && !parseParams.any{it.contains("--min-mapq")}) {
+        parseParams += ["--min-mapq ${flags.minMapq}"]
+    } 
+
+
     // The parseParams are typically a list of individual pairtools parse flags.
     // Join them separated by spaces to use in the parse2Cmd
     parseParams = parseParams.join(" ")
@@ -54,7 +63,7 @@ workflow Parse {
     main:
     samples
         | filter{!skip("parse") && it.datatype in ["fastq", "sambam"]}
-        | map{tuple(it.id, it.sambam, it.chromsizes, it.assembly, it.parseParams, it.reshapeParams)}
+        | map{tuple(it.id, it.sambam, it.chromsizes, it.assembly, it.pairtoolsParse2Params, it.reshapeParams, it.submap("minMapq"))}
         | PairtoolsParse2
         | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
         | set{result}

@@ -14,20 +14,36 @@ process JuicerToolsPre {
     label 'createMatrix'
 
     input:
-    tuple val(id), path(infile), path(chromsizes), val(pairsFormat), val(matrix), val(juicerToolsPreParams)
+    tuple val(id), path(infile), path(chromsizes), val(pairsFormat), val(matrix), val(juicerToolsPreParams), val(flags)
 
     output:
     tuple val(id), path("${id}.hic")
 
     shell:
-    outfile = "${id}.hic"
-    min_bin = matrix.resolutions.min()
-    bins = matrix.resolutions ? "-r ${matrix.resolutions.join(',')}" : ""
+    juicerToolsPreParams = juicerToolsPreParams ?: []
+    matrix = matrix ?: [:]
 
+    // The user can manually set -q in juicerToolsPreParams.
+    // Otherwise, use minMapq if specified.
+    // Otherwise, no mapq filter is applied.
+    if (flags.minMapq instanceof Integer && !juicerToolsPreParams.any{it.contains("-q")}) {
+        juicerToolsPreParams += ["-q ${flags.minMapq}"]
+    }
+
+    // The user can manually set -r in juicerToolsPreParams.
+    // Otherwise, use matrix.resolutions if specified.
+    // If neither resolutions nor -r is set, Juicer Tools Pre defaults to producing
+    // 2.5M, 1M, 500K, 250K, 100K, 50K, 25K, 10K, and 5K
+    if (matrix.resolutions instanceof List && matrix.resolutions && !juicerToolsPreParams.any{it.contains('-r')} ) {
+        juicerToolsPreParams += ["-r ${matrix.resolutions.join(',')}"]
+    }
+
+    outfile = "${id}.hic"
     memory = task.memory ? task.memory.toGiga() : "8"
 
-    cmd = ["java -Xmx${memory}g -jar /app/juicer_tools_1.22.01.jar pre",
-            bins, "--threads ${task.cpus}"] + juicerToolsPreParams + ["'${infile}' '${outfile}' '${chromsizes}'"]
+    cmd = ["java -Xmx${memory}g -jar /app/juicer_tools_1.22.01.jar pre --threads ${task.cpus}" ] 
+          + juicerToolsPreParams
+          + ["'${infile}' '${outfile}' '${chromsizes}'"]
     cmd.removeAll([null])
     cmd.join(" ")
 
@@ -42,7 +58,7 @@ workflow HicMatrix {
     main:
     samples
         | filter{!skip("hicMatrix") && it.matrix.makeHicFileFormat && (it.pairs || it.latestPairs) && !it.hic}
-        | map{tuple(it.id, it.latest, it.chromsizes, it.pairsFormat, it.matrix, it.juicerToolsPreParams)}
+        | map{tuple(it.id, it.latest, it.chromsizes, it.pairsFormat, it.matrix, it.juicerToolsPreParams, it.submap("minMapq"))}
         | JuicerToolsPre
         | map{id, hic -> [id: id, hic: hic, latestMatrix: hic]}
         | set{result}
