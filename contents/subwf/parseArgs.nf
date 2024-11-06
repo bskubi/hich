@@ -36,12 +36,27 @@ workflow ParseArgs {
         samples | concat(fromSampleFile) | set{samples}
     }
 
+    if (params.containsKey("fastqInterleaved")) {
+        channel.fromPath(params.fastqInterleaved, checkIfExists: true)
+            | map {
+                fastq ->
+                sample = [fastq1: fastq, fastq2: fastq, datatype: "fastq"]
+
+                if (params.containsKey("paramsFromPath")) {
+                    fileParams = parsePattern(fastq.toString(), params.paramsFromPath)
+                    sample += fileParams
+                }
+                sample
+            }
+            | set {fromFastqInterleavedChannel}
+        samples | concat(fromFastqInterleavedChannel) | set{samples}
+    }
+
     if (params.containsKey("fastqPairs")) {
         channel.fromFilePairs(params.fastqPairs)
             | map{
                 header, files ->
 
-                datatype = "fastq"
                 sample = [fastq1: files[0], fastq2: files[1], datatype: "fastq"]
 
                 if (params.containsKey("paramsFromPath")) {

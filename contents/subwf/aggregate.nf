@@ -209,7 +209,7 @@ process PairtoolsMerge {
     shell:
     merged = "${id}.merged.pairs.gz"
     toMerge = toMerge.collect { "'${it}'" }
-    "pairtools merge --output '${merged}'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${to_merge.join(' ')}"
+    "pairtools merge --output '${merged}'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${toMerge.join(' ')}"
 
     stub:
     merged = "${id}.merged.pairs.gz"

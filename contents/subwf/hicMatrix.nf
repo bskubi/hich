@@ -24,7 +24,9 @@ process JuicerToolsPre {
     min_bin = matrix.resolutions.min()
     bins = matrix.resolutions ? "-r ${matrix.resolutions.join(',')}" : ""
 
-    cmd = ["java -Xmx${task.memory.toGiga()}g -jar /app/juicer_tools_1.22.01.jar pre",
+    memory = task.memory ? task.memory.toGiga() : "8"
+
+    cmd = ["java -Xmx${memory}g -jar /app/juicer_tools_1.22.01.jar pre",
             bins, "--threads ${task.cpus}"] + juicerToolsPreParams + ["'${infile}' '${outfile}' '${chromsizes}'"]
     cmd.removeAll([null])
     cmd.join(" ")

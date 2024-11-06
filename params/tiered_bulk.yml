@@ -1,0 +1,86 @@
+aggregate:
+  fullCoverageDedup:
+    dedupSingleCell: false
+    dedupMaxMismatch: 3
+    dedupMethod: 'max'
+    techrepDedup: true
+    biorepDedup: true
+    mergeTechrepToBiorep: true
+    mergeBiorepToCondition: true
+
+defaults:
+  techrep: 1
+  biorep: 1
+  minMapq: 30
+
+  # Note: Do not include a default sample datatype.
+  # The datatype is inferred during sample ingestion.
+  
+  aligner: "bwa-mem2"
+  bwaFlags: "-SP5M"
+
+  # Default for extracting the cell barcode for each read and putting it in the column cellID.
+  # This is done with `hich reshape`. Defaults are only applied for a given sample if
+  # cellBarcodeField is specified and there is no cellBarcodeRegexPattern or cellBarcodeParsePattern.
+  # If cellBarcodeField is readID and --drop-readid is specified, then the readID column is dropped
+  # AFTER parsing and reshaping, the last action taken by hich reshape.
+  #
+  # Note that globalDefaultReshapeToCellID should not be used in id-specific ConfigMap bundles.
+  # Specify a value of reshapeParams instead for id-specific ConfigMap bundles.
+  #
+  # Note that parsing the cellBarcodeField to the cellID column happens first, before any other reshapeParams
+  # options are applied. For more control over the order of hich reshape flags, specify id-specific reshapeParams
+  # ConfigMap bundles in params, after the params.defaults ConfigMap bundle.
+  #
+  # Also, note that patterns (regex and parse) will be automatically wrapped in quotes
+  # when processed during UpdateSamples.
+
+  reshapeParams: []
+  globalDefaultReshapeToCellID:
+    - option: "--regex"
+      pattern: "^(.*?):.*"
+      group: 1
+
+  pairsFormat:
+    chrom1: 2
+    pos1: 3
+    chrom2: 4
+    pos2: 5
+
+  parseParams:
+    - "--flip"
+    - "--min-mapq 30"
+    - "--drop-readid"
+    - "--drop-seq"
+    - "--drop-sam"
+
+  reshapeParams: []
+
+  pairtoolsDedupParams: []
+
+  pairtoolsSelectParams: []
+
+  selectFilters:
+    keepPairTypes: ["UU", "RU", "UR"]
+    keepTrans: true
+    keepCis: true
+    minDistFR: 1000
+    minDistRF: 1000
+    minDistFF: 1000
+    minDistRR: 1000
+    discardSingleFrag: true
+
+  juicerToolsPreParams: []
+
+  coolerCloadParams: []
+
+  coolerZoomifyParams:
+    - "--balance"
+    - "--balance-args '--max-iters 2000 --trans-only'"
+
+  matrix:
+    makeMcoolFileFormat: true
+    makeHicFileFormat: true
+    resolutions: [10000, 20000, 50000, 100000]
+
+

@@ -5,11 +5,10 @@ process PairtoolsParse2 {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",
                saveAs: {params.general.publish.parse ? it : null},
                mode: params.general.publish.mode
-    conda "bioconda::pairtools bioconda::samtools"
+
     container params.general.hichContainer
     label 'doJobArray'
     label 'pairs'
-    cpus 3
 
     input:
     tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseParams), val(reshapeParams)
@@ -25,15 +24,21 @@ process PairtoolsParse2 {
 
     // Set up the individual commands in lists to make them easier to combine with pipes into a complete command
     // sambamba is both slower than samtools as of 2017, and also can't pipe to stdout, so we use samtools
-    samSortCmd = ["samtools sort -n '${sambam}'"]
+    
+    sortCmd = ["samtools sort -n '${sambam}'"]
+    viewCmd = ["samtools view -b '${sambam}'"]
+
     parse2Cmd = ["pairtools parse2 --assembly '${assembly}' --chroms-path '${chromsizes}' ${parseParams}"]
     reshapeCmd = reshapeParams ? ["hich reshape ${reshapeParams}"] : []
     pairsSortCmd = ["pairtools sort --output '${id}.pairs.gz' --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
 
     // Combine the individual commands, then join with a pipe to form the full command
-    cmdParts = samSortCmd + parse2Cmd + reshapeCmd + pairsSortCmd
-    cmd = cmdParts.join(" | ")
+    parseCmd = parse2Cmd + reshapeCmd + pairsSortCmd
+    sortParse = (sortCmd + parseCmd).join(" | ")
+    viewParse = (viewCmd + parseCmd).join(" | ")
+
     
+    cmd = "samtools view '${sambam}' | awk -F'\\t' '{ print \$1 }' | partitioned && ${viewParse} || ${sortParse}"
 
     // Execute the full command
     cmd

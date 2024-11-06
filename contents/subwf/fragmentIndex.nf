@@ -14,7 +14,7 @@ process FragmentIndexProc {
     tuple val(genomeReferenceString), val(restrictionEnzymes), path(fragmentIndex), val(assembly)
 
     script:
-    "hich digest --output '${fragmentIndex}' '${genomeReference}' ${restrictionEnzymes}"
+    "hich digest --output '${fragmentIndex}' '${genomeReference}' ${restrictionEnzymes.split(',').join(' ')}"
 
     stub:
     "touch ${fragmentIndex}"
