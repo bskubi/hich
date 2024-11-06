@@ -26,7 +26,7 @@ process BwaAlignMates {
     cmd = ""
     if (aligner in ["bwa-mem2", "bwa", ]) {
         align = "${aligner} mem -t ${task.cpus} '${indexDir}/${indexPrefix}' '${bwaFlags}' '${fastq1}' '${fastq2}'"
-        tobam = "samtools view -b -o ${id}.bam"
+        tobam = "samtools view -b -o '${id}.bam'"
         cmd = "${align} | ${tobam}"
     } else if (aligner == "bsbolt") {
         cmd = "python3 -m bsbolt Align -t ${task.cpus} -OT ${task.cpus} -O '${id}' -DB '${indexDir}' '${bwaFlags}' -F1 '${fastq1}' -F2 '${fastq2}'"
@@ -64,7 +64,7 @@ process BwaAlignSingle {
     cmd = ""
     if (aligner in ["bwa-mem2", "bwa", ]) {
         align = "${aligner} mem -t ${task.cpus} '${bwaFlags}'' '${indexDir}/${indexPrefix}' '${fastq1}'"
-        tobam = "samtools view -b -o ${id}.bam"
+        tobam = "samtools view -b -o '${id}.bam'"
         cmd = "${align} | ${tobam}"
     } else if (aligner == "bsbolt") {
         cmd = "python3 -m bsbolt Align -t ${task.cpus} -OT ${task.cpus} -O '${id}' -DB '${indexDir}' '${bwaFlags}' -F1 '${fastq1}'"
