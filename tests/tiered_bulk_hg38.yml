@@ -4,6 +4,9 @@ aggregate:
     dedupMaxMismatch: 3
     dedupMethod: 'max'
     techrepDedup: true
+    biorepDedup: true
+    mergeTechrepToBiorep: true
+    mergeBiorepToCondition: true
 
 defaults:
   techrep: 1
@@ -44,7 +47,7 @@ defaults:
       group: 1
 
   # Options that Hich formats from sample attributes and should not be specified in pairtoolsParse2Params:
-  # --nproc-in, --nproc-out, --assembly, --chroms-path
+  # --nproc-in, --nproc-out, --assembly, --chroms-path, --flip
   pairtoolsParse2Params:
     - "--drop-readid"
     - "--drop-seq"
@@ -67,6 +70,7 @@ defaults:
     minDistFF: 1000
     minDistRR: 1000
     discardSingleFrag: true
+    chroms: ["chr1", "chr2", "chr3"]
 
   # Default matrix-calling parameters. juicerToolsPreParams, coolerCloadParams and coolerZoomifyParams have
   # priority over params specified in the matrix section, although a matrix will not be created if
@@ -77,12 +81,12 @@ defaults:
   matrix:
     makeMcoolFileFormat: true
     makeHicFileFormat: true
-    resolutions: [10000, 20000, 50000, 100000, 200000, 500000, 1000000]
+    resolutions: [100000, 200000, 500000, 1000000]
 
   juicerToolsPreParams: []
 
   coolerCloadParams: ["--chrom1 2", "--pos1 3", "--chrom2 4", "--pos2 5"]
 
-  coolerZoomifyParams: ["--balance", "--balance-args '--max-iters 2000 --trans-only'"]
+  coolerZoomifyParams: ["--balance", "--balance-args '--max-iters 2000 --cis-only'"]
 
 
