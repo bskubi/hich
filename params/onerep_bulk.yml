@@ -46,7 +46,6 @@ defaults:
   # Options that Hich formats from sample attributes and should not be specified in pairtoolsParse2Params:
   # --nproc-in, --nproc-out, --assembly, --chroms-path
   pairtoolsParse2Params:
-    - "--flip"
     - "--drop-readid"
     - "--drop-seq"
     - "--drop-sam"
