@@ -86,6 +86,6 @@ defaults:
 
   coolerCloadParams: ["--chrom1 2", "--pos1 3", "--chrom2 4", "--pos2 5"]
 
-  coolerZoomifyParams: ["--balance", "--balance-args '--max-iters 2000 --trans-only'"]
+  coolerZoomifyParams: []
 
 
