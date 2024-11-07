@@ -37,7 +37,7 @@ process PairtoolsParse2 {
     sortCmd = ["samtools sort -n '${sambam}'"]
     viewCmd = ["samtools view -b '${sambam}'"]
 
-    parse2Cmd = ["pairtools parse2 --assembly '${assembly}' --chroms-path '${chromsizes}' ${parseParams}"]
+    parse2Cmd = ["pairtools parse2 --flip --assembly '${assembly}' --chroms-path '${chromsizes}' ${parseParams}"]
     reshapeCmd = reshapeParams ? ["hich reshape ${reshapeParams}"] : []
     pairsSortCmd = ["pairtools sort --output '${id}.pairs.gz' --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
 
