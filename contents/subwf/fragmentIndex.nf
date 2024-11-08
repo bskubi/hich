@@ -1,6 +1,6 @@
-include {emptyOnLastStep; pack; isExistingFile; skip} from "./extraops.nf"
+include {withLog; stubLog; emptyOnLastStep; pack; isExistingFile; skip} from "./extraops.nf"
 
-process FragmentIndexProc {
+process HichDigest {
     publishDir params.general.publish.fragmentIndex ? params.general.publish.fragmentIndex : "results",
                saveAs: {params.general.publish.fragmentIndex ? it : null},
                mode: params.general.publish.mode
@@ -14,10 +14,17 @@ process FragmentIndexProc {
     tuple val(genomeReferenceString), val(restrictionEnzymes), path(fragmentIndex), val(assembly)
 
     script:
-    "hich digest --output '${fragmentIndex}' '${genomeReference}' ${restrictionEnzymes.split(',').join(' ')}"
+    cmd = "hich digest --output '${fragmentIndex}' '${genomeReference}' ${restrictionEnzymes.split(',').join(' ')}"
+    logMap = [task: "HichDigest", input: [genomeReference: genomeReference, restrictionEnzymes: restrictionEnzymes, fragmentIndex: fragmentIndex, assembly: assembly], 
+    output: [fragmentIndex: fragmentIndex]]
+    withLog(cmd, logMap)
 
     stub:
-    "touch ${fragmentIndex}"
+    stub = "touch '${fragmentIndex}'"
+    cmd = "hich digest --output '${fragmentIndex}' '${genomeReference}' ${restrictionEnzymes.split(',').join(' ')}"
+    logMap = [task: "HichDigest", input: [genomeReference: genomeReference, restrictionEnzymes: restrictionEnzymes, fragmentIndex: fragmentIndex, assembly: assembly], 
+    output: [fragmentIndex: fragmentIndex]]
+    stubLog(stub, cmd, logMap)
 }
 
 workflow FragmentIndex {
@@ -32,7 +39,7 @@ workflow FragmentIndex {
             | map{it.fragmentIndex = it.fragmentIndex ?: "${it.assembly}_${it.restrictionEnzymes.replace(" ", "_")}.bed"; it}
             | map{tuple(it.genomeReference, it.genomeReference, it.restrictionEnzymes, it.fragmentIndex, it.assembly)}
             | unique
-            | FragmentIndexProc
+            | HichDigest
             | map{genomeReference, restrictionEnzymes, fragmentIndex, assembly -> 
                 [genomeReference: file(genomeReference), restrictionEnzymes: restrictionEnzymes, fragmentIndex: fragmentIndex, assembly: assembly]}
             | set{result}

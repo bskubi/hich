@@ -1,4 +1,4 @@
-include {createCompositeStrategy; filterSamplesByStrategy; skip} from './extraops.nf'
+include {withLog; stubLog; createCompositeStrategy; filterSamplesByStrategy; skip} from './extraops.nf'
 
 
 process HichCompartments {
@@ -20,10 +20,17 @@ process HichCompartments {
           hichCompartmentsParams +
           ["'${genomeReference}' '${matrix}' ${resolution}"]
     cmd = cmd.join(" ")
-    cmd
+    logMap = [task: "HichCompartments", input: [id: id, genomeReference: genomeReference, matrix: matrix, resolution: resolution, hichCompartmentsParams: hichCompartmentsParams], output: [eigs1score: "${id}_0.bw", eigs2score: "${id}_1.bw", eigs3score: "${id}_0.bw"]]
+    withLog(cmd, logMap)
 
     stub:
-    "touch '${id}_0.bw' '${id}_1.bw' '${id}_2.bw'"
+    stub = "touch '${id}_0.bw' '${id}_1.bw' '${id}_2.bw'"
+    cmd = ["hich compartments --n_eigs 3"] +
+          hichCompartmentsParams +
+          ["'${genomeReference}' '${matrix}' ${resolution}"]
+    cmd = cmd.join(" ")
+    logMap = [task: "HichCompartments", input: [id: id, genomeReference: genomeReference, matrix: matrix, resolution: resolution, hichCompartmentsParams: hichCompartmentsParams], output: [eigs1score: "${id}_0.bw", eigs2score: "${id}_1.bw", eigs3score: "${id}_0.bw"]]
+    stubLog(stub, cmd, logMap)
 }
 
 workflow CompartmentScores {

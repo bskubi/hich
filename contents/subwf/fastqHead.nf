@@ -1,4 +1,4 @@
-include {emptyOnLastStep; pack} from './extraops.nf'
+include {withLog; stubLog; emptyOnLastStep; pack} from './extraops.nf'
 
 process ZcatHeadFastq {
     input:
@@ -10,10 +10,17 @@ process ZcatHeadFastq {
     shell:
     lines = (n_reads as Integer) * 4
 
-    "zcat '${fastq1}' | head -n ${lines} | gzip -c > '${id}_R1.fastq.gz' && zcat '${fastq2}' | head -n ${lines} | gzip -c > '${id}_R2.fastq.gz'"
+    cmd = "zcat '${fastq1}' | head -n ${lines} | gzip -c > '${id}_R1.fastq.gz' && zcat '${fastq2}' | head -n ${lines} | gzip -c > '${id}_R2.fastq.gz'"
+    logMap = [task: "ZcatHeadFastq", input: [id: id, fastq1: fastq1, fastq2: fastq2], output: [fastq1: "${id}_R1.fastq.gz", fastq2: "${id}_R2.fastq.gz"]]
+    withLog(cmd, logMap)
 
     stub:
-    "touch '${id}_R1.fastq.gz' '${id}_R2.fastq.gz'"
+    stub = "touch '${id}_R1.fastq.gz' '${id}_R2.fastq.gz'"
+    lines = (n_reads as Integer) * 4
+
+    cmd = "zcat '${fastq1}' | head -n ${lines} | gzip -c > '${id}_R1.fastq.gz' && zcat '${fastq2}' | head -n ${lines} | gzip -c > '${id}_R2.fastq.gz'"
+    logMap = [task: "ZcatHeadFastq", input: [id: id, fastq1: fastq1, fastq2: fastq2], output: [fastq1: "${id}_R1.fastq.gz", fastq2: "${id}_R2.fastq.gz"]]
+    stubLog(stub, cmd, logMap)
 }
 
 workflow FastqHead {
@@ -21,10 +28,10 @@ workflow FastqHead {
     samples
 
     main:
-    // !TODO: Plaintext, other compression, other seq data formats
+    // !TODO: Single end, plaintext, other compression, other seq data formats
     
     samples
-        | filter{it.datatype == "fastq" && it.get("n_reads") && it.get("n_reads").toString() != "all"}
+        | filter{it.datatype == "fastq" && it.get("n_reads") && it.get("n_reads").toString() != "all" && it.get("fastq1") && it.get("fastq2")}
         | map{tuple(it.id, it.fastq1, it.fastq2, it.n_reads)}
         | ZcatHeadFastq
         | map{id, fastq1, fastq2 -> [id: id, fastq1: fastq1, fastq2: fastq2]}

@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {emptyOnLastStep; pack; skip} from './extraops.nf'
+include {withLog; stubLog; emptyOnLastStep; pack; skip} from './extraops.nf'
 
 process HicToMcool {
     publishDir params.general.publish.mcool ? params.general.publish.mcool : "results",
@@ -23,13 +23,20 @@ process HicToMcool {
     hicFileName = hicFile.getFileName().toString()
     prefix = hicFileName.substring(0, hicFileName.lastIndexOf("."))
     mcoolFile = "${prefix}.mcool"
-    "mkdir ./tmp && hictk convert --tmpfile ./tmp '${hicFile}' '${mcoolFile}'"
+    cmd = "mkdir ./tmp && hictk convert --tmpfile ./tmp '${hicFile}' '${mcoolFile}'"
+    logMap = [task: "HicToMcool", input: [id: id, hicFile: hicFile], 
+    output: [mcoolFile: mcoolFile]]
+    withLog(cmd, logMap)
 
     stub:
     hicFileName = hicFile.getFileName().toString()
     prefix = hicFileName.substring(0, hicFileName.lastIndexOf("."))
     mcoolFile = "${prefix}.mcool"
-    "touch '${hicFile}' '${mcoolFile}'"
+    stub = "touch '${hicFile}' '${mcoolFile}'"
+    cmd = "mkdir ./tmp && hictk convert --tmpfile ./tmp '${hicFile}' '${mcoolFile}'"
+    logMap = [task: "HicToMcool", input: [id: id, hicFile: hicFile], 
+    output: [mcoolFile: mcoolFile]]
+    stubLog(stub, cmd, logMap)
 
 }
 
@@ -55,13 +62,22 @@ process McoolToHic {
     hicFile = "${prefix}.hic"
     cpus = task.cpus && task.cpus >= 2 ? task.cpus : 2
     threads = cpus > 2 ? "-t ${cpus}" : ""
-    "mkdir ./tmp && hictk convert --tmpfile ./tmp ${threads} '${mcoolFile}' '${hicFile}'"
+    cmd = "mkdir ./tmp && hictk convert --tmpfile ./tmp ${threads} '${mcoolFile}' '${hicFile}'"
+    logMap = [task: "McoolToHic", input: [id: id, mcoolFile: mcoolFile], 
+    output: [hicFile: hicFile]]
+    withLog(cmd, logMap)
 
     stub:
     mcoolFileName = mcoolFile.getFileName().toString()
     prefix = mcoolFileName.substring(0, mcoolFileName.lastIndexOf("."))
     hicFile = "${prefix}.hic"
-    "touch '${hicFile}'"
+    stub = "touch '${hicFile}'"
+    cpus = task.cpus && task.cpus >= 2 ? task.cpus : 2
+    threads = cpus > 2 ? "-t ${cpus}" : ""
+    cmd = "mkdir ./tmp && hictk convert --tmpfile ./tmp ${threads} '${mcoolFile}' '${hicFile}'"
+    logMap = [task: "McoolToHic", input: [id: id, mcoolFile: mcoolFile], 
+    output: [hicFile: hicFile]]
+    stubLog(stub, cmd, logMap)
 
 }
 

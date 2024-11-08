@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {emptyOnLastStep; pack; skip} from './extraops.nf'
+include {withLog; stubLog; emptyOnLastStep; pack; skip} from './extraops.nf'
 
 process PairtoolsFlipSort {
     publishDir params.general.publish.flip_sort ? params.general.publish.flip_sort : "results",
@@ -33,16 +33,35 @@ process PairtoolsFlipSort {
         flipCmd = [flipCmd.join(" ")]
     }
 
-
-    // Combine the individual commands, then join with a pipe to form the full command
     cmdParts = reshapeCmd + flipCmd + sortCmd
     cmd = cmdParts.join(" | ")
 
-    // Execute the full command
-    cmd
+    logMap = [task: "PairtoolsFlipSort", input: [id: id, pairs: pairs, chromsizes: chromsizes, reshapeParams: reshapeParams], 
+    output: [pairs: "${id}.pairs.gz"]]
+    withLog(cmd, logMap)
 
     stub:
-    "touch ${id}.pairs.gz"
+    stub = "touch ${id}.pairs.gz"
+    reshapeParams = reshapeParams.join(" ")
+
+    reshapeCmd = reshapeParams ? ["hich reshape ${reshapeParams}"] : []
+    flipCmd = ["pairtools flip --chroms-path '${chromsizes}'  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
+    sortCmd = ["pairtools sort --output '${id}.pairs.gz'  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
+
+    if (reshapeParams) {
+        reshapeCmd = reshapeCmd + ["--read_from '${pairs}'"]
+        reshapeCmd = [reshapeCmd.join(" ")]
+    } else {
+        flipCmd = flipCmd + ["'${pairs}'"]
+        flipCmd = [flipCmd.join(" ")]
+    }
+
+    cmdParts = reshapeCmd + flipCmd + sortCmd
+    cmd = cmdParts.join(" | ")
+
+    logMap = [task: "PairtoolsFlipSort", input: [id: id, pairs: pairs, chromsizes: chromsizes, reshapeParams: reshapeParams], 
+    output: [pairs: "${id}.pairs.gz"]]
+    stubLog(stub, cmd, logMap)
 }
 
 workflow IngestPairs {

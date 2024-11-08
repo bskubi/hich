@@ -1,4 +1,4 @@
-include {createCompositeStrategy; pairSamplesByStrategy; skip} from './extraops.nf'
+include {withLog; stubLog; createCompositeStrategy; pairSamplesByStrategy; skip} from './extraops.nf'
 
 process MustacheDiffloops{
     publishDir "results/loops",
@@ -17,10 +17,18 @@ process MustacheDiffloops{
            "-f1 '${mx1}' -f2 '${mx2}'",
            "-o '${prefix}'"] + mustacheParams
     cmd = cmd.join(" ")
-    cmd
+    logMap = [task: "MustacheDiffloops", input: [id: id, mx1: mx1, mx2: mx2, mustacheParams: mustacheParams], output: [loop1: "${prefix}.loop1", loop2: "${prefix}.loop2", diffloop1: "${prefix}.diffloop1", diffloop2: "${prefix}.diffloop2"]]
+    withLog(cmd, logMap)
 
     stub:
-    "touch '${prefix}.loop1' '${prefix}.loop2' '${prefix}.diffloop1' '${prefix}.diffloop2'"
+    stub = "touch '${prefix}.loop1' '${prefix}.loop2' '${prefix}.diffloop1' '${prefix}.diffloop2'"
+    cmd = ["python /mustache/mustache/diff_mustache.py",
+           "-f1 '${mx1}' -f2 '${mx2}'",
+           "-o '${prefix}'"] + mustacheParams
+    cmd = cmd.join(" ")
+    logMap = [task: "MustacheDiffloops", input: [id: id, mx1: mx1, mx2: mx2, mustacheParams: mustacheParams], output: [loop1: "${prefix}.loop1", loop2: "${prefix}.loop2", diffloop1: "${prefix}.diffloop1", diffloop2: "${prefix}.diffloop2"]]
+    stubLog(stub, cmd, logMap)
+
 }
 
 workflow DifferentialLoops {

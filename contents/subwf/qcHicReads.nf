@@ -1,4 +1,4 @@
-include {skip} from './extraops.nf'
+include {withLog; stubLog; skip} from './extraops.nf'
 
 
 process PairtoolsStats {
@@ -17,10 +17,40 @@ process PairtoolsStats {
     tuple val(id), val(pairs_id), path("${id}.${pairs_id}.stats.txt")
 
     shell:
-    "pairtools stats --output '${id}.${pairs_id}.stats.txt'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
+    cmd = "pairtools stats --output '${id}.${pairs_id}.stats.txt'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
+
+    logMap = [
+        task: "PairtoolsStats",
+        input: [
+            id: id,
+            pairs_id: pairs_id,
+            pairs: pairs
+        ],
+        output: [
+            stats: "${id}.${pairs_id}.stats.txt"
+        ]
+    ]
+
+    withLog(cmd, logMap)
 
     stub:
-    "touch '${id}.${pairs_id}.stats.txt'"
+    stub = "touch '${id}.${pairs_id}.stats.txt'"
+
+    cmd = "pairtools stats --output '${id}.${pairs_id}.stats.txt'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
+
+    logMap = [
+        task: "PairtoolsStats",
+        input: [
+            id: id,
+            pairs_id: pairs_id,
+            pairs: pairs
+        ],
+        output: [
+            stats: "${id}.${pairs_id}.stats.txt"
+        ]
+    ]
+
+    stubLog(stub, cmd, logMap)
 }
 
 process MultiQC {
@@ -37,10 +67,23 @@ process MultiQC {
     path("${report_name}.multiqc_report.html")
 
     shell:
-    "multiqc --force --no-version-check --filename '${report_name}.multiqc_report.html' --module pairtools . && chmod -R a+w ."
+    cmd = "multiqc --force --no-version-check --filename '${report_name}.multiqc_report.html' --module pairtools . && chmod -R a+w ."
 
     stub:
-    "touch '${report_name}.multiqc_report.html'"
+    stub = "touch '${report_name}.multiqc_report.html'"
+
+    logMap = [
+        task: task,
+        input: [
+            report_name: report_name,
+            stats: stats
+        ],
+        output: [
+            report: "${report_name}.multiqc_report.html"
+        ]
+    ]
+
+    stubLog(stub, cmd, logMap)
 }
 
 workflow QCReads {

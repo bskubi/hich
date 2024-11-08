@@ -1,6 +1,6 @@
-include {emptyOnLastStep; pack; isExistingFile; skip} from './extraops.nf'
+include {withLog; stubLog; emptyOnLastStep; pack; isExistingFile; skip} from './extraops.nf'
 
-process Stage {
+process StageGenomeReference {
     /*  When a URL is passed to a Nextflow function, the resource will be
         automatically downloaded and staged by Nextflow. This is a dummy
         function used to download a unique reference and intentionally has
@@ -19,7 +19,9 @@ process Stage {
     tuple val(assembly), path(uri)
 
     shell:
-    ":"
+    cmd = ":"
+    logMap = [task: "StageGenomeReference", input: [assembly: assembly, uri: uri]]
+    withLog(cmd, logMap)
 }
 
 workflow GenomeReference {
@@ -86,7 +88,7 @@ workflow GenomeReference {
         }
         | map{tuple(it.assembly, it.genomeReference)}
         | unique
-        | Stage
+        | StageGenomeReference
         | map{assembly, genomeReference -> [assembly: assembly, genomeReference: genomeReference]}
         | set{result}
 

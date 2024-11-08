@@ -1,4 +1,4 @@
-include {emptyOnLastStep; pack; skip} from './extraops.nf'
+include {withLog; stubLog; emptyOnLastStep; pack; skip} from './extraops.nf'
 
 process JuicerToolsPre {
     /*
@@ -14,10 +14,10 @@ process JuicerToolsPre {
     label 'createMatrix'
 
     input:
-    tuple val(id), path(infile), path(chromsizes), val(pairsFormat), val(matrix), val(juicerToolsPreParams), val(flags)
+    tuple val(id), path(pairs), path(chromsizes), val(pairsFormat), val(matrix), val(juicerToolsPreParams), val(flags)
 
     output:
-    tuple val(id), path("${id}.hic")
+    tuple val(id), path(hic)
 
     shell:
     juicerToolsPreParams = juicerToolsPreParams ?: []
@@ -38,15 +38,45 @@ process JuicerToolsPre {
         juicerToolsPreParams += ["-r ${matrix.resolutions.join(',')}"]
     }
 
-    outfile = "${id}.hic"
+    hic = "${id}.hic"
     memory = task.memory ? task.memory.toGiga() : "8"
 
-    cmd = ["java -Xmx${memory}g -jar /app/juicer_tools_1.22.01.jar pre --threads ${task.cpus}" ] + juicerToolsPreParams + ["'${infile}' '${outfile}' '${chromsizes}'"]
+    cmd = ["java -Xmx${memory}g -jar /app/juicer_tools_1.22.01.jar pre --threads ${task.cpus}" ] + juicerToolsPreParams + ["'${pairs}' '${hic}' '${chromsizes}'"]
     cmd.removeAll([null])
-    cmd.join(" ")
+    cmd = cmd.join(" ")
+    logMap = [task: "JuicerToolsPre", input: [id: id, pairs: pairs, chromsizes: chromsizes, pairsFormat: pairsFormat, matrix: matrix, juicerToolsPreParams: juicerToolsPreParams, flags: flags], 
+    output: [hic: hic]]
+    withLog(cmd, logMap)
 
     stub:
-    "touch ${id}.hic"
+    stub = "touch '${id}.hic'"
+    juicerToolsPreParams = juicerToolsPreParams ?: []
+    matrix = matrix ?: [:]
+
+    // The user can manually set -q in juicerToolsPreParams.
+    // Otherwise, use minMapq if specified.
+    // Otherwise, no mapq filter is applied.
+    if (flags.minMapq instanceof Integer && !juicerToolsPreParams.any{it.contains("-q")}) {
+        juicerToolsPreParams += ["-q ${flags.minMapq}"]
+    }
+
+    // The user can manually set -r in juicerToolsPreParams.
+    // Otherwise, use matrix.resolutions if specified.
+    // If neither resolutions nor -r is set, Juicer Tools Pre defaults to producing
+    // 2.5M, 1M, 500K, 250K, 100K, 50K, 25K, 10K, and 5K
+    if (matrix.resolutions instanceof List && matrix.resolutions && !juicerToolsPreParams.any{it.contains('-r')} ) {
+        juicerToolsPreParams += ["-r ${matrix.resolutions.join(',')}"]
+    }
+
+    hic = "${id}.hic"
+    memory = task.memory ? task.memory.toGiga() : "8"
+
+    cmd = ["java -Xmx${memory}g -jar /app/juicer_tools_1.22.01.jar pre --threads ${task.cpus}" ] + juicerToolsPreParams + ["'${pairs}' '${hic}' '${chromsizes}'"]
+    cmd.removeAll([null])
+    cmd = cmd.join(" ")
+    logMap = [task: "JuicerToolsPre", input: [id: id, pairs: pairs, chromsizes: chromsizes, pairsFormat: pairsFormat, matrix: matrix, juicerToolsPreParams: juicerToolsPreParams, flags: flags], 
+    output: [hic: hic]]
+    stubLog(stub, cmd, logMap)
 }
 
 workflow HicMatrix {

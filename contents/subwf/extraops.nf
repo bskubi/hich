@@ -1,3 +1,22 @@
+import groovy.json.JsonOutput
+
+def withLog(cmdArg, mapArg) {
+    def map = mapArg + [command: cmdArg.toString()]
+    // Convert to a map to avoid cyclic entries
+    def stringMap = map.collectEntries{k, v -> [k, v.toString()]}
+    def json = JsonOutput.toJson(stringMap)
+    return "${cmdArg} && cat <<'EOF' > hich_output.json\n${json}\nEOF"
+}
+
+def stubLog(stubArg, stubCmdArg, stubMapArg) {
+    def stubMap = stubMapArg + [command: stubCmdArg.toString()]
+    // Convert to string to avoid cyclic dependencies
+    def stubStringMap = stubMap.collectEntries{k, v -> [k, v.toString()]}
+    
+    def stubJson = JsonOutput.toJson(stubStringMap)
+    return "${stubArg} && cat <<'EOF' > hich_output.json\n${json}\nEOF"
+}
+
 def isExistingFile(it) {
     // Type-agnostic way to check if file exists for any file class having an exists() method.
     return it && it.metaClass.respondsTo(it, 'exists') && it.exists()

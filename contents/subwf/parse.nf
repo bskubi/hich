@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {emptyOnLastStep; pack; skip} from './extraops.nf'
+include {withLog; stubLog; emptyOnLastStep; pack; skip} from './extraops.nf'
 
 process PairtoolsParse2 {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",
@@ -25,7 +25,6 @@ process PairtoolsParse2 {
         parseParams += ["--min-mapq ${flags.minMapq}"]
     } 
 
-
     // The parseParams are typically a list of individual pairtools parse flags.
     // Join them separated by spaces to use in the parse2Cmd
     parseParams = parseParams.join(" ")
@@ -49,11 +48,75 @@ process PairtoolsParse2 {
     
     cmd = "samtools view '${sambam}' | awk -F'\\t' '{ print \$1 }' | partitioned && ${viewParse} || ${sortParse}"
 
-    // Execute the full command
-    cmd
+    logMap = [
+        task: "PairtoolsParse2",
+        input: [
+            id: id,
+            sambam: sambam,
+            chromsizes: chromsizes,
+            assembly: assembly,
+            parseParams: parseParams,
+            reshapeParams: reshapeParams,
+            flags: flags
+        ],
+        output: [
+            pairs: "${id}.pairs.gz"
+        ]
+    ]
+
+    withLog(cmd, logMap)
+
+
 
     stub:
-    "touch '${id}.pairs.gz'"
+    stub = "touch '${id}.pairs.gz'"
+    parseParams = parseParams ?: []
+    reshapeParams = reshapeParams ?: []
+
+    // Use minMapq as default, but override with manually specified --min-mapq
+    if (flags.minMapq instanceof Integer && !parseParams.any{it.contains("--min-mapq")}) {
+        parseParams += ["--min-mapq ${flags.minMapq}"]
+    } 
+
+    // The parseParams are typically a list of individual pairtools parse flags.
+    // Join them separated by spaces to use in the parse2Cmd
+    parseParams = parseParams.join(" ")
+    reshapeParams = reshapeParams.join(" ")
+
+    // Set up the individual commands in lists to make them easier to combine with pipes into a complete command
+    // sambamba is both slower than samtools as of 2017, and also can't pipe to stdout, so we use samtools
+    
+    sortCmd = ["samtools sort -n '${sambam}'"]
+    viewCmd = ["samtools view -b '${sambam}'"]
+
+    parse2Cmd = ["pairtools parse2 --flip --assembly '${assembly}' --chroms-path '${chromsizes}' ${parseParams}"]
+    reshapeCmd = reshapeParams ? ["hich reshape ${reshapeParams}"] : []
+    pairsSortCmd = ["pairtools sort --output '${id}.pairs.gz' --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
+
+    // Combine the individual commands, then join with a pipe to form the full command
+    parseCmd = parse2Cmd + reshapeCmd + pairsSortCmd
+    sortParse = (sortCmd + parseCmd).join(" | ")
+    viewParse = (viewCmd + parseCmd).join(" | ")
+    
+    cmd = "samtools view '${sambam}' | awk -F'\\t' '{ print \$1 }' | partitioned && ${viewParse} || ${sortParse}"
+
+    logMap = [
+        task: "PairtoolsParse2",
+        input: [
+            id: id,
+            sambam: sambam,
+            chromsizes: chromsizes,
+            assembly: assembly,
+            parseParams: parseParams,
+            reshapeParams: reshapeParams,
+            flags: flags
+        ],
+        output: [
+            pairs: "${id}.pairs.gz"
+        ]
+    ]
+
+    stubLog(stub, cmd, logMap)
 }
 
 workflow Parse {

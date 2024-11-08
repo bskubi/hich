@@ -1,4 +1,4 @@
-include {emptyOnLastStep; parsePattern; datatypeFromExtension} from './extraops.nf'
+include {withLog; stubLog; emptyOnLastStep; parsePattern; datatypeFromExtension} from './extraops.nf'
 
 def sampleFromFastqPairs(files) {
     file1 = files[0]

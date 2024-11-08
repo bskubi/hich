@@ -1,11 +1,10 @@
-include {emptyOnLastStep; pack; skip; isExistingFile} from './extraops.nf'
+include {emptyOnLastStep; pack; skip; isExistingFile; withLog; stubLog} from './extraops.nf'
 
-process ChromsizesProc {
+process FaSize {
     publishDir params.general.publish.chromsizes ? params.general.publish.chromsizes : "results",
                saveAs: {params.general.publish.chromsizes ? it : null},
                mode: params.general.publish.mode
 
-    conda "bioconda::ucsc-fasize"
     container params.general.chromsizesContainer
     label 'smallResource'
     memory 8.GB
@@ -17,10 +16,16 @@ process ChromsizesProc {
     tuple val(genomeReferenceString), val(assembly), path(chromsizes)
 
     shell:
-    "faSize -detailed -tab '${genomeReference}' > '${chromsizes}'"
+    cmd = "faSize -detailed -tab '${genomeReference}' > '${chromsizes}'"
+    logMap = [task: "FaSize", "input": [genomeReference: genomeReference, assembly: assembly], "output": chromsizes].collectEntries { k, v -> [k, v.toString()] }
+    withLog(cmd, logMap)
 
     stub:
-    "touch '${chromsizes}'"
+    stub = "touch '${chromsizes}'"
+    cmd = "faSize -detailed -tab '${genomeReference}' > '${chromsizes}'"
+
+    logMap = [task: "FaSize", "input": [genomeReference: genomeReference, assembly: assembly], "output": chromsizes].collectEntries { k, v -> [k, v.toString()] }
+    stubLog(stub, cmd, logMap)
 }
 
 workflow Chromsizes {
@@ -33,7 +38,7 @@ workflow Chromsizes {
         | filter {!skip("chromsizes") && !isExistingFile(it.chromsizes)}
         | map{tuple(it.genomeReference, it.genomeReference, it.assembly, "${it.assembly}.sizes")}
         | unique
-        | ChromsizesProc
+        | FaSize
         | map{genomeReference, assembly, chromsizes -> [genomeReference: file(genomeReference), assembly: assembly, chromsizes: chromsizes]}
         | set{result}
     pack(samples, result, ["genomeReference", "assembly"]) | set{samples}

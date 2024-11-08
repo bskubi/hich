@@ -1,4 +1,4 @@
-include {pack; skip; coalesce; rows; columns; groupHashMap; isTechrep; isBiorep; isCondition; constructIdentifier; emptyOnLastStep; aggregateLevelLabel} from './extraops.nf'
+include {withLog; stubLog; pack; skip; coalesce; rows; columns; groupHashMap; isTechrep; isBiorep; isCondition; constructIdentifier; emptyOnLastStep; aggregateLevelLabel} from './extraops.nf'
 include {Setup} from './setup.nf'
 
 /*
@@ -95,11 +95,18 @@ process HichStats {
     stats = "${id}.from.stats.tsv"
     conjunctsArg = conjuncts ? "--conjuncts '${conjuncts.join(',')}'" : ""
     cisStrataArg = cisStrata ? "--cis-strata '${cisStrata.join(',')}'" : ""
-    "hich stats ${conjunctsArg} ${cisStrataArg} --output '${stats}' '${pairs}'"
+    cmd = "hich stats ${conjunctsArg} ${cisStrataArg} --output '${stats}' '${pairs}'"
+    logMap = [task: "HichStats", input: [id: id, conjuncts: conjunctsArg, cisStrata: cisStrataArg, pairs: pairs], output: stats]
+    withLog(cmd, logMap)
 
     stub:
-    stats = "${id}.stats.tsv"
-    "touch ${stats}"
+    stats = "${id}.from.stats.tsv"
+    stub = "touch ${stats}"
+    conjunctsArg = conjuncts ? "--conjuncts '${conjuncts.join(',')}'" : ""
+    cisStrataArg = cisStrata ? "--cis-strata '${cisStrata.join(',')}'" : ""
+    cmd = "hich stats ${conjunctsArg} ${cisStrataArg} --output '${stats}' '${pairs}'"
+    logMap = [task: "HichStats", input: [id: id, conjuncts: conjunctsArg, cisStrata: cisStrataArg, pairs: pairs], output: stats]
+    stubLog(stub, cmd, logMap)
 }
 
 /*
@@ -126,11 +133,25 @@ process HichStatsAggregate {
     targetStats = stats.collect{"aggregate_${it}"}
     outlier_stats = stats.findAll { stats.indexOf(it) in outliers.findIndexValues { it } }
     outlier_params = outlier_stats.collect{"--outlier ${it}"} ?: ""
-    "hich stats-aggregate --to-group-mean --to-group-min --prefix aggregate_ ${outlier_params} ${stats.join(' ')}"
-    
+    cmd = "hich stats-aggregate --to-group-mean --to-group-min --prefix aggregate_ ${outlier_params} ${stats.join(' ')}"
+    logMap = [task: "HichStatsAggregate", input: [id: ids, stats: stats, outliers: outliers], output: targetStats]
+    withLog(cmd, logMap)
+
     stub:
+    stub = "touch ${targetStats.join(' ')}"
+    if (stats == null || !(stats.metaClass.respondsTo(stats, "indexOf"))) {stats = [stats]}
+    stats = stats.collect { "${it}" }
+
+    if (outliers == null || !(outliers.metaClass.respondsTo(outliers, "findIndexValues"))) {outliers = [outliers]}
+    outliers = outliers.collect { "'${it}'" }
+
     targetStats = stats.collect{"aggregate_${it}"}
-    "touch ${targetStats.join(' ')}"
+    outlier_stats = stats.findAll { stats.indexOf(it) in outliers.findIndexValues { it } }
+    outlier_params = outlier_stats.collect{"--outlier ${it}"} ?: ""
+    cmd = "hich stats-aggregate --to-group-mean --to-group-min --prefix aggregate_ ${outlier_params} ${stats.join(' ')}"
+    logMap = [task: "HichStatsAggregate", input: [id: ids, stats: stats, outliers: outliers], output: targetStats]
+    stubLog(stub, cmd, logMap)
+
 }
 
 /*
@@ -152,14 +173,44 @@ process HichDownsample {
     conjunctsArg = conjuncts ? "--conjuncts '${conjuncts.join(' ')}'" : ""
     cisStrataArg = cisStrata ? "--cis-strata '${cisStrata.join(' ')}'" : ""
     toSizeArg = toSize ? "--to-size ${toSize}" : ""
-
-    "hich downsample ${conjunctsArg} ${cisStrataArg} --orig-stats ${statsFrom} --target-stats ${statsTo} ${toSizeArg} ${fullPairs} ${downsampledPairs}"
+    cmd = "hich downsample ${conjunctsArg} ${cisStrataArg} --orig-stats ${statsFrom} --target-stats ${statsTo} ${toSizeArg} ${fullPairs} ${downsampledPairs}"
+    logMap = [
+        task: "HichDownsample",
+        output: downsampledPairs,
+        input: [
+            id: id,
+            fullPairs: fullPairs,
+            statsFrom: statsFrom,
+            statsTo: statsTo,
+            conjuncts: conjuncts,
+            cisStrata: cisStrata,
+            toSize: toSize
+        ]
+    ]
+    withLog(cmd, logMap)
 
     stub:
     downsampledPairs = "${id}.downsampled.pairs.tsv"
-    "touch '${downsampledPairs}'"
+    stub = "touch '${downsampledPairs}'"
+    conjunctsArg = conjuncts ? "--conjuncts '${conjuncts.join(' ')}'" : ""
+    cisStrataArg = cisStrata ? "--cis-strata '${cisStrata.join(' ')}'" : ""
+    toSizeArg = toSize ? "--to-size ${toSize}" : ""
+    cmd = "hich downsample ${conjunctsArg} ${cisStrataArg} --orig-stats ${statsFrom} --target-stats ${statsTo} ${toSizeArg} ${fullPairs} ${downsampledPairs}"
+    logMap = [
+        task: "HichDownsample",
+        output: downsampledPairs,
+        input: [
+            id: id,
+            fullPairs: fullPairs,
+            statsFrom: statsFrom,
+            statsTo: statsTo,
+            conjuncts: conjuncts,
+            cisStrata: cisStrata,
+            toSize: toSize
+        ]
+    ]
+    stubLog(stub, cmd, logMap)
 }
-
 /*
     Deduplicate pairs files
 */
@@ -186,11 +237,21 @@ process PairtoolsDedup {
     deduplicated = "${id}.dedup.pairs.gz"
 
     cmd = "pairtools dedup --output '${deduplicated}' ${pairtoolsDedupParams.join(' ')}  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
-    cmd
+    logMap = [task: "PairtoolsDedup", output: deduplicated, input: [id: id, pairs: pairs, singleCell: singleCell, maxMismatch: maxMismatch, method: method, pairtoolsDedupParams: pairtoolsDedupParams]]
+    withLog(cmd, logMap)
 
     stub:
     deduplicated = "${id}.dedup.pairs.gz"
-    "touch '${deduplicated}'"
+    stub = "touch '${deduplicated}'"
+    if (!pairtoolsDedupParams) pairtoolsDedupParams = []
+    if (singleCell) pairtoolsDedupParams += ["--extra-col-pair cellID cellID --backend cython --chunksize 1000000"]
+    if (maxMismatch != null) pairtoolsDedupParams += ["--max-mismatch ${maxMismatch}"]
+    if (method != null) pairtoolsDedupParams += ["--method ${method}"]
+    deduplicated = "${id}.dedup.pairs.gz"
+
+    cmd = "pairtools dedup --output '${deduplicated}' ${pairtoolsDedupParams.join(' ')}  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
+    logMap = [task: "PairtoolsDedup", output: deduplicated, input: [id: id, pairs: pairs, singleCell: singleCell, maxMismatch: maxMismatch, method: method, pairtoolsDedupParams: pairtoolsDedupParams]]
+    stubLog(stub, cmd, logMap)
 }
 
 /*
@@ -209,11 +270,18 @@ process PairtoolsMerge {
     shell:
     merged = "${id}.merged.pairs.gz"
     toMerge = toMerge.collect { "'${it}'" }
-    "pairtools merge --output '${merged}'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${toMerge.join(' ')}"
+    cmd = "pairtools merge --output '${merged}'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${toMerge.join(' ')}"
+    logMap = [task: "PairtoolsMerge", input: [id: id, toMerge: toMerge], output: [merged: merged]]
+    withLog(cmd, logMap)
 
     stub:
     merged = "${id}.merged.pairs.gz"
-    "touch '${merged}'"
+    stub = "touch '${merged}'"
+    toMerge = toMerge.collect { "'${it}'" }
+    cmd = "pairtools merge --output '${merged}'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${toMerge.join(' ')}"
+    logMap = [task: "PairtoolsMerge", input: [id: id, toMerge: toMerge], output: [merged: merged]]
+    stubLog(stub, cmd, logMap)
+    
 }
 
 

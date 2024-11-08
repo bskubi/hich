@@ -1,4 +1,4 @@
-include {emptyOnLastStep; pack; skip} from './extraops.nf'
+include {emptyOnLastStep; pack; skip; withLog; stubLog} from './extraops.nf'
 
 process BwaAlignMates {
     publishDir params.general.publish.align ? params.general.publish.align : "results",
@@ -27,24 +27,51 @@ process BwaAlignMates {
 
     // Use flags.minMapq if provided as default, or override with -T if present in bwaFlags.
     if (flags.minMapq instanceof Integer && !flags.bwaFlags.any{it.contains("-T")}) {
-        flags.bwaFlags += ["'-T ${flags.minMapq}'"]
+        flags.bwaFlags += ["-T ${flags.minMapq}"]
     }
     bwaFlags = flags.bwaFlags.collect{"'${it}'"}.join(" ")
-    
+
+
 
     cmd = ""
+    logMap = [:]
     if (aligner in ["bwa-mem2", "bwa", ]) {
         align = "${aligner} mem -t ${task.cpus} '${indexDir}/${indexPrefix}' ${bwaFlags} '${fastq1}' '${fastq2}'"
         tobam = "samtools view -b -o '${id}.bam'"
+        logMap = [task: "BwaAlignMates", output: "${id}.bam", input: [id: id, fastq1: fastq1, fastq2: fastq2, aligner: aligner, index: "${indexDir}/${indexPrefix}", flags: flags]]
         cmd = "${align} | ${tobam}"
     } else if (aligner == "bsbolt") {
+        logMap = [task: "BwaAlignMates", output: "${id}.bam", input: [id: id, fastq1: fastq1, fastq2: fastq2, aligner: aligner, index: indexDir, flags: flags]]
         cmd = "python3 -m bsbolt Align -t ${task.cpus} -OT ${task.cpus} -O '${id}' -DB '${indexDir}' '${bwaFlags}' -F1 '${fastq1}' -F2 '${fastq2}'"
     }
-    
-    cmd
+
+    withLog(cmd, logMap)
 
     stub:
-    "touch '${id}.bam'"
+    stub = "touch '${id}.bam'"
+    flags.bwaFlags = flags.bwaFlags ?: []
+
+    // Use flags.minMapq if provided as default, or override with -T if present in bwaFlags.
+    if (flags.minMapq instanceof Integer && !flags.bwaFlags.any{it.contains("-T")}) {
+        flags.bwaFlags += ["-T ${flags.minMapq}"]
+    }
+    bwaFlags = flags.bwaFlags.collect{"'${it}'"}.join(" ")
+
+
+
+    cmd = ""
+    logMap = [:]
+    if (aligner in ["bwa-mem2", "bwa", ]) {
+        align = "${aligner} mem -t ${task.cpus} '${indexDir}/${indexPrefix}' ${bwaFlags} '${fastq1}' '${fastq2}'"
+        tobam = "samtools view -b -o '${id}.bam'"
+        logMap = [task: "BwaAlignMates", output: "${id}.bam", input: [id: id, fastq1: fastq1, fastq2: fastq2, aligner: aligner, index: "${indexDir}/${indexPrefix}", flags: flags]]
+        cmd = "${align} | ${tobam}"
+    } else if (aligner == "bsbolt") {
+        logMap = [task: "BwaAlignMates", output: "${id}.bam", input: [id: id, fastq1: fastq1, fastq2: fastq2, aligner: aligner, index: indexDir, flags: flags]]
+        cmd = "python3 -m bsbolt Align -t ${task.cpus} -OT ${task.cpus} -O '${id}' -DB '${indexDir}' '${bwaFlags}' -F1 '${fastq1}' -F2 '${fastq2}'"
+    }
+
+    withLog(stub, cmd, logMap)
 }
 
 process BwaAlignSingle {
@@ -80,18 +107,43 @@ process BwaAlignSingle {
     }
     bwaFlags = flags.bwaFlags.collect{"'${it}'"}.join(" ")
 
+    logMap = [:]
     if (aligner in ["bwa-mem2", "bwa", ]) {
         align = "${aligner} mem -t ${task.cpus} '${bwaFlags}'' '${indexDir}/${indexPrefix}' '${fastq1}'"
         tobam = "samtools view -b -o '${id}.bam'"
+        logMap = [task: "BwaAlignSingle", output: "${id}.bam", input: [id: id, fastq1: fastq1, aligner: aligner, index: "${indexDir}/${indexPrefix}", flags: flags]]
         cmd = "${align} | ${tobam}"
     } else if (aligner == "bsbolt") {
+        logMap = [task: "BwaAlignSingle", output: "${id}.bam", input: [id: id, fastq1: fastq1, aligner: aligner, index: indexDir, flags: flags]]
         cmd = "python3 -m bsbolt Align -t ${task.cpus} -OT ${task.cpus} -O '${id}' -DB '${indexDir}' '${bwaFlags}' -F1 '${fastq1}'"
     }
     
-    cmd
+    withLog(cmd, logMap)
 
     stub:
-    "touch '${id}.bam'"
+    stub = "touch '${id}.bam'"
+    cmd = ""
+ 
+    flags.bwaFlags = flags.bwaFlags ?: []
+
+    // Use flags.minMapq if provided as default, or override with -T if present in bwaFlags.
+    if (flags.minMapq && !flags.bwaFlags.any{it.contains("-T")}) {
+        flags.bwaFlags += ["'-T ${flags.minMapq}'"]
+    }
+    bwaFlags = flags.bwaFlags.collect{"'${it}'"}.join(" ")
+
+    logMap = [:]
+    if (aligner in ["bwa-mem2", "bwa", ]) {
+        align = "${aligner} mem -t ${task.cpus} '${bwaFlags}'' '${indexDir}/${indexPrefix}' '${fastq1}'"
+        tobam = "samtools view -b -o '${id}.bam'"
+        logMap = [task: task, output: "${id}.bam", input: [id: id, fastq1: fastq1, aligner: aligner, index: "${indexDir}/${indexPrefix}", flags: flags]]
+        cmd = "${align} | ${tobam}"
+    } else if (aligner == "bsbolt") {
+        logMap = [task: task, output: "${id}.bam", input: [id: id, fastq1: fastq1, aligner: aligner, index: indexDir, flags: flags]]
+        cmd = "python3 -m bsbolt Align -t ${task.cpus} -OT ${task.cpus} -O '${id}' -DB '${indexDir}' '${bwaFlags}' -F1 '${fastq1}'"
+    }
+    
+    stubLog(stub, cmd, logMap)
 }
 
 workflow Align {

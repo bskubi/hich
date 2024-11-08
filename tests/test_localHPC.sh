@@ -28,7 +28,7 @@ run() {
 log "test_localHPC" ""
 
 # Define the initial part of the command in a variable
-base_command="/usr/bin/time nextflow run contents/main.nf -profile localHPC -c tests/nextflow.config -w testwork -resume --apptainer.enabled true"
+base_command="/usr/bin/time nextflow run contents/main.nf -profile localHPC -c tests/nextflow.config -w testwork -resume"
 
 # Tests: Making bwa aligner index and other input resources
 run "Run one HiC 3.0 (DdeI,DpnII) downsampled sample from Akgol 2021 with bwa." "$base_command --sampleFile vignettes/akgol2021/one_rep_bwa.tsv -params-file tests/onerep_bulk_hg38.yml"

@@ -1,5 +1,5 @@
 include {QCReads} from './qcHicReads.nf'
-include {emptyOnLastStep; pack; isExistingFile; skip} from './extraops.nf'
+include {withLog; stubLog; emptyOnLastStep; pack; isExistingFile; skip} from './extraops.nf'
 
 process HichFragtag {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
@@ -16,10 +16,40 @@ process HichFragtag {
     tuple val(id), path("${id}_fragtag.pairs.gz")
 
     shell:
-    "hich fragtag '${fragmentIndex}' '${id}_fragtag.pairs.gz' '${pairs}'"
+    cmd = "hich fragtag '${fragmentIndex}' '${id}_fragtag.pairs.gz' '${pairs}'"
+
+    logMap = [
+        task: "HichFragtag",
+        input: [
+            id: id,
+            pairs: pairs,
+            fragmentIndex: fragmentIndex
+        ],
+        output: [
+            pairs: "${id}_fragtag.pairs.gz"
+        ]
+    ]
+
+    withLog(cmd, logMap)
 
     stub:
-    "touch '${id}_fragtag.pairs.gz'"
+    stub = "touch '${id}_fragtag.pairs.gz'"
+
+    cmd = "hich fragtag '${fragmentIndex}' '${id}_fragtag.pairs.gz' '${pairs}'"
+
+    logMap = [
+        task: "HichFragtag",
+        input: [
+            id: id,
+            pairs: pairs,
+            fragmentIndex: fragmentIndex
+        ],
+        output: [
+            pairs: "${id}_fragtag.pairs.gz"
+        ]
+    ]
+
+    stubLog(stub, cmd, logMap)
 }
 
 workflow TagRestrictionFragments {

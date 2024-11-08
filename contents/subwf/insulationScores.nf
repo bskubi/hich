@@ -1,4 +1,4 @@
-include {createCompositeStrategy; filterSamplesByStrategy; skip} from './extraops.nf'
+include {withLog; stubLog; createCompositeStrategy; filterSamplesByStrategy; skip} from './extraops.nf'
 
 process CooltoolsInsulation {
     publishDir "results/insulation",
@@ -19,10 +19,20 @@ process CooltoolsInsulation {
           cooltoolsInsulationParams +
           ["'${mcool}::/resolutions/${resolution}' ${window}"]
     cmd = cmd.join(" ")
-    cmd
+    logMap = [task: "CooltoolsInsulation", input: [id: id, mcool: mcool, resolution: resolution, cooltoolsInsulationParams: cooltoolsInsulationParams, window: window], 
+    output: [insulationTSV: "${id}_insulation.tsv", insulationBW: "${id}_insulation.tsv.${resolution}.bw"]]
+    withLog(cmd, logMap)
 
     stub:
-    "touch '${id}_insulation.tsv' '${id}_insulation.tsv.${resolution}.bw'"
+    stub = "touch '${id}_insulation.tsv' '${id}_insulation.tsv.${resolution}.bw'"
+    cmd = ["cooltools insulation", 
+           "--output '${id}_insulation.tsv'"] +
+          cooltoolsInsulationParams +
+          ["'${mcool}::/resolutions/${resolution}' ${window}"]
+    cmd = cmd.join(" ")
+    logMap = [task: "CooltoolsInsulation", input: [id: id, mcool: mcool, resolution: resolution, cooltoolsInsulationParams: cooltoolsInsulationParams, window: window], 
+    output: [insulationTSV: "${id}_insulation.tsv", insulationBW: "${id}_insulation.tsv.${resolution}.bw"]]
+    stubLog(stub, cmd, logMap)
 }
 
 workflow InsulationScores {
