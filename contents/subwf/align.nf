@@ -99,7 +99,7 @@ process BwaAlignSingle {
     shell:
     cmd = ""
  
-    flags.bwaFlags = flags.bwaFlags ?: []
+    flags.bwaFlags = flags.bwaFlags.getClass() in [List, ArrayList] ? flags.bwaFlags : [flags.bwaFlags]
 
     // Use flags.minMapq if provided as default, or override with -T if present in bwaFlags.
     if (flags.minMapq && !flags.bwaFlags.any{it.contains("-T")}) {
