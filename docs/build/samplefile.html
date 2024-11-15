@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Sample File &#8212; Hich 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=649a27d8" />
+    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css?v=658d757c" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Hich Reference" href="reference.html" />
+    <link rel="prev" title="Install Nextflow and Apptainer" href="installation.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="reference.html" title="Hich Reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Install Nextflow and Apptainer"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Hich 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Sample File</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="sample-file">
+<h1>Sample File<a class="headerlink" href="#sample-file" title="Link to this heading">¶</a></h1>
+<p>The Hich sample file is a tab- or comma-delimited (.tsv or .csv) file that describes your experimental setup. It can often look as simple as this:</p>
+<section id="example-1-multiple-conditions-bioreps-techreps-and-reference-genomes">
+<h2>Example 1. Multiple conditions, bioreps, techreps, and reference genomes<a class="headerlink" href="#example-1-multiple-conditions-bioreps-techreps-and-reference-genomes" title="Link to this heading">¶</a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>condition</p></th>
+<th class="head"><p>biorep</p></th>
+<th class="head"><p>techrep</p></th>
+<th class="head"><p>fastq1</p></th>
+<th class="head"><p>fastq2</p></th>
+<th class="head"><p>assembly</p></th>
+<th class="head"><p>enzymes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Human_KO</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>Human_KO_1_1_R1.fq.gz</p></td>
+<td><p>Human_KO_1_1_R2.fq.gz</p></td>
+<td><p>hg38</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-odd"><td><p>Human_KO</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>Human_KO_1_2_R1.fq.gz</p></td>
+<td><p>Human_KO_1_2_R2.fq.gz</p></td>
+<td><p>hg38</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-even"><td><p>Human_KO</p></td>
+<td><p>2</p></td>
+<td><p>1</p></td>
+<td><p>Human_KO_2_1_R1.fq.gz</p></td>
+<td><p>Human_KO_2_1_R2.fq.gz</p></td>
+<td><p>hg38</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-odd"><td><p>Human_KO</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>Human_KO_2_2_R1.fq.gz</p></td>
+<td><p>Human_KO_2_2_R2.fq.gz</p></td>
+<td><p>hg38</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-even"><td><p>Mouse_KO</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>Mouse_KO_1_1_R1.fq.gz</p></td>
+<td><p>Mouse_KO_1_1_R2.fq.gz</p></td>
+<td><p>mm10</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mouse_KO</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>Mouse_KO_1_2_R1.fq.gz</p></td>
+<td><p>Mouse_KO_1_2_R2.fq.gz</p></td>
+<td><p>mm10</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-even"><td><p>Mouse_KO</p></td>
+<td><p>2</p></td>
+<td><p>1</p></td>
+<td><p>Mouse_KO_2_1_R1.fq.gz</p></td>
+<td><p>Mouse_KO_2_1_R2.fq.gz</p></td>
+<td><p>mm10</p></td>
+<td><p>Arima</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mouse_KO</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>Mouse_KO_2_2_R1.fq.gz</p></td>
+<td><p>Mouse_KO_2_2_R2.fq.gz</p></td>
+<td><p>mm10</p></td>
+<td><p>Arima</p></td>
+</tr>
+</tbody>
+</table>
+<p>The condition, biorep, and techrep columns label the condition, biological replicate, and technical replicate for each sample (row). The fastq1 and fastq2 columns give the path to the paired-end fastq files containing sequencing data for each sample. The assembly column contains the name of the reference genome (hg38 = human, mm10 = murine). The enzymes column can be a comma-separated list of restriction enzymes or the name of the kit used in the experiment.</p>
+<p>With this setup, Hich will automatically download the reference genome (provided it recognizes the assembly name), indexing it for alignment with bwa-mem2, and producing other needed resource files such as a partition of the genome into restriction fragments. Note that resource files will be produced only once (so that here, one copy of the hg38 reference will be downloaded and shared by all samples).</p>
+</section>
+<section id="example-2-a-different-aligner">
+<h2>Example 2. A different aligner<a class="headerlink" href="#example-2-a-different-aligner" title="Link to this heading">¶</a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>condition</p></th>
+<th class="head"><p>fastq1</p></th>
+<th class="head"><p>fastq2</p></th>
+<th class="head"><p>assembly</p></th>
+<th class="head"><p>enzymes</p></th>
+<th class="head"><p>aligner</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Human_KO</p></td>
+<td><p>Human_KO_1_1_R1.fq.gz</p></td>
+<td><p>Human_KO_1_1_R2.fq.gz</p></td>
+<td><p>hg38</p></td>
+<td><p>Arima</p></td>
+<td><p>bwa</p></td>
+</tr>
+</tbody>
+</table>
+<p>Here, only one sample is being used. The biorep and techrep will default to “1”. There is also a new column, specifying that the “bwa” aligner should be used rather than the default “bwa-mem2”. While the default bwa-mem2 aligner is faster, the alternative bwa aligner requires less memory for indexing, which is the main motivation for offering it as an option. Both aligners should produce identical outputs.</p>
+</section>
+<section id="example-3-use-local-reference-index-chromsizes-and-fragfile">
+<h2>Example 3. Use local reference, index, chromsizes, and fragfile<a class="headerlink" href="#example-3-use-local-reference-index-chromsizes-and-fragfile" title="Link to this heading">¶</a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>condition</p></th>
+<th class="head"><p>fastq1</p></th>
+<th class="head"><p>fastq2</p></th>
+<th class="head"><p>assembly</p></th>
+<th class="head"><p>enzymes</p></th>
+<th class="head"><p>aligner</p></th>
+<th class="head"><p>reference</p></th>
+<th class="head"><p>chromsizes</p></th>
+<th class="head"><p>index_dir</p></th>
+<th class="head"><p>index_prefix</p></th>
+<th class="head"><p>fragfile</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Human_KO</p></td>
+<td><p>Human_KO_1_1_R1.fq.gz</p></td>
+<td><p>Human_KO_1_1_R2.fq.gz</p></td>
+<td><p>hg38</p></td>
+<td><p>Arima</p></td>
+<td><p>bwa</p></td>
+<td><p>resources/hg38.fa</p></td>
+<td><p>resources/hg38.sizes</p></td>
+<td><p>resources/bwa</p></td>
+<td><p>GRCh38_no_alt_analysis_set_GCA_000001405.15.fasta</p></td>
+<td><p>resources/hg38_Arima.bed</p></td>
+</tr>
+</tbody>
+</table>
+<p>Here, all resource files are already created and their paths are given, but this is not necessary. The <code class="docutils literal notranslate"><span class="pre">index_dir</span></code> and <code class="docutils literal notranslate"><span class="pre">index_prefix</span></code> columns must either both have a value or neither have a value, but other than that, it is fine to specify some resource file columns and leave others blank for any given sample. The new columns are:</p>
+<ul class="simple">
+<li><p>reference: The reference genome in FASTA format</p></li>
+<li><p>chromsizes: A two-column tab-delimited file with the contigs in column 1 and the size (bp) of the contig in column 2.</p></li>
+<li><p>index_dir: The directory where the desired index files are located</p></li>
+<li><p>index_prefix: The common prefix string for each index file. BWA, for example, uses the files [index_prefix].amb, [index_prefix].ann, [index_prefix].bwt, [index_prefix].pac, and [index_prefix].sa.</p></li>
+<li><p>fragfile: A partition of the genome into restriction fragments in BED format.</p></li>
+</ul>
+<p>4D Nucleome makes several commonly-used BWA index files available for manual download. If using them, you will need to download and unzip them before putting their paths into the sample file. Many labs produce an index for the genomes they work with and reuse them across many projects. As indexing the genome is the most RAM-intensive process Hich executes, it can be helpful to supply one if available.</p>
+<p>Links to 4DN BWA Index files:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIUH46PG1/#details">danRer11 (compressed)</a></p></li>
+<li><p><a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIZ2PWCC2/#details">mm10 (uncompressed)</a></p></li>
+<li><p><a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIZQB369V/#details">hg38 (uncompressed)</a></p></li>
+<li><p><a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIVGRYVQF/#details">galGal5 (compressed)</a></p></li>
+<li><p><a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFIO5MGY32/#details">dm6 (compressed)</a></p></li>
+<li><p><a class="reference external" href="https://data.4dnucleome.org/files-reference/4DNFI823LSI8/#details">mm10 (compressed)</a></p></li>
+</ul>
+<p>If using one of these, it is essential to set the <code class="docutils literal notranslate"><span class="pre">aligner</span></code> column to <code class="docutils literal notranslate"><span class="pre">bwa</span></code> in the sample file for each sample using a BWA index, since Hich defaults to using the faster (but more RAM-intensive) bwa-mem2, which uses a different index format.</p>
+</section>
+<section id="merging-and-downsampling">
+<h2>Merging and downsampling<a class="headerlink" href="#merging-and-downsampling" title="Link to this heading">¶</a></h2>
+<p>In this documentation, some terms have specific definitions.</p>
+<ul class="simple">
+<li><p><strong>Sample</strong> A sample is the complete collection of data and parameters associated with a single technical replicate (techrep), biological replicate (biorep), or condition.</p></li>
+<li><p><strong>Biological sample (biosample)</strong> A biosample refers to the physical material (cells, a sequencing library prep) that is associated with a particular Hich sample.</p></li>
+<li><p><strong>Condition</strong> An experimental condition, such as “No treatment (NT)” or “Knockout (KO)” or data obtained from different cell lines or drug exposures. Conditions are formed by merging their respective bioreps, but are not deduplicated as their input biorep samples will have already been deduplicated.</p></li>
+<li><p><strong>Biological replicate</strong> Each condition can have one or more biological replicates, representing data from the same experimental condition applied to one or more biosamples. Bioreps are formed by merging their respective techreps, and are then deduplicated before contact matrices are generated.</p></li>
+<li><p><strong>Technical replicate</strong> Each biorep can have one or more technical replicates, representing data from the same biorep sequenced multiple times. After merging techreps to form bioreps (which are independently deduplicated), the individual techreps are deduplicated as well.</p></li>
+<li><p><strong>Input sample</strong> A sample that is input to Hich as a row in the sample file</p></li>
+<li><p><strong>Synthetic sample</strong> A sample that is created by Hich based on input samples, typically via merging and/or downsampling.</p></li>
+</ul>
+<p>When Hich merges techrep samples to form biorep samples, it keeps the techrep samples as well. It also keeps the biorep samples after merging them to form condition samples. That means that the output contains techrep, biorep, and condition samples for the experiment, facilitating downstream QC and analysis.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Sample File</a><ul>
+<li><a class="reference internal" href="#example-1-multiple-conditions-bioreps-techreps-and-reference-genomes">Example 1. Multiple conditions, bioreps, techreps, and reference genomes</a></li>
+<li><a class="reference internal" href="#example-2-a-different-aligner">Example 2. A different aligner</a></li>
+<li><a class="reference internal" href="#example-3-use-local-reference-index-chromsizes-and-fragfile">Example 3. Use local reference, index, chromsizes, and fragfile</a></li>
+<li><a class="reference internal" href="#merging-and-downsampling">Merging and downsampling</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="installation.html"
+                          title="previous chapter">Install Nextflow and Apptainer</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="reference.html"
+                          title="next chapter">Hich Reference</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/samplefile.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="reference.html" title="Hich Reference"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Install Nextflow and Apptainer"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Hich 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Sample File</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, Benjamin Skubi, Andrew Adey, Galip Gürkan Yardımcı.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
+    </div>
+  </body>
+</html>

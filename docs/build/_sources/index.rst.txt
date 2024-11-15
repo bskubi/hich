@@ -7,10 +7,7 @@ Hich documentation
 ==================
 
 .. toctree::
-   installation
-   singlesample
-   factorialsample
-   aggregation
-   parameterexploration
+   installation   
+   samplefile
    reference
    
