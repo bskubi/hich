@@ -68,10 +68,11 @@ process MultiQC {
 
     shell:
     cmd = "multiqc --force --no-version-check --filename '${report_name}.multiqc_report.html' --module pairtools . && chmod -R a+w ."
+    cmd
 
     stub:
     stub = "touch '${report_name}.multiqc_report.html'"
-
+    cmd = "multiqc --force --no-version-check --filename '${report_name}.multiqc_report.html' --module pairtools . && chmod -R a+w ."
     logMap = [
         task: task,
         input: [
