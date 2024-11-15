@@ -71,7 +71,7 @@ process BwaAlignMates {
         cmd = "python3 -m bsbolt Align -t ${task.cpus} -OT ${task.cpus} -O '${id}' -DB '${indexDir}' '${bwaFlags}' -F1 '${fastq1}' -F2 '${fastq2}'"
     }
 
-    withLog(stub, cmd, logMap)
+    stubLog(stub, cmd, logMap)
 }
 
 process BwaAlignSingle {
