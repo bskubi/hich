@@ -49,7 +49,7 @@ process BwaAlignMates {
 
     stub:
     stub = "touch '${id}.bam'"
-    flags.bwaFlags = flags.bwaFlags ?: []
+    flags.bwaFlags = flags.bwaFlags instanceof ArrayList ? flags.bwaFlags : [flags.bwaFlags]
 
     // Use flags.minMapq if provided as default, or override with -T if present in bwaFlags.
     if (flags.minMapq instanceof Integer && !flags.bwaFlags.any{it.contains("-T")}) {
