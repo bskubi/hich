@@ -58,8 +58,11 @@ workflow Hicrep {
         params.hicrep.each {
             planName, analysisPlan ->
 
+            // Create composite strategies based on keys within params.hicrep as the sampleSelectionStrategy
+            // and params.sampleSelectionStrategies as the individual sample selection strategies to draw from
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
-            
+
+            // Filter out samples that 
             filtered = filterSamplesByStrategy(samples, strategy)
             grouped = groupSamplesByStrategy(filtered, strategy)
             grouped

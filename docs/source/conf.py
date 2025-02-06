@@ -14,7 +14,7 @@ release = '0.1'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx_copybutton']
+extensions = ['sphinx_copybutton', 'sphinx_togglebutton']
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -24,4 +24,12 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'bizstyle'
+html_theme = "sphinx_rtd_theme"
+
+html_theme_options = {
+    "collapse_navigation": True,  # Ensures collapsible sidebar
+    "titles_only": False,  # Ensures correct nesting
+}
+
+html_static_path = ['_static']
+html_css_files = ['custom.css']

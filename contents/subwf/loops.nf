@@ -7,7 +7,7 @@ process MustacheLoops{
     label 'features'
 
     input:
-    tuple val(prefix), path(mx), val(mustacheParams)
+    tuple val(id), val(prefix), path(mx), val(mustacheParams)
 
     output:
     path("${prefix}.loop")
@@ -43,7 +43,7 @@ workflow Loops {
             filterSamplesByStrategy(samples, strategy)
                 | map{
                     sample ->
-                    tuple(sample.id, sample.latestMatrix, analysisPlan.mustacheParams)
+                    tuple(sample.id, sample.id, sample.latestMatrix, analysisPlan.mustacheParams)
                 }
                 | MustacheLoops
         }

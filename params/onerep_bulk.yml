@@ -1,20 +1,12 @@
-aggregate:
-  fullCoverageDedup:
-    dedupSingleCell: false
-    dedupMaxMismatch: 3
-    dedupMethod: 'max'
-    techrepDedup: true
-
 defaults:
-  techrep: 1
-  biorep: 1
+  techrep: "1"
+  biorep: "1"
 
   # Since this is used in multiple steps, it will be used as the default value for each sample
   # unless an algorithm-specific setting is declared (i.e. parseParams with "--min-mapq 40")
   minMapq: 30
   
   aligner: "bwa-mem2"
-
 
   # Options that Hich formats from sample attributes and should not be specified in bwaFlags:
   # -t (obtained from the Nextflow resource profile)
@@ -85,4 +77,50 @@ defaults:
 
   coolerZoomifyParams: ["--balance", "--balance-args '--max-iters 2000 --trans-only'"]
 
+# The aggregate block defines how samples are downsampled, merged and deduplicated
+aggregate:
+  # Each key under aggregate is the name of an aggregation profile
+  fullCoverageDedup:
+    # Specify parameters for how to downsample, merge and deduplicate each level
+    # level can be any or all of [techrep|biorep|condition]
+    # [level]CisStrata: list[int]   List of cis bin maximum positions to group by for downsampling
+    # [level]ReadConjuncts: list[str]     List of column names to group by
+    # [level]DownsampleToMeanDistribution: bool
+    # [level]DownsampleToSize: int | float    If true, downsamples to specific number of reads (int) or fraction of reads (float 0.0-1.0)
+    # [level]Dedup: bool  If true, deduplicate reads
+    # [level]DedupMethod: 'max' | 'sum'  If true, deduplicate reads
+    # dedupSingleCell: bool     Use cellID column as an extra column that must match to call two rows as duplicates
+    # dedupMaxMismatch: bool    Pairs with both sides mapped within this distance (bp) from each other are considered duplicates. 
+    # mergeTechrepToBiorep: bool  If true, merge techrep samples for same aggregate profile, biorep and condition
+    # mergeBiorepToCondition: bool    If true, merge biorep samples for same aggregate profile and condition
+    dedupSingleCell: false
+    dedupMaxMismatch: 3
+    dedupMethod: 'max'
+    techrepDedup: true
 
+sampleSelectionStrategies:
+  test:
+    techrep: "1"
+
+hicrep:
+  hicrep_default:
+    sampleSelectionStrategy: "test"
+    resolutions: [10000]
+    chroms: ["chr1", "chr2", "chr3"]
+    exclude: ["chr3"]
+    chromFilter: []
+    h: [1]
+    dBPMax: [5000000]
+    bDownSample: [true]
+
+loops: []
+
+differentialLoops: []
+
+insulation: []
+
+compartments:
+  hich_compartments_default:
+    sampleSelectionStrategy: "test"
+    hichCompartmentsParams: ""
+    resolution: 10000

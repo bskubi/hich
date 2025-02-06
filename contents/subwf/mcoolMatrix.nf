@@ -16,6 +16,7 @@ process CoolerZoomify {
     tuple val(id), path("${id}.mcool")
 
     shell:
+
     coolerCloadParams = coolerCloadParams ?: []
     coolerZoomifyParams = coolerZoomifyParams ?: []
 
@@ -114,6 +115,7 @@ workflow McoolMatrix {
     samples
     
     main:
+
     samples
     | filter{!skip("mcoolMatrix") && it.matrix.makeMcoolFileFormat && (it.pairs || it.latestPairs) && !it.mcool}
     | map{tuple(it.id, it.latest, it.chromsizes, it.pairsFormat, it.assembly, it.matrix, it.coolerCloadParams, it.coolerZoomifyParams)}

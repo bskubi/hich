@@ -92,11 +92,20 @@ process HichStats {
     tuple val(id), path(stats)
 
     shell:
+    // Create name of stats file
     stats = "${id}.from.stats.tsv"
+
+    // Format options --conjuncts and --cis-strata
     conjunctsArg = conjuncts ? "--conjuncts '${conjuncts.join(',')}'" : ""
     cisStrataArg = cisStrata ? "--cis-strata '${cisStrata.join(',')}'" : ""
+    
+    // Format the hich stats command
     cmd = "hich stats ${conjunctsArg} ${cisStrataArg} --output '${stats}' '${pairs}'"
+
+    // Store the parameters and command for this call to the HichStats process
     logMap = [task: "HichStats", input: [id: id, conjuncts: conjunctsArg, cisStrata: cisStrataArg, pairs: pairs], output: stats]
+
+    // Log the command and execute
     withLog(cmd, logMap)
 
     stub:
@@ -124,6 +133,7 @@ process HichStatsAggregate {
     tuple val(ids), path(targetStats)
 
     shell:
+    
     if (stats == null || !(stats.metaClass.respondsTo(stats, "indexOf"))) {stats = [stats]}
     stats = stats.collect { "${it}" }
 
@@ -286,22 +296,21 @@ process PairtoolsMerge {
 
 
 /*
-    This workflow clones raw samples at the current agg level and assigns them
-    to an agg profile, applying the params for that profile to the sample.
+    "Raw samples" are those that have not been assigned to any aggregation profile.
 
-    The nextflow.config file may have a params.aggregate {} section defining
-    aggregate profiles. If so, create duplicates for each sample, one for each
-    profile, and label the sample with the aggregate profile, keeping it separate
-    from samples for other agg profiles going forward.
+    Aggregation profiles are implemented by copying samples and tagging the copy with
+    the aggregation profile and level. This is the function of the CreateAggregateSampleProfiles
+    workflow.
 
-    We generalize the main aggregation workflow steps but have an initial level-specific
-    workflow that assigns level-specific params with general names in a levelParams map
-    of [generalKey: levelSpecificKey].
+    Aggregation profiles are defined in the Nextflow params under params.aggregate.
 
-    levelSamples -- the samples filtered for the current level (i.e. techreps, bioreps, conditions)
-    levelParams -- the map from general aggregation keywords to the level-specific keywords contained in the sample map
-
-    Note that this calls no processes.
+    Take:
+        levelSamples: channel[map[str, Any]] -- the samples filtered for the current level (i.e. techreps, bioreps, or conditions)
+        levelParams: map[str, str] -- maps general keywords to level-specific keywords under which relevant values will be stored
+    
+    Emit:
+        result: channel[map[str, Any]] -- the samples after the level-specific params have been applied
+        levelParams: map[str, str] -- the same levelParams taken
 */
 workflow CreateAggregateSampleProfiles {
     take:
@@ -313,18 +322,16 @@ workflow CreateAggregateSampleProfiles {
     // Store current samples as the result in case there are no aggregation profiles defined
     levelSamples | set{result}
 
+    // Only if "aggregate" is defined in params do we aggregate anything
     if (params.containsKey("aggregate")) {
-        /* The user may input samples from multiple aggregation levels. Raw samples not assigned
-            an aggregation profile need to be cloned for each aggregation level so this selects them
-            for this cloning process.
-        */
-        levelSamples | branch{
+        // Separate out raw samples
+        levelSamples | branch {
             YES: it.aggregateProfileName == null
             NO: true
         } | set{raw}
 
         /*
-            From the RAW SAMPLES ONLY, create new samples associated with each aggregation profile
+            Create a copy of each raw sample for each aggregation profile
 
             First, reshape the profiles to a columnar format like [profileName: [list of profile names], profileParams: [list of profile param maps]]
             Then convert to a row format and integrate with the samples, ultimately resulting in samples with new parameters:
@@ -333,10 +340,20 @@ workflow CreateAggregateSampleProfiles {
             We give each newly created sample profile-specific id.
         */
         aggregateProfiles = channel.of(params.aggregate)
+        // Convert params.aggregate to columnar format with columns "profileName" and "profileParams"
+        // profileParams is a map[str, Any] of parameters determining how the sample will be aggregated
         | map{[profileName: it.keySet().toList(), profileParams: it.values().toList()]}
+
+        // Convert the aggregateProfile parameters, which are now in columnar format,
+        // to a rows format. Then convert from a single list of maps to a channel of map elements.
+        // Then take the Cartesian product of the aggregate profile parameters with the
+        // raw samples for the current aggregation level.
         | map{rows(it)}
         | flatten
         | combine(raw.YES)
+
+        // Separate out the profile and sample for each combination and add the profile's parameters
+        // to the sample parameters
         | map {
             profile = it[0]
             sample = it[1]
@@ -344,7 +361,12 @@ workflow CreateAggregateSampleProfiles {
             sample
         }
         | map{
+            // We put levelParams.downsampleToMeanDistribution in parentheses to make Groovy treat it as a variable
+            // for the purposes of setting a map key rather than as a string.
+
             downsampleToMeanDistributionGroup = it.subMap((levelParams.downsampleToMeanDistribution)) ?: null
+
+            // Set a new ID for the sample. Also set the downsampleToMeanDistribution submap in as well.
             it + [(levelParams.downsampleToMeanDistribution): downsampleToMeanDistributionGroup] + [id: constructIdentifier(it)]
         }
         | set{result}
@@ -376,19 +398,32 @@ workflow DownsamplePairs {
     levelParams = levelParams.value
 
     levelSamples | branch {
-        YES: it.aggregateProfileName != null && (it.get(levelParams.downsampleToMeanDistribution) != null || !(it.get(levelParams.downsampleToSize) in [1.0, null]))
+        YES: (
+            // Select samples that have an aggregateProfileName and that include
+            // a value of either downsampleToMeanDistribution or downsampletoSize
+            // that requires processing.
+            it.aggregateProfileName != null 
+            && (
+                it.get(levelParams.downsampleToMeanDistribution) != null
+                || !(it.get(levelParams.downsampleToSize) in [1.0, null])
+            )
+        )
         NO: true
     } | set{downsample}
 
-    // Compute from stats
+    // Compute the number of reads downsampled from
     downsample.YES
         | map{tuple(it.id, it.latestPairs, it.get(levelParams.readConjuncts), it.get(levelParams.cisStrata))}
         | HichStats
         | map{[id:it[0], (levelParams.downsampleStatsFrom):it[1]]}
         | set{downsampleStatsFromResult}
+
+    // Join the results to the sample map
     pack(downsample.YES, downsampleStatsFromResult) | set {fromStatsCalculated}
 
-    // Compute to stats
+    // Compute the number of reads downsampled to
+    // These are converted to columnar format as input to HichStatsAggregate,
+    // then converted back to rows format and flattened into channel elements
     groupHashMap(fromStatsCalculated, [levelParams.downsampleToMeanDistribution, 'aggregateProfileName'])
         | map{columns(it, ["dropNull":true])}
         | map{tuple(it.id, it.get(levelParams.downsampleStatsFrom), it.outlier)}
@@ -397,9 +432,11 @@ workflow DownsamplePairs {
         | map{rows(it)}
         | flatten
         | set {downsampleToGroupMinResult}
+
+    // Join the results to the sample map
     pack(fromStatsCalculated, downsampleToGroupMinResult) | set{toGroupMinResult}
 
-    // Downsample
+    // Downsample from the number of reads in each bin in levelParams.downsampleStatsFrom to levelParams.downsampleStatsTo
     toGroupMinResult
         | map{
             tuple(it.id, it.latestPairs, it.get(levelParams.downsampleStatsFrom), it.get(levelParams.downsampleStatsTo),
@@ -407,8 +444,11 @@ workflow DownsamplePairs {
         | HichDownsample
         | map{[id:it[0], (levelParams.downsamplePairs):it[1], latest:it[1], latestPairs:it[1]]}
         | set{downsampledResult}
+
+    // Join the results to the sample map
     pack(toGroupMinResult, downsampledResult) | set {downsampled}
 
+    // Add back in the non-downsampled samples
     downsampled | concat(downsample.NO) | set{result}
 
     emit:
@@ -422,17 +462,17 @@ workflow MergePairs {
     levelParams
 
     main:
-
     // levelParams gets converted to a DataflowVariable when emitted from the previous workflow,
     // so extract the LinkedHashMap value so we can use it more conveniently
     levelParams = levelParams.value
 
+    // Get samples not specifically excluded from merging and where levelParams.doMerge is true
     levelSamples | branch {
         YES: it.includeInMerge != false && it.get(levelParams.doMerge)
         NO: true}
     | set{merge}
 
-    // Merge
+    // Merge the pairs files.
     groupHashMap(merge.YES, levelParams.mergeGroupIdentifiers)
         | map{coalesce(columns(it, ["dropNull":true]))}
         | map{tuple(constructIdentifier(coalesce(it, "_drop")), it.latestPairs)}
@@ -440,12 +480,19 @@ workflow MergePairs {
         | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
         | set{fromMerge}
 
+    // Group the merged result by the mergeGroupIdentifiers, then coalesce common values
+    // to a single value, dropping any null or heterogeneous values. The other
+    // common values are kept as inherited merge attributes. Then add an ID
+    // for the merge.
     groupHashMap(merge.YES, levelParams.mergeGroupIdentifiers)
         | map{coalesce(columns(it, ["dropNull":true]), '_drop')}
         | map{it += [id:constructIdentifier(it)]}
         | set{inheritedMergeAttributes}
+    
+    // Combine the values from the merge process itself and the inherited merge attributes
     pack(inheritedMergeAttributes, fromMerge) | set{merged}
 
+    // Add to the set of samples
     merged | map {it += ["aggregateLevel" : aggregateLevelLabel(it)]} | concat(levelSamples) | set{result}
 
     emit:
@@ -464,22 +511,33 @@ workflow DeduplicatePairs {
     // so extract the LinkedHashMap value so we can use it more conveniently
     levelParams = levelParams.value
 
+    // Extract samples that aren't already duplicated and where they are marked for deduplication
     levelSamples
         | branch {
             YES: !it.alreadyDeduplicated && levelParams.levelFilter(it) && it.get(levelParams.doDedup)
             NO: true
     } | set{deduplicate}
 
+    // Deduplicate the samples and get the resulting attributes
     deduplicate.YES
         | map{tuple(it.id, it.latestPairs, it.dedupSingleCell, it.dedupMaxMismatch, it.dedupMethod, it.pairtoolsDedupParams)}
         | PairtoolsDedup
         | map{[id:it[0], dedupPairs:it[1], latest:it[1], latestPairs:it[1], alreadyDeduplicated:true]}
         | set{dedupResult}
+
+    // Combine with the original sample
     pack(deduplicate.YES, dedupResult) | concat(deduplicate.NO) | set{result}
 
     emit:
     result
 }
+
+/*
+Context:
+
+| Select | AggregateTechreps | AggregateBioreps | AggregateConditions | HicMatrix
+
+*/
 
 workflow AggregateTechreps {
     take:
@@ -487,10 +545,11 @@ workflow AggregateTechreps {
 
     main:
 
+    // Create techreps-specific versions of the generic parameters
     aggregateParams = [
         dedupSingleCell: 'dedupSingleCell',
         dedupMaxMismatch: 'dedupMaxMismatch',
-        dedupMethod: 'max',
+        dedupMethod: 'techrepDedupMethod',
         cisStrata: 'techrepCisStrata',
         readConjuncts: 'techrepReadConjuncts',
         downsampleToMeanDistribution: 'techrepDownsampleToMeanDistribution',
@@ -504,11 +563,13 @@ workflow AggregateTechreps {
         levelFilter: {it.condition && it.biorep && it.techrep}
     ]
 
+    // Separate the techrep-level samples where we are to aggregate the techreps and that have pairs
     samples | branch {
         techrep: !skip("aggregate") && !skip("aggregateTechreps") && isTechrep(it) && (it.pairs || it.latestPairs)
         other: true
     } | set{sampleType}
 
+    // Downsample, merge and deduplicate as necessary
     CreateAggregateSampleProfiles(sampleType.techrep, aggregateParams)
     | DownsamplePairs
     | MergePairs
@@ -516,6 +577,7 @@ workflow AggregateTechreps {
     | concat(sampleType.other)
     | set{samples}
 
+    // Early stopping
     samples = emptyOnLastStep("aggregateTechreps", samples)
 
     emit:
@@ -528,10 +590,11 @@ workflow AggregateBioreps {
 
     main:
 
+    // Separate the biorep-level samples where we are to aggregate the bioreps and that have pairs
     aggregateParams = [
         dedupSingleCell: 'dedupSingleCell',
         dedupMaxMismatch: 'dedupMaxMismatch',
-        dedupMethod: 'max',
+        dedupMethod: 'biorepDedupMethod',
         cisStrata: 'biorepCisStrata',
         readConjuncts: 'biorepReadConjuncts',
         downsampleToMeanDistribution: 'biorepDownsampleToMeanDistribution',
@@ -545,11 +608,13 @@ workflow AggregateBioreps {
         levelFilter: {it.condition && it.biorep && !it.techrep}
     ]
 
+    // Separate the bioreps-level samples where we are to aggregate the bioreps and that have pairs
     samples | branch {
         biorep: !skip("aggregate") && !skip("aggregateBioreps") && isBiorep(it) && (it.pairs || it.latestPairs)
         other: true
     } | set{sampleType}
 
+    // Downsample, merge and deduplicate as necessary
     CreateAggregateSampleProfiles(sampleType.biorep, aggregateParams)
     | DownsamplePairs
     | MergePairs
@@ -557,6 +622,7 @@ workflow AggregateBioreps {
     | concat(sampleType.other)
     | set{samples}
 
+    // Early stopping
     samples = emptyOnLastStep("aggregateBioreps", samples)
 
     emit:
@@ -569,10 +635,11 @@ workflow AggregateConditions {
 
     main:
 
+    // Separate the condition-level samples where we are to aggregate the bioreps and that have pairs
     aggregateParams = [
         dedupSingleCell: 'dedupSingleCell',
         dedupMaxMismatch: 'dedupMaxMismatch',
-        dedupMethod: 'max',
+        dedupMethod: 'conditionDedupMethod',
         cisStrata: 'conditionCisStrata',
         readConjuncts: 'conditionReadConjuncts',
         downsampleToMeanDistribution: 'conditionDownsampleToMeanDistribution',
@@ -586,11 +653,13 @@ workflow AggregateConditions {
         levelFilter: {it.condition && !it.biorep && !it.techrep}
     ]
 
+    // Separate the condition-level samples where we are to aggregate the bioreps and that have pairs
     samples | branch {
         condition: !skip("aggregate") && !skip("aggregateConditions") && isCondition(it) && (it.pairs || it.latestPairs)
         other: true
     } | set{sampleType}
-
+    
+    // Downsample, merge and deduplicate as necessary
     CreateAggregateSampleProfiles(sampleType.condition, aggregateParams)
     | DownsamplePairs
     | MergePairs
@@ -598,6 +667,7 @@ workflow AggregateConditions {
     | concat(sampleType.other)
     | set{samples}
 
+    // Early stopping
     samples = emptyOnLastStep("aggregateConditions", samples)
 
     emit:

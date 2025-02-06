@@ -7,10 +7,9 @@ Hich documentation
 ==================
 
 .. toctree::
-   installation
-   singlesample
-   factorialsample
-   aggregation
-   parameterexploration
-   reference
-   
+    :maxdepth: 2
+    :caption: Contents
+
+    install
+    features/features
+    vignettes/index

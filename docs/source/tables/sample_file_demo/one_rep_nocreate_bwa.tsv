@@ -1,0 +1,2 @@
+genomeReference	chromsizes	aligner	alignerIndexDir	alignerIndexPrefix	fragmentIndex
+resources/hich/genomeReference/GRCh38_no_alt_analysis_set_GCA_000001405.15.fasta.gz	resources/hich/chromsizes/hg38.sizes	bwa	resources/hich/bwa/bwa/index	hg38	resources/hich/fragmentIndex/hg38_DdeI_DpnII.bed

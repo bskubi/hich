@@ -1,3 +1,31 @@
 .wy-nav-content {
     max-width: none !important;
 }
+
+/* Ensure code blocks wrap text instead of using horizontal scroll */
+div.highlight pre, div.highlight {
+    white-space: pre-wrap !important;  /* Forces wrapping */
+    word-break: break-word !important; /* Allows long words to break */
+    overflow-x: hidden !important;  /* Removes horizontal scrolling */
+}
+
+/* Target Sphinx Read the Docs theme */
+.wy-table-responsive table td pre, 
+.wy-table-responsive table th pre {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+}
+
+/* Fix for inline code */
+.rst-content code {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+}
+
+/* Additional Fix: Ensure long lines wrap even inside tables */
+.rst-content .highlight pre {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow: visible !important;
+    max-width: 100% !important;
+}

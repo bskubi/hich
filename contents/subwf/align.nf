@@ -36,7 +36,7 @@ process BwaAlignMates {
     cmd = ""
     logMap = [:]
     if (aligner in ["bwa-mem2", "bwa", ]) {
-        align = "${aligner} mem -t ${task.cpus} '${indexDir}/${indexPrefix}' ${bwaFlags} '${fastq1}' '${fastq2}'"
+        align = "${aligner} mem -t ${task.cpus} ${bwaFlags} '${indexDir}/${indexPrefix}' '${fastq1}' '${fastq2}'"
         tobam = "samtools view -b -o '${id}.bam'"
         logMap = [task: "BwaAlignMates", output: "${id}.bam", input: [id: id, fastq1: fastq1, fastq2: fastq2, aligner: aligner, index: "${indexDir}/${indexPrefix}", flags: flags]]
         cmd = "${align} | ${tobam}"
@@ -62,7 +62,7 @@ process BwaAlignMates {
     cmd = ""
     logMap = [:]
     if (aligner in ["bwa-mem2", "bwa", ]) {
-        align = "${aligner} mem -t ${task.cpus} '${indexDir}/${indexPrefix}' ${bwaFlags} '${fastq1}' '${fastq2}'"
+        align = "${aligner} mem -t ${task.cpus} ${bwaFlags} '${indexDir}/${indexPrefix}' '${fastq1}' '${fastq2}'"
         tobam = "samtools view -b -o '${id}.bam'"
         logMap = [task: "BwaAlignMates", output: "${id}.bam", input: [id: id, fastq1: fastq1, fastq2: fastq2, aligner: aligner, index: "${indexDir}/${indexPrefix}", flags: flags]]
         cmd = "${align} | ${tobam}"

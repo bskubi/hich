@@ -477,24 +477,35 @@ def emptyOnLastStep(step, samples) {
     return isExplicitLastStep ? channel.empty() : samples
 }
 
-/*
-    Used in the aggregation functions in order to group samples sharing a set of attributes.
-
-    ch -- the sample hashmap channel
-    by -- the set of attributes to group by
-    sortBy -- typically just use id. This function is often used to convert samples to columnar format where a single
-    hashmap containing lists of sample attributes under each attribute name is provided to the process. Changes in order
-    typically should not affect process behavior, but will trigger a Nextflow rerun unnecessarily. We therefore use sortBy
-    to sort the samples to prevent these unnecessary reruns.
-
-    NOTE -- We can probably repurpose this for sample selection strategies that should partition the samples
-    rather than defining individual blocks.
-*/
 def groupHashMap(ch, by, sortBy = ["id"]) {
+    /* Essentially a groupby operation on a channel of hashmaps
+
+        Example:
+
+        [[param1: 1, param2: 1], [param1: 1, param2: 2], [param1: 2, param2: 3], [param1: 2, param2: 4]]
+
+        This is grouped to:
+
+        [param1: [1, 1], param2: [1, 2]]
+        [param1: [2, 2], param2: [3, 4]]
+
+        Arguments:
+            ch -- the sample hashmap channel
+            by -- the list of attributes to group by
+            sortBy -- typically just use id. This function is often used to convert samples to columnar format where a single
+            hashmap containing lists of sample attributes under each attribute name is provided to the process. Changes in order
+            typically should not affect process behavior, but will trigger a Nextflow rerun unnecessarily. We therefore use sortBy
+            to sort the samples to prevent these unnecessary reruns.
+    */
     ch
-    | map{tuple(it.subMap(by), it)} // Group maps to the format [[bySubmap], [list of samples]] and extract [list of samples]
+    // Group maps to the format [[bySubmap], [list of samples]] and extract [list of samples]
+    // Note that because the order in which samples are returned is unpredictable, this will result in a different
+    // order of samples on different runs, which is why samples are sorted later.
+    | map{tuple(it.subMap(by), it)} 
     | groupTuple
     | map{it[1]}
+
+    // Sort the hashmaps if requested
     | map{
         mapList ->
 
@@ -502,10 +513,16 @@ def groupHashMap(ch, by, sortBy = ["id"]) {
         if (sortBy) {
                 mapList.sort {
                 map1, map2 ->
-                sortBy.collect {    // sortBy is a list of keys to sort by, in descending order of priority
+
+                // sortBy is a list of keys to sort by, in descending order of priority
+                // We collect all the comparisons for each sortBy key, then take the first nonzero as the sort order
+                sortBy.collect {
                     key ->
-                    map1[key] <=> map2[key]     // -1, 0, 1 depending on comparison outcome
-                }.findResult {it != 0 ? it : null} ?: 0 // We collect all the comparisons for each sortBy key, then take the first nonzero as the sort order
+
+                    // -1, 0, 1 depending on comparison outcome
+                    map1[key] <=> map2[key]
+                }.findResult {it != 0 ? it : null} ?: 0
+                
             }
         } else {
             mapList
@@ -515,24 +532,39 @@ def groupHashMap(ch, by, sortBy = ["id"]) {
 
 // Called from within map function on transposedSamples
 def coalesce (transposedSample, defaultWhenDifferent = "_unchanged", whenDifferent = [:]) {
-    // effects of whenDifferent values:
-    // _shrink -> take unique values in original order of first apperance
-    // _drop -> drop the key:value pair
-    // _nullify -> keep the key, set value to null
-    // _error -> throw an exception
-    // anything else -> replace the value
-    // empty values are retained unchanged
+    /* Combine lists of values that are identical into a single non-list value
 
-    
+        Example:
+
+        [param1: [1, 1, 1], params: [2, 3, 4]] is converted to [param1: 1, params2: [2, 3, 4]]
+
+        Arguments
+            transposedSample -- The sample in columnar format
+            defaultWhenDifferent: [str] -- Determines how values that are different are treated
+                _shrink -> take unique values in original order of first apperance
+                _drop -> drop the key:value pair
+                _nullify -> keep the key, set value to null
+                _error -> throw an exception
+                anything else -> replace the value
+                empty values are retained unchanged
+
+            whenDifferent: map[str, str] -- Key-specific behavior when different. The values
+            can be any of the appropriate values for defaultWhenDifferent and are applied to
+            specific keys in transposedSample. For a particular key, whenDifferent's value will be
+            used if the key is present in whenDifferent, and defaultWhenDifferent otherwise.
+    */
+
     def result = [:]
+
+    // Iterate through values in the transposed sample
     transposedSample.each {
         key, value ->
 
         // LinkedHashSet preserves the original order of the ArrayList
         def valueSet = value instanceof ArrayList ? value as LinkedHashSet : [value] as LinkedHashSet
 
-        // Coalesce if all entries are identical. [k:[1, 1, 1]] coalesces to [k:1]
         if (valueSet.size() == 1) {
+            // If there's only one value, just use that.
             result += [(key):valueSet.first()]
         } else if (valueSet.size() > 1) {
             // Determine strategy for this key when value is non-homogeneous
@@ -598,22 +630,54 @@ def columns (mapList, options = [:]) {
     transposed
 }
 
-def rows (columnsMap, options = [:]) {
+def rows (columnsMap) {
+    /*
+        Convert columnsMap from columnar to row format
+
+        In columnar format, each parameter is a key in columnsMap, with a list
+        of values corresponding at a given index to a particular sample.
+
+        In row format, we have a row of maps where each map corresponds to a sample,
+        with keys the parameter names and values the parameter values.
+
+        Columnar example:
+            [
+                param1: [1, 2, 3]
+                param2: ["a", "b", "c"]
+            ]
+
+        Row example:
+            [
+                [param1: 1, param2: "a"],
+                [param1: 2, param2: "b"],
+                [param1: 3, param2: "c"],
+            ]
+
+        Arguments
+            columnsMap: map[str, ArrayList | Any] -- A channel containing key names
+            associated with lists of per-sample values to be converted to a row format
+    */
+
     // Get the keys and the transposed values
-    def keys = columnsMap.keySet().toList()
-    // Nextflow has an annoying behavior where if you pass to a Path process output a list with a single item,
-    // it silently converts it to a file object instead of keeping it a list of file objects. To avoid weird
-    // bugs when this happens, convert non-ArrayList values to ArrayList.
-    
+    def keys = columnsMap.keySet().toList()  
     def values = columnsMap.values().toList()
-    assert values.every {it instanceof ArrayList} || values.every {(it instanceof ArrayList && it.size() == 1) || !(it instanceof ArrayList)}
+
+    // Ensure all values are lists
     def formattedValues = values.collect({it instanceof ArrayList ? it : [it]})
+
+    // This converts the column format of the values to row format
+    // https://docs.groovy-lang.org/latest/html/groovy-jdk/java/util/List.html#transpose()
     def transposed = formattedValues.transpose()
 
     // Create N hashmaps, each containing the values at index i for the corresponding keys
-    def result = transposed.collect { row ->
-        [keys, row].transpose().collectEntries()  // Build a new map for each row
+    def result = transposed.collect {
+        row ->
+        // Keys and row are equal-length lists which are transposed into a list of individual
+        // key value pairs like [[key1: value1], [key2: value2]]. collectEntries converts
+        // this to a single map like [key1: value1, key2: value2]
+        [keys, row].transpose().collectEntries()
     }
+
     result
 }
 
@@ -638,9 +702,7 @@ def asHashSet(val) {
 
 
 def createCompositeStrategy(strategyKeys, strategyMap, combineHow = [:]) {
-    /* 
-        Users can define multiple potentially orthogonal sample selection strategies
-        and combine them by name into a single composite strategy.
+    /* A composite strategy is a hashmap in which keys are sample attributes and values are lists of permitted sample attribute values. It is created by combining one or more individual strategies specified in params.sampleSelectionStrategies.
 
         strategyKeys -- keys in strategyMap for the sub-strategies to combine
         strategyMap -- [strategyKey: selectionStrategy] map-of-maps, typically params.sampleSelectionStrategies
@@ -653,18 +715,28 @@ def createCompositeStrategy(strategyKeys, strategyMap, combineHow = [:]) {
     */
 
     def compositeStrategy = [:]
+
+    // Extract the values associated with individual selected strategies to form the composite strategy
     def subStrategies = strategyKeys ? strategyMap.subMap(strategyKeys).values() : []
+
     subStrategies.each {
         subStrategy ->
+
         subStrategy.each {
             key, val ->
 
             // Converts val from a single element or ArrayList into a HashSet of elements
-            // Then either replace the old value (default behavior) or apply a passed
-            // key-specific update method.
             def newVals = asHashSet(val)
+
+            // Handle situations where the same key is defined in more than one composite strategy
+            // combineHow may contain a per-key method to define how to do the replacement.
+            // The default behavior is to replace values from earlier-specified keys with
+            // newly-specified keys. For example, if the keys are ["strategy1", "strategy2"]
+            // and both strategies have a value "v1", then v1 will take the value for strategy2 by default.
             def oldVals = compositeStrategy.get(key, new HashSet())
             def updated = combineHow.get(key, {a, b -> b})(oldVals, newVals)
+
+            // Add the value to the composite strategy
             compositeStrategy += [(key): updated]
         }
     }
@@ -673,29 +745,31 @@ def createCompositeStrategy(strategyKeys, strategyMap, combineHow = [:]) {
 }
 
 def filterSamplesByStrategy(samples, strategy) {
-    /*  The strategy is a hashmap that defines sample attributes to filter on,
-        and acceptable values of those attributes.
+    /*  After a composite strategy is built, filter for samples for which all sample attributes are present and are in the list of permitted values specified by the composite strategy.
 
         samples - a channel of sample hashmaps
         strategy - a hashmap as [attributeName: [permittedValues]]
     */
 
-    // The config may not specify a sample selection strategy
+    // Return all samples if no strategy is specified
     if (!strategy) return samples
 
-    // The strategy defines attribute values samples may match to be retained
+    // Remove reserved keywords from the set of sample-specific strategies
     def reservedKeywords = ["same", "different"]
     def sampleAttributeFilter = strategy.findAll {key, value -> !(key in reservedKeywords)}
+
     def filtered = samples | filter {
         sample ->
 
         def passesFilter = sampleAttributeFilter.every {key, select ->
+            // Check that the sample attribute value is in the whitelisted values specified in the composite strategy
             sample.get(key) in select
         }
 
         passesFilter
     }
 
+    // For each sample, collect into a single list and ensure that at least one sample was selected
     filtered
         | collect
         | {
@@ -706,6 +780,8 @@ def filterSamplesByStrategy(samples, strategy) {
 }
 
 def groupSamplesByStrategy(samples, strategy) {
+    /* Get all samples having matching values of strategy.same
+    */
     return samples
         | map{tuple(it.subMap(strategy.get("same", [])), it)}
         | groupTuple
