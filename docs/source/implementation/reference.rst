@@ -13,6 +13,7 @@ Normally, the `sample file`_ is called "samples.tsv" (tab-delimited). Basic `sam
     :delim: tab
     :header-rows: 1
 
+   :maxdepth: 2
 **Example 2.** Here, needed reference files are given (possibly from a permanent lab repository), so they will be used rather than produced by Hich. Because there's just one sample, there is no need to specify a `biorep`_ or `techrep`_ parameter.
 
 .. csv-table::
@@ -650,3 +651,8 @@ mustache_params
 
 | 
 | Parameters passed to mustache_diffloops, which will output both individual matrix loop calls and a pair of diffloops calls for each matrix.
+
+.. toctree::
+    :hidden:
+
+    implementation/index

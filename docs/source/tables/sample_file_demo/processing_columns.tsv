@@ -1,0 +1,3 @@
+condition	[…]	assembly	aligner	restrictionEnzymes
+human_microc		hg38	bwa	
+mouse_methyl_re		mm10	bsbolt	DdeI,DpnII

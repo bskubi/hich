@@ -1,0 +1,5 @@
+Loops
+==============
+
+.. toctree::
+    :hidden:

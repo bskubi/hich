@@ -31,3 +31,8 @@ Get all pairs of samples having matching values of strategy.same.
 groupSamplesByStrategy
 
 Get all samples having matching values of strategy.same. 
+
+.. toctree::
+    :hidden:
+
+    implementation/index

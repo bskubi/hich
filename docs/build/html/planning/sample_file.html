@@ -1,0 +1,370 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sample File Setup &mdash; Hich 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=8ea2664f" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Params File" href="params_file.html" />
+    <link rel="prev" title="Planning The Workflow" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vignettes/index.html">Vignettes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflow_steps/index.html">Workflow Steps</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Planning The Workflow</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Sample File Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-sample-file">The sample file</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id-columns">ID columns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data-columns">Data columns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#processing-columns">Processing columns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#reference-file-columns">Reference file columns</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="params_file.html">Params File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compute.html">Adapting To The Computing Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runs.html">Dry, Humid and Full Runs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_params.html">CLI Sample Specification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="digests.html">Genome Digests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="capture.html">Capture And Targeted Assays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="single_cell.html">Single-Cell Hi-C Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="methyl_hic.html">Methyl-Hi-C Experiments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../implementation/index.html">Implementation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../next_steps/index.html">Next Steps After Running Hich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Planning The Workflow</a></li>
+      <li class="breadcrumb-item active">Sample File Setup</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/planning/sample_file.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="sample-file-setup">
+<h1>Sample File Setup<a class="headerlink" href="#sample-file-setup" title="Link to this heading"></a></h1>
+<p>In Hich, a <strong>sample</strong> is a set of key-value attributes that influence how Hich will process a specific input data file. Hich assembles the description of a sample from user inputs, such as a <a class="reference internal" href="#the-sample-file"><span class="std std-ref">sample file</span></a>, <a class="reference internal" href="params_file.html"><span class="doc">params file</span></a>, and <a class="reference internal" href="cli_params.html"><span class="doc">command line arguments</span></a>. Command-line parameters control execution and can specify samples for simpler workflows. The sample file specifies samples for more complex workflows. The params file allows defining sample attributes applying to all samples, as well as describing how to aggregate and call features over samples.</p>
+<p>Hich might use the following sample file:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>condition</p></th>
+<th class="head"><p>biorep</p></th>
+<th class="head"><p>techrep</p></th>
+<th class="head"><p>fastq1</p></th>
+<th class="head"><p>fastq2</p></th>
+<th class="head"><p>assembly</p></th>
+<th class="head"><p>aligner</p></th>
+<th class="head"><p>alignerIndexDir</p></th>
+<th class="head"><p>alignerIndexPrefix</p></th>
+<th class="head"><p>restrictionEnzymes</p></th>
+<th class="head"><p>fragmentIndex</p></th>
+<th class="head"><p>genomeReference</p></th>
+<th class="head"><p>chromsizes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Formaldehyde+DSG_DdeI_and_DpnII_HFFc6</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>vignettes/akgol2021/downsampled/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R1.fastq.gz</p></td>
+<td><p>vignettes/akgol2021/downsampled/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz</p></td>
+<td><p>hg38</p></td>
+<td><p>bwa-mem2</p></td>
+<td><p>resources/hich/bwa-mem2/bwa-mem2/index</p></td>
+<td><p>hg38_noalts</p></td>
+<td><p>DdeI,DpnII</p></td>
+<td><p>resources/hich/fragmentIndex/hg38_DdeI_DpnII.bed</p></td>
+<td><p>resources/hich/genomeReference/GRCh38_no_alt_analysis_set_GCA_000001405.15.fasta.gz</p></td>
+<td><p>resources/hich/chromsizes/hg38.sizes</p></td>
+</tr>
+</tbody>
+</table>
+<p>And combine it with parameters specified in a params file like <code class="docutils literal notranslate"><span class="pre">params/onerep_bulk.yml</span></code> to create a hashmap describing all the attributes necessary for the sample to be processed correctly by Hich. It is not necessary to understand the implementation of Hich in detail to use the software, but it may be helpful to see an example of part of the hashmap Hich produces by combining the sample file above with the params file to produce a complete description of how the sample must be processed.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">id</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;Condition1_1_1&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">condition</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;Condition1&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">biorep</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">techrep</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">fastq1</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;data/c1_r1.fq.gz&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">fastq2</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;data/c2_r2.fq.gz&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">assembly</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;hg38&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">aligner</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;bwa&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">retrictionEnzymes</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;DdeI,DpnII&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">bwaFlags</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;-SP5M&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">minMapq</span><span class="o">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span><span class="w"> </span><span class="p">...]</span>
+</pre></div>
+</div>
+<p>A sample can represent a technical replicate, biological replicate, or a condition. Input samples are typically defined in a sample file, although they can also be specified at the command line for convenience in simple workflows. When samples are subjected to an aggregation protocol (including downsampling, merging, or deduplication), a new sample based on them is automatically created by Hich. Hich can be configured in the <a class="reference internal" href="params_file.html"><span class="doc">params file</span></a> to retain the original samples or drop them and carry on with just those created by aggregation. See that section for details.</p>
+<section id="the-sample-file">
+<h2>The sample file<a class="headerlink" href="#the-sample-file" title="Link to this heading"></a></h2>
+<p>The sample file is a columnar, typically tab-delimited (.tsv) file We can break down the set of frequently used sample file columns into groups of related columns. These are not all required, for several reasons. Some, like <code class="docutils literal notranslate"><span class="pre">biorep</span></code>, <code class="docutils literal notranslate"><span class="pre">techrep</span></code>, and <code class="docutils literal notranslate"><span class="pre">aligner</span></code> are often set by default using the <a class="reference internal" href="params_file.html"><span class="doc">params file</span></a>. The reference files can often be auto-generated by Hich based on the processing columns. Some data inputs do not require certain reference files, such as when the data input is a pairs file or contact matrix, or when the data was generated from assays that use nuclease rather than restriction enzymes, like <a class="reference internal" href="digests.html"><span class="doc">micro-C</span></a>.</p>
+<p>In the sample file, attribute names are specified as case-sensitive column headers. Blank column headers are not allowed.</p>
+<section id="id-columns">
+<h3>ID columns<a class="headerlink" href="#id-columns" title="Link to this heading"></a></h3>
+<p>Column names: <code class="docutils literal notranslate"><span class="pre">condition</span></code>, <code class="docutils literal notranslate"><span class="pre">biorep</span></code>, <code class="docutils literal notranslate"><span class="pre">techrep</span></code>, and optionally <code class="docutils literal notranslate"><span class="pre">id</span></code></p>
+<p>All samples must have a unique <code class="docutils literal notranslate"><span class="pre">id</span></code> attribute. Samples typically have a <code class="docutils literal notranslate"><span class="pre">condition</span></code>, <code class="docutils literal notranslate"><span class="pre">biorep</span></code>, and <code class="docutils literal notranslate"><span class="pre">techrep</span></code> parameter. The included params files apply the value “1” to both the <code class="docutils literal notranslate"><span class="pre">biorep</span></code> and <code class="docutils literal notranslate"><span class="pre">techrep</span></code> parameter if missing. No default is applied to <code class="docutils literal notranslate"><span class="pre">condition</span></code>. Whether or not samples will be processed correctly by Hich if these columns are missing depends on the aggregation profile(s) specified, if any. It is recommended to give <code class="docutils literal notranslate"><span class="pre">biorep</span></code> and <code class="docutils literal notranslate"><span class="pre">techrep</span></code> a value even if the experiment does not actually include any replicates. Special characters should be handled correctly in most cases, although to be on the safe side it is a good idea to choose names that avoid special characters used in bash such as “/” and “*”.</p>
+<p>If an <code class="docutils literal notranslate"><span class="pre">id</span></code> is not explicitly specified for a sample, Hich will assign it the <code class="docutils literal notranslate"><span class="pre">id</span></code> <em>[condition]_[biorep]_[techrep]</em>. For example, a sample with <code class="docutils literal notranslate"><span class="pre">condition</span></code> “C1”, <code class="docutils literal notranslate"><span class="pre">biorep</span></code> “1” and <code class="docutils literal notranslate"><span class="pre">techrep</span></code> “1” would be auto-assigned the <code class="docutils literal notranslate"><span class="pre">id</span></code> “C1_1_1”. Alternatively, the user can put an <code class="docutils literal notranslate"><span class="pre">id</span></code> column in the sample file and give the sample whatever ID they choose as long as all samples have distinct IDs. The sample <code class="docutils literal notranslate"><span class="pre">id</span></code> is used as the filename prefix for most of Hich’s outputs, but the input files may have arbitrary names and be located anywhere on the filesystem. Aggregate profiles, described in the <a class="reference internal" href="params_file.html"><span class="doc">params file</span></a> documentation, also add the aggregate profile name as a suffix, like <a href="#id1"><span class="problematic" id="id2">*</span></a>[condition]_[biorep]_[techrep]_[aggregation_profile]”.</p>
+<p>For samples with a common <code class="docutils literal notranslate"><span class="pre">aggregateProfile</span></code> name (discussed in more detail in the <a class="reference internal" href="params_file.html"><span class="doc">params file</span></a> documentation) where the <code class="docutils literal notranslate"><span class="pre">mergeTechrepsToBioreps</span></code> flag is set to true, techrep-level samples with matching biorep and condition will be merged to a biorep-level sample. Similarly, if  <code class="docutils literal notranslate"><span class="pre">mergeBiorepsToConditions</span></code> is true, samples with matching <code class="docutils literal notranslate"><span class="pre">condition</span></code> will be merged to a condition-level sample. Below is an example of 8 input technical replicate samples. If an <code class="docutils literal notranslate"><span class="pre">aggregateProfile</span></code> defines the <code class="docutils literal notranslate"><span class="pre">mergeTechrepsToBioreps</span></code> and <code class="docutils literal notranslate"><span class="pre">mergeBiorepsToConditions</span></code> parameters, then 4 biological replicate samples and 2 condition samples will be created and processed in parallel along with the 8 input technical replicates.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>condition</p></th>
+<th class="head"><p>biorep</p></th>
+<th class="head"><p>techrep</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Condition1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-odd"><td><p>Condition1</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>Condition1</p></td>
+<td><p>2</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-odd"><td><p>Condition1</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>Condition2</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-odd"><td><p>Condition2</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>Condition2</p></td>
+<td><p>2</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-odd"><td><p>Condition2</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+</tr>
+</tbody>
+</table>
+</td>
+<td><img alt="../_images/merge_samples.png" src="../_images/merge_samples.png" />
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="data-columns">
+<h3>Data columns<a class="headerlink" href="#data-columns" title="Link to this heading"></a></h3>
+<p>Column names: <code class="docutils literal notranslate"><span class="pre">fastq1</span></code>, <code class="docutils literal notranslate"><span class="pre">fastq2</span></code>, <code class="docutils literal notranslate"><span class="pre">bam</span></code>, <code class="docutils literal notranslate"><span class="pre">pairs</span></code>, <code class="docutils literal notranslate"><span class="pre">mcool</span></code>, <code class="docutils literal notranslate"><span class="pre">hic</span></code></p>
+<p>Hich can ingest intermediate data formats as well as fastq reads. It is safest to either submit plaintext fastq and/or pairs files, or to have them gzipped using the suffix <code class="docutils literal notranslate"><span class="pre">.gz</span></code> or <code class="docutils literal notranslate"><span class="pre">.gzip</span></code>, with <a class="reference external" href="https://github.com/nh13/pbgzip">pbgzip</a> preferred for .pairs format. The input data files should be listed under the appropriate column name. If different samples are starting at different stages (i.e. some are starting with fastq files, others with bam files), simply include both the <code class="docutils literal notranslate"><span class="pre">fastq1</span></code>, <code class="docutils literal notranslate"><span class="pre">fastq2</span></code> and <code class="docutils literal notranslate"><span class="pre">bam</span></code> columns and put the path to the data file in the appropriate column for that sample, leaving the unneeded column values blank.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">pairs</span></code> column is for files in <a class="reference external" href="https://github.com/4dn-dcic/pairix/blob/master/pairs_format_specification.md">4DN .pairs format</a>. Note that Hich relies heavily on <a class="reference external" href="https://pairtools.readthedocs.io/en/latest/cli_tools.html">pairtools</a> for certain processing steps, which uses the column names <code class="docutils literal notranslate"><span class="pre">chrom1</span></code> and <code class="docutils literal notranslate"><span class="pre">chrom2</span></code> as opposed to <code class="docutils literal notranslate"><span class="pre">chr1</span></code> and <code class="docutils literal notranslate"><span class="pre">chr2</span></code> designated in the .pairs spec. Hich has not been tested for compatibility with using <code class="docutils literal notranslate"><span class="pre">chr1</span></code> and <code class="docutils literal notranslate"><span class="pre">chr2</span></code>, so using <code class="docutils literal notranslate"><span class="pre">chrom1</span></code> and <code class="docutils literal notranslate"><span class="pre">chrom2</span></code> is recommended.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">hic</span></code> column is for files in the Aiden Lab’s <cite>.hic format &lt;https://github.com/aidenlab/hic-format&gt;</cite>. The <code class="docutils literal notranslate"><span class="pre">mcool</span></code> column is for files in Open2C <cite>.mcool format &lt;https://cooler.readthedocs.io/en/latest/schema.html#multi-resolution&gt;</cite>.</p>
+<p>This example builds on the previous one, demonstrating how data at the fastq level might be combined with data that has been pre-aligned to bam format.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>condition</p></th>
+<th class="head"><p>biorep</p></th>
+<th class="head"><p>techrep</p></th>
+<th class="head"><p>fastq1</p></th>
+<th class="head"><p>fastq2</p></th>
+<th class="head"><p>bam</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Condition1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>data/c1b1t1_r1.fq.gz</p></td>
+<td><p>data/c1b1t1_r2.fq.gz</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Condition1</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>data/c1b1t2_r1.fq.gz</p></td>
+<td><p>data/c1b1t2_r2.fq.gz</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>Condition1</p></td>
+<td><p>2</p></td>
+<td><p>1</p></td>
+<td><p>data/c1b2t1_r1.fq.gz</p></td>
+<td><p>data/c1b2t1_r2.fq.gz</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Condition1</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>data/c1b2t2_r1.fq.gz</p></td>
+<td><p>data/c1b2t2_r2.fq.gz</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>Condition2</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td></td>
+<td></td>
+<td><p>data/c2b1t1.bam</p></td>
+</tr>
+<tr class="row-odd"><td><p>Condition2</p></td>
+<td><p>1</p></td>
+<td><p>2</p></td>
+<td></td>
+<td></td>
+<td><p>data/c2b1t2.bam</p></td>
+</tr>
+<tr class="row-even"><td><p>Condition2</p></td>
+<td><p>2</p></td>
+<td><p>1</p></td>
+<td></td>
+<td></td>
+<td><p>data/c2b2t1.bam</p></td>
+</tr>
+<tr class="row-odd"><td><p>Condition2</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+<td></td>
+<td></td>
+<td><p>data/c2b2t2.bam</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="processing-columns">
+<h3>Processing columns<a class="headerlink" href="#processing-columns" title="Link to this heading"></a></h3>
+<p>Column names: <code class="docutils literal notranslate"><span class="pre">assembly</span></code>, <code class="docutils literal notranslate"><span class="pre">aligner</span></code>, <code class="docutils literal notranslate"><span class="pre">restrictionEnzymes</span></code></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">assembly</span></code> column is the <em>name</em> of the genome reference used, like “hg38”, while a URI to a file on the local machine or on the web where the genome reference is stored goes in the <code class="docutils literal notranslate"><span class="pre">genomeReference</span></code> column, described in the next section. See the <a class="reference internal" href="../workflow_steps/reference_files.html"><span class="doc">page on building reference files</span></a> for information on how Hich can automatically and non-redundantly retrieve and build needed reference files, including the genome reference, chromsizes file, aligner index, and fragment index.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">aligner</span></code> column can take on one of three values: <code class="docutils literal notranslate"><span class="pre">bwa</span></code>, <code class="docutils literal notranslate"><span class="pre">bwa-mem2</span></code>, or <code class="docutils literal notranslate"><span class="pre">bsbolt</span></code>. The <a class="reference external" href="https://bio-bwa.sourceforge.net/">BWA aligner</a> is slower but requires less memory to index and run. The <a class="reference external" href="https://github.com/bwa-mem2/bwa-mem2">BWA-MEM2 aligner</a> produces near-identical outputs much more quickly, but requires more memory to index and run. The <a class="reference external" href="https://bsbolt.readthedocs.io/en/latest/">BSBolt aligner</a> is a BWA-based aligner and methylation caller for reads from a deaminating assay such as bisulfite conversion.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">restrictionEnzymes</span></code> column describes the restriction enzymes (if any) used in the Hi-C digest. Hich recognizes <a class="reference external" href="https://rebase.neb.com/rebase/rebase.html">REBASE</a> enzyme names. For multi-enzyme digests, give a comma-delimited list of enzyme names such as <code class="docutils literal notranslate"><span class="pre">DdeI,DpnII</span></code>.</p>
+<p>This example shows two experimental conditions, one nuclease-based digest (no entry in <code class="docutils literal notranslate"><span class="pre">restrictionEnzymes</span></code>) aligned to hg38 with the bwa aligner, the other a bisulfite-converted double restriction digest aligned using bsbolt to mm10.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>condition</p></th>
+<th class="head"><p>[…]</p></th>
+<th class="head"><p>assembly</p></th>
+<th class="head"><p>aligner</p></th>
+<th class="head"><p>restrictionEnzymes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>human_microc</p></td>
+<td></td>
+<td><p>hg38</p></td>
+<td><p>bwa</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>mouse_methyl_re</p></td>
+<td></td>
+<td><p>mm10</p></td>
+<td><p>bsbolt</p></td>
+<td><p>DdeI,DpnII</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="reference-file-columns">
+<h3>Reference file columns<a class="headerlink" href="#reference-file-columns" title="Link to this heading"></a></h3>
+<p>Column names: <code class="docutils literal notranslate"><span class="pre">genomeReference</span></code>, <code class="docutils literal notranslate"><span class="pre">chromsizes</span></code>, <code class="docutils literal notranslate"><span class="pre">alignerIndexDir</span></code>, <code class="docutils literal notranslate"><span class="pre">alignerIndexPrefix</span></code>, <code class="docutils literal notranslate"><span class="pre">fragmentIndex</span></code></p>
+<p>These columns specify URIs (local paths or web urls) to reference files that are necessary for certain sample processing steps. If a sample’s input data is preprocessed beyond the step at which the reference file is needed, then it can be left out for that sample. These columns can be entirely left out if not needed for any samples. See the <a class="reference internal" href="../workflow_steps/reference_files.html"><span class="doc">page on building reference files</span></a> for information on how Hich can automatically and non-redundantly retrieve and build needed reference files, including the genome reference, chromsizes file, aligner index, and fragment index.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">genomeReference</span></code> file is to a <a class="reference external" href="https://www.ncbi.nlm.nih.gov/genbank/fastaformat/">FASTA</a> file with reference contigs, which can be downloaded by Hich during the run based on the assembly name for some assemblies. The <code class="docutils literal notranslate"><span class="pre">chromsizes</span></code> file is a two-column headerless file with chromosome names and sizes, which can be built by Hich from the genome reference. The <code class="docutils literal notranslate"><span class="pre">alignerIndexDir</span></code> and <code class="docutils literal notranslate"><span class="pre">alignerIndexPrefix</span></code> columns respectively label the directory in which the aligner’s index files for that genome reference are stored and the filename prefix for the files in the index. For example, if aligner indexes are at <code class="docutils literal notranslate"><span class="pre">hich/bwa/bwa/index/hg38.*</span></code>, then <code class="docutils literal notranslate"><span class="pre">alignerIndexDir</span></code> should be <code class="docutils literal notranslate"><span class="pre">hich/bwa/bwa/index</span></code> and <code class="docutils literal notranslate"><span class="pre">alignerIndexPrefix</span></code> should be <code class="docutils literal notranslate"><span class="pre">hg38</span></code>. The <code class="docutils literal notranslate"><span class="pre">fragmentIndex</span></code> column  is a three-column headerless zero-indexed left-closed right-open BED file containing chromosome name, start and end position for restriction fragments for the digest. This is automatically produced and used by Hich to discard reads mapping to the same restriction fragment as likely resulting from undigested chromatin.</p>
+<p>If unspecified, Hich will attempt to create these files and will hard-link them in <code class="docutils literal notranslate"><span class="pre">resources/hich</span></code> under subdirectories with sensible names.</p>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Planning The Workflow" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="params_file.html" class="btn btn-neutral float-right" title="Params File" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Benjamin Skubi, Andrew Adey, Galip Gürkan Yardımcı.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

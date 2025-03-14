@@ -1,22 +1,12 @@
-aggregate:
-  fullCoverageDedup:
-    dedupSingleCell: false
-    dedupMaxMismatch: 3
-    dedupMethod: 'max'
-    techrepDedup: true
-    biorepDedup: true
-    mergeTechrepToBiorep: true
-    mergeBiorepToCondition: true
-
 defaults:
   techrep: 1
   biorep: 1
 
+  aligner: "bwa-mem2"
+
   # Since this is used in multiple steps, it will be used as the default value for each sample
   # unless an algorithm-specific setting is declared (i.e. parseParams with "--min-mapq 40")
   minMapq: 30
-  
-  aligner: "bwa-mem2"
 
 
   # Options that Hich formats from sample attributes and should not be specified in bwaFlags:
@@ -87,5 +77,14 @@ defaults:
   coolerCloadParams: ["--chrom1 2", "--pos1 3", "--chrom2 4", "--pos2 5"]
 
   coolerZoomifyParams: ["--balance", "--balance-args '--max-iters 2000 --trans-only'"]
+
+aggregate:
+  fullCoverageDedup:
+    dedupMaxMismatch: 3
+    dedupMethod: 'max'
+    techrepDedup: true
+    biorepDedup: true
+    mergeTechrepToBiorep: true
+    mergeBiorepToCondition: true
 
 

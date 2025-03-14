@@ -6,7 +6,6 @@ These tutorials provide an easy introduction to basic use of Hich for sample pro
 
 .. toctree::
     :hidden:
-    :caption: Tutorials
 
     basics
     single_sample

@@ -1,0 +1,9 @@
+condition	biorep	techrep	fastq1	fastq2	bam
+Condition1	1	1	data/c1b1t1_r1.fq.gz	data/c1b1t1_r2.fq.gz	
+Condition1	1	2	data/c1b1t2_r1.fq.gz	data/c1b1t2_r2.fq.gz	
+Condition1	2	1	data/c1b2t1_r1.fq.gz	data/c1b2t1_r2.fq.gz	
+Condition1	2	2	data/c1b2t2_r1.fq.gz	data/c1b2t2_r2.fq.gz	
+Condition2	1	1			data/c2b1t1.bam
+Condition2	1	2			data/c2b1t2.bam
+Condition2	2	1			data/c2b2t1.bam
+Condition2	2	2			data/c2b2t2.bam

@@ -60,7 +60,7 @@ workflow ParseArgs {
                 sample = [fastq1: files[0], fastq2: files[1], datatype: "fastq"]
 
                 if (params.containsKey("paramsFromPath")) {
-                    fileParams = parsePattern(file[0].toString(), params.paramsFromPath)
+                    fileParams = parsePattern(files[0].toString(), params.paramsFromPath)
                     sample += fileParams
                 }
 

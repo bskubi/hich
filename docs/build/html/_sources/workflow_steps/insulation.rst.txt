@@ -1,0 +1,5 @@
+Insulation Scores
+=================
+
+.. toctree::
+    :hidden:

@@ -219,5 +219,3 @@ Multiple resource profiles are defined as well. Nextflow does not actually monit
 
 .. toctree::
     :hidden:
-
-    vignettes/index

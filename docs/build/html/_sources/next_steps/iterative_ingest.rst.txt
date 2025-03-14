@@ -1,0 +1,7 @@
+Integrating Additional Samples
+==============================
+
+.. toctree::
+    :hidden:
+
+    next_steps/index

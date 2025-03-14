@@ -1,0 +1,5 @@
+Genome Digests
+==========================
+
+.. toctree::
+    :hidden:

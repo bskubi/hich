@@ -1,0 +1,5 @@
+Alignment
+=========
+
+.. toctree::
+    :hidden:
