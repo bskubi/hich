@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation &mdash; Hich 0.1 documentation</title>
+  <title>Install Hich and its dependencies &mdash; Hich 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -30,7 +30,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Installation" href="install.html" />
+    <link rel="next" title="Vignettes" href="../vignettes/index.html" />
     <link rel="prev" title="Hich documentation" href="../index.html" /> 
 </head>
 
@@ -54,8 +54,9 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Install Hich and its dependencies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#create-the-hich-environment-and-install-dependencies">Create the <code class="docutils literal notranslate"><span class="pre">hich</span></code> environment and install dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#download-the-hich-pipeline">Download the Hich pipeline</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../vignettes/index.html">Vignettes</a></li>
@@ -79,7 +80,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Installation</li>
+      <li class="breadcrumb-item active">Install Hich and its dependencies</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/install/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -89,11 +90,46 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
-<p>These tutorials provide an easy introduction to basic use of Hich for sample processing.</p>
-<div class="toctree-wrapper compound">
+  <section id="install-hich-and-its-dependencies">
+<h1>Install Hich and its dependencies<a class="headerlink" href="#install-hich-and-its-dependencies" title="Link to this heading"></a></h1>
+<p>This guide shows how to install Hich’s dependencies using <a class="reference external" href="https://mamba.readthedocs.io/en/latest/index.html">mamba</a>.</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://nextflow.io/docs/latest/index.html">Nextflow</a></p></li>
+<li><p>A <a class="reference external" href="https://en.wikipedia.org/wiki/Containerization_(computing)">container management system</a> like <a class="reference external" href="https://docs.docker.com/">Docker</a> or, for shared computing environments, <a class="reference external" href="https://docs.sylabs.io/guides/latest/user-guide/">Singularity</a>/<a class="reference external" href="https://apptainer.org/">Apptainer</a>.</p></li>
+<li><p><a class="reference external" href="https://github.com/vasi/squashfuse">Squashfuse</a>, an up-to-date version of <a class="reference external" href="https://openjdk.org/">OpenJDK</a>, <a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a> and the <a class="reference external" href="https://pypi.org/project/hich/">Hich CLI utilities</a>.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Nextflow, and therefore Hich, is primarily designed to be run on Linux or macOS, but can be installed on Windows via WSL. These instructions have been tested on Linux and may need adaptation to other operating systems. See <a class="reference external" href="https://www.nextflow.io/docs/latest/install.html">Nextflow’s installation instructions</a> for details.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Assuming most users will run Hich on a shared computing environment, this documentation uses singularity. However, <a class="reference external" href="https://nextflow.io/docs/latest/container.html">Nextflow supports many container management systems</a> and it should be possible to use any of them Hich as long as it’s compatible with your computing environment.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Hich uses the container management system to install further dependencies the first time you run it. It can be configured to permanently store these additional dependencies in a centralized location with the <code class="docutils literal notranslate"><span class="pre">.cacheDir</span></code> setting in the <code class="docutils literal notranslate"><span class="pre">nextflow.config</span></code> file. See <a class="reference external" href="https://nextflow.io/docs/latest/container.html">Nextflow’s container documentation</a> for more details.</p>
+</div>
+<hr class="docutils" />
+<section id="create-the-hich-environment-and-install-dependencies">
+<h2>Create the <code class="docutils literal notranslate"><span class="pre">hich</span></code> environment and install dependencies<a class="headerlink" href="#create-the-hich-environment-and-install-dependencies" title="Link to this heading"></a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">mamba</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="o">-</span><span class="n">qy</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="n">bioconda</span><span class="o">::</span><span class="n">nextflow</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">singularity</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">squashfuse</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">openjdk</span><span class="o">=</span><span class="mi">21</span><span class="w"> </span><span class="n">pip</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">mamba</span><span class="w"> </span><span class="n">activate</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">pip</span><span class="w"> </span><span class="n">install</span><span class="w"> </span><span class="n">hich</span>
+</pre></div>
+</div>
+<p>You can activate this environment with <code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">activate</span> <span class="pre">hich</span></code></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">mamba</span></code> and <code class="docutils literal notranslate"><span class="pre">conda</span></code> can be used interchangeably, but <code class="docutils literal notranslate"><span class="pre">mamba</span></code> is typically faster.</p>
+</div>
+</section>
+<section id="download-the-hich-pipeline">
+<h2>Download the Hich pipeline<a class="headerlink" href="#download-the-hich-pipeline" title="Link to this heading"></a></h2>
+<p>Create a directory where the <code class="docutils literal notranslate"><span class="pre">hich</span></code> pipeline code will be stored, go there, then clone it from github.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span><span class="w"> </span><span class="o">~/</span><span class="n">hich</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">cd</span><span class="w"> </span><span class="o">~/</span><span class="n">hich</span>
+<span class="n">git</span><span class="w"> </span><span class="n">clone</span><span class="w"> </span><span class="n">https</span><span class="o">:</span><span class="c1">//github.com/bskubi/hich &amp;&amp; cd hich</span>
+</pre></div>
+</div>
+</section>
 </section>
 
 
@@ -101,7 +137,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../index.html" class="btn btn-neutral float-left" title="Hich documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="install.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../vignettes/index.html" class="btn btn-neutral float-right" title="Vignettes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

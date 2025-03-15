@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation &mdash; Hich 0.1 documentation</title>
+  <title>Install Hich and its dependencies &mdash; Hich 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -55,13 +55,9 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Installation</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id1">Install with Mamba</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#download-hich-and-vignettes">Download Hich and vignettes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#run-end-to-end-test-vignettes">Run end-to-end test vignettes</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#new-to-nextflow-squashfuse-or-apptainer">New to Nextflow, Squashfuse or Apptainer?</a><ul class="simple">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Install Hich and its dependencies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-the-hich-environment-and-install-dependencies">Create the <code class="docutils literal notranslate"><span class="pre">hich</span></code> environment and install dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#download-hich-and-vignettes">Download Hich and vignettes</a><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -90,7 +86,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Installation</a></li>
-      <li class="breadcrumb-item active">Installation</li>
+      <li class="breadcrumb-item active">Install Hich and its dependencies</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/install/install.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -100,40 +96,45 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
-<p>Hich depends on Nextflow and a containerization solution such as Apptainer, which are easiest to install on a macOS or Linux-based system that has conda or mamba preinstalled. Nextflow can also be installed on Windows using WSL. For a conda-based installation, replace <cite>mamba</cite> with <cite>conda</cite> in the installation steps below. It will install Nextflow, the needed JDK version, apptainer, and the squashfuse dependency needed to efficiently start container instances.</p>
-<section id="id1">
-<h2><a class="reference external" href="https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html">Install with Mamba</a><a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
-<p>Install</p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">mamba</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="o">-</span><span class="n">qy</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="n">bioconda</span><span class="o">::</span><span class="n">nextflow</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">squashfuse</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">apptainer</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">openjdk</span><span class="o">=</span><span class="mi">21</span>
+  <section id="install-hich-and-its-dependencies">
+<h1>Install Hich and its dependencies<a class="headerlink" href="#install-hich-and-its-dependencies" title="Link to this heading"></a></h1>
+<p>This guide shows how to install Hich’s dependencies using <a class="reference external" href="https://mamba.readthedocs.io/en/latest/index.html">mamba</a>.</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://nextflow.io/docs/latest/index.html">Nextflow</a></p></li>
+<li><p>A <a class="reference external" href="https://en.wikipedia.org/wiki/Containerization_(computing)">container management system</a> like <a class="reference external" href="https://docs.docker.com/">Docker</a> or, for shared computing environments, <a class="reference external" href="https://docs.sylabs.io/guides/latest/user-guide/">Singularity</a>/<a class="reference external" href="https://apptainer.org/">Apptainer</a>.</p></li>
+<li><p><a class="reference external" href="https://github.com/vasi/squashfuse">Squashfuse</a>, an up-to-date version of <a class="reference external" href="https://openjdk.org/">OpenJDK</a>, <a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a> and the <a class="reference external" href="https://pypi.org/project/hich/">Hich CLI utilities</a>.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Nextflow, and therefore Hich, is primarily designed to be run on Linux or macOS, but can be installed on Windows via WSL. These instructions have been tested on Linux and may need adaptation to other operating systems. See <a class="reference external" href="https://www.nextflow.io/docs/latest/install.html">Nextflow’s installation instructions</a> for details.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Assuming most users will run Hich on a shared computing environment, this documentation uses singularity. However, <a class="reference external" href="https://nextflow.io/docs/latest/container.html">Nextflow supports many container management systems</a> and it should be possible to use any of them Hich as long as it’s compatible with your computing environment.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Hich uses the container management system to install further dependencies the first time you run it. It can be configured to permanently store these additional dependencies in a centralized location with the <code class="docutils literal notranslate"><span class="pre">.cacheDir</span></code> setting in the <code class="docutils literal notranslate"><span class="pre">nextflow.config</span></code> file. See <a class="reference external" href="https://nextflow.io/docs/latest/container.html">Nextflow’s container documentation</a> for more details.</p>
+</div>
+<hr class="docutils" />
+<section id="create-the-hich-environment-and-install-dependencies">
+<h2>Create the <code class="docutils literal notranslate"><span class="pre">hich</span></code> environment and install dependencies<a class="headerlink" href="#create-the-hich-environment-and-install-dependencies" title="Link to this heading"></a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">mamba</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="o">-</span><span class="n">qy</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="n">bioconda</span><span class="o">::</span><span class="n">nextflow</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">singularity</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">squashfuse</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">openjdk</span><span class="o">=</span><span class="mi">21</span><span class="w"> </span><span class="n">pip</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">mamba</span><span class="w"> </span><span class="n">activate</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">pip</span><span class="w"> </span><span class="n">install</span><span class="w"> </span><span class="n">hich</span>
 </pre></div>
 </div>
-<p>Activate environment (each time you log in, prior to running Hich)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mamba</span> <span class="n">activate</span> <span class="n">hich</span>
-</pre></div>
+<p>You can activate this environment with <code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">activate</span> <span class="pre">hich</span></code></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">mamba</span></code> and <code class="docutils literal notranslate"><span class="pre">conda</span></code> can be used interchangeably, but <code class="docutils literal notranslate"><span class="pre">mamba</span></code> is typically faster.</p>
 </div>
+</section>
 <section id="download-hich-and-vignettes">
-<h3>Download Hich and vignettes<a class="headerlink" href="#download-hich-and-vignettes" title="Link to this heading"></a></h3>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">git</span><span class="w"> </span><span class="n">clone</span><span class="w"> </span><span class="n">https</span><span class="o">:</span><span class="c1">//github.com/bskubi/hich &amp;&amp; cd hich</span>
+<h2>Download Hich and vignettes<a class="headerlink" href="#download-hich-and-vignettes" title="Link to this heading"></a></h2>
+<p>Create a directory where the <code class="docutils literal notranslate"><span class="pre">hich</span></code> pipeline code will be stored, go there, then clone it from github.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span><span class="w"> </span><span class="o">~/</span><span class="n">hich</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">cd</span><span class="w"> </span><span class="o">~/</span><span class="n">hich</span>
+<span class="n">git</span><span class="w"> </span><span class="n">clone</span><span class="w"> </span><span class="n">https</span><span class="o">:</span><span class="c1">//github.com/bskubi/hich &amp;&amp; cd hich</span>
 </pre></div>
 </div>
-</section>
-<section id="run-end-to-end-test-vignettes">
-<h3>Run end-to-end test vignettes<a class="headerlink" href="#run-end-to-end-test-vignettes" title="Link to this heading"></a></h3>
-<p>If running on a multi-user environment (i.e. SLURM), allocate resources and create a batch execution script if desired. The command to launch the automated test scripts depends on whether you wish to launch a resource-constrained test (localPC) or higher resource test (localHPC).</p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span><span class="w"> </span><span class="n">tests</span><span class="o">/</span><span class="n">test_localPC</span><span class="p">.</span><span class="n">sh</span>
-</pre></div>
-</div>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span><span class="w"> </span><span class="n">tests</span><span class="o">/</span><span class="n">test_localHPC</span><span class="p">.</span><span class="n">sh</span>
-</pre></div>
-</div>
-</section>
-</section>
-<section id="new-to-nextflow-squashfuse-or-apptainer">
-<h2>New to Nextflow, Squashfuse or Apptainer?<a class="headerlink" href="#new-to-nextflow-squashfuse-or-apptainer" title="Link to this heading"></a></h2>
-<p><a class="reference external" href="https://nextflow.io/">Nextflow</a> is a powerful workflow platform for reproducible science, similar to <a class="reference external" href="https://snakemake.github.io/">Snakemake</a> and widely used in bioinformatics. <a class="reference external" href="https://apptainer.org/docs/admin/latest/index.html">Apptainer</a> makes software extremely portable and works in a variety of HPC environments. <a class="reference external" href="https://github.com/vasi/squashfuse">Squashfuse</a> is a critical to Apptainer’s performance. The <code class="docutils literal notranslate"><span class="pre">nextflow</span> <span class="pre">run</span> <span class="pre">bskubi/hich</span></code> command downloads <code class="docutils literal notranslate"><span class="pre">hich</span></code> from its <a class="reference external" href="https://github.com/bskubi/hich">GitHub repo</a>, installs it to the Nextflow home directory, and runs it using the <span class="xref std std-doc">sample file</span> in your current working directory with default settings. See Nextflow’s section on <a class="reference external" href="https://www.nextflow.io/docs/latest/sharing.html">pipeline sharing</a> for more details.</p>
-<p>For Hich’s individual processes, from data processing to QC to analysis, Hich relies on a number of existing and novel tools, packages and algorithms, known as the “Hich toolkit.” This toolkit has been installed to a frozen container image from which they can be run by a container management system (Apptainer, Singularity, Podman, Docker, etc). This image is prebuilt and runs with no installation anywhere the container management system exists, eliminating the need for cumbersome dependency installation found in other processing workflows.</p>
 <div class="toctree-wrapper compound">
 </div>
 </section>
