@@ -165,26 +165,170 @@ See also: :ref:`Resource files` under ``restrictionEnzymes``, ``fragmentIndex``
 Downsampling, merging, and deduplicating samples
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
+``aggregate``
+    A single Hich-config block, typically declared in the YAML params file. Each sub-entry is the name of an **aggregate profile**. The aggregate profile defines how samples are to be downsampled, merged and deduplicated. Samples with no aggregate profile are cloned and tagged as belonging to that aggregate profile, and the aggregate profile is incorporated into the cloned sample's id and therefore becomes part of the filename.
+
+Options within an aggregate profile in the ``aggregate`` block
+______________________________________________________________
+
+**Deduplication**
+
+``techrepDedup``
+
+``techrepDedupMethod``
+    Controls the ``--method`` parameter for `pairtools dedup <https://pairtools.readthedocs.io/en/latest/cli_tools.html#pairtools-dedup>`_ when calling duplicates on technical replicate samples.
+
+``biorepDedup``
+
+``biorepDedupMethod``
+    Controls the ``--method`` parameter for `pairtools dedup <https://pairtools.readthedocs.io/en/latest/cli_tools.html#pairtools-dedup>`_ when calling duplicates on biological replicate samples.
+
+``conditionDedup``
+
+``conditionDedupMethod``
+    Controls the ``--method`` parameter for `pairtools dedup <https://pairtools.readthedocs.io/en/latest/cli_tools.html#pairtools-dedup>`_ when calling duplicates on condition samples.
+
+``dedupMaxMismatch``
+    The max number of base pairs of mismatch between contacts permitted to deep them as duplicates. This value is interpreted in light of the ``techrepDedupMethod``, ``biorepDedupMethod``, or ``conditionDedupMethod``.
+
+``dedupSingleCell``
+    If true, then in addition to the difference in position between contacts being small enough, the contacts' cellID column values must also match in order for one of the contacts to be discarded as a duplicate. See the section on :ref:`optional single-cell attributes <Optional single-cell attributes>` for options controlling how to parse cellID from the readID or sam/bam tags.
+
+**Downsampling**
+
+``techrepDownsamplePairs``
+    If true, techrep-level samples will be downsampled in a manner controlled by the following parameters.
+
+``techrepCisStrata``
+    For downsampling, defines a partition over distance strata for contacts mapping to the same chromosome which will be used to homogenize the number of contacts within that strata across the techrep-level samples being downsampled together.
+
+``techrepReadConjuncts``
+    For downsampling, selects which fields will be used to partition techrep-level contacts for downsampling.
+
+``techrepDownsampleToMeanDistribution``
+    If true, then during downsampling, the mean fraction of contacts in each block in the partition will be used as the target distribution for each of the techrep-level samples being downsampled together.
+
+``techrepToSize``
+    Controls the number of contacts each techrep-level sample in the aggregate profile will be downsampled to. If a float from 0-1, downsamples to approximately that fraction of the original size. If an integer greater than 1, downsamples to that number of contacts.
+
+``biorepDownsamplePairs``
+    If true, biorep-level samples will be downsampled in a manner controlled by the following parameters.
+
+``biorepCisStrata``
+    For downsampling, allows defining a partition over distance strata for contacts mapping to the same chromosome which will be used to homogenize the number of contacts within that strata across the biorep-level samples being downsampled together.
+
+``biorepReadConjuncts``
+    For downsampling, selects which fields will be used to partition biorep-level contacts for downsampling.
+
+``biorepDownsampleToMeanDistribution``
+    If true, then during downsampling, the mean fraction of contacts in each block in the partition will be used as the target distribution for each of the biorep-level samples being downsampled together.
+
+``biorepToSize``
+    Controls the number of contacts each biorep-level sample in the aggregate profile will be downsampled to. If a float from 0-1, downsamples to approximately that fraction of the original size. If an integer greater than 1, downsamples to that number of contacts.
+
+``conditionDownsamplePairs``
+    If true, condition-level samples will be downsampled in a manner controlled by the following parameters.
+
+``conditionCisStrata``
+    For downsampling, allows defining a partition over distance strata for contacts mapping to the same chromosome which will be used to homogenize the number of contacts within that strata across the condition-level samples being downsampled together.
+
+``conditionReadConjuncts``
+    For downsampling, selects which fields will be used to partition condition-level contacts for downsampling.
+
+``conditionDownsampleToMeanDistribution``
+    If true, then during downsampling, the mean fraction of contacts in each block in the partition will be used as the target distribution for each of the condition-level samples being downsampled together.
+
+``conditionToSize``
+    Controls the number of contacts each condition-level sample in the aggregate profile will be downsampled to. If a float from 0-1, downsamples to approximately that fraction of the original size. If an integer greater than 1, downsamples to that number of contacts.
+
+**Merging**
+
+``mergeTechrepToBiorep``
+    If true, techreps with the same condition, biorep, and aggregate profile will be merged to create a biorep-level sample. The techrep-level samples will be retained for further processing as well. If specified, techrep-level downsampling will occur prior to the merge, while deduplication occurs after the merge. 
+
+``mergeBiorepToCondition``
+    If true, bioreps with the same condition and aggregate profile will be merged to create a condition-level sample. The biorep-level samples will be retained for further processing as well. If specified, biorep-level downsampling will occur prior to the merge, while deduplication occurs after the merge.
+    
+``mergeCondition``
+    If true, conditions-level samples with the same aggregate profile will be merged to create a new sample. The condition-level samples will be retained for further processing as well. If specified, condition-level downsampling will occur prior to the merge, while deduplication occurs after the merge.
+
 Creating contact matrices
 ,,,,,,,,,,,,,,,,,,,,,,,,,
+
+``matrix``
+    A code block defining which contact matrix formats will be produced.
+
+``matrix.makeMcoolFileFormat``
+    Part of the ``matrix`` code block. If true, then an `mcool-format <https://cooler.readthedocs.io/en/latest/schema.html#multi-resolution>`_ multi-resolution cooler file will be created. Creating this file format is necessary for calling insulation and compartment scores with Hich due to its dependence on the ``cooler`` library.
+
+``matrix.makeHicFileFormat``
+    Part of the ``matrix`` code block. If true, then a `hic-format <https://github.com/aidenlab/juicer/wiki/Data>`_ Hi-C file will be created. This is not necessary for Hich, but an advantage of the .hic format over the .mcool format is that it allows retrieving expected and o/e values.
+
+``matrix.resolutions``
+    Part of the ``matrix`` code block. A list of resolutions to produce.
+
+``juicerToolsPreParams``
+    Not part of the ``matrix`` code block. Additional parameters passed to `juicer tools pre <https://github.com/aidenlab/juicer/wiki/Pre>`_ command.
+
+``coolerCloadParams``
+    Not part of the ``matrix`` code block. Additional parameters passed to `cooler cload pairs <https://cooler.readthedocs.io/en/latest/cli.html#cooler-cload-pairs>`_ which is used to generate the highest resolution `cool-format <https://cooler.readthedocs.io/en/latest/schema.html>`_ file that serves as the input used to create the mcool-format file.
+
+``coolerZoomifyParams``
+    Not part of the ``matrix`` code block. Additional parameters passed to `cooler zoomify <https://cooler.readthedocs.io/en/latest/cli.html#cooler-zoomify>`_ to create the mcool-format file from the cool format file.
 
 Generating multiQC reports on Hi-C contacts
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
+``general.qcAfter``
+    List of steps after which a step-specific multiQC report will be generated using multiQC's ``pairtools`` module.
+
+Sample selection strategies
+,,,,,,,,,,,,,,,,,,,,,,,,,,,
+
+Sample selections strategies are used to specify which samples feature calling is performed on.
+
+``sampleSelectionStrategies``
+     Hich-config block. Keys are names of sample selection strategies. Each strategy is a hashmap, where keys are sample attribute names, values are the acceptable values of the sample attributes in order for the sample to be selected.
+
 Calling HiCRep SCC scores
 ,,,,,,,,,,,,,,,,,,,,,,,,,
+
+HiCRep SCC scores will be called on all pairs of samples in the sample selections strategy, using all combinations of resolutions, h, dBPMax, bDownSample specified in each parameterization. This will be output as a single TSV file associating the input sample pairs, chromosome, and parameterization and the resulting SCC score.
+
+``hicrep``
+    Hich-config block. Keys are names of hicrep parameterizations. Values are the parameter names and values to be used for that call to hicrep, which can include ``resolutions``, ``chroms``, ``exclude``, ``chromFilter``, ``h``, ``dBPMax``, ``bDownSample``, and ``sampleSelectionStrategy``.
 
 Calling compartment scores
 ,,,,,,,,,,,,,,,,,,,,,,,,,,
 
+Compartment scores (bounded by [-1, 1], with positive values being more gene dense than negative values) will be generated for each parameterization on the samples matching its sample selection strategy.
+
+``compartments``
+    Hich-config block. Keys are names of compartment-calling parameterizations. Values are the parameter names and values to be used for that parameterization of compartment calling, which can include ``resolution``, ``hichCompartmentsParams``, and ``sampleSelectionStrategy``.
+
 Calling insulation scores
 ,,,,,,,,,,,,,,,,,,,,,,,,,
+
+Insulation scores will be generated for each parameterization on the samples matching its sample selection strategy.
+
+``insulation``
+    Hich-config block. Keys are names of insulation score-calling parameterizations. Values are the parameter names and values to be used for that parameterization of insulation score calling, which can include ``sampleSelectionStrategy``.
 
 Calling loops
 ,,,,,,,,,,,,,,,,
 
+Mustache loop calls will be generated for each parameterization on the samples matching its sample selection strategy.
+
+``loops``
+    Hich-config block. Keys are names of Mustache loop-calling parameterizations. Values are the parameter names and values to be used for that parameterization of loop calling, which can include ``sampleSelectionStrategy``.
+
 Calling differential loop enrichments (diffloops)
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+
+Mustache diffloop calls will be generated for each parameterization on pairs of samples matching its sample selection strategy.
+
+``differentialLoops``
+    Hich-config block. Keys are names of Mustache diffloop-calling parameterizations. Values are the parameter names and values to be used for that parameterization of diffloop calling, which can include ``sampleSelectionStrategy``.
 
 Recent outputs
 ,,,,,,,,,,,,,,

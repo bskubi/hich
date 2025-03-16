@@ -66,9 +66,13 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#filtering-hi-c-contacts">Filtering Hi-C contacts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#downsampling-merging-and-deduplicating-samples">Downsampling, merging, and deduplicating samples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#downsampling-merging-and-deduplicating-samples">Downsampling, merging, and deduplicating samples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#options-within-an-aggregate-profile-in-the-aggregate-block">Options within an aggregate profile in the <code class="docutils literal notranslate"><span class="pre">aggregate</span></code> block</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#creating-contact-matrices">Creating contact matrices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#generating-multiqc-reports-on-hi-c-contacts">Generating multiQC reports on Hi-C contacts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sample-selection-strategies">Sample selection strategies</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#calling-hicrep-scc-scores">Calling HiCRep SCC scores</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#calling-compartment-scores">Calling compartment scores</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#calling-insulation-scores">Calling insulation scores</a></li>
@@ -281,27 +285,149 @@
 </section>
 <section id="downsampling-merging-and-deduplicating-samples">
 <h3>Downsampling, merging, and deduplicating samples<a class="headerlink" href="#downsampling-merging-and-deduplicating-samples" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">aggregate</span></code></dt><dd><p>A single Hich-config block, typically declared in the YAML params file. Each sub-entry is the name of an <strong>aggregate profile</strong>. The aggregate profile defines how samples are to be downsampled, merged and deduplicated. Samples with no aggregate profile are cloned and tagged as belonging to that aggregate profile, and the aggregate profile is incorporated into the cloned sample’s id and therefore becomes part of the filename.</p>
+</dd>
+</dl>
+<section id="options-within-an-aggregate-profile-in-the-aggregate-block">
+<h4>Options within an aggregate profile in the <code class="docutils literal notranslate"><span class="pre">aggregate</span></code> block<a class="headerlink" href="#options-within-an-aggregate-profile-in-the-aggregate-block" title="Link to this heading"></a></h4>
+<p><strong>Deduplication</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">techrepDedup</span></code></p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">techrepDedupMethod</span></code></dt><dd><p>Controls the <code class="docutils literal notranslate"><span class="pre">--method</span></code> parameter for <a class="reference external" href="https://pairtools.readthedocs.io/en/latest/cli_tools.html#pairtools-dedup">pairtools dedup</a> when calling duplicates on technical replicate samples.</p>
+</dd>
+</dl>
+<p><code class="docutils literal notranslate"><span class="pre">biorepDedup</span></code></p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">biorepDedupMethod</span></code></dt><dd><p>Controls the <code class="docutils literal notranslate"><span class="pre">--method</span></code> parameter for <a class="reference external" href="https://pairtools.readthedocs.io/en/latest/cli_tools.html#pairtools-dedup">pairtools dedup</a> when calling duplicates on biological replicate samples.</p>
+</dd>
+</dl>
+<p><code class="docutils literal notranslate"><span class="pre">conditionDedup</span></code></p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">conditionDedupMethod</span></code></dt><dd><p>Controls the <code class="docutils literal notranslate"><span class="pre">--method</span></code> parameter for <a class="reference external" href="https://pairtools.readthedocs.io/en/latest/cli_tools.html#pairtools-dedup">pairtools dedup</a> when calling duplicates on condition samples.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">dedupMaxMismatch</span></code></dt><dd><p>The max number of base pairs of mismatch between contacts permitted to deep them as duplicates. This value is interpreted in light of the <code class="docutils literal notranslate"><span class="pre">techrepDedupMethod</span></code>, <code class="docutils literal notranslate"><span class="pre">biorepDedupMethod</span></code>, or <code class="docutils literal notranslate"><span class="pre">conditionDedupMethod</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">dedupSingleCell</span></code></dt><dd><p>If true, then in addition to the difference in position between contacts being small enough, the contacts’ cellID column values must also match in order for one of the contacts to be discarded as a duplicate. See the section on <a class="reference internal" href="sample_attributes.html#optional-single-cell-attributes"><span class="std std-ref">optional single-cell attributes</span></a> for options controlling how to parse cellID from the readID or sam/bam tags.</p>
+</dd>
+</dl>
+<p><strong>Downsampling</strong></p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">techrepDownsamplePairs</span></code></dt><dd><p>If true, techrep-level samples will be downsampled in a manner controlled by the following parameters.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">techrepCisStrata</span></code></dt><dd><p>For downsampling, defines a partition over distance strata for contacts mapping to the same chromosome which will be used to homogenize the number of contacts within that strata across the techrep-level samples being downsampled together.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">techrepReadConjuncts</span></code></dt><dd><p>For downsampling, selects which fields will be used to partition techrep-level contacts for downsampling.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">techrepDownsampleToMeanDistribution</span></code></dt><dd><p>If true, then during downsampling, the mean fraction of contacts in each block in the partition will be used as the target distribution for each of the techrep-level samples being downsampled together.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">techrepToSize</span></code></dt><dd><p>Controls the number of contacts each techrep-level sample in the aggregate profile will be downsampled to. If a float from 0-1, downsamples to approximately that fraction of the original size. If an integer greater than 1, downsamples to that number of contacts.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">biorepDownsamplePairs</span></code></dt><dd><p>If true, biorep-level samples will be downsampled in a manner controlled by the following parameters.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">biorepCisStrata</span></code></dt><dd><p>For downsampling, allows defining a partition over distance strata for contacts mapping to the same chromosome which will be used to homogenize the number of contacts within that strata across the biorep-level samples being downsampled together.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">biorepReadConjuncts</span></code></dt><dd><p>For downsampling, selects which fields will be used to partition biorep-level contacts for downsampling.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">biorepDownsampleToMeanDistribution</span></code></dt><dd><p>If true, then during downsampling, the mean fraction of contacts in each block in the partition will be used as the target distribution for each of the biorep-level samples being downsampled together.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">biorepToSize</span></code></dt><dd><p>Controls the number of contacts each biorep-level sample in the aggregate profile will be downsampled to. If a float from 0-1, downsamples to approximately that fraction of the original size. If an integer greater than 1, downsamples to that number of contacts.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">conditionDownsamplePairs</span></code></dt><dd><p>If true, condition-level samples will be downsampled in a manner controlled by the following parameters.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">conditionCisStrata</span></code></dt><dd><p>For downsampling, allows defining a partition over distance strata for contacts mapping to the same chromosome which will be used to homogenize the number of contacts within that strata across the condition-level samples being downsampled together.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">conditionReadConjuncts</span></code></dt><dd><p>For downsampling, selects which fields will be used to partition condition-level contacts for downsampling.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">conditionDownsampleToMeanDistribution</span></code></dt><dd><p>If true, then during downsampling, the mean fraction of contacts in each block in the partition will be used as the target distribution for each of the condition-level samples being downsampled together.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">conditionToSize</span></code></dt><dd><p>Controls the number of contacts each condition-level sample in the aggregate profile will be downsampled to. If a float from 0-1, downsamples to approximately that fraction of the original size. If an integer greater than 1, downsamples to that number of contacts.</p>
+</dd>
+</dl>
+<p><strong>Merging</strong></p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">mergeTechrepToBiorep</span></code></dt><dd><p>If true, techreps with the same condition, biorep, and aggregate profile will be merged to create a biorep-level sample. The techrep-level samples will be retained for further processing as well. If specified, techrep-level downsampling will occur prior to the merge, while deduplication occurs after the merge.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mergeBiorepToCondition</span></code></dt><dd><p>If true, bioreps with the same condition and aggregate profile will be merged to create a condition-level sample. The biorep-level samples will be retained for further processing as well. If specified, biorep-level downsampling will occur prior to the merge, while deduplication occurs after the merge.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mergeCondition</span></code></dt><dd><p>If true, conditions-level samples with the same aggregate profile will be merged to create a new sample. The condition-level samples will be retained for further processing as well. If specified, condition-level downsampling will occur prior to the merge, while deduplication occurs after the merge.</p>
+</dd>
+</dl>
+</section>
 </section>
 <section id="creating-contact-matrices">
 <h3>Creating contact matrices<a class="headerlink" href="#creating-contact-matrices" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">matrix</span></code></dt><dd><p>A code block defining which contact matrix formats will be produced.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">matrix.makeMcoolFileFormat</span></code></dt><dd><p>Part of the <code class="docutils literal notranslate"><span class="pre">matrix</span></code> code block. If true, then an <a class="reference external" href="https://cooler.readthedocs.io/en/latest/schema.html#multi-resolution">mcool-format</a> multi-resolution cooler file will be created. Creating this file format is necessary for calling insulation and compartment scores with Hich due to its dependence on the <code class="docutils literal notranslate"><span class="pre">cooler</span></code> library.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">matrix.makeHicFileFormat</span></code></dt><dd><p>Part of the <code class="docutils literal notranslate"><span class="pre">matrix</span></code> code block. If true, then a <a class="reference external" href="https://github.com/aidenlab/juicer/wiki/Data">hic-format</a> Hi-C file will be created. This is not necessary for Hich, but an advantage of the .hic format over the .mcool format is that it allows retrieving expected and o/e values.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">matrix.resolutions</span></code></dt><dd><p>Part of the <code class="docutils literal notranslate"><span class="pre">matrix</span></code> code block. A list of resolutions to produce.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">juicerToolsPreParams</span></code></dt><dd><p>Not part of the <code class="docutils literal notranslate"><span class="pre">matrix</span></code> code block. Additional parameters passed to <a class="reference external" href="https://github.com/aidenlab/juicer/wiki/Pre">juicer tools pre</a> command.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">coolerCloadParams</span></code></dt><dd><p>Not part of the <code class="docutils literal notranslate"><span class="pre">matrix</span></code> code block. Additional parameters passed to <a class="reference external" href="https://cooler.readthedocs.io/en/latest/cli.html#cooler-cload-pairs">cooler cload pairs</a> which is used to generate the highest resolution <a class="reference external" href="https://cooler.readthedocs.io/en/latest/schema.html">cool-format</a> file that serves as the input used to create the mcool-format file.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">coolerZoomifyParams</span></code></dt><dd><p>Not part of the <code class="docutils literal notranslate"><span class="pre">matrix</span></code> code block. Additional parameters passed to <a class="reference external" href="https://cooler.readthedocs.io/en/latest/cli.html#cooler-zoomify">cooler zoomify</a> to create the mcool-format file from the cool format file.</p>
+</dd>
+</dl>
 </section>
 <section id="generating-multiqc-reports-on-hi-c-contacts">
 <h3>Generating multiQC reports on Hi-C contacts<a class="headerlink" href="#generating-multiqc-reports-on-hi-c-contacts" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">general.qcAfter</span></code></dt><dd><p>List of steps after which a step-specific multiQC report will be generated using multiQC’s <code class="docutils literal notranslate"><span class="pre">pairtools</span></code> module.</p>
+</dd>
+</dl>
+</section>
+<section id="sample-selection-strategies">
+<h3>Sample selection strategies<a class="headerlink" href="#sample-selection-strategies" title="Link to this heading"></a></h3>
+<p>Sample selections strategies are used to specify which samples feature calling is performed on.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategies</span></code></dt><dd><p>Hich-config block. Keys are names of sample selection strategies. Each strategy is a hashmap, where keys are sample attribute names, values are the acceptable values of the sample attributes in order for the sample to be selected.</p>
+</dd>
+</dl>
 </section>
 <section id="calling-hicrep-scc-scores">
 <h3>Calling HiCRep SCC scores<a class="headerlink" href="#calling-hicrep-scc-scores" title="Link to this heading"></a></h3>
+<p>HiCRep SCC scores will be called on all pairs of samples in the sample selections strategy, using all combinations of resolutions, h, dBPMax, bDownSample specified in each parameterization. This will be output as a single TSV file associating the input sample pairs, chromosome, and parameterization and the resulting SCC score.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">hicrep</span></code></dt><dd><p>Hich-config block. Keys are names of hicrep parameterizations. Values are the parameter names and values to be used for that call to hicrep, which can include <code class="docutils literal notranslate"><span class="pre">resolutions</span></code>, <code class="docutils literal notranslate"><span class="pre">chroms</span></code>, <code class="docutils literal notranslate"><span class="pre">exclude</span></code>, <code class="docutils literal notranslate"><span class="pre">chromFilter</span></code>, <code class="docutils literal notranslate"><span class="pre">h</span></code>, <code class="docutils literal notranslate"><span class="pre">dBPMax</span></code>, <code class="docutils literal notranslate"><span class="pre">bDownSample</span></code>, and <code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategy</span></code>.</p>
+</dd>
+</dl>
 </section>
 <section id="calling-compartment-scores">
 <h3>Calling compartment scores<a class="headerlink" href="#calling-compartment-scores" title="Link to this heading"></a></h3>
+<p>Compartment scores (bounded by [-1, 1], with positive values being more gene dense than negative values) will be generated for each parameterization on the samples matching its sample selection strategy.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">compartments</span></code></dt><dd><p>Hich-config block. Keys are names of compartment-calling parameterizations. Values are the parameter names and values to be used for that parameterization of compartment calling, which can include <code class="docutils literal notranslate"><span class="pre">resolution</span></code>, <code class="docutils literal notranslate"><span class="pre">hichCompartmentsParams</span></code>, and <code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategy</span></code>.</p>
+</dd>
+</dl>
 </section>
 <section id="calling-insulation-scores">
 <h3>Calling insulation scores<a class="headerlink" href="#calling-insulation-scores" title="Link to this heading"></a></h3>
+<p>Insulation scores will be generated for each parameterization on the samples matching its sample selection strategy.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">insulation</span></code></dt><dd><p>Hich-config block. Keys are names of insulation score-calling parameterizations. Values are the parameter names and values to be used for that parameterization of insulation score calling, which can include <code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategy</span></code>.</p>
+</dd>
+</dl>
 </section>
 <section id="calling-loops">
 <h3>Calling loops<a class="headerlink" href="#calling-loops" title="Link to this heading"></a></h3>
+<p>Mustache loop calls will be generated for each parameterization on the samples matching its sample selection strategy.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">loops</span></code></dt><dd><p>Hich-config block. Keys are names of Mustache loop-calling parameterizations. Values are the parameter names and values to be used for that parameterization of loop calling, which can include <code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategy</span></code>.</p>
+</dd>
+</dl>
 </section>
 <section id="calling-differential-loop-enrichments-diffloops">
 <h3>Calling differential loop enrichments (diffloops)<a class="headerlink" href="#calling-differential-loop-enrichments-diffloops" title="Link to this heading"></a></h3>
+<p>Mustache diffloop calls will be generated for each parameterization on pairs of samples matching its sample selection strategy.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">differentialLoops</span></code></dt><dd><p>Hich-config block. Keys are names of Mustache diffloop-calling parameterizations. Values are the parameter names and values to be used for that parameterization of diffloop calling, which can include <code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategy</span></code>.</p>
+</dd>
+</dl>
 </section>
 <section id="recent-outputs">
 <h3>Recent outputs<a class="headerlink" href="#recent-outputs" title="Link to this heading"></a></h3>
