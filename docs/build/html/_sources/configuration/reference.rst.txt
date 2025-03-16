@@ -1,0 +1,5 @@
+Hich Sample Attributes
+..........................
+
+Hich configuration options (Hich-config) 
+

@@ -26,7 +26,7 @@ workflow {
         | Align                 // Align .fastq -> .bam
         | Parse                 // .bam -> .pairs and read-level filters
         | IngestPairs
-        | TagRestrictionFragments   // Only affects sames with "restrictionEnzymes"
+        | TagRestrictionFragments   // Only affects samples with "fragmentIndex"
         | Select
 
         | AggregateTechreps     // Downsample, deduplicate, merge

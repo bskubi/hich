@@ -1,4 +1,4 @@
-include {withLog; stubLog; emptyOnLastStep; pack; isExistingFile; skip} from './extraops.nf'
+
 
 process StageGenomeReference {
     /*  When a URL is passed to a Nextflow function, the resource will be
