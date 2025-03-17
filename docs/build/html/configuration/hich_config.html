@@ -6,8 +6,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hich pipeline options reference &mdash; Hich 0.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+  <title>Hich-config reference &mdash; Hich 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
@@ -17,7 +17,7 @@
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=2709fde1"></script>
-      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../_static/copybutton.js?v=f281be69"></script>
@@ -25,7 +25,6 @@
       <script>let toggleHintHide = 'Click to hide';</script>
       <script>let toggleOpenOnPrint = 'true';</script>
       <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
-      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
       <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -74,7 +73,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Hich pipeline options reference</li>
+      <li class="breadcrumb-item active">Hich-config reference</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/configuration/hich_config.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -84,10 +83,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="hich-pipeline-options-reference">
-<h1>Hich pipeline options reference<a class="headerlink" href="#hich-pipeline-options-reference" title="Link to this heading"></a></h1>
+  <section id="hich-config-reference">
+<h1>Hich-config reference<a class="headerlink" href="#hich-config-reference" title="Link to this heading"></a></h1>
 <section id="typically-specified-in-params-file">
-<h2>Typically specified in <a class="reference internal" href="index.html#params-file"><span class="std std-ref">params file</span></a><a class="headerlink" href="#typically-specified-in-params-file" title="Link to this heading"></a></h2>
+<span id="params-file"></span><h2>Typically specified in <a class="reference internal" href="index.html#params-file"><span class="std std-ref">params file</span></a><a class="headerlink" href="#typically-specified-in-params-file" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">defaults</span></code></dt><dd><p>Hashmap. Required. <a class="reference internal" href="index.html#sample-attributes-reference"><span class="std std-ref">Sample attributes</span></a> specified in the <code class="docutils literal notranslate"><span class="pre">defaults</span></code> block are applied to all samples by default, unless overridden on for individual samples, (i.e. in the sample file). YAML example:</p>
 </dd>
@@ -116,31 +115,87 @@
 </pre></div>
 </div>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategies</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="index.html#sample-selection-strategies"><span class="std std-ref">Sample selection strategies</span></a> are declared here and used to control the samples that are used as inputs into various feature calling methods. The keys of the <code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategies</span></code> hashmap are strategy names. Values are a hashmap of sample attributes and lists of acceptable values of those attributes. YAML example:</p>
+<dt><code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategies</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="index.html#sample-selection-strategies"><span class="std std-ref">Sample selection strategies</span></a> are declared here and used to control the samples that are used as inputs into various feature calling methods. The keys of the <code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategies</span></code> hashmap are strategy names. Values are a hashmap of sample attributes and lists of acceptable values of those attributes, which can be given as a single acceptable value or as a list of acceptable values. YAML example:</p>
 </dd>
 </dl>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">sampleSelectionStrategies</span><span class="p">:</span>
 <span class="w">    </span><span class="nl">strategy1</span><span class="p">:</span>
 <span class="w">        </span><span class="nl">condition</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;c1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;c2&quot;</span><span class="p">]</span>
-<span class="w">        </span><span class="n">aggregateProfile</span>
+<span class="w">        </span><span class="nl">biorep</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;b1&quot;</span>
+<span class="w">        </span><span class="nl">aggregateProfile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;profile1&quot;</span>
 <span class="w">    </span><span class="nl">strategy2</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">condition</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;c1&quot;</span>
+<span class="w">        </span><span class="nl">aggregateProfile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;profile2&quot;</span>
 </pre></div>
 </div>
+<section id="analysis-methods-and-analysis-plans">
+<h3>Analysis methods and analysis plans<a class="headerlink" href="#analysis-methods-and-analysis-plans" title="Link to this heading"></a></h3>
+<p>An analysis plan is a way of parameterizing an analysis method, such as calling HiCRep SCC scores, loops, or compartment scores. They consist of parameter values as well as a sample selection strategy that determines the samples on which the analysis plan will be run. For an analysis plan, its sample selection strategy may be left out, or specified as a single strategy or list of them. If it is a list, the sample must satisfy all the strategies to be included in the analysis plan. If no sample selection strategy is given, all samples will be used as inputs to that analysis plan. Hich manages conflicts by replacing earlier settings with those from more recent strategies, so <code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategy:</span> <span class="pre">[&quot;strategy1&quot;,</span> <span class="pre">&quot;strategy2&quot;]</span></code> replaces any attribute requirements in strategy1 that also appear in strategy2 with the required values in strategy2.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">hicrep</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="index.html#calling-hicrep-scc-scores"><span class="std std-ref">Calling HiCRep SCC scores</span></a> is controlled here. Keys are names of parameterization profiles for hicrep. Values are analysis plans, which are the parameterizations themselves.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">loops</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="index.html#calling-loops"><span class="std std-ref">Calling loops</span></a> is controlled here. Keys are names of parameterization profiles for Mustache. Values are analysis plans, which are the parameterizations themselves.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">differentialLoops</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="index.html#calling-differential-loop-enrichments-diffloops"><span class="std std-ref">Calling differential loop enrichments (diffloops)</span></a> is controlled here. Keys are names of parameterization profiles for Mustache. Values are analysis plans, which are the parameterizations themselves.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">compartments</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="index.html#calling-compartment-scores"><span class="std std-ref">Calling compartment scores</span></a> is controlled here. Keys are names of parameterization profiles for Mustache. Values are analysis plans, which are the parameterizations themselves.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">insulation</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="index.html#calling-insulation-scores"><span class="std std-ref">Calling insulation scores</span></a> is controlled here. Keys are names of parameterization profiles for Mustache. Values are analysis plans, which are the parameterizations themselves.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">hicrep</span></code></dt><dd><p>Hashmap. Optional. Analysis plans for <a class="reference internal" href="index.html#calling-hicrep-scc-scores"><span class="std std-ref">calling HiCRep SCC scores</span></a> are specified in this block. Keys are names of analysis plans for hicrep. Values are analysis plans themselves. YAML example:</p>
 </dd>
 </dl>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">hicrep</span><span class="p">:</span>
+<span class="w">    </span><span class="nl">sccPlan1</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">sampleSelectionStrategy</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;strategy1&quot;</span>
+<span class="w">        </span><span class="nl">h</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">        </span><span class="nl">resolutions</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">2000</span><span class="p">,</span><span class="w"> </span><span class="mi">10000</span><span class="p">]</span>
+<span class="w">        </span><span class="nl">bDownSample</span><span class="p">:</span><span class="w"> </span><span class="nb">true</span>
+<span class="w">    </span><span class="nl">sccPlan2</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">sampleSelectionStrategy</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;strategy1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;strategy2&quot;</span><span class="p">]</span>
+<span class="w">        </span><span class="nl">h</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">        </span><span class="nl">resolutions</span><span class="p">:</span><span class="w"> </span><span class="mi">20000</span>
+</pre></div>
+</div>
+<p>This defines two analysis plans. The first uses samples conforming to a sample selection strategy named “strategy1”. Using the example provided in the reference for sample selection strategies above, samples are required to have a condition label that is either “c1” or “c2”, a biological replicate label “b1”, the aggregateProfile label “profile1.” The second requires that both “strategy1” and “strategy2” match the samples used as input. Using the example, only samples with the condition “c1”, biological replicate label “b1”, and aggregateProfile label “profile1” will be chosen. All combinations of the other parameters will be used, so <code class="docutils literal notranslate"><span class="pre">sccPlan1</span></code> will run on <code class="docutils literal notranslate"><span class="pre">(h:</span> <span class="pre">1,</span> <span class="pre">resolution:</span> <span class="pre">2000,</span> <span class="pre">bDownSample:</span> <span class="pre">true)</span></code> and <code class="docutils literal notranslate"><span class="pre">(h:</span> <span class="pre">1,</span> <span class="pre">resolution:</span> <span class="pre">10000,</span> <span class="pre">bDownSample:</span> <span class="pre">true)</span></code>.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">loops</span></code></dt><dd><p>Hashmap. Optional. Analysis plans for <a class="reference internal" href="index.html#calling-loops"><span class="std std-ref">calling loops</span></a> are specified in this block. Keys are names of analysis plans for hicrep. Values are analysis plans themselves. YAML example:</p>
+</dd>
+</dl>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">loops</span><span class="p">:</span>
+<span class="w">    </span><span class="nl">loopPlan1</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">sampleSelectionStrategy</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;strategy1&quot;</span>
+<span class="w">        </span><span class="nl">mustacheParams</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;-r 2000&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;-ch chr1&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Analysis plans simply pass arguments in mustacheParams directly to <a class="reference external" href="https://github.com/ay-lab/mustache/blob/master/README.md">Mustache</a>, so the parameters specified there should be used for these analysis plans. Do not use the <code class="docutils literal notranslate"><span class="pre">-f</span></code> or <code class="docutils literal notranslate"><span class="pre">-o</span></code> arguments as these are hardcoded into Hich.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">differentialLoops</span></code></dt><dd><p>Hashmap. Optional. Analysis plans for <a class="reference internal" href="index.html#calling-differential-loop-enrichments-diffloops"><span class="std std-ref">calling differential loop enrichments (diffloops)</span></a> are specified in this block. Keys are names of analysis plans for hicrep. Values are analysis plans themselves. YAML example:</p>
+</dd>
+</dl>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">differentialLoops</span><span class="p">:</span>
+<span class="w">    </span><span class="nl">diffloopPlan1</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">mustacheParams</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;-r 2000&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Analysis plans simply pass arguments in mustacheParams directly to <a class="reference external" href="https://github.com/ay-lab/mustache/blob/master/README.md">Mustache diffloops</a>, so the parameters specified there should be used for these analysis plans. Do not use the <code class="docutils literal notranslate"><span class="pre">-f1</span></code>, <code class="docutils literal notranslate"><span class="pre">-f2</span></code>, or <code class="docutils literal notranslate"><span class="pre">-o</span></code> arguments as these are hardcoded into Hich.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">compartments</span></code></dt><dd><p>Hashmap. Optional. Analysis plans for <a class="reference internal" href="index.html#calling-compartment-scores"><span class="std std-ref">calling compartment scores</span></a> are specified in this block. Keys are names of analysis plans for hicrep. Values are analysis plans themselves. The <code class="docutils literal notranslate"><span class="pre">resolution</span></code> value must be specified. YAML example:</p>
+</dd>
+</dl>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">compartments</span><span class="p">:</span>
+<span class="w">    </span><span class="nl">compartmentPlan1</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">resolution</span><span class="p">:</span><span class="w"> </span><span class="mi">2000</span>
+<span class="w">        </span><span class="nl">hichCompartmentsParams</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;--chroms chr1,chr2,chr3&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Analysis plans simply pass arguments in hichCompartmentsParams directly to the Hich CLI utilities <code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">compartments</span></code> method, so the parameters specified there should be used for these analysis plans. Do not pass <code class="docutils literal notranslate"><span class="pre">--n_eigs</span></code> as this is hardcoded into Hich (compartment scores based on the first 3 eigenvalues will be generated).</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">insulation</span></code></dt><dd><p>Hashmap. Optional. Analysis plans for <a class="reference internal" href="index.html#calling-insulation-scores"><span class="std std-ref">calling insulation scores</span></a> are specified in this block. Keys are names of analysis plans for hicrep. Values are analysis plans themselves. YAML example:</p>
+</dd>
+</dl>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">insulation</span><span class="p">:</span>
+<span class="w">    </span><span class="nl">insulationPlan1</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">resolution</span><span class="p">:</span><span class="w"> </span><span class="mi">2000</span>
+<span class="w">        </span><span class="nl">cooltoolsInsulationParams</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;--threshold 1&quot;</span><span class="p">]</span>
+<span class="w">        </span><span class="nl">window</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span>
+</pre></div>
+</div>
+<p>Analysis plans simply pass arguments in cooltoolsInsulationParams will be passed directly to <a class="reference external" href="https://cooltools.readthedocs.io/en/latest/cli.html#cooltools-insulation">cooltools insulation</a>, so the parameters specified there should be used for these analysis plans. Do not pass <code class="docutils literal notranslate"><span class="pre">--output</span></code> as this is hardcoded into Hich.</p>
+</section>
 </section>
 <section id="typically-specified-in-nextflow-config">
-<h2>Typically specified in <a class="reference internal" href="index.html#nextflow-config-file"><span class="std std-ref">nextflow.config</span></a><a class="headerlink" href="#typically-specified-in-nextflow-config" title="Link to this heading"></a></h2>
+<span id="nextflow-config-file"></span><h2>Typically specified in <a class="reference internal" href="index.html#nextflow-config-file"><span class="std std-ref">nextflow.config</span></a><a class="headerlink" href="#typically-specified-in-nextflow-config" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">sampleFileSep</span></code></dt><dd><p>Single-character string. Required to parse sample file. Column separator. Use “t” for tab (TSV files) or “,” for comma (CSV files). Other settings can be used as well.</p>
 </dd>

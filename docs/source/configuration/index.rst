@@ -16,10 +16,16 @@ The `Nextflow training page on configuration options <https://training.nextflow.
 .. note::
     NF-config uses a ``-`` prefix, as for options like ``-params-file`` and ``-c``. Hich-config uses a double ``--`` prefix, as for options like ``--sample-file``.
 
+.. _sample-file:
 Sample file
 .........................
 
-The sample file is typically a tab-separated value (TSV) file that describes sample-specific attributes. Formatting requirements:
+The sample file is typically a tab-separated value (TSV) file that describes sample-specific attributes.
+
+``--sampleFile``
+    The path to the sample file.
+
+Formatting requirements:
 
 + Delimiter matches ``--sampleFileSep`` parameter
 + Has headers for every column with content. No content-free headerless columns between columns with content.
@@ -44,6 +50,31 @@ Nextflow config file
 .........................
 
 The Nextflow config file is in `Nextflow configuration syntax <https://www.nextflow.io/docs/latest/config.html>`_ and is typically named ``nextflow.config``. It offers exactly the same capabilities as the params file. The reason for using both is for convenience: infrequently changed config options that are shipped with Hich are in ``nextflow.config``, while config options more likely to be adjusted to suit individual runs are placed in params files. The ``nextflow.config`` file included with Hich includes a number of resource management profiles in the ``profiles`` section, as well as more general parameters in the ``params`` and ``params.general`` sections, including which containers are used, where outputs are published, when to generate multiQC reports, how many reads to keep for humid runs, and what separator delimits columns in the sample file.
+
+Set samples at the command line
+.........................................
+
+The following allow including fastq samples, and even sample-specific attributes encoded in the fastq filename, directly from the command line. Samples declared this way will be used in addition to the :ref:`sample file <sample-file>`, if specified.
+
+``--fastqInterleaved``
+    Interleaved fastq files (i.e. r1 followed by r2 in the same file). Example: ``--fastqInterleaved fq/*.fq.gz``
+
+``--fastqPairs``
+    Paired fastq files (i.e. an r1 and an r2 file). Filenames are parsed using Nextflow's `fromFilePairs <https://www.nextflow.io/docs/latest/reference/channel.html#fromfilepairs>`_ syntax. Example: ``--fastqPairs fq/*.r{1,2}.fq.gz``
+
+``--samplesFromSRA``
+    URL to paired fastq files hosted on `SRA <https://www.ncbi.nlm.nih.gov/sra>`_.
+
+``--paramsFromPath``
+    Uses a similar syntax to Python's `parse <https://pypi.org/project/parse/>`_ library to extract sample attribute values from filenames using a parsing pattern. Note that if using ``--fastqPairs``, only the first file will be parsed (i.e. r1 if that was specified first between brackets, as in ``*.r{1,2}.fq.gz``). Example: ``--fastqPairs fq/*.r{1,2}.fq.gz --paramsFromPath {condition}_{biorep}_{techrep}.r1.fq.gz`` 
+
+``--samples``
+    Interprets filename to read in fastq (``".fastq", ".fq"``), sam/bam (``".sam", ".bam"``), pairs (``".pairs"``), mcool (``".mcool"``), or hic (``".hic"``) files. The extension can be included in the filename (``"*.fq.gz"``) or be at the end of the filename (``*.fq``). Example: ``--samples data/*.pairs.gz``
+
+Set Hich-config at the command line
+...........................................
+
+Hich-config, such as that specified in the :ref:`params file <params-file>` or :ref:`nextflow.config <nextflow-config-file>`, can also be specified directly via the command line. This will override that option's specification in the params file or nextflow.config file. Example: ``nextflow run contents/main.nf --defaults.minMapq 10 --general.publish.mode copy``
 
 .. include:: hich_config.rst
 

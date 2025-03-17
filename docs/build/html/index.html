@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hich documentation &mdash; Hich 0.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
@@ -17,7 +17,7 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=2709fde1"></script>
-      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="_static/copybutton.js?v=f281be69"></script>
@@ -25,7 +25,6 @@
       <script>let toggleHintHide = 'Click to hide';</script>
       <script>let toggleOpenOnPrint = 'true';</script>
       <script src="_static/togglebutton.js?v=4a39c7ea"></script>
-      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
       <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -98,8 +97,13 @@
 <li class="toctree-l2"><a class="reference internal" href="configuration/index.html#sample-file">Sample file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration/index.html#params-file">Params file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration/index.html#nextflow-config-file">Nextflow config file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration/index.html#hich-pipeline-options-reference">Hich pipeline options reference</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="configuration/index.html#typically-specified-in-params-file">Typically specified in <span class="xref std std-ref">params file</span></a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration/index.html#set-samples-at-the-command-line">Set samples at the command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration/index.html#set-hich-config-at-the-command-line">Set Hich-config at the command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration/index.html#hich-config-reference">Hich-config reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="configuration/index.html#typically-specified-in-params-file">Typically specified in <span class="xref std std-ref">params file</span></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="configuration/index.html#analysis-methods-and-analysis-plans">Analysis methods and analysis plans</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/index.html#typically-specified-in-nextflow-config">Typically specified in <span class="xref std std-ref">nextflow.config</span></a></li>
 </ul>
 </li>
@@ -108,15 +112,9 @@
 <li class="toctree-l3"><a class="reference internal" href="configuration/index.html#resource-files">Resource files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/index.html#aligning-reads">Aligning reads</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/index.html#filters">Filters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration/index.html#hi-c-contacts-ingested-from-pairs-or-parsed-from-sam-bam">Hi-C contacts ingested from .pairs or parsed from .sam/.bam</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="configuration/index.html#optional-single-cell-attributes">Optional single-cell attributes</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/index.html#hi-c-contacts-ingested-from-pairs-or-parsed-from-sam-bam">Hi-C contacts ingested from .pairs or parsed from .sam/.bam</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/index.html#filtering-hi-c-contacts">Filtering Hi-C contacts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="configuration/index.html#downsampling-merging-and-deduplicating-samples">Downsampling, merging, and deduplicating samples</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="configuration/index.html#options-within-an-aggregate-profile-in-the-aggregate-block">Options within an aggregate profile in the <code class="docutils literal notranslate"><span class="pre">aggregate</span></code> block</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="configuration/index.html#downsampling-merging-and-deduplicating-samples">Downsampling, merging, and deduplicating samples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/index.html#creating-contact-matrices">Creating contact matrices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/index.html#generating-multiqc-reports-on-hi-c-contacts">Generating multiQC reports on Hi-C contacts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="configuration/index.html#sample-selection-strategies">Sample selection strategies</a></li>
