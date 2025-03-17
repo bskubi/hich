@@ -1,0 +1,217 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hich CLI Utilities &mdash; Hich 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=8ea2664f" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Vignettes" href="../vignettes/index.html" />
+    <link rel="prev" title="Configuration" href="../configuration/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Hich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install/index.html">Install Hich and its dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration/index.html">Configuration</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Hich CLI Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hich-compartments-options-reference-matrix-resolution"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">compartments</span> <span class="pre">[options]</span> <span class="pre">REFERENCE</span> <span class="pre">MATRIX</span> <span class="pre">RESOLUTION</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-digest-options-reference-digest"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">digest</span> <span class="pre">[options]</span> <span class="pre">REFERENCE</span> <span class="pre">DIGEST</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-downsample-options">``hich downsample [options] ``</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-fragtag"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">fragtag</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-gather"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">gather</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-hicrep"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">hicrep</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-organize"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">organize</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-reshape"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">reshape</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-stats-aggregate"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">stats_aggregate</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-stats"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">stats</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../vignettes/index.html">Vignettes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflow_steps/index.html">Workflow Steps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../planning/index.html">Planning The Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../implementation/index.html">Implementation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Hich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Hich CLI Utilities</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/cli/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="hich-cli-utilities">
+<h1>Hich CLI Utilities<a class="headerlink" href="#hich-cli-utilities" title="Link to this heading"></a></h1>
+<section id="hich-compartments-options-reference-matrix-resolution">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">compartments</span> <span class="pre">[options]</span> <span class="pre">REFERENCE</span> <span class="pre">MATRIX</span> <span class="pre">RESOLUTION</span></code><a class="headerlink" href="#hich-compartments-options-reference-matrix-resolution" title="Link to this heading"></a></h2>
+<p>Calls compartment scores on Open2C-format Hi-C data.</p>
+<p>Options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--chroms</span></code>: Chrom/contig names to use. If given, contigs not named here will not be used.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--exclude-chroms</span></code>: Chrom/contig names to exclude. If given, contigs named here will not be used, even if specified in <code class="docutils literal notranslate"><span class="pre">--chroms</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--keep-chroms-when</span></code>: Python code that references a string <code class="docutils literal notranslate"><span class="pre">chrom</span></code> and evaluates to True if that chromosome name should be used.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--n_eigs</span></code>: Number of eigenvectors to call. These will be sign-flipped so that positive scores correspond to regions of higher %GC content to create compartment scores. Default: 1</p></li>
+</ul>
+<p>Arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">REFERENCE</span></code>: Genome fasta reference used to determine %GC content.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MATRIX</span></code>: A .cool or .mcool file used as input to <a class="reference external" href="https://cooltools.readthedocs.io/en/latest/cli.html#cooltools-eigs-cis">cooltools eigs-cis</a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RESOLUTION</span></code>: Resolution at which compartment scores are called.</p></li>
+</ul>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>hich<span class="w"> </span>compartments<span class="w"> </span>--keep-chroms-when<span class="w"> </span><span class="s2">&quot;chrom.startswith(&#39;chr&#39;)&quot;</span><span class="w"> </span>hg38_noalts.fa.gz<span class="w"> </span>k562.mcool<span class="w"> </span><span class="m">10000</span>
+</pre></div>
+</div>
+</section>
+<section id="hich-digest-options-reference-digest">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">digest</span> <span class="pre">[options]</span> <span class="pre">REFERENCE</span> <span class="pre">DIGEST</span></code><a class="headerlink" href="#hich-digest-options-reference-digest" title="Link to this heading"></a></h2>
+<p>Creates restriction enzyme fragment index in BED format.</p>
+<p>Options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--output</span></code>: Output file. Compression autodetected by file extension. If None, prints to stdout.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--startshift</span></code>: Fixed distance to shift start of each fragment. Default: 0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--endshift</span></code>: Fixed distance to shift end of each fragment. Default: 0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cutshift</span></code>: Fixed distance to shift end of each fragment. Default: 1</p></li>
+</ul>
+<p>Arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">REFERENCE</span></code>: Reference genome to use as basis for digest</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DIGEST</span></code>: Space-delimited list of enzyme names and/or kit name</p></li>
+</ul>
+<p>Examples:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>hich<span class="w"> </span>digest<span class="w"> </span>--output<span class="w"> </span>hg38_arima.bed<span class="w"> </span>hg38_noalts.fa.gz<span class="w"> </span>Arima
+hich<span class="w"> </span>digest<span class="w"> </span>--output<span class="w"> </span>hg38_hic3.bed<span class="w"> </span>hg38_noalts.fa.gz<span class="w"> </span>DpnII<span class="w"> </span>DdeI
+</pre></div>
+</div>
+<p>Supported enzymes:
++ All of ~800 REBASE enzymes used by <a class="reference external" href="https://github.com/biopython/biopython/blob/master/Doc/cookbook/Restriction/Restriction.md">biopython’s restriction module</a>, as well as <code class="docutils literal notranslate"><span class="pre">Arima</span></code>, <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Plant</span></code>, <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Animal</span></code>, <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Microbiome</span></code>, <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Human</span></code>, <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Fungal</span></code>.</p>
+</section>
+<section id="hich-downsample-options">
+<h2><a href="#id1"><span class="problematic" id="id2">``</span></a>hich downsample [options] ``<a class="headerlink" href="#hich-downsample-options" title="Link to this heading"></a></h2>
+<p>Options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--conjuncts</span></code>:</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cis-strata</span></code>:</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--orig-stats</span></code>:</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--target-stats</span></code>:</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--to-size</span></code>:</p></li>
+</ul>
+<p>Arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">INPUT_PAIRS_PATH</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OUTPUT_PAIRS_PATH</span></code></p></li>
+</ul>
+</section>
+<section id="hich-fragtag">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">fragtag</span></code><a class="headerlink" href="#hich-fragtag" title="Link to this heading"></a></h2>
+</section>
+<section id="hich-gather">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">gather</span></code><a class="headerlink" href="#hich-gather" title="Link to this heading"></a></h2>
+</section>
+<section id="hich-hicrep">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">hicrep</span></code><a class="headerlink" href="#hich-hicrep" title="Link to this heading"></a></h2>
+</section>
+<section id="hich-organize">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">organize</span></code><a class="headerlink" href="#hich-organize" title="Link to this heading"></a></h2>
+</section>
+<section id="hich-reshape">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">reshape</span></code><a class="headerlink" href="#hich-reshape" title="Link to this heading"></a></h2>
+</section>
+<section id="hich-stats-aggregate">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">stats_aggregate</span></code><a class="headerlink" href="#hich-stats-aggregate" title="Link to this heading"></a></h2>
+</section>
+<section id="hich-stats">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">stats</span></code><a class="headerlink" href="#hich-stats" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../configuration/index.html" class="btn btn-neutral float-left" title="Configuration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../vignettes/index.html" class="btn btn-neutral float-right" title="Vignettes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Benjamin Skubi, Andrew Adey, Galip Gürkan Yardımcı.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

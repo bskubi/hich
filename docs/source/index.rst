@@ -5,6 +5,7 @@ Hich documentation
 
    install/index
    configuration/index
+   cli/index
    vignettes/index
    workflow_steps/index
    planning/index
