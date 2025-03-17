@@ -30,7 +30,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Set up a run" href="../configuration/index.html" />
+    <link rel="next" title="Configuration" href="../configuration/index.html" />
     <link rel="prev" title="Hich documentation" href="../index.html" /> 
 </head>
 
@@ -59,12 +59,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#download-the-hich-pipeline">Download the Hich pipeline</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../configuration/index.html">Set up a run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration/index.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../vignettes/index.html">Vignettes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../workflow_steps/index.html">Workflow Steps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../planning/index.html">Planning The Workflow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../implementation/index.html">Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../next_steps/index.html">Next Steps After Running Hich</a></li>
 </ul>
 
         </div>
@@ -94,30 +93,19 @@
   <section id="install-hich-and-its-dependencies">
 <h1>Install Hich and its dependencies<a class="headerlink" href="#install-hich-and-its-dependencies" title="Link to this heading"></a></h1>
 <p>This guide shows how to install Hich’s dependencies using <a class="reference external" href="https://mamba.readthedocs.io/en/latest/index.html">mamba</a>.</p>
-<ol class="arabic simple">
-<li><p><a class="reference external" href="https://nextflow.io/docs/latest/index.html">Nextflow</a></p></li>
-<li><p>A <a class="reference external" href="https://en.wikipedia.org/wiki/Containerization_(computing)">container management system</a> like <a class="reference external" href="https://docs.docker.com/">Docker</a> or, for shared computing environments, <a class="reference external" href="https://docs.sylabs.io/guides/latest/user-guide/">Singularity</a>/<a class="reference external" href="https://apptainer.org/">Apptainer</a>.</p></li>
-<li><p><a class="reference external" href="https://github.com/vasi/squashfuse">Squashfuse</a>, an up-to-date version of <a class="reference external" href="https://openjdk.org/">OpenJDK</a>, <a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a> and the <a class="reference external" href="https://pypi.org/project/hich/">Hich CLI utilities</a>.</p></li>
-</ol>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Nextflow, and therefore Hich, is primarily designed to be run on Linux or macOS, but can be installed on Windows via WSL. These instructions have been tested on Linux and may need adaptation to other operating systems. See <a class="reference external" href="https://www.nextflow.io/docs/latest/install.html">Nextflow’s installation instructions</a> for details.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Assuming most users will run Hich on a shared computing environment, this documentation uses singularity. However, <a class="reference external" href="https://nextflow.io/docs/latest/container.html">Nextflow supports many container management systems</a> and it should be possible to use any of them Hich as long as it’s compatible with your computing environment.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Hich uses the container management system to install further dependencies the first time you run it. It can be configured to permanently store these additional dependencies in a centralized location with the <code class="docutils literal notranslate"><span class="pre">.cacheDir</span></code> setting in the <code class="docutils literal notranslate"><span class="pre">nextflow.config</span></code> file. See <a class="reference external" href="https://nextflow.io/docs/latest/container.html">Nextflow’s container documentation</a> for more details.</p>
-</div>
 <hr class="docutils" />
 <section id="create-the-hich-environment-and-install-dependencies">
 <h2>Create the <code class="docutils literal notranslate"><span class="pre">hich</span></code> environment and install dependencies<a class="headerlink" href="#create-the-hich-environment-and-install-dependencies" title="Link to this heading"></a></h2>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">mamba</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="o">-</span><span class="n">qy</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="n">bioconda</span><span class="o">::</span><span class="n">nextflow</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">singularity</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">squashfuse</span><span class="w"> </span><span class="n">conda</span><span class="o">-</span><span class="n">forge</span><span class="o">::</span><span class="n">openjdk</span><span class="o">=</span><span class="mi">21</span><span class="w"> </span><span class="n">pip</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">mamba</span><span class="w"> </span><span class="n">activate</span><span class="w"> </span><span class="n">hich</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">pip</span><span class="w"> </span><span class="n">install</span><span class="w"> </span><span class="n">hich</span>
 </pre></div>
 </div>
-<p>You can activate this environment with <code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">activate</span> <span class="pre">hich</span></code></p>
+<p>The dependencies that will be installed by this command are:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://nextflow.io/docs/latest/index.html">Nextflow</a></p></li>
+<li><p><a class="reference external" href="https://docs.sylabs.io/guides/latest/user-guide/">Singularity</a>, which is a <a class="reference external" href="https://en.wikipedia.org/wiki/Containerization_(computing)">container management system</a> similar to <a class="reference external" href="https://docs.docker.com/">Docker</a> but more commonly compatible with shared computing environments</p></li>
+<li><p><a class="reference external" href="https://github.com/vasi/squashfuse">Squashfuse</a>, an up-to-date version of <a class="reference external" href="https://openjdk.org/">OpenJDK</a>, <a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a> and the <a class="reference external" href="https://pypi.org/project/hich/">Hich CLI utilities</a></p></li>
+</ul>
+<p>This will activate the <code class="docutils literal notranslate"><span class="pre">hich</span></code> environment. You will need to activate it prior to running the pipeline via <code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">activate</span> <span class="pre">hich</span></code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><code class="docutils literal notranslate"><span class="pre">mamba</span></code> and <code class="docutils literal notranslate"><span class="pre">conda</span></code> can be used interchangeably, but <code class="docutils literal notranslate"><span class="pre">mamba</span></code> is typically faster.</p>
@@ -130,6 +118,18 @@
 <span class="n">git</span><span class="w"> </span><span class="n">clone</span><span class="w"> </span><span class="n">https</span><span class="o">:</span><span class="c1">//github.com/bskubi/hich &amp;&amp; cd hich</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Nextflow, and therefore Hich, is primarily designed to be run on Linux or macOS, but can be installed on Windows via WSL. These instructions have been tested on Linux and may need adaptation to other operating systems. See <a class="reference external" href="https://www.nextflow.io/docs/latest/install.html">Nextflow’s installation instructions</a> for details.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Assuming most users will run Hich on a shared computing environment, this documentation uses singularity. However, <a class="reference external" href="https://nextflow.io/docs/latest/container.html">Nextflow supports many container management systems</a> and it should be possible to use any of them Hich as long as it’s compatible with your computing environment.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Hich uses the container management system (i.e. Singularity) to install further dependencies the first time you run it. It can be configured to permanently store these additional dependencies in a centralized location with the <code class="docutils literal notranslate"><span class="pre">.cacheDir</span></code> setting in the <code class="docutils literal notranslate"><span class="pre">nextflow.config</span></code> file. See <a class="reference external" href="https://nextflow.io/docs/latest/container.html">Nextflow’s container documentation</a> for more details.</p>
+</div>
 </section>
 </section>
 
@@ -138,7 +138,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../index.html" class="btn btn-neutral float-left" title="Hich documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../configuration/index.html" class="btn btn-neutral float-right" title="Set up a run" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../configuration/index.html" class="btn btn-neutral float-right" title="Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

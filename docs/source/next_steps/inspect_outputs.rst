@@ -1,5 +1,0 @@
-Inspect Outputs
-===============
-
-.. toctree::
-    :hidden:

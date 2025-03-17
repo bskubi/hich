@@ -704,7 +704,7 @@ def asHashSet(val) {
 def createCompositeStrategy(strategyKeys, strategyMap, combineHow = [:]) {
     /* A composite strategy is a hashmap in which keys are sample attributes and values are lists of permitted sample attribute values. It is created by combining one or more individual strategies specified in params.sampleSelectionStrategies.
 
-        strategyKeys -- keys in strategyMap for the sub-strategies to combine
+        strategyKeys -- keys in strategyMap for the sub-strategies to combine (i.e. analysisPlan)
         strategyMap -- [strategyKey: selectionStrategy] map-of-maps, typically params.sampleSelectionStrategies
         combineHow -- not currently used, but permits defining how to combine strategies when
             there are conflicts by passing a [key: closure] map where

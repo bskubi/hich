@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hich configuration options &mdash; Hich 0.1 documentation</title>
+  <title>Hich pipeline options reference &mdash; Hich 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -53,12 +53,11 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../install/index.html">Install Hich and its dependencies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="index.html">Set up a run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../vignettes/index.html">Vignettes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../workflow_steps/index.html">Workflow Steps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../planning/index.html">Planning The Workflow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../implementation/index.html">Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../next_steps/index.html">Next Steps After Running Hich</a></li>
 </ul>
 
         </div>
@@ -75,7 +74,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Hich configuration options</li>
+      <li class="breadcrumb-item active">Hich pipeline options reference</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/configuration/hich_config.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -85,8 +84,116 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="hich-configuration-options">
-<h1>Hich configuration options<a class="headerlink" href="#hich-configuration-options" title="Link to this heading"></a></h1>
+  <section id="hich-pipeline-options-reference">
+<h1>Hich pipeline options reference<a class="headerlink" href="#hich-pipeline-options-reference" title="Link to this heading"></a></h1>
+<section id="typically-specified-in-params-file">
+<h2>Typically specified in <a class="reference internal" href="index.html#params-file"><span class="std std-ref">params file</span></a><a class="headerlink" href="#typically-specified-in-params-file" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">defaults</span></code></dt><dd><p>Hashmap. Required. <a class="reference internal" href="index.html#sample-attributes-reference"><span class="std std-ref">Sample attributes</span></a> specified in the <code class="docutils literal notranslate"><span class="pre">defaults</span></code> block are applied to all samples by default, unless overridden on for individual samples, (i.e. in the sample file). YAML example:</p>
+</dd>
+</dl>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">defaults</span><span class="p">:</span>
+<span class="w">    </span><span class="nl">minMapq</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
+<span class="w">    </span><span class="nl">aligner</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;bwa-mem2&quot;</span>
+<span class="w">    </span><span class="nl">bwaFlags</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;-SP5M&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="nl">pairtoolsSelectFilters</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">keepPairTypes</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;UU&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;UR&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;RU&quot;</span><span class="p">]</span>
+<span class="w">        </span><span class="nl">keepTrans</span><span class="p">:</span><span class="w"> </span><span class="nb">true</span>
+<span class="w">        </span><span class="nl">keepCis</span><span class="p">:</span><span class="w"> </span><span class="nb">true</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">aggregate</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="index.html#downsampling-merging-and-deduplicating-samples"><span class="std std-ref">Aggregate profiles</span></a> are declared here and used control whether and how samples will be downsampled, merged and deduplicated. The keys of the aggregate hashmap are profile names. Values are hashmaps defining how that profile behaves. YAML example:</p>
+</dd>
+</dl>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">aggregate</span><span class="p">:</span>
+<span class="w">    </span><span class="nl">profile1</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">dedupMaxMismatch</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
+<span class="w">        </span><span class="nl">dedupMethod</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;max&quot;</span>
+<span class="w">        </span><span class="nl">techrepDedup</span><span class="p">:</span><span class="w"> </span><span class="nb">true</span>
+<span class="w">    </span><span class="nl">profile2</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">mergeTechrepToBiorep</span><span class="p">:</span><span class="w"> </span><span class="nb">true</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategies</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="index.html#sample-selection-strategies"><span class="std std-ref">Sample selection strategies</span></a> are declared here and used to control the samples that are used as inputs into various feature calling methods. The keys of the <code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategies</span></code> hashmap are strategy names. Values are a hashmap of sample attributes and lists of acceptable values of those attributes. YAML example:</p>
+</dd>
+</dl>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">sampleSelectionStrategies</span><span class="p">:</span>
+<span class="w">    </span><span class="nl">strategy1</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">condition</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;c1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;c2&quot;</span><span class="p">]</span>
+<span class="w">        </span><span class="n">aggregateProfile</span>
+<span class="w">    </span><span class="nl">strategy2</span><span class="p">:</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">hicrep</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="index.html#calling-hicrep-scc-scores"><span class="std std-ref">Calling HiCRep SCC scores</span></a> is controlled here. Keys are names of parameterization profiles for hicrep. Values are analysis plans, which are the parameterizations themselves.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">loops</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="index.html#calling-loops"><span class="std std-ref">Calling loops</span></a> is controlled here. Keys are names of parameterization profiles for Mustache. Values are analysis plans, which are the parameterizations themselves.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">differentialLoops</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="index.html#calling-differential-loop-enrichments-diffloops"><span class="std std-ref">Calling differential loop enrichments (diffloops)</span></a> is controlled here. Keys are names of parameterization profiles for Mustache. Values are analysis plans, which are the parameterizations themselves.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">compartments</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="index.html#calling-compartment-scores"><span class="std std-ref">Calling compartment scores</span></a> is controlled here. Keys are names of parameterization profiles for Mustache. Values are analysis plans, which are the parameterizations themselves.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">insulation</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="index.html#calling-insulation-scores"><span class="std std-ref">Calling insulation scores</span></a> is controlled here. Keys are names of parameterization profiles for Mustache. Values are analysis plans, which are the parameterizations themselves.</p>
+</dd>
+</dl>
+</section>
+<section id="typically-specified-in-nextflow-config">
+<h2>Typically specified in <a class="reference internal" href="index.html#nextflow-config-file"><span class="std std-ref">nextflow.config</span></a><a class="headerlink" href="#typically-specified-in-nextflow-config" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">sampleFileSep</span></code></dt><dd><p>Single-character string. Required to parse sample file. Column separator. Use “t” for tab (TSV files) or “,” for comma (CSV files). Other settings can be used as well.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">humid</span></code></dt><dd><p>Boolean. Required. If true, then ingested, gzipped fastq files will be downsampled to the number of reads specified in <code class="docutils literal notranslate"><span class="pre">general.humidDefault</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general</span></code></dt><dd><p>Hashmap. Required. Contains additional parameters.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.humidDefault</span></code></dt><dd><p>List of strings. Required. Specified in provided nextflow.config. For gzipped fastq files, the number of reads to downsample to for a “humid” run.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.hichContainer</span></code></dt><dd><p>String. Required. Specified in provided nextflow.config. Location of Hich CLI utilities Docker container.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.chromsizesContainer</span></code></dt><dd><p>String. Required. Specified in provided nextflow.config. Location of ucsc-fasize Docker container used to produce chromsizes file from genome reference.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.mustacheContainer</span></code></dt><dd><p>String. Required. Specified in provided nextflow.config. Location of Docker container used to call Mustache loops and differential loops.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.juicerContainer</span></code></dt><dd><p>String. Required. Specified in provided nextflow.config. Location of Docker container used to call Juicer tools to produce .hic contact matrix.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.hictkContainer</span></code></dt><dd><p>String. Required. Specified in provided nextflow.config. Location of Docker container used to convert between .mcool and .hic formats.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.qcAfter</span></code></dt><dd><p>List of strings. Required. Specified in provided nextflow.config. Processes after which multiQC reports should be generated.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish</span></code></dt><dd><p>Hashmap. Required. Contains additional parameters used to control where outputs are published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.mode</span></code></dt><dd><p>String. Required. Mode used to publish outputs. See <a class="reference external" href="https://www.nextflow.io/docs/latest/reference/process.html#publishdir">Nextflow publishDir documentation for options</a></p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.genomeReference</span></code></dt><dd><p>String. Required if downloading genome reference. Target directory where downloaded genome references will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.chromsizes</span></code></dt><dd><p>String. Required if auto-producing chromsizes. Target directory where chromsizes file will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.bwaMem2Index</span></code></dt><dd><p>String. Required if auto-producing bwa-mem2 aligner index. Target directory where bwa-mem2 aligner index will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.bwaIndex</span></code></dt><dd><p>String. Required if auto-producing bwa aligner index. Target directory where bwa aligner index will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.bsboltIndex</span></code></dt><dd><p>String. Required if auto-producing bsbolt aligner index. Target directory where bsbolt aligner index will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.fragmentIndex</span></code></dt><dd><p>String. Required if auto-producing restriction digest fragment index. Target directory where fragment index will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.align</span></code></dt><dd><p>String. Required if aligning .fastq files. Target directory where sam/bam files will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.parse</span></code></dt><dd><p>String. Required if parsing sam/bam files to .pairs format. Target directory where resulting .pairs files will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.dedup</span></code></dt><dd><p>String. Required if deduplicating .pairs format files. Target directory where resulting .pairs files will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.mcool</span></code></dt><dd><p>String. Required if generating .mcool files either from .pairs files or by converting from .hic format. Target directory where resulting .mcool files will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.hic</span></code></dt><dd><p>String. Required if generating .hic files either from .pairs files or by converting from .mcool format. Target directory where resulting .hic files will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.pairStats</span></code></dt><dd><p>String. Required if generating pairtools stats files. Target directory where resulting stats files will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.qc</span></code></dt><dd><p>String. Required if generating multiQC reports. Target directory where resulting reports will be published.</p>
+</dd>
+</dl>
+</section>
 </section>
 
 

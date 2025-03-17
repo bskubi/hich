@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Set up a run &mdash; Hich 0.1 documentation</title>
+  <title>Configuration &mdash; Hich 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -55,12 +55,20 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install/index.html">Install Hich and its dependencies</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Set up a run</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#structure-the-sample-file">Structure the sample file</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#sample-file">Sample file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#params-file">Params file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nextflow-config-file">Nextflow config file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-pipeline-options-reference">Hich pipeline options reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#typically-specified-in-params-file">Typically specified in <span class="xref std std-ref">params file</span></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#typically-specified-in-nextflow-config">Typically specified in <span class="xref std std-ref">nextflow.config</span></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#sample-attributes-reference">Sample attributes reference</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#relationships-between-samples">Relationships between samples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#resource-files">Resource files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#aligning-reads">Aligning reads</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filters">Filters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hi-c-contacts-ingested-from-pairs-or-parsed-from-sam-bam">Hi-C contacts ingested from .pairs or parsed from .sam/.bam</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#optional-single-cell-attributes">Optional single-cell attributes</a></li>
 </ul>
@@ -79,7 +87,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#calling-loops">Calling loops</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#calling-differential-loop-enrichments-diffloops">Calling differential loop enrichments (diffloops)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#recent-outputs">Recent outputs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#hich-sample-attributes-used-internally-not-typically-specified-by-user">Hich sample attributes used internally (not typically specified by user)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hich-sample-attributes-built-automatically-not-typically-manually-specified-by-user">Hich sample attributes built automatically (not typically manually specified by user)</a></li>
 </ul>
 </li>
 </ul>
@@ -88,7 +96,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../workflow_steps/index.html">Workflow Steps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../planning/index.html">Planning The Workflow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../implementation/index.html">Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../next_steps/index.html">Next Steps After Running Hich</a></li>
 </ul>
 
         </div>
@@ -105,7 +112,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Set up a run</li>
+      <li class="breadcrumb-item active">Configuration</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/configuration/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -115,8 +122,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="set-up-a-run">
-<h1>Set up a run<a class="headerlink" href="#set-up-a-run" title="Link to this heading"></a></h1>
+  <section id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h1>
 <p>We will distinguish between <strong>Nextflow config options (NF-config)</strong>, <strong>Hich config options (Hich-config)</strong>, and <strong>sample attributes</strong>. NF-config controls the Nextflow workflow management system (the platform on which Hich runs) and are listed <a class="reference external" href="https://www.nextflow.io/docs/latest/reference/config.html">here</a>. Hich-config controls the way Hich processes individual datasets and builds <strong>samples</strong>, which are bundles of sample attributes including paths to data files containing data used for processing (i.e. fastq files, aligner index files, contact matrices, etc.) as well as directives for how they should be processed. (i.e. minimum MAPQ filters or how loops should be called).</p>
 <p>To set up a run, you will typically use three configuration files. As sample attributes can be specified at the command line, none are required. A maximum of one configuration file of each type can be used.</p>
 <ol class="arabic simple">
@@ -130,8 +137,8 @@
 <p class="admonition-title">Note</p>
 <p>NF-config uses a <code class="docutils literal notranslate"><span class="pre">-</span></code> prefix, as for options like <code class="docutils literal notranslate"><span class="pre">-params-file</span></code> and <code class="docutils literal notranslate"><span class="pre">-c</span></code>. Hich-config uses a double <code class="docutils literal notranslate"><span class="pre">--</span></code> prefix, as for options like <code class="docutils literal notranslate"><span class="pre">--sample-file</span></code>.</p>
 </div>
-<section id="structure-the-sample-file">
-<h2>Structure the sample file<a class="headerlink" href="#structure-the-sample-file" title="Link to this heading"></a></h2>
+<section id="sample-file">
+<h2>Sample file<a class="headerlink" href="#sample-file" title="Link to this heading"></a></h2>
 <p>The sample file is typically a tab-separated value (TSV) file that describes sample-specific attributes. Formatting requirements:</p>
 <ul class="simple">
 <li><p>Delimiter matches <code class="docutils literal notranslate"><span class="pre">--sampleFileSep</span></code> parameter</p></li>
@@ -144,43 +151,187 @@
 <p>You can choose a different delimiter by setting the <code class="docutils literal notranslate"><span class="pre">--sampleFileSep</span></code> parameter, like <code class="docutils literal notranslate"><span class="pre">--sampleFileSep</span> <span class="pre">&quot;,&quot;</span></code> to use a comma-separated value (CSV) format for the sample file. This is specified in <code class="docutils literal notranslate"><span class="pre">nextflow.config</span></code> by default, and can be modified there or overridden at the command line.</p>
 </div>
 </section>
+<section id="params-file">
+<h2>Params file<a class="headerlink" href="#params-file" title="Link to this heading"></a></h2>
+<p>The params file is in <a class="reference external" href="https://en.wikipedia.org/wiki/YAML">YAML syntax</a> and offers powerful ways to specify sample attributes and parameterize the workflow:</p>
+<ul class="simple">
+<li><p>Attribute values applied to all samples, or a subset of samples, by default, by specifying values of sample attributes in its <code class="docutils literal notranslate"><span class="pre">defaults</span></code> block</p></li>
+<li><p>Complex parameterizations for individual workflow steps</p></li>
+<li><p>Relationships between samples to control downsampling, merging, and deduplication</p></li>
+</ul>
+<p>Examples of premade params files can be found in the <code class="docutils literal notranslate"><span class="pre">hich/params</span></code> directory.</p>
+</section>
+<section id="nextflow-config-file">
+<h2>Nextflow config file<a class="headerlink" href="#nextflow-config-file" title="Link to this heading"></a></h2>
+<p>The Nextflow config file is in <a class="reference external" href="https://www.nextflow.io/docs/latest/config.html">Nextflow configuration syntax</a> and is typically named <code class="docutils literal notranslate"><span class="pre">nextflow.config</span></code>. It offers exactly the same capabilities as the params file. The reason for using both is for convenience: infrequently changed config options that are shipped with Hich are in <code class="docutils literal notranslate"><span class="pre">nextflow.config</span></code>, while config options more likely to be adjusted to suit individual runs are placed in params files. The <code class="docutils literal notranslate"><span class="pre">nextflow.config</span></code> file included with Hich includes a number of resource management profiles in the <code class="docutils literal notranslate"><span class="pre">profiles</span></code> section, as well as more general parameters in the <code class="docutils literal notranslate"><span class="pre">params</span></code> and <code class="docutils literal notranslate"><span class="pre">params.general</span></code> sections, including which containers are used, where outputs are published, when to generate multiQC reports, how many reads to keep for humid runs, and what separator delimits columns in the sample file.</p>
+</section>
+<section id="hich-pipeline-options-reference">
+<h2>Hich pipeline options reference<a class="headerlink" href="#hich-pipeline-options-reference" title="Link to this heading"></a></h2>
+<section id="typically-specified-in-params-file">
+<h3>Typically specified in <a class="reference internal" href="#params-file"><span class="std std-ref">params file</span></a><a class="headerlink" href="#typically-specified-in-params-file" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">defaults</span></code></dt><dd><p>Hashmap. Required. <a class="reference internal" href="sample_attributes.html#sample-attributes-reference"><span class="std std-ref">Sample attributes</span></a> specified in the <code class="docutils literal notranslate"><span class="pre">defaults</span></code> block are applied to all samples by default, unless overridden on for individual samples, (i.e. in the sample file). YAML example:</p>
+</dd>
+</dl>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">defaults</span><span class="p">:</span>
+<span class="w">    </span><span class="nl">minMapq</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
+<span class="w">    </span><span class="nl">aligner</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;bwa-mem2&quot;</span>
+<span class="w">    </span><span class="nl">bwaFlags</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;-SP5M&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="nl">pairtoolsSelectFilters</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">keepPairTypes</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;UU&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;UR&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;RU&quot;</span><span class="p">]</span>
+<span class="w">        </span><span class="nl">keepTrans</span><span class="p">:</span><span class="w"> </span><span class="nb">true</span>
+<span class="w">        </span><span class="nl">keepCis</span><span class="p">:</span><span class="w"> </span><span class="nb">true</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">aggregate</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="sample_attributes.html#downsampling-merging-and-deduplicating-samples"><span class="std std-ref">Aggregate profiles</span></a> are declared here and used control whether and how samples will be downsampled, merged and deduplicated. The keys of the aggregate hashmap are profile names. Values are hashmaps defining how that profile behaves. YAML example:</p>
+</dd>
+</dl>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">aggregate</span><span class="p">:</span>
+<span class="w">    </span><span class="nl">profile1</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">dedupMaxMismatch</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
+<span class="w">        </span><span class="nl">dedupMethod</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;max&quot;</span>
+<span class="w">        </span><span class="nl">techrepDedup</span><span class="p">:</span><span class="w"> </span><span class="nb">true</span>
+<span class="w">    </span><span class="nl">profile2</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">mergeTechrepToBiorep</span><span class="p">:</span><span class="w"> </span><span class="nb">true</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategies</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="sample_attributes.html#sample-selection-strategies"><span class="std std-ref">Sample selection strategies</span></a> are declared here and used to control the samples that are used as inputs into various feature calling methods. The keys of the <code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategies</span></code> hashmap are strategy names. Values are a hashmap of sample attributes and lists of acceptable values of those attributes. YAML example:</p>
+</dd>
+</dl>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">sampleSelectionStrategies</span><span class="p">:</span>
+<span class="w">    </span><span class="nl">strategy1</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">condition</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;c1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;c2&quot;</span><span class="p">]</span>
+<span class="w">        </span><span class="n">aggregateProfile</span>
+<span class="w">    </span><span class="nl">strategy2</span><span class="p">:</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">hicrep</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="sample_attributes.html#calling-hicrep-scc-scores"><span class="std std-ref">Calling HiCRep SCC scores</span></a> is controlled here. Keys are names of parameterization profiles for hicrep. Values are analysis plans, which are the parameterizations themselves.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">loops</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="sample_attributes.html#calling-loops"><span class="std std-ref">Calling loops</span></a> is controlled here. Keys are names of parameterization profiles for Mustache. Values are analysis plans, which are the parameterizations themselves.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">differentialLoops</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="sample_attributes.html#calling-differential-loop-enrichments-diffloops"><span class="std std-ref">Calling differential loop enrichments (diffloops)</span></a> is controlled here. Keys are names of parameterization profiles for Mustache. Values are analysis plans, which are the parameterizations themselves.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">compartments</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="sample_attributes.html#calling-compartment-scores"><span class="std std-ref">Calling compartment scores</span></a> is controlled here. Keys are names of parameterization profiles for Mustache. Values are analysis plans, which are the parameterizations themselves.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">insulation</span></code></dt><dd><p>Hashmap. Optional. <a class="reference internal" href="sample_attributes.html#calling-insulation-scores"><span class="std std-ref">Calling insulation scores</span></a> is controlled here. Keys are names of parameterization profiles for Mustache. Values are analysis plans, which are the parameterizations themselves.</p>
+</dd>
+</dl>
+</section>
+<section id="typically-specified-in-nextflow-config">
+<h3>Typically specified in <a class="reference internal" href="#nextflow-config-file"><span class="std std-ref">nextflow.config</span></a><a class="headerlink" href="#typically-specified-in-nextflow-config" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">sampleFileSep</span></code></dt><dd><p>Single-character string. Required to parse sample file. Column separator. Use “t” for tab (TSV files) or “,” for comma (CSV files). Other settings can be used as well.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">humid</span></code></dt><dd><p>Boolean. Required. If true, then ingested, gzipped fastq files will be downsampled to the number of reads specified in <code class="docutils literal notranslate"><span class="pre">general.humidDefault</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general</span></code></dt><dd><p>Hashmap. Required. Contains additional parameters.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.humidDefault</span></code></dt><dd><p>List of strings. Required. Specified in provided nextflow.config. For gzipped fastq files, the number of reads to downsample to for a “humid” run.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.hichContainer</span></code></dt><dd><p>String. Required. Specified in provided nextflow.config. Location of Hich CLI utilities Docker container.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.chromsizesContainer</span></code></dt><dd><p>String. Required. Specified in provided nextflow.config. Location of ucsc-fasize Docker container used to produce chromsizes file from genome reference.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.mustacheContainer</span></code></dt><dd><p>String. Required. Specified in provided nextflow.config. Location of Docker container used to call Mustache loops and differential loops.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.juicerContainer</span></code></dt><dd><p>String. Required. Specified in provided nextflow.config. Location of Docker container used to call Juicer tools to produce .hic contact matrix.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.hictkContainer</span></code></dt><dd><p>String. Required. Specified in provided nextflow.config. Location of Docker container used to convert between .mcool and .hic formats.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.qcAfter</span></code></dt><dd><p>List of strings. Required. Specified in provided nextflow.config. Processes after which multiQC reports should be generated.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish</span></code></dt><dd><p>Hashmap. Required. Contains additional parameters used to control where outputs are published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.mode</span></code></dt><dd><p>String. Required. Mode used to publish outputs. See <a class="reference external" href="https://www.nextflow.io/docs/latest/reference/process.html#publishdir">Nextflow publishDir documentation for options</a></p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.genomeReference</span></code></dt><dd><p>String. Required if downloading genome reference. Target directory where downloaded genome references will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.chromsizes</span></code></dt><dd><p>String. Required if auto-producing chromsizes. Target directory where chromsizes file will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.bwaMem2Index</span></code></dt><dd><p>String. Required if auto-producing bwa-mem2 aligner index. Target directory where bwa-mem2 aligner index will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.bwaIndex</span></code></dt><dd><p>String. Required if auto-producing bwa aligner index. Target directory where bwa aligner index will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.bsboltIndex</span></code></dt><dd><p>String. Required if auto-producing bsbolt aligner index. Target directory where bsbolt aligner index will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.fragmentIndex</span></code></dt><dd><p>String. Required if auto-producing restriction digest fragment index. Target directory where fragment index will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.align</span></code></dt><dd><p>String. Required if aligning .fastq files. Target directory where sam/bam files will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.parse</span></code></dt><dd><p>String. Required if parsing sam/bam files to .pairs format. Target directory where resulting .pairs files will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.dedup</span></code></dt><dd><p>String. Required if deduplicating .pairs format files. Target directory where resulting .pairs files will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.mcool</span></code></dt><dd><p>String. Required if generating .mcool files either from .pairs files or by converting from .hic format. Target directory where resulting .mcool files will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.hic</span></code></dt><dd><p>String. Required if generating .hic files either from .pairs files or by converting from .mcool format. Target directory where resulting .hic files will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.pairStats</span></code></dt><dd><p>String. Required if generating pairtools stats files. Target directory where resulting stats files will be published.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">general.publish.qc</span></code></dt><dd><p>String. Required if generating multiQC reports. Target directory where resulting reports will be published.</p>
+</dd>
+</dl>
+</section>
+</section>
 <section id="sample-attributes-reference">
 <h2>Sample attributes reference<a class="headerlink" href="#sample-attributes-reference" title="Link to this heading"></a></h2>
 <section id="relationships-between-samples">
 <h3>Relationships between samples<a class="headerlink" href="#relationships-between-samples" title="Link to this heading"></a></h3>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">id</span></code></dt><dd><p>String, required, must be different for each sample. Used as filename prefix for output files.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">id</span></code></dt><dd><p>String, required, must be different for each sample. Used as filename prefix for output files. Autogenerated if not specified.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">condition</span></code></dt><dd><p>String, optional. Labels basal tier in the experimental design hierarchy.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">biorep</span></code></dt><dd><p>String, optional. Labels secondary tier in experimental design hierarchy.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">techrep</span></code></dt><dd><p>String, optional. Labels tertiary tier in experimental design hierarchy.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">aggregateProfileName</span></code></dt><dd><p>String. Optional. Not typically specified by user, built automatically by Hich based on <code class="docutils literal notranslate"><span class="pre">aggregate</span></code> Hich-config block. Labels the aggregate profile applied to the sample.</p>
 </dd>
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">id</span></code> is typically built algorithmically by concatenating <code class="docutils literal notranslate"><span class="pre">techrep</span></code>, <code class="docutils literal notranslate"><span class="pre">biorep</span></code>, and <a href="#id1"><span class="problematic" id="id2">``</span></a>condition`, as well as the aggregate profile name, but can be manually specified.</p>
+<p><code class="docutils literal notranslate"><span class="pre">id</span></code> is typically built algorithmically by concatenating <code class="docutils literal notranslate"><span class="pre">techrep</span></code>, <code class="docutils literal notranslate"><span class="pre">biorep</span></code>, and <code class="docutils literal notranslate"><span class="pre">condition</span></code>, as well as the <a class="reference internal" href="sample_attributes.html#downsampling-merging-and-deduplicating-samples"><span class="std std-ref">aggregateProfileName</span></a>, but can be manually specified.</p>
+<p>For example, the following sample file (<code class="docutils literal notranslate"><span class="pre">id</span></code> unspecified) and aggregate profile block would result in the <code class="docutils literal notranslate"><span class="pre">id</span></code> values <code class="docutils literal notranslate"><span class="pre">c1_b1_t1_profile1</span></code>, <code class="docutils literal notranslate"><span class="pre">c1_b1_t1_profile2</span></code>, <code class="docutils literal notranslate"><span class="pre">c1_b2_t1_profile1</span></code>, and <code class="docutils literal notranslate"><span class="pre">c1_b2_t1_profile2</span></code>.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">techrep</span><span class="w">    </span><span class="n">biorep</span><span class="w">    </span><span class="n">condition</span>
+<span class="n">t1</span><span class="w">         </span><span class="n">b1</span><span class="w">        </span><span class="n">c1</span>
+<span class="n">t1</span><span class="w">         </span><span class="n">b2</span><span class="w">        </span><span class="n">c1</span>
+</pre></div>
 </div>
-<dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">condition</span></code></dt><dd><p>Optional. Labels basal tier in the experimental design hierarchy.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">biorep</span></code></dt><dd><p>Optional. Labels secondary tier in experimental design hierarchy. Samples with distinct <code class="docutils literal notranslate"><span class="pre">techrep</span></code> and <code class="docutils literal notranslate"><span class="pre">biorep</span></code> but common <code class="docutils literal notranslate"><span class="pre">condition</span></code> can be aggregated.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">techrep</span></code></dt><dd><p>Optional. Labels tertiary tier in experimental design hierarchy. Samples with distinct <code class="docutils literal notranslate"><span class="pre">techrep</span></code> but common <code class="docutils literal notranslate"><span class="pre">condition</span></code> and <code class="docutils literal notranslate"><span class="pre">biorep</span></code> can be aggregated.</p>
-</dd>
-</dl>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">aggregate</span><span class="p">:</span>
+<span class="w">    </span><span class="nl">profile1</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">mergeTechrepToBiorep</span><span class="p">:</span><span class="w"> </span><span class="nb">true</span>
+<span class="w">        </span><span class="nl">dedupMaxMismatch</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
+<span class="w">        </span><span class="nl">techrepDedupMethod</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;sum&quot;</span>
+
+<span class="w">    </span><span class="nl">profile2</span><span class="p">:</span>
+<span class="w">        </span><span class="nl">mergeTechrepToBiorep</span><span class="p">:</span><span class="w"> </span><span class="nb">true</span>
+<span class="w">        </span><span class="nl">dedupMaxMismatch</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">        </span><span class="nl">techrepDedupMethod</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;max&quot;</span>
+</pre></div>
+</div>
+<p>These attributes are used by <a class="reference internal" href="sample_attributes.html#downsampling-merging-and-deduplicating-samples"><span class="std std-ref">aggregate profiles</span></a> and <a class="reference internal" href="sample_attributes.html#sample-selection-strategies"><span class="std std-ref">sample selection strategies</span></a> to control how samples are downsampled, merged, and deduplicated, as well as how features are called.</p>
+</div>
 </section>
 <section id="resource-files">
 <h3>Resource files<a class="headerlink" href="#resource-files" title="Link to this heading"></a></h3>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">assembly</span></code></dt><dd><p>Genome assembly label.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">assembly</span></code></dt><dd><p>String. Required. Genome assembly label. May be used to download genome reference if unspecified. Example: “hg38”.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">genomeReference</span></code></dt><dd><p>Path or URL to genome reference fasta file. If <code class="docutils literal notranslate"><span class="pre">genomeReference</span></code> unspecified but <code class="docutils literal notranslate"><span class="pre">assembly</span></code> is one of the supported options, Hich downloads the genome reference from the ENCODE project or NCBI. If multiple samples will use the downloaded reference, it will only be downloaded once and shared by all the samples that need it. Supported options for automatically downloading genome reference: <code class="docutils literal notranslate"><span class="pre">hg38</span></code>, <code class="docutils literal notranslate"><span class="pre">homo_sapiens</span></code>, or <code class="docutils literal notranslate"><span class="pre">GRCh38</span></code> (GRCh38_no_alt_analysis_set_GCA_000001405.15.fasta.gz), <code class="docutils literal notranslate"><span class="pre">mm10</span></code> (mm10_no_alt_analysis_set_ENCODE.fasta.gz), <code class="docutils literal notranslate"><span class="pre">dm6</span></code> (GCF_000001215.4_Release_6_plus_ISO1_MT_genomic.fna.gz), <code class="docutils literal notranslate"><span class="pre">galGal5</span></code> or <code class="docutils literal notranslate"><span class="pre">bgalGal5</span></code> (GCA_027408225.1_bGalGal5.pri_genomic.fna.gz), <code class="docutils literal notranslate"><span class="pre">danRer11</span></code> (GCF_000002035.6_GRCz11_genomic.fna.gz), or <code class="docutils literal notranslate"><span class="pre">ce10</span></code> (GCF_000002985.6_WBcel235_genomic.fna.gz).</p>
+<dt><code class="docutils literal notranslate"><span class="pre">genomeReference</span></code></dt><dd><p>String. Required for building fragment index, chromsizes, and aligner index. Can be downloaded by Hich automatically for common genomes if <code class="docutils literal notranslate"><span class="pre">assembly</span></code> is included. Path or URL to genome reference fasta file. If <code class="docutils literal notranslate"><span class="pre">genomeReference</span></code> is unspecified but <code class="docutils literal notranslate"><span class="pre">assembly</span></code> is one of the supported options, Hich downloads the genome reference from the ENCODE project or NCBI. If multiple samples will use the downloaded reference, it will only be downloaded once and shared by all the samples that need it. Supported options for automatically downloading genome reference: <code class="docutils literal notranslate"><span class="pre">hg38</span></code>, <code class="docutils literal notranslate"><span class="pre">homo_sapiens</span></code>, or <code class="docutils literal notranslate"><span class="pre">GRCh38</span></code> (GRCh38_no_alt_analysis_set_GCA_000001405.15.fasta.gz), <code class="docutils literal notranslate"><span class="pre">mm10</span></code> (mm10_no_alt_analysis_set_ENCODE.fasta.gz), <code class="docutils literal notranslate"><span class="pre">dm6</span></code> (GCF_000001215.4_Release_6_plus_ISO1_MT_genomic.fna.gz), <code class="docutils literal notranslate"><span class="pre">galGal5</span></code> or <code class="docutils literal notranslate"><span class="pre">bgalGal5</span></code> (GCA_027408225.1_bGalGal5.pri_genomic.fna.gz), <code class="docutils literal notranslate"><span class="pre">danRer11</span></code> (GCF_000002035.6_GRCz11_genomic.fna.gz), or <code class="docutils literal notranslate"><span class="pre">ce10</span></code> (GCF_000002985.6_WBcel235_genomic.fna.gz).</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">indexDir</span></code></dt><dd><p>Path to directory containing aligner index.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">indexDir</span></code></dt><dd><p>String. Required for alignment, optional otherwise. Path to directory containing aligner index.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">indexPrefix</span></code></dt><dd><p>Common prefix of all aligner index files (it is required that all aligner index files share a common prefix). Example: if the aligner index files are <code class="docutils literal notranslate"><span class="pre">hg38.*</span></code>, then <code class="docutils literal notranslate"><span class="pre">indexPrefix</span></code> should be <code class="docutils literal notranslate"><span class="pre">hg38</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">indexPrefix</span></code></dt><dd><p>String. Required for alignment, optional otherwise. Prefix of all aligner index files (it is required that all aligner index files share a common prefix). Example: if the aligner index files are <code class="docutils literal notranslate"><span class="pre">hg38.*</span></code>, then <code class="docutils literal notranslate"><span class="pre">indexPrefix</span></code> should be <code class="docutils literal notranslate"><span class="pre">hg38</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">chromsizes</span></code></dt><dd><p>Path to tab-delimited headerless file with contig names in first column, length of contig in base pairs as second column. Automatically created based on <code class="docutils literal notranslate"><span class="pre">genomeReference</span></code> if unspecified and shared among samples with a common reference that all left <code class="docutils literal notranslate"><span class="pre">genomeReference</span></code> unspecified.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">chromsizes</span></code></dt><dd><p>String. Required to build fragment index, parse sam/bam to pairs or ingest pairs, or build contact matrix. Path to tab-delimited headerless file with contig names in first column, length of contig in base pairs as second column. Automatically created based on <code class="docutils literal notranslate"><span class="pre">genomeReference</span></code> if unspecified and shared among samples with a common reference that all left <code class="docutils literal notranslate"><span class="pre">genomeReference</span></code> unspecified.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">restrictionEnzymes</span></code></dt><dd><p>Optional. Space-delimited list of restriction enzyme names used in restriction digest for the sample.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">restrictionEnzymes</span></code></dt><dd><p>String. Required to build fragment index, but fragment index is optional. Space-delimited list of restriction enzyme names used in restriction digest for the sample. Any combination of enzymes in the REBASE database as accessed via <a class="reference external" href="https://biopython.org/DIST/docs/cookbook/Restriction.html">biopython’s restriction enzymes module</a> can be used (i.e. <code class="docutils literal notranslate"><span class="pre">DpnII</span> <span class="pre">DdeI</span></code>), as well as <code class="docutils literal notranslate"><span class="pre">Arima</span></code>, <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Proximo</span> <span class="pre">2021+</span> <span class="pre">Plant</span></code> (or <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Plant</span></code>), <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Proximo</span> <span class="pre">2021+</span> <span class="pre">Animal</span></code> (or <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Animal</span></code>), <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Proximo</span> <span class="pre">2021+</span> <span class="pre">Microbiome</span></code> (or <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Microbiome</span></code>), <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Proximo</span> <span class="pre">2021+</span> <span class="pre">Human</span></code> (or <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Human</span></code>) or <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Proximo</span> <span class="pre">2021+</span> <span class="pre">Fungal</span></code> (or <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Fungal</span></code>).</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">fragmentIndex</span></code></dt><dd><p>Optional. Path to BED file containing start and end positions of restriction fragments for the digest used for the sample. If the <code class="docutils literal notranslate"><span class="pre">restrictionEnzymes</span></code> option is specified but <code class="docutils literal notranslate"><span class="pre">fragmentIndex</span></code> is not, then Hich will create a <code class="docutils literal notranslate"><span class="pre">fragmentIndex</span></code> file based on the <code class="docutils literal notranslate"><span class="pre">restrictionEnzymes</span></code> and <code class="docutils literal notranslate"><span class="pre">genomeReference</span></code> and share it among samples with the same reference and enzymes. Any combination of enzymes in the REBASE database as accessed via <a class="reference external" href="https://biopython.org/DIST/docs/cookbook/Restriction.html">biopython’s restriction enzymes module</a> can be used, as well as <code class="docutils literal notranslate"><span class="pre">Arima</span></code>, <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Proximo</span> <span class="pre">2021+</span> <span class="pre">Plant</span></code> (or <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Plant</span></code>), <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Proximo</span> <span class="pre">2021+</span> <span class="pre">Animal</span></code> (or <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Animal</span></code>), <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Proximo</span> <span class="pre">2021+</span> <span class="pre">Microbiome</span></code> (or <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Microbiome</span></code>), <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Proximo</span> <span class="pre">2021+</span> <span class="pre">Human</span></code> (or <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Human</span></code>) or <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Proximo</span> <span class="pre">2021+</span> <span class="pre">Fungal</span></code> (or <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Fungal</span></code>).</p>
+<dt><code class="docutils literal notranslate"><span class="pre">fragmentIndex</span></code></dt><dd><p>String. Optional. Path to BED file containing start and end positions of restriction fragments for the digest used for the sample. If the <code class="docutils literal notranslate"><span class="pre">restrictionEnzymes</span></code> option is specified but <code class="docutils literal notranslate"><span class="pre">fragmentIndex</span></code> is not, then Hich will create a <code class="docutils literal notranslate"><span class="pre">fragmentIndex</span></code> file based on the <code class="docutils literal notranslate"><span class="pre">restrictionEnzymes</span></code> and <code class="docutils literal notranslate"><span class="pre">genomeReference</span></code> and share it among samples with the same reference and enzymes.</p>
 </dd>
 </dl>
 </section>
@@ -189,15 +340,20 @@
 <p>Hich toolkit: <a class="reference external" href="https://github.com/lh3/bwa">bwa mem</a>, <a class="reference external" href="https://github.com/bwa-mem2/bwa-mem2">bwa-mem2</a>, <a class="reference external" href="https://bsbolt.readthedocs.io/en/latest/">bsbolt</a></p>
 <p>See also: <a class="reference internal" href="sample_attributes.html#resource-files"><span class="std std-ref">Resource files</span></a> under <code class="docutils literal notranslate"><span class="pre">assembly</span></code>, <code class="docutils literal notranslate"><span class="pre">genomeReference</span></code>, <code class="docutils literal notranslate"><span class="pre">indexDir</span></code>, <code class="docutils literal notranslate"><span class="pre">indexPrefix</span></code>.</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">fastq1</span></code></dt><dd><p>Path to R1 or single-end read fastq file.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">fastq1</span></code></dt><dd><p>String. Required for alignment. Path to R1 or single-end read fastq file (may be gzipped).</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">fastq2</span></code></dt><dd><p>Path to R2 fastq file. Leave blank or unspecified if using single-end reads.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">fastq2</span></code></dt><dd><p>String. Required for alignment if samples are paired-end and non-interleaved. Path to R2 fastq file (may be gzipped). Leave blank or unspecified if using single-end reads.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">aligner</span></code></dt><dd><p>Aligner to use for aligning the sample. Options: <code class="docutils literal notranslate"><span class="pre">bwa</span></code> (slower, lower memory footprint), <code class="docutils literal notranslate"><span class="pre">bwa-mem2</span></code> (fast, higher memory footprint), <code class="docutils literal notranslate"><span class="pre">bsbolt</span></code> (methyl Hi-C)</p>
+<dt><code class="docutils literal notranslate"><span class="pre">aligner</span></code></dt><dd><p>String. Required for alignment. Aligner to use for aligning the sample. Options: <code class="docutils literal notranslate"><span class="pre">bwa</span></code> (slower, lower memory footprint), <code class="docutils literal notranslate"><span class="pre">bwa-mem2</span></code> (fast, higher memory footprint), <code class="docutils literal notranslate"><span class="pre">bsbolt</span></code> (methyl Hi-C)</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">bwaFlags</span></code></dt><dd><p>CLI options passed to aligner (note that all aligners including BSBolt are based on <code class="docutils literal notranslate"><span class="pre">bwa</span> <span class="pre">mem</span></code>). Typically, use <code class="docutils literal notranslate"><span class="pre">-SP5M</span></code>. Do not use the <code class="docutils literal notranslate"><span class="pre">bwa</span></code> option <code class="docutils literal notranslate"><span class="pre">-t</span></code> or the BSBolt options <code class="docutils literal notranslate"><span class="pre">-OT</span></code>, <code class="docutils literal notranslate"><span class="pre">-O</span></code>, <code class="docutils literal notranslate"><span class="pre">-DB</span></code>, <code class="docutils literal notranslate"><span class="pre">-F1</span></code>, or <code class="docutils literal notranslate"><span class="pre">-F2</span></code> as these are hardcoded by Hich based on other sample attributes.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">bwaFlags</span></code></dt><dd><p>List of strings. Required for alignment. CLI options passed to aligner (note that all aligners including BSBolt are based on <code class="docutils literal notranslate"><span class="pre">bwa</span> <span class="pre">mem</span></code>). Typically, use <code class="docutils literal notranslate"><span class="pre">-SP5M</span></code>. Do not use the <code class="docutils literal notranslate"><span class="pre">bwa</span></code> option <code class="docutils literal notranslate"><span class="pre">-t</span></code> or the BSBolt options <code class="docutils literal notranslate"><span class="pre">-OT</span></code>, <code class="docutils literal notranslate"><span class="pre">-O</span></code>, <code class="docutils literal notranslate"><span class="pre">-DB</span></code>, <code class="docutils literal notranslate"><span class="pre">-F1</span></code>, or <code class="docutils literal notranslate"><span class="pre">-F2</span></code> as these are hardcoded by Hich based on other sample attributes. Example: <code class="docutils literal notranslate"><span class="pre">bwaFlags:</span> <span class="pre">[&quot;-S&quot;,</span> <span class="pre">&quot;-P&quot;,</span> <span class="pre">&quot;-5&quot;,</span> <span class="pre">&quot;-M&quot;]</span></code></p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">minMapq</span></code></dt><dd><p>Reads below this MAPQ cutoff will be discarded. Note that different aligners approximate MAPQ differently. The approach used by <code class="docutils literal notranslate"><span class="pre">bwa</span></code> is what’s relevant for Hich.</p>
+</dl>
+</section>
+<section id="filters">
+<h3>Filters<a class="headerlink" href="#filters" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">minMapq</span></code></dt><dd><p>Integer. Optional. Reads below this MAPQ cutoff will be discarded. Note that different aligners approximate MAPQ differently. The approach used by <code class="docutils literal notranslate"><span class="pre">bwa</span></code> is what’s relevant for Hich.</p>
 </dd>
 </dl>
 </section>
@@ -205,11 +361,9 @@
 <h3>Hi-C contacts ingested from .pairs or parsed from .sam/.bam<a class="headerlink" href="#hi-c-contacts-ingested-from-pairs-or-parsed-from-sam-bam" title="Link to this heading"></a></h3>
 <p>Hich toolkit: <a class="reference external" href="https://github.com/samtools/samtools">samtools</a>, <a class="reference external" href="https://pairtools.readthedocs.io/en/latest/cli_tools.html">pairtools</a></p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">sambam</span></code></dt><dd><p>Path to .sam/.bam file containing aligned reads which will be parsed using <code class="docutils literal notranslate"><span class="pre">pairtools</span> <span class="pre">parse2</span></code> to obtain a <a class="reference external" href="https://github.com/4dn-dcic/pairix/blob/master/pairs_format_specification.md">4DN .pairs</a> file.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">sambam</span></code></dt><dd><p>String. Optional. Specified by user for .sam/.bam files to ingest as inputs into Hich rather than being built via alignment from .fastq data. Path to .sam/.bam file containing aligned reads which will be parsed using <code class="docutils literal notranslate"><span class="pre">pairtools</span> <span class="pre">parse2</span></code> to obtain a <a class="reference external" href="https://github.com/4dn-dcic/pairix/blob/master/pairs_format_specification.md">4DN .pairs</a> file.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">pairs</span></code></dt><dd><p>Path to <a class="reference external" href="https://github.com/4dn-dcic/pairix/blob/master/pairs_format_specification.md">4DN .pairs</a> file containing Hi-C contacts to ingest.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">latestPairs</span></code></dt><dd><p>Path to <a class="reference external" href="https://github.com/4dn-dcic/pairix/blob/master/pairs_format_specification.md">4DN .pairs</a> file containing Hi-C contacts to ingest or the result of most recent data processing step on the sample contacts.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">pairs</span></code></dt><dd><p>String. Optional. Specified by user for <a class="reference external" href="https://github.com/4dn-dcic/pairix/blob/master/pairs_format_specification.md">4DN .pairs</a> files (may be gzipped) to ingest as inputs into Hich rather than being built via alignment from .fastq data.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">pairtoolsParse2Params</span></code></dt><dd><p>List of flags passed to <a class="reference external" href="https://pairtools.readthedocs.io/en/latest/cli_tools.html#pairtools-parse2">pairtools parse2</a>. Uses <code class="docutils literal notranslate"><span class="pre">minMapq</span></code> if specified for the sample as a default value for the <code class="docutils literal notranslate"><span class="pre">pairtools</span> <span class="pre">parse2</span> <span class="pre">--min-mapq</span></code> option, but this can be overridden by passing <code class="docutils literal notranslate"><span class="pre">--min-mapq</span></code> n <code class="docutils literal notranslate"><span class="pre">pairtoolsParse2Params</span></code>. Hardcoded options that should not be provided here: <code class="docutils literal notranslate"><span class="pre">--flip</span></code>, <code class="docutils literal notranslate"><span class="pre">--assembly</span></code>, <code class="docutils literal notranslate"><span class="pre">--chroms-path</span></code>.</p>
 </dd>
@@ -257,19 +411,19 @@
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">selectFilters</span></code></dt><dd><p>A multi-attribute of filters to apply to Hi-C contacts in .pairs files.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.keepPairTypes</span></code></dt><dd><p>Pairtools <a class="reference external" href="https://pairtools.readthedocs.io/en/latest/parsing.html">pair types</a> to keep. Keeping <code class="docutils literal notranslate"><span class="pre">UU</span></code>, <code class="docutils literal notranslate"><span class="pre">UR</span></code>, and <code class="docutils literal notranslate"><span class="pre">RU</span></code> is recommended.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.keepPairTypes</span></code></dt><dd><p>List of strings. Optional. Pairtools <a class="reference external" href="https://pairtools.readthedocs.io/en/latest/parsing.html">pair types</a> to keep. Keeping <code class="docutils literal notranslate"><span class="pre">UU</span></code>, <code class="docutils literal notranslate"><span class="pre">UR</span></code>, and <code class="docutils literal notranslate"><span class="pre">RU</span></code> is recommended.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.keepTrans</span></code></dt><dd><p>If false, discards reads mapping to different chromosomes/contigs. If unspecified, these contacts will be kept.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.keepTrans</span></code></dt><dd><p>Boolean. Optional. If false, discards reads mapping to different chromosomes/contigs. If unspecified, these contacts will be kept.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.keepCis</span></code></dt><dd><p>If false, discards reads mapping to the same chromosome/contig. If unspecified, these contacts will be kept.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.keepCis</span></code></dt><dd><p>Boolean. Optional. If false, discards reads mapping to the same chromosome/contig. If unspecified, these contacts will be kept.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.minDistFR</span></code></dt><dd><p>If specified, then for reads with the orientation FR, discards if they are below this distance between <code class="docutils literal notranslate"><span class="pre">pos1</span></code> and <code class="docutils literal notranslate"><span class="pre">pos2</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.minDistFR</span></code></dt><dd><p>Integer. Optional. If specified, then for reads with the orientation FR, discards if they are below this distance between <code class="docutils literal notranslate"><span class="pre">pos1</span></code> and <code class="docutils literal notranslate"><span class="pre">pos2</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.minDistRF</span></code></dt><dd><p>If specified, then for reads with the orientation RF, discards if they are below this distance between <code class="docutils literal notranslate"><span class="pre">pos1</span></code> and <code class="docutils literal notranslate"><span class="pre">pos2</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.minDistRF</span></code></dt><dd><p>Integer. Optional. If specified, then for reads with the orientation RF, discards if they are below this distance between <code class="docutils literal notranslate"><span class="pre">pos1</span></code> and <code class="docutils literal notranslate"><span class="pre">pos2</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.minDistFF</span></code></dt><dd><p>If specified, then for reads with the orientation FF, discards if they are below this distance between <code class="docutils literal notranslate"><span class="pre">pos1</span></code> and <code class="docutils literal notranslate"><span class="pre">pos2</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.minDistFF</span></code></dt><dd><p>Integer. Optional. If specified, then for reads with the orientation FF, discards if they are below this distance between <code class="docutils literal notranslate"><span class="pre">pos1</span></code> and <code class="docutils literal notranslate"><span class="pre">pos2</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.minDistRR</span></code></dt><dd><p>If specified, then for reads with the orientation RR, discards if they are below this distance between <code class="docutils literal notranslate"><span class="pre">pos1</span></code> and <code class="docutils literal notranslate"><span class="pre">pos2</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.minDistRR</span></code></dt><dd><p>Integer. Optional. If specified, then for reads with the orientation RR, discards if they are below this distance between <code class="docutils literal notranslate"><span class="pre">pos1</span></code> and <code class="docutils literal notranslate"><span class="pre">pos2</span></code>.</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -277,9 +431,9 @@
 <p>Two technical artifacts that routinely appear in Hi-C experiments enriched in short-range contacts are undigested chromatin and self-ligated strands. These will appear in the multiQC reports generated by Hich as a strong enrichment in the FR and RF orientations below a certain distance threshold. By pausing the Hich run after parsing to pairs and inspecting this report, the <code class="docutils literal notranslate"><span class="pre">minDist</span></code> values can be chosen appropriately according to the QC data. Data with no strand bias should have very close to 25% of each orientation.</p>
 </div>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.discardSingleFrag</span></code></dt><dd><p>Discard contacts where both ends map to the same restriction fragment as these likely originate from undigested chromatin. Requires that samples have been tagged with this information, which Hich will do automatically if <code class="docutils literal notranslate"><span class="pre">fragmentIndex</span></code> is specified.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">selectFilters.discardSingleFrag</span></code></dt><dd><p>Boolean. Optional. Discard contacts where both ends map to the same restriction fragment as these likely originate from undigested chromatin. Requires that samples have been tagged with this information, which Hich will do automatically if <code class="docutils literal notranslate"><span class="pre">fragmentIndex</span></code> is specified.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">pairtoolsSelectParams</span></code></dt><dd><p>Additional parameters to pass to <code class="docutils literal notranslate"><span class="pre">pairtools</span> <span class="pre">select</span></code>. The following options are hardcoded in Hich and should not be specified here: <code class="docutils literal notranslate"><span class="pre">--output-rest</span></code>, <code class="docutils literal notranslate"><span class="pre">--output</span></code>, <code class="docutils literal notranslate"><span class="pre">--nproc-in</span></code>, <code class="docutils literal notranslate"><span class="pre">--nproc-out</span></code>.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">pairtoolsSelectParams</span></code></dt><dd><p>List of strings. Optional. Additional parameters to pass to <code class="docutils literal notranslate"><span class="pre">pairtools</span> <span class="pre">select</span></code>. The following options are hardcoded in Hich and should not be specified here: <code class="docutils literal notranslate"><span class="pre">--output-rest</span></code>, <code class="docutils literal notranslate"><span class="pre">--output</span></code>, <code class="docutils literal notranslate"><span class="pre">--nproc-in</span></code>, <code class="docutils literal notranslate"><span class="pre">--nproc-out</span></code>.</p>
 </dd>
 </dl>
 </section>
@@ -292,18 +446,17 @@
 <section id="options-within-an-aggregate-profile-in-the-aggregate-block">
 <h4>Options within an aggregate profile in the <code class="docutils literal notranslate"><span class="pre">aggregate</span></code> block<a class="headerlink" href="#options-within-an-aggregate-profile-in-the-aggregate-block" title="Link to this heading"></a></h4>
 <p><strong>Deduplication</strong></p>
-<p><code class="docutils literal notranslate"><span class="pre">techrepDedup</span></code></p>
 <dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">techrepDedup</span></code></dt><dd><p>If true, techrep-level samples in the aggregate profile will be deduplicated <strong>after</strong> merging them into a biorep-level sample.</p>
+</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">techrepDedupMethod</span></code></dt><dd><p>Controls the <code class="docutils literal notranslate"><span class="pre">--method</span></code> parameter for <a class="reference external" href="https://pairtools.readthedocs.io/en/latest/cli_tools.html#pairtools-dedup">pairtools dedup</a> when calling duplicates on technical replicate samples.</p>
 </dd>
-</dl>
-<p><code class="docutils literal notranslate"><span class="pre">biorepDedup</span></code></p>
-<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">biorepDedup</span></code></dt><dd><p>If true, biorep-level samples in the aggregate profile will be deduplicated <strong>after</strong> merging them into a condition-level sample.</p>
+</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">biorepDedupMethod</span></code></dt><dd><p>Controls the <code class="docutils literal notranslate"><span class="pre">--method</span></code> parameter for <a class="reference external" href="https://pairtools.readthedocs.io/en/latest/cli_tools.html#pairtools-dedup">pairtools dedup</a> when calling duplicates on biological replicate samples.</p>
 </dd>
-</dl>
-<p><code class="docutils literal notranslate"><span class="pre">conditionDedup</span></code></p>
-<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">conditionDedup</span></code></dt><dd><p>If true, condition-level samples in the aggregate profile will be deduplicated <strong>after</strong> merging them into a merged-condition-level sample.</p>
+</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">conditionDedupMethod</span></code></dt><dd><p>Controls the <code class="docutils literal notranslate"><span class="pre">--method</span></code> parameter for <a class="reference external" href="https://pairtools.readthedocs.io/en/latest/cli_tools.html#pairtools-dedup">pairtools dedup</a> when calling duplicates on condition samples.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dedupMaxMismatch</span></code></dt><dd><p>The max number of base pairs of mismatch between contacts permitted to deep them as duplicates. This value is interpreted in light of the <code class="docutils literal notranslate"><span class="pre">techrepDedupMethod</span></code>, <code class="docutils literal notranslate"><span class="pre">biorepDedupMethod</span></code>, or <code class="docutils literal notranslate"><span class="pre">conditionDedupMethod</span></code>.</p>
@@ -423,7 +576,7 @@
 </section>
 <section id="calling-differential-loop-enrichments-diffloops">
 <h3>Calling differential loop enrichments (diffloops)<a class="headerlink" href="#calling-differential-loop-enrichments-diffloops" title="Link to this heading"></a></h3>
-<p>Mustache diffloop calls will be generated for each parameterization on pairs of samples matching its sample selection strategy.</p>
+<p>Mustache diffloop calls will be generated for each parameterization on all pairs of samples matching its sample selection strategy.</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">differentialLoops</span></code></dt><dd><p>Hich-config block. Keys are names of Mustache diffloop-calling parameterizations. Values are the parameter names and values to be used for that parameterization of diffloop calling, which can include <code class="docutils literal notranslate"><span class="pre">sampleSelectionStrategy</span></code>.</p>
 </dd>
@@ -436,8 +589,8 @@
 <p><code class="docutils literal notranslate"><span class="pre">latestPairs</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">latestMatrix</span></code></p>
 </section>
-<section id="hich-sample-attributes-used-internally-not-typically-specified-by-user">
-<h3>Hich sample attributes used internally (not typically specified by user)<a class="headerlink" href="#hich-sample-attributes-used-internally-not-typically-specified-by-user" title="Link to this heading"></a></h3>
+<section id="hich-sample-attributes-built-automatically-not-typically-manually-specified-by-user">
+<h3>Hich sample attributes built automatically (not typically manually specified by user)<a class="headerlink" href="#hich-sample-attributes-built-automatically-not-typically-manually-specified-by-user" title="Link to this heading"></a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">isSingleCell</span></code></p>
 </section>
 </section>

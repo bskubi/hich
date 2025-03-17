@@ -9,4 +9,3 @@ Hich documentation
    workflow_steps/index
    planning/index
    implementation/index
-   next_steps/index
