@@ -58,14 +58,13 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Hich CLI Utilities</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#hich-compartments-options-reference-matrix-resolution"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">compartments</span> <span class="pre">[options]</span> <span class="pre">REFERENCE</span> <span class="pre">MATRIX</span> <span class="pre">RESOLUTION</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#hich-digest-options-reference-digest"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">digest</span> <span class="pre">[options]</span> <span class="pre">REFERENCE</span> <span class="pre">DIGEST</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#hich-downsample-options">``hich downsample [options] ``</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#hich-fragtag"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">fragtag</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#hich-gather"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">gather</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#hich-hicrep"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">hicrep</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#hich-organize"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">organize</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#hich-reshape"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">reshape</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#hich-stats-aggregate"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">stats_aggregate</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#hich-stats"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">stats</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-downsample-options-input-pairs-path-output-pairs-path"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">downsample</span> <span class="pre">[options]</span> <span class="pre">INPUT_PAIRS_PATH</span> <span class="pre">OUTPUT_PAIRS_PATH</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-fragtag-options-fragfile-out-pairs-in-pairs"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">fragtag</span> <span class="pre">[options]</span> <span class="pre">FRAGFILE</span> <span class="pre">OUT_PAIRS</span> <span class="pre">IN_PAIRS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-gather-options"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">gather</span> <span class="pre">[options]</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-hicrep-options-paths"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">hicrep</span> <span class="pre">[options]</span> <span class="pre">PATHS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-reshape-options"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">reshape</span> <span class="pre">[options]</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-stats-aggregate-options-stats-paths"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">stats_aggregate</span> <span class="pre">[options]</span> <span class="pre">STATS-PATHS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hich-stats-options"><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">stats</span> <span class="pre">[options]</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../vignettes/index.html">Vignettes</a></li>
@@ -144,42 +143,119 @@ hich<span class="w"> </span>digest<span class="w"> </span>--output<span class="w
 <p>Supported enzymes:
 + All of ~800 REBASE enzymes used by <a class="reference external" href="https://github.com/biopython/biopython/blob/master/Doc/cookbook/Restriction/Restriction.md">biopython’s restriction module</a>, as well as <code class="docutils literal notranslate"><span class="pre">Arima</span></code>, <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Plant</span></code>, <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Animal</span></code>, <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Microbiome</span></code>, <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Human</span></code>, <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">Fungal</span></code>.</p>
 </section>
-<section id="hich-downsample-options">
-<h2><a href="#id1"><span class="problematic" id="id2">``</span></a>hich downsample [options] ``<a class="headerlink" href="#hich-downsample-options" title="Link to this heading"></a></h2>
+<section id="hich-downsample-options-input-pairs-path-output-pairs-path">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">downsample</span> <span class="pre">[options]</span> <span class="pre">INPUT_PAIRS_PATH</span> <span class="pre">OUTPUT_PAIRS_PATH</span></code><a class="headerlink" href="#hich-downsample-options-input-pairs-path-output-pairs-path" title="Link to this heading"></a></h2>
+<p>Memory-efficient downsampling of a 4DN .pairs file. Requires an empirical distribution over the input .pairs dataset (<code class="docutils literal notranslate"><span class="pre">--orig-stats</span></code>) and one over the intended output dataset (<code class="docutils literal notranslate"><span class="pre">--target-stats</span></code>).</p>
 <p>Options:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--conjuncts</span></code>:</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--cis-strata</span></code>:</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--orig-stats</span></code>:</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--target-stats</span></code>:</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--to-size</span></code>:</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--conjuncts</span></code>: PairsSegment traits that define the category for each record (space-separated string list). Default: <code class="docutils literal notranslate"><span class="pre">record.chr1</span> <span class="pre">record.chr2</span> <span class="pre">record.pair_type</span> <span class="pre">stratum</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cis-strata</span></code>: PairsSegment cis distance strata boundaries (space-separated string list). Default: <code class="docutils literal notranslate"><span class="pre">10</span> <span class="pre">20</span> <span class="pre">50</span> <span class="pre">100</span> <span class="pre">200</span> <span class="pre">500</span> <span class="pre">1000</span> <span class="pre">2000</span> <span class="pre">5000</span> <span class="pre">10000</span> <span class="pre">20000</span> <span class="pre">50000</span> <span class="pre">100000</span> <span class="pre">200000</span> <span class="pre">500000</span> <span class="pre">1000000</span> <span class="pre">2000000</span> <span class="pre">5000000</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--orig-stats</span></code>: Stats file generated by hich stats or hich stats-aggregate containing original count distribution. Can be produced with hich stats. Computed from conjuncts and cis_strata if not supplied. Overrides default conjuncts and cis_strata if they are supplied.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--target-stats</span></code>: Stats file generated by hich stats or hich stats-aggregate containing target count distribution.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--to-size</span></code>: Float on [0.0, 1.0] for fraction of records to sample, or positive integer number of counts to sample. If a target stats file is supplied, further downsamples it to the given count.</p></li>
 </ul>
 <p>Arguments:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">INPUT_PAIRS_PATH</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">OUTPUT_PAIRS_PATH</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">INPUT_PAIRS_PATH</span></code>: A 4DN .pairs file used as downsampling input</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OUTPUT_PAIRS_PATH</span></code>: Filename for downsampled output</p></li>
 </ul>
 </section>
-<section id="hich-fragtag">
-<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">fragtag</span></code><a class="headerlink" href="#hich-fragtag" title="Link to this heading"></a></h2>
+<section id="hich-fragtag-options-fragfile-out-pairs-in-pairs">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">fragtag</span> <span class="pre">[options]</span> <span class="pre">FRAGFILE</span> <span class="pre">OUT_PAIRS</span> <span class="pre">IN_PAIRS</span></code><a class="headerlink" href="#hich-fragtag-options-fragfile-out-pairs-in-pairs" title="Link to this heading"></a></h2>
+<p>Extract logs for individual tasks from work directory and compile into single .json database and report</p>
+<p>Options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--batch_size</span></code>: Number of .pairs segments to read in a single batch. Default: 1000000</p></li>
+</ul>
+<p>Arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">OUT_PAIRS</span></code>: Output path for tagged .pairs file</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">IN_PAIRS</span></code>: Input path for .pairs file to be tagged</p></li>
+</ul>
 </section>
-<section id="hich-gather">
-<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">gather</span></code><a class="headerlink" href="#hich-gather" title="Link to this heading"></a></h2>
+<section id="hich-gather-options">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">gather</span> <span class="pre">[options]</span></code><a class="headerlink" href="#hich-gather-options" title="Link to this heading"></a></h2>
+<p>Options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--report,</span> <span class="pre">-r</span></code>: Path of output HTML report</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--db,</span> <span class="pre">-d</span></code>: Path of output JSON database</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--gather,</span> <span class="pre">-g</span></code>: Glob expression for filename to gather</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--work,</span> <span class="pre">-w</span></code>: Root of work directory to gather from</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--if-exists,</span> <span class="pre">-e</span></code>: Behavior when database exists. Options: <code class="docutils literal notranslate"><span class="pre">use-unchanged</span> <span class="pre">(default),</span> <span class="pre">overwrite,</span> <span class="pre">append</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--silent,</span> <span class="pre">-s</span></code>: Report messages on conflicts and errors</p></li>
+</ul>
 </section>
-<section id="hich-hicrep">
-<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">hicrep</span></code><a class="headerlink" href="#hich-hicrep" title="Link to this heading"></a></h2>
+<section id="hich-hicrep-options-paths">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">hicrep</span> <span class="pre">[options]</span> <span class="pre">PATHS</span></code><a class="headerlink" href="#hich-hicrep-options-paths" title="Link to this heading"></a></h2>
+<p>Compute HiCRep scores on multiple parameterizations and combinations of files</p>
+<p>Options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--resolutions</span></code>: List of resolutions</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--chroms,</span> <span class="pre">--include_chroms</span></code>: Restrict to these chromosomes</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--exclude,</span> <span class="pre">--exclude_chroms</span></code>: Do not call on these chromosomes, has priority over <code class="docutils literal notranslate"><span class="pre">--chroms</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--chrom-filter</span></code>: Python code specifying a condition for selecting chromosomes using <code class="docutils literal notranslate"><span class="pre">chrom</span></code> and <code class="docutils literal notranslate"><span class="pre">size</span></code> (chromsize) as variables</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--h</span></code>: Smoothing parameters for HiCRep (list)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--d-bp-max</span></code>: dBPMax parameters for HiCRep (list)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--b-downsample</span></code>: bDownsample parameters for HiCRep (list, boolean)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--nproc</span></code>: Number of processes to use for calling HiCRep scores</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--output</span></code>: Output filename</p></li>
+</ul>
+<p>Arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PATHS</span></code>: List of input .mcool or .hic files to use as input to HiCRep</p></li>
+</ul>
 </section>
-<section id="hich-organize">
-<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">organize</span></code><a class="headerlink" href="#hich-organize" title="Link to this heading"></a></h2>
+<section id="hich-reshape-options">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">reshape</span> <span class="pre">[options]</span></code><a class="headerlink" href="#hich-reshape-options" title="Link to this heading"></a></h2>
+<p>Modify contents of 4DN .pairs file</p>
+<p>Options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--read_from</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--output_to</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--parse</span></code>: Format is –update [FROM_COL] [TO_COL] ‘[PATTERN]’ as in –pattern ‘readID’ ‘cellID’ ‘{cellID}:{ignore}’</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--placeholder</span></code>: Format is –placeholder [COL] [PLACEHOLDER] which replaces every column value with the placeholder string</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--regex</span></code>: Format is –placeholder [FROM_COL] [TO_COL] [REGEX] [GROUP_INDEX] which extracts the group index specified (0=whole pattern) from the given regex from FROM_COL and sets it as the value in TO_COL</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--drop</span></code>: Column to drop</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--select</span></code>: Space-separated list of output column names to output in the order specified</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--batch-size</span></code>: Number of records per batch</p></li>
+</ul>
 </section>
-<section id="hich-reshape">
-<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">reshape</span></code><a class="headerlink" href="#hich-reshape" title="Link to this heading"></a></h2>
+<section id="hich-stats-aggregate-options-stats-paths">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">stats_aggregate</span> <span class="pre">[options]</span> <span class="pre">STATS-PATHS</span></code><a class="headerlink" href="#hich-stats-aggregate-options-stats-paths" title="Link to this heading"></a></h2>
+<p>Aggregate hich stats files called over .pairs with same conjuncts</p>
+<p>Options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--to-group-mean</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--to-group-min</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--to-size</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--prefix</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--outlier</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--stats-paths</span></code></p></li>
+</ul>
+<p>Arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">STATS-PATHS</span></code></p></li>
+</ul>
 </section>
-<section id="hich-stats-aggregate">
-<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">stats_aggregate</span></code><a class="headerlink" href="#hich-stats-aggregate" title="Link to this heading"></a></h2>
-</section>
-<section id="hich-stats">
-<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">stats</span></code><a class="headerlink" href="#hich-stats" title="Link to this heading"></a></h2>
+<section id="hich-stats-options">
+<h2><code class="docutils literal notranslate"><span class="pre">hich</span> <span class="pre">stats</span> <span class="pre">[options]</span></code><a class="headerlink" href="#hich-stats-options" title="Link to this heading"></a></h2>
+<p>Classify pairs and count the events.</p>
+<p>Output has conjuncts as headers, one row per event, and a column “count” containing the count of each event.</p>
+<p>Can read 4DN .pairs format from plaintext or from a variety of compressed formats with Python’s smart_open package.</p>
+<dl class="simple">
+<dt>Example:</dt><dd><p>hich stats –conjuncts “chr1 chr2” –cis-strata “10000 20000” my_pairs_file.pairs.gz</p>
+</dd>
+</dl>
+<p>Options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--conjuncts</span></code>: PairsSegment traits that define the category for each record (comma-separated string list)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cis-strata</span></code>: PairsSegment cis distance strata boundaries for use with ‘stratum’ conjunct (comma-separated string list)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--output</span></code>: Output file for tab-separated stats file. If not given, outputs to stdout.</p></li>
+</ul>
+<p>Arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PAIRS</span></code></p></li>
+</ul>
 </section>
 </section>
 
