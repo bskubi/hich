@@ -5,6 +5,7 @@ from hich.pairs.convert import *
 from hich.pairs.header import * 
 from dataclasses import dataclass
 from parse import parse
+import itertools
 
 @dataclass
 class PairsSQL:
@@ -18,6 +19,7 @@ class PairsSQL:
 
     def from_pairs(self, in_path: Path, out_path: Path | str = ":memory:"):
         self.connect(out_path)
+        
         header = PairsHeader(in_path)
         
         
@@ -80,10 +82,12 @@ CREATE TABLE pairs AS SELECT * FROM '{in_path}';
     def add_metadata(self, header: PairsHeader):
         self.conn.execute(
 f"""
-CREATE TABLE metadata (
+CREATE TABLE IF NOT EXISTS metadata (
     table_name VARCHAR,
     header VARCHAR
 );
+
+DELETE FROM metadata WHERE table_name = 'pairs';
 
 INSERT INTO metadata VALUES ('pairs', '{header.non_columns_text}');
 """
@@ -149,6 +153,34 @@ COPY pairs TO '{out_path}' (
 """
         )
 
+    def iter_chroms(self, vector_multiple: int = None):
+        """Yield Pandas dataframes in chunks in order of (chrom1, chrom2)
+    
+        Arguments:
+            vector_multiple: The number of rows returned in each chunk is the vector size (2048 by default) * vector_multiple (1 by default).
+        """
+        combinations = self.conn.execute("SELECT DISTINCT chrom1, chrom2 FROM pairs ORDER BY chrom1, chrom2").pl()
+
+        for chrom1, chrom2 in combinations.iter_rows():
+            query = self.conn.execute(
+                """
+                SELECT * FROM pairs
+                WHERE
+                    chrom1 = $chrom1 
+                    AND chrom2 = $chrom2
+                ORDER BY chrom1, chrom2, pos1, pos2
+                """,
+                {"chrom1": chrom1, "chrom2": chrom2}
+                            )
+            if vector_multiple is None:
+                yield query.df()
+            else:
+                while (chunk := query.fetch_df_chunk(vector_multiple)) is not None:
+                    if chunk.empty:
+                        break
+                    else:
+                        yield chunk
+    
 
     @property
     def header(self) -> PairsHeader:
