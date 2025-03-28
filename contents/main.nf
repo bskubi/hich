@@ -9,7 +9,7 @@ include {IngestPairs} from './subwf/reads/ingestPairs.nf'
 include {Select} from './subwf/reads/select.nf'
 
 include {LabelAggregationPlans} from './subwf/aggregate/labelAggregationPlans.nf'
-include {SplitTechreps} from './subwf/aggregate/splitTechreps.nf'
+include {Aggregate} from './subwf/aggregate/aggregate.nf'
 
 include {HicMatrix} from './subwf/matrix/hicMatrix.nf'
 include {McoolMatrix} from './subwf/matrix/mcoolMatrix.nf'
@@ -35,21 +35,19 @@ workflow {
         | Select
 
         | LabelAggregationPlans
-        | Merge
-        // | AggregateBioreps
-        // | AggregateConditions
+        | Aggregate
 
-        // | HicMatrix             // Create contact matrices
-        // | McoolMatrix
-        // | IngestMatrix
+        | HicMatrix             // Create contact matrices
+        | McoolMatrix
+        | IngestMatrix
 
-        // | Hicrep                // Call features
-        // | CompartmentScores
-        // | Loops
-        // | DifferentialLoops
-        // | InsulationScores
+        | Hicrep                // Call features
+        | CompartmentScores
+        | Loops
+        | DifferentialLoops
+        | InsulationScores
 
-    //     | set{samples}
+        | set{samples}
 
     // samples = emptyOnLastStep("End", samples)
 }

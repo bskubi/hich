@@ -1,22 +1,14 @@
-process splitTechreps {
+process Split {
     input:
-    tuple val(id), path(pairs), val(split)
+    tuple val(id), path(pairs)
 
     output:
-    tuple val(id), path(downsampledPairs)
+    tuple val(id), path("*")
 
     shell:
-    "hich pairs partition --in-pattern '__temp__/${split}={${split}}/data_0.parquet' --out-pattern '${id}_${split}.pairs' '${pairs}' __temp__ ${split}"
-}
+    inPattern = "\"__temp__/chrom1={chrom1}/data_0.parquet\""
+    outPattern = "\"CELL_{chrom1}_${id}.cell={chrom1}.pairs.gz\""
+    pairsFile = "\"${pairs}\""
 
-workflow SplitTechreps {
-    take:
-    samples
-
-    main:
-
-    
-
-    emit:
-    samples
+    "hich pairs partition --in-pattern ${inPattern} --out-pattern ${outPattern} ${pairsFile} __temp__ chrom1 && rm -rf __temp__"
 }

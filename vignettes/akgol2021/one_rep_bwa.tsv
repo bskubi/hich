@@ -1,2 +1,0 @@
-condition	fastq1	fastq2	assembly	aligner	restrictionEnzymes
-Formaldehyde+DSG_DdeI_and_DpnII_HFFc6	vignettes/akgol2021/downsampled/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R1.fastq.gz	vignettes/akgol2021/downsampled/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz	hg38	bwa	DdeI,DpnII

@@ -45,7 +45,7 @@ def autodetect_extension(path: Path | str, default: Tuple[str, str] = (None, Non
     
     result = (path_format, format_extension) if path_format and format_extension else default
 
-    assert result[0] and result[1], f"File format and extension not detected. Options include {autodetect}."
+    assert result[0] and result[1], f"File format and extension not detected in {path} with suffixes {path.suffixes}. Options include {autodetect}. "
 
     return result
 

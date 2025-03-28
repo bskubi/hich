@@ -45,15 +45,34 @@ def partition(in_format, out_format, in_pattern, out_pattern, sql, squote, unlin
     Split by same vs. different chromosomes when that was not already labeled in the .pairs file:
         "hich pairs partition --sql "ALTER TABLE pairs ADD COLUMN same_chrom BOOLEAN; UPDATE pairs SET same_chrom = (chrom1 = chrom2)" all_cells.pairs output_dir same_chrom
     """
-    db = PairsSQL().open(in_path, in_format)
-    if sql:
-        if squote:
-            sql = sql.replace(squote, "'")
-        db.conn.execute(sql)
+    if not partition_by:
+        raise ValueError(f"No column names to partition {in_path} by were submitted.")
+
+    try:
+        db = PairsSQL().open(in_path, in_format)
+    except Exception as e:
+        print(f"Failed to open {in_path} with format {in_format}")
+        raise e
+
+    try:
+        if sql:
+            if squote:
+                sql = sql.replace(squote, "'")
+            db.conn.execute(sql)
+    except Exception as e:
+        print(f"Preliminary SQL query failed: {sql}")
+        raise e
+
+    try:
+        db.partition_by(out_path, partition_by)
+    except Exception as e:
+        print(f"Failed to partition {in_path} by {partition_by} in output directory {out_path} ")
+        raise e
     
-    db.partition_by(out_path, partition_by)
-    
-    reorganize(out_path, in_pattern, out_pattern, in_format, out_format, unlink)
+    try:
+        reorganize(out_path, in_pattern, out_pattern, in_format, out_format, unlink)
+    except Exception as e:
+        raise e
 
 @pairs.command()
 @click.option("--in-format", type = click.Choice(["autodetect", "duckdb", "pairs"]), default = "autodetect", help = "Input file format")

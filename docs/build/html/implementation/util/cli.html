@@ -1,0 +1,185 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>util/cli.nf &mdash; Hich 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=8ea2664f" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Hich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Install Hich and its dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration/index.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli/index.html">Hich CLI Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vignettes/index.html">Vignettes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../workflow_steps/index.html">Workflow Steps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../planning/index.html">Planning The Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Implementation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Hich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><code class="docutils literal notranslate"><span class="pre">util/cli.nf</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/implementation/util/cli.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="util-cli-nf">
+<h1><code class="docutils literal notranslate"><span class="pre">util/cli.nf</span></code><a class="headerlink" href="#util-cli-nf" title="Link to this heading"></a></h1>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">parsePattern</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">str</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">parsePattern</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        Used to extract sample attributes from filenames, such as condition, biorep, and techrep,</span>
+<span class="cm">        via a syntax similar to that offered by Python&#39;s parse library. In parse, users can</span>
+<span class="cm">        extract substrings into a map with patterns like: &quot;{condition}_{biorep}_{techrep}.fastq&quot;,</span>
+<span class="cm">        which would take a string like &quot;cond1_br1_tr1.fastq&quot; and return [&quot;condition&quot;: &quot;cond1&quot;, &quot;biorep&quot;: &quot;br1&quot;, &quot;techrep&quot;: &quot;tr1&quot;].</span>
+<span class="cm">        This is easier to specify at the command line than a regex but AFAIK has no Groovy equivalent.</span>
+
+<span class="cm">        This function implements this parsing functionality, returning the extracted map.</span>
+<span class="cm">    */</span>
+
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">patternPlaceholders</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span>
+
+<span class="w">    </span><span class="c1">// This regex searches the parsePattern string (i.e. &quot;{condition}_{biorep}_{techrep}.fastq&quot;)</span>
+<span class="w">    </span><span class="c1">// for the placeholders between braces (i.e. condition, biorep, techrep) and adds them</span>
+<span class="w">    </span><span class="c1">// to the list of patternPlaceholders to become keys in the output map.</span>
+
+<span class="w">    </span><span class="c1">// It also yields in &quot;pattern&quot; the list of matchers to look for in the input string &quot;str&quot;</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">pattern</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parsePattern</span><span class="p">.</span><span class="n">replaceAll</span><span class="p">(</span><span class="o">/</span><span class="err">\</span><span class="p">{([</span><span class="o">^</span><span class="p">{}]</span><span class="o">*</span><span class="p">)</span><span class="err">\</span><span class="p">}</span><span class="o">/</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">match</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">match</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">trim</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">patternPlaceholders</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">match</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w">  </span><span class="c1">// Track the placeholder name</span>
+<span class="w">            </span><span class="s">&quot;(?&lt;${match[1]}&gt;.+?)&quot;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="s">&quot;&quot;</span><span class="w">  </span><span class="c1">// Ignore empty placeholders</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// This extracts the patterns from str</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">matcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">str</span><span class="w"> </span><span class="o">=~</span><span class="w"> </span><span class="n">pattern</span>
+
+<span class="w">    </span><span class="c1">// Combine the patternPlaceholders with the corresponding matches from &quot;str&quot; into an output map &quot;result&quot;</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">:</span><span class="p">]</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">matcher</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">patternPlaceholders</span><span class="p">.</span><span class="n">eachWithIndex</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">placeholder</span><span class="p">,</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">            </span><span class="n">result</span><span class="p">[</span><span class="n">placeholder</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">matcher</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w">  </span><span class="c1">// Retrieve group by index</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="n">null</span>
+<span class="p">}</span>
+
+<span class="n">def</span><span class="w"> </span><span class="nf">formatArg</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span><span class="w"> </span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        Some processes receive either a list of values or a single non-list element</span>
+<span class="cm">        as parameter values, but need to call a CLI command passing a delimiter-separated</span>
+<span class="cm">        list of the received values. Other times they get nothing and should</span>
+<span class="cm">        not pass an argument for that parameter at all. This facilitates this interconversion</span>
+<span class="cm">        and returns an empty string if the object passed was falsey.</span>
+
+<span class="cm">        NOTE this is a potential issue if the goal is to pass a boolean false</span>
+<span class="cm">        to the CLI command, but I don&#39;t think Hich currently does this...</span>
+
+<span class="cm">        pattern -- the string pattern to format the results into, like &quot;--numbers {commaSeparatedNums}&quot;</span>
+<span class="cm">        object -- the element or list of elements to join (where necessary) into a delimiter-separated list</span>
+<span class="cm">        sep -- the delimiter, like &quot;,&quot;</span>
+<span class="cm">    */</span>
+<span class="w">    </span><span class="c1">// Put non-lists into a list so when join is called, it has something to (silently) operate on</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">listed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">object</span><span class="w"> </span><span class="n">instanceof</span><span class="w"> </span><span class="n">List</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">object</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">null</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">object</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="n">object</span><span class="p">]</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">joined</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listed</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">listed</span><span class="p">.</span><span class="n">join</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">listed</span>
+
+<span class="w">    </span><span class="c1">// Format the string with the result or return</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">joined</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">String</span><span class="p">.</span><span class="n">format</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span><span class="w"> </span><span class="n">joined</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Benjamin Skubi, Andrew Adey, Galip Gürkan Yardımcı.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,235 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>util/rows_cols.nf &mdash; Hich 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=8ea2664f" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Hich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Install Hich and its dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration/index.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli/index.html">Hich CLI Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vignettes/index.html">Vignettes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../workflow_steps/index.html">Workflow Steps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../planning/index.html">Planning The Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Implementation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Hich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><code class="docutils literal notranslate"><span class="pre">util/rows_cols.nf</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/implementation/util/rows_cols.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="util-rows-cols-nf">
+<h1><code class="docutils literal notranslate"><span class="pre">util/rows_cols.nf</span></code><a class="headerlink" href="#util-rows-cols-nf" title="Link to this heading"></a></h1>
+<section id="columns-format">
+<h2>columns format<a class="headerlink" href="#columns-format" title="Link to this heading"></a></h2>
+<p>A channel in columns format has one item, which is a single hashmap with keys corresponding to column names and values being lists of row values. Example:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">columnsChannel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">channel</span><span class="p">.</span><span class="n">of</span><span class="p">([</span><span class="s">&quot;odd&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">],</span><span class="w"> </span><span class="s">&quot;even&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">]])</span>
+</pre></div>
+</div>
+<p>In rows format, we instead have one channel item per row, with keys being column names and values the row entry for that row.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">rowsChannel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">channel</span><span class="p">.</span><span class="n">of</span><span class="p">([[</span><span class="s">&quot;odd&quot;</span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;even&quot;</span><span class="o">:</span><span class="w"> </span><span class="mi">2</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;odd&quot;</span><span class="o">:</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="s">&quot;even&quot;</span><span class="o">:</span><span class="w"> </span><span class="mi">4</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;odd&quot;</span><span class="o">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;even&quot;</span><span class="o">:</span><span class="w"> </span><span class="mi">6</span><span class="p">]])</span>
+</pre></div>
+</div>
+</section>
+<section id="columns">
+<h2>columns<a class="headerlink" href="#columns" title="Link to this heading"></a></h2>
+<p>Converts a channel from rows format to columns format.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">columns</span><span class="w"> </span><span class="p">(</span><span class="n">mapList</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">:</span><span class="p">])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Get set of all keys from all maps</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">allKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapList</span><span class="p">.</span><span class="n">collectMany</span><span class="p">{</span>
+<span class="w">        </span><span class="n">it</span><span class="p">.</span><span class="n">keySet</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}.</span><span class="n">toSet</span><span class="p">()</span>
+
+<span class="w">    </span><span class="c1">// Extract parameters to list</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">transposed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">:</span><span class="p">]</span>
+
+<span class="w">    </span><span class="c1">// Iterate through all maps in the mapList</span>
+<span class="w">    </span><span class="n">mapList</span><span class="p">.</span><span class="n">each</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">map</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">        </span><span class="c1">// Iterate through all keys from all maps</span>
+<span class="w">        </span><span class="n">allKeys</span><span class="p">.</span><span class="n">each</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">key</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">            </span><span class="cm">/* For each key, get the current map&#39;s value or a default if supplied.</span>
+<span class="cm">            Verify the value is non-null/missing or is OK to be null.</span>
+<span class="cm">            Add it to the previous value list and update the transposed map.</span>
+<span class="cm">            */</span>
+<span class="w">            </span><span class="n">def</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">map</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="p">.</span><span class="n">defaults</span><span class="o">?</span><span class="p">[(</span><span class="n">key</span><span class="p">)])</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">value</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">null</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">options</span><span class="p">.</span><span class="n">dropNull</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">def</span><span class="w"> </span><span class="n">previous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">transposed</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="p">[])</span>
+<span class="w">                </span><span class="n">assert</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">null</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">options</span><span class="p">.</span><span class="n">nullOK</span><span class="o">?</span><span class="p">.</span><span class="n">contains</span><span class="p">(</span><span class="n">key</span><span class="p">),</span><span class="w"> </span><span class="s">&quot;In call to &#39;columns&#39; without dropNull, &#39;${key}&#39; is not in nullOK, and is missing/null for:</span><span class="se">\n</span><span class="s">${map}&quot;</span>
+<span class="w">                </span><span class="n">def</span><span class="w"> </span><span class="n">valueList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">previous</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">[</span><span class="n">value</span><span class="p">]</span>
+<span class="w">                </span><span class="n">def</span><span class="w"> </span><span class="n">updatedItem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[(</span><span class="n">key</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">valueList</span><span class="p">]</span>
+<span class="w">                </span><span class="n">transposed</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">updatedItem</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Return the transposed map</span>
+<span class="w">    </span><span class="n">transposed</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="rows">
+<h2>rows<a class="headerlink" href="#rows" title="Link to this heading"></a></h2>
+<p>Converts a channel from columns format to rows format.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">rows</span><span class="w"> </span><span class="p">(</span><span class="n">columnsMap</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        Arguments</span>
+<span class="cm">            columnsMap: map[str, ArrayList | Any] -- A channel containing key names</span>
+<span class="cm">            associated with lists of per-sample values to be converted to a row format</span>
+<span class="cm">    */</span>
+
+<span class="w">    </span><span class="c1">// Get the keys and the transposed values</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">keys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">columnsMap</span><span class="p">.</span><span class="n">keySet</span><span class="p">().</span><span class="n">toList</span><span class="p">()</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">columnsMap</span><span class="p">.</span><span class="n">values</span><span class="p">().</span><span class="n">toList</span><span class="p">()</span>
+
+<span class="w">    </span><span class="c1">// Ensure all values are lists</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">formattedValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">values</span><span class="p">.</span><span class="n">collect</span><span class="p">({</span><span class="n">it</span><span class="w"> </span><span class="n">instanceof</span><span class="w"> </span><span class="n">ArrayList</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="n">it</span><span class="p">]})</span>
+
+<span class="w">    </span><span class="c1">// This converts the column format of the values to row format</span>
+<span class="w">    </span><span class="c1">// https://docs.groovy-lang.org/latest/html/groovy-jdk/java/util/List.html#transpose()</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">transposed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">formattedValues</span><span class="p">.</span><span class="n">transpose</span><span class="p">()</span>
+
+<span class="w">    </span><span class="c1">// Create N hashmaps, each containing the values at index i for the corresponding keys</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">transposed</span><span class="p">.</span><span class="n">collect</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">row</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="c1">// Keys and row are equal-length lists which are transposed into a list of individual</span>
+<span class="w">        </span><span class="c1">// key value pairs like [[key1: value1], [key2: value2]]. collectEntries converts</span>
+<span class="w">        </span><span class="c1">// this to a single map like [key1: value1, key2: value2]</span>
+<span class="w">        </span><span class="p">[</span><span class="n">keys</span><span class="p">,</span><span class="w"> </span><span class="n">row</span><span class="p">].</span><span class="n">transpose</span><span class="p">().</span><span class="n">collectEntries</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">result</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="rowhashmaptocolumnchannel">
+<h2>rowHashmapToColumnChannel<a class="headerlink" href="#rowhashmaptocolumnchannel" title="Link to this heading"></a></h2>
+<p>Convert a Groovy hashmap to a column channel so that its keys are in the <code class="docutils literal notranslate"><span class="pre">[keyCol]</span></code> channel and values in the <code class="docutils literal notranslate"><span class="pre">[valueCol]</span></code> channel so the index of each key and its corresponding value are at the same index.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">rowHashmapToColumnChannel</span><span class="w"> </span><span class="p">(</span><span class="n">hashMap</span><span class="p">,</span><span class="w"> </span><span class="n">keyCol</span><span class="p">,</span><span class="w"> </span><span class="n">valueCol</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Treat key-value pairs of hashMap as row entries in a two-column table and emit in column format</span>
+<span class="w">    </span><span class="p">(</span>
+<span class="w">        </span><span class="n">channel</span><span class="p">.</span><span class="n">of</span><span class="p">(</span><span class="n">params</span><span class="p">.</span><span class="n">aggregationPlans</span><span class="p">)</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="p">[</span>
+<span class="w">                </span><span class="p">(</span><span class="n">keyCol</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">hashMap</span><span class="p">.</span><span class="n">keySet</span><span class="p">().</span><span class="n">toList</span><span class="p">(),</span>
+<span class="w">                </span><span class="p">(</span><span class="n">valueCol</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">hashMap</span><span class="p">.</span><span class="n">values</span><span class="p">().</span><span class="n">toList</span><span class="p">()</span>
+<span class="w">            </span><span class="p">]</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="rowhashmaptorowchannel">
+<h2>rowHashmapToRowChannel<a class="headerlink" href="#rowhashmaptorowchannel" title="Link to this heading"></a></h2>
+<p>Convert a Groovy hashmap to a row channel structured as <code class="docutils literal notranslate"><span class="pre">[keyCol]:</span> <span class="pre">[key],</span> <span class="pre">[valueCol]:</span> <span class="pre">[value]</span></code>, where <code class="docutils literal notranslate"><span class="pre">[key]</span></code> is a particular key from the original hashmap and <code class="docutils literal notranslate"><span class="pre">[value]</span></code> is the corresponding value.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">rowHashmapToRowChannel</span><span class="w"> </span><span class="p">(</span><span class="n">hashMap</span><span class="p">,</span><span class="w"> </span><span class="n">keyCol</span><span class="p">,</span><span class="w"> </span><span class="n">valueCol</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Treat key-value pairs of hashMap as row entries in a two-column table and emit in row format</span>
+<span class="w">    </span><span class="n">rowHashmapToColumnChannel</span><span class="p">(</span><span class="n">hashMap</span><span class="p">,</span><span class="w"> </span><span class="n">keyCol</span><span class="p">,</span><span class="w"> </span><span class="n">valueCol</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">rows</span><span class="p">(</span><span class="n">it</span><span class="p">)}</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">flatten</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Benjamin Skubi, Andrew Adey, Galip Gürkan Yardımcı.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

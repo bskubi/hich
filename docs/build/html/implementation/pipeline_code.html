@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pipeline Code &mdash; Hich 0.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
@@ -17,7 +17,7 @@
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=2709fde1"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../_static/copybutton.js?v=f281be69"></script>
@@ -25,6 +25,7 @@
       <script>let toggleHintHide = 'Click to hide';</script>
       <script>let toggleOpenOnPrint = 'true';</script>
       <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
       <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -62,7 +63,37 @@
 <li class="toctree-l2"><a class="reference internal" href="basic_setup.html">Sample File</a></li>
 <li class="toctree-l2"><a class="reference internal" href="features.html">Sample Selection Strategy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference.html">Hich Reference</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Pipeline Code</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Pipeline Code</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#common-patterns">Common Patterns</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#one-one">One -&gt; One</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#many-one">Many -&gt; One</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#util-rowscols-nf"><code class="docutils literal notranslate"><span class="pre">util/rowsCols.nf</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#columns-format">columns format</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#columns">columns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rows">rows</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rowhashmaptocolumnchannel">rowHashmapToColumnChannel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rowhashmaptorowchannel">rowHashmapToRowChannel</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#util-group-nf"><code class="docutils literal notranslate"><span class="pre">util/group.nf</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#grouphashmap">groupHashMap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#coalesce">coalesce</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sqljoin">sqljoin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pack">pack</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#keydiff">keydiff</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#util-samples-nf"><code class="docutils literal notranslate"><span class="pre">util/samples.nf</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#util-analysisplans-nf"><code class="docutils literal notranslate"><span class="pre">util/analysisPlans.nf</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#util-workflowcontrol-nf"><code class="docutils literal notranslate"><span class="pre">util/workflowControl.nf</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#util-cli-nf"><code class="docutils literal notranslate"><span class="pre">util/cli.nf</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#util-hashmaps-nf"><code class="docutils literal notranslate"><span class="pre">util/hashmaps.nf</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#util-logs-nf"><code class="docutils literal notranslate"><span class="pre">util/logs.nf</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#util-files-nf"><code class="docutils literal notranslate"><span class="pre">util/files.nf</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -94,7 +125,1072 @@
              
   <section id="pipeline-code">
 <h1>Pipeline Code<a class="headerlink" href="#pipeline-code" title="Link to this heading"></a></h1>
-<p>This documents Hich’s technical implementation, aimed at developers rather than users.</p>
+<p>This documents Hich’s technical implementation and is aimed at developers rather than users.</p>
+<section id="common-patterns">
+<h2>Common Patterns<a class="headerlink" href="#common-patterns" title="Link to this heading"></a></h2>
+<section id="one-one">
+<h3>One -&gt; One<a class="headerlink" href="#one-one" title="Link to this heading"></a></h3>
+<p><strong>Use case: processes that take individual samples as input and return new or updated attributes.</strong></p>
+<p><strong>Filter</strong> for the required samples, <strong>extract</strong> the sample attributes needed (usually including <code class="docutils literal notranslate"><span class="pre">id</span></code>), call the <strong>process</strong>, call the process, <strong>label</strong> the outputs, and <strong>pack</strong> the outputs as new attributes of the same by using <code class="docutils literal notranslate"><span class="pre">id</span></code> to link the new outputs to the correct sample.</p>
+<p>Here is an example from <code class="docutils literal notranslate"><span class="pre">parse.nf</span></code>.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">samples</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">filter</span><span class="p">{</span><span class="o">!</span><span class="n">skip</span><span class="p">(</span><span class="s">&quot;parse&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">datatype</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;fastq&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;sambam&quot;</span><span class="p">]}</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">tuple</span><span class="p">(</span><span class="n">it</span><span class="p">.</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">sambam</span><span class="p">,</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">chromsizes</span><span class="p">,</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">assembly</span><span class="p">,</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">pairtoolsParse2Params</span><span class="p">,</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">reshapeParams</span><span class="p">,</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">subMap</span><span class="p">(</span><span class="s">&quot;minMapq&quot;</span><span class="p">))}</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">PairtoolsParse2</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{[</span><span class="n">id</span><span class="o">:</span><span class="n">it</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">pairs</span><span class="o">:</span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">latest</span><span class="o">:</span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">latestPairs</span><span class="o">:</span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">]]}</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">set</span><span class="p">{</span><span class="n">result</span><span class="p">}</span>
+<span class="n">pack</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">set</span><span class="p">{</span><span class="n">samples</span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="many-one">
+<h3>Many -&gt; One<a class="headerlink" href="#many-one" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">groupRowsToColumnFormat</span></code> groups the samples by common values of <code class="docutils literal notranslate"><span class="pre">biorep</span></code>, <code class="docutils literal notranslate"><span class="pre">condition</span></code> and <code class="docutils literal notranslate"><span class="pre">aggregationPlanName</span></code> to yield a channel with one column-format item per group. Then <code class="docutils literal notranslate"><span class="pre">coalesce</span></code> replaces any constant vectors with a constant value (i.e. <code class="docutils literal notranslate"><span class="pre">[val:</span> <span class="pre">[1,</span> <span class="pre">1,</span> <span class="pre">1]]</span></code> becomes <code class="docutils literal notranslate"><span class="pre">[val:</span> <span class="pre">1]</span></code>).</p>
+<p>Example:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Filter samples</span>
+<span class="n">levelSamples</span>
+<span class="o">|</span><span class="w"> </span><span class="n">branch</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nl">yesMerge</span><span class="p">:</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">includeInMerge</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">mergeTechrepsToBioreps</span>
+<span class="w">        </span><span class="nl">noMerge</span><span class="p">:</span><span class="w"> </span><span class="nb">true</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="o">|</span><span class="w"> </span><span class="n">set</span><span class="p">{</span><span class="n">samples</span><span class="p">}</span>
+
+<span class="c1">// Merge the pairs files.</span>
+<span class="n">groupRowsToColumnFormat</span><span class="p">(</span><span class="n">samples</span><span class="p">.</span><span class="n">yesMerge</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;biorep&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;condition&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;aggregationPlanName&quot;</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;dropNull&quot;</span><span class="o">:</span><span class="w"> </span><span class="nb">true</span><span class="p">])</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">coalesce</span><span class="p">(</span><span class="n">it</span><span class="p">)}</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">tuple</span><span class="p">(</span><span class="n">makeID</span><span class="p">(</span><span class="n">it</span><span class="p">,</span><span class="w"> </span><span class="n">columns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">),</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">latestPairs</span><span class="p">)}</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">mergeTechrepsToBioreps</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{[</span><span class="n">id</span><span class="o">:</span><span class="n">it</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">pairs</span><span class="o">:</span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">latest</span><span class="o">:</span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">latestPairs</span><span class="o">:</span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">]]}</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">set</span><span class="p">{</span><span class="n">mergedTechrepAttributes</span><span class="p">}</span>
+
+<span class="c1">// Group the merged result by the mergeGroupIdentifiers, then coalesce common values</span>
+<span class="c1">// to a single value, dropping any null or heterogeneous values. The other</span>
+<span class="c1">// common values are kept as inherited merge attributes. Then add an ID</span>
+<span class="c1">// for the merge.</span>
+<span class="n">groupRowsToColumnFormat</span><span class="p">(</span><span class="n">samples</span><span class="p">.</span><span class="n">yesMerge</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;biorep&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;condition&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;aggregationPlanName&quot;</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;dropNull&quot;</span><span class="o">:</span><span class="w"> </span><span class="nb">true</span><span class="p">])</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">coalesce</span><span class="p">(</span><span class="n">it</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;</span><span class="n">_drop</span><span class="err">&#39;</span><span class="p">)}</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">it</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">[</span><span class="n">id</span><span class="o">:</span><span class="n">makeID</span><span class="p">(</span><span class="n">it</span><span class="p">)]}</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">set</span><span class="p">{</span><span class="n">inheritedMergeAttributes</span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="util-rowscols-nf">
+<h2><code class="docutils literal notranslate"><span class="pre">util/rowsCols.nf</span></code><a class="headerlink" href="#util-rowscols-nf" title="Link to this heading"></a></h2>
+<section id="columns-format">
+<h3>columns format<a class="headerlink" href="#columns-format" title="Link to this heading"></a></h3>
+<p>A channel in columns format has one item, which is a single hashmap with keys corresponding to column names and values being lists of row values. Example:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">columnsChannel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">channel</span><span class="p">.</span><span class="n">of</span><span class="p">([</span><span class="s">&quot;odd&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">],</span><span class="w"> </span><span class="s">&quot;even&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">]])</span>
+</pre></div>
+</div>
+<p>In rows format, we instead have one channel item per row, with keys being column names and values the row entry for that row.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">rowsChannel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">channel</span><span class="p">.</span><span class="n">of</span><span class="p">([[</span><span class="s">&quot;odd&quot;</span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;even&quot;</span><span class="o">:</span><span class="w"> </span><span class="mi">2</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;odd&quot;</span><span class="o">:</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="s">&quot;even&quot;</span><span class="o">:</span><span class="w"> </span><span class="mi">4</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;odd&quot;</span><span class="o">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;even&quot;</span><span class="o">:</span><span class="w"> </span><span class="mi">6</span><span class="p">]])</span>
+</pre></div>
+</div>
+</section>
+<section id="columns">
+<h3>columns<a class="headerlink" href="#columns" title="Link to this heading"></a></h3>
+<p>Converts a channel from rows format to columns format.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">columns</span><span class="w"> </span><span class="p">(</span><span class="n">mapList</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">:</span><span class="p">])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Get set of all keys from all maps</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">allKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapList</span><span class="p">.</span><span class="n">collectMany</span><span class="p">{</span>
+<span class="w">        </span><span class="n">it</span><span class="p">.</span><span class="n">keySet</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}.</span><span class="n">toSet</span><span class="p">()</span>
+
+<span class="w">    </span><span class="c1">// Extract parameters to list</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">transposed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">:</span><span class="p">]</span>
+
+<span class="w">    </span><span class="c1">// Iterate through all maps in the mapList</span>
+<span class="w">    </span><span class="n">mapList</span><span class="p">.</span><span class="n">each</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">map</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">        </span><span class="c1">// Iterate through all keys from all maps</span>
+<span class="w">        </span><span class="n">allKeys</span><span class="p">.</span><span class="n">each</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">key</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">            </span><span class="cm">/* For each key, get the current map&#39;s value or a default if supplied.</span>
+<span class="cm">            Verify the value is non-null/missing or is OK to be null.</span>
+<span class="cm">            Add it to the previous value list and update the transposed map.</span>
+<span class="cm">            */</span>
+<span class="w">            </span><span class="n">def</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">map</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="p">.</span><span class="n">defaults</span><span class="o">?</span><span class="p">[(</span><span class="n">key</span><span class="p">)])</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">value</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">null</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">options</span><span class="p">.</span><span class="n">dropNull</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">def</span><span class="w"> </span><span class="n">previous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">transposed</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="p">[])</span>
+<span class="w">                </span><span class="n">assert</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">null</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">options</span><span class="p">.</span><span class="n">nullOK</span><span class="o">?</span><span class="p">.</span><span class="n">contains</span><span class="p">(</span><span class="n">key</span><span class="p">),</span><span class="w"> </span><span class="s">&quot;In call to &#39;columns&#39; without dropNull, &#39;${key}&#39; is not in nullOK, and is missing/null for:</span><span class="se">\n</span><span class="s">${map}&quot;</span>
+<span class="w">                </span><span class="n">def</span><span class="w"> </span><span class="n">valueList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">previous</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">[</span><span class="n">value</span><span class="p">]</span>
+<span class="w">                </span><span class="n">def</span><span class="w"> </span><span class="n">updatedItem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[(</span><span class="n">key</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">valueList</span><span class="p">]</span>
+<span class="w">                </span><span class="n">transposed</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">updatedItem</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Return the transposed map</span>
+<span class="w">    </span><span class="n">transposed</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="rows">
+<h3>rows<a class="headerlink" href="#rows" title="Link to this heading"></a></h3>
+<p>Converts a channel from columns format to rows format.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">rows</span><span class="w"> </span><span class="p">(</span><span class="n">columnsMap</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        Arguments</span>
+<span class="cm">            columnsMap: map[str, ArrayList | Any] -- A channel containing key names</span>
+<span class="cm">            associated with lists of per-sample values to be converted to a row format</span>
+<span class="cm">    */</span>
+
+<span class="w">    </span><span class="c1">// Get the keys and the transposed values</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">keys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">columnsMap</span><span class="p">.</span><span class="n">keySet</span><span class="p">().</span><span class="n">toList</span><span class="p">()</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">columnsMap</span><span class="p">.</span><span class="n">values</span><span class="p">().</span><span class="n">toList</span><span class="p">()</span>
+
+<span class="w">    </span><span class="c1">// Ensure all values are lists</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">formattedValues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">values</span><span class="p">.</span><span class="n">collect</span><span class="p">({</span><span class="n">it</span><span class="w"> </span><span class="n">instanceof</span><span class="w"> </span><span class="n">ArrayList</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="n">it</span><span class="p">]})</span>
+
+<span class="w">    </span><span class="c1">// This converts the column format of the values to row format</span>
+<span class="w">    </span><span class="c1">// https://docs.groovy-lang.org/latest/html/groovy-jdk/java/util/List.html#transpose()</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">transposed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">formattedValues</span><span class="p">.</span><span class="n">transpose</span><span class="p">()</span>
+
+<span class="w">    </span><span class="c1">// Create N hashmaps, each containing the values at index i for the corresponding keys</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">transposed</span><span class="p">.</span><span class="n">collect</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">row</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="c1">// Keys and row are equal-length lists which are transposed into a list of individual</span>
+<span class="w">        </span><span class="c1">// key value pairs like [[key1: value1], [key2: value2]]. collectEntries converts</span>
+<span class="w">        </span><span class="c1">// this to a single map like [key1: value1, key2: value2]</span>
+<span class="w">        </span><span class="p">[</span><span class="n">keys</span><span class="p">,</span><span class="w"> </span><span class="n">row</span><span class="p">].</span><span class="n">transpose</span><span class="p">().</span><span class="n">collectEntries</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">result</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="rowhashmaptocolumnchannel">
+<h3>rowHashmapToColumnChannel<a class="headerlink" href="#rowhashmaptocolumnchannel" title="Link to this heading"></a></h3>
+<p>Convert a Groovy hashmap to a column channel so that its keys are in the <code class="docutils literal notranslate"><span class="pre">[keyCol]</span></code> channel and values in the <code class="docutils literal notranslate"><span class="pre">[valueCol]</span></code> channel so the index of each key and its corresponding value are at the same index.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">rowHashmapToColumnChannel</span><span class="w"> </span><span class="p">(</span><span class="n">hashMap</span><span class="p">,</span><span class="w"> </span><span class="n">keyCol</span><span class="p">,</span><span class="w"> </span><span class="n">valueCol</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Treat key-value pairs of hashMap as row entries in a two-column table and emit in column format</span>
+<span class="w">    </span><span class="p">(</span>
+<span class="w">        </span><span class="n">channel</span><span class="p">.</span><span class="n">of</span><span class="p">(</span><span class="n">params</span><span class="p">.</span><span class="n">aggregationPlans</span><span class="p">)</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="p">[</span>
+<span class="w">                </span><span class="p">(</span><span class="n">keyCol</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">hashMap</span><span class="p">.</span><span class="n">keySet</span><span class="p">().</span><span class="n">toList</span><span class="p">(),</span>
+<span class="w">                </span><span class="p">(</span><span class="n">valueCol</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">hashMap</span><span class="p">.</span><span class="n">values</span><span class="p">().</span><span class="n">toList</span><span class="p">()</span>
+<span class="w">            </span><span class="p">]</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="rowhashmaptorowchannel">
+<h3>rowHashmapToRowChannel<a class="headerlink" href="#rowhashmaptorowchannel" title="Link to this heading"></a></h3>
+<p>Convert a Groovy hashmap to a row channel structured as <code class="docutils literal notranslate"><span class="pre">[keyCol]:</span> <span class="pre">[key],</span> <span class="pre">[valueCol]:</span> <span class="pre">[value]</span></code>, where <code class="docutils literal notranslate"><span class="pre">[key]</span></code> is a particular key from the original hashmap and <code class="docutils literal notranslate"><span class="pre">[value]</span></code> is the corresponding value.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">rowHashmapToRowChannel</span><span class="w"> </span><span class="p">(</span><span class="n">hashMap</span><span class="p">,</span><span class="w"> </span><span class="n">keyCol</span><span class="p">,</span><span class="w"> </span><span class="n">valueCol</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Treat key-value pairs of hashMap as row entries in a two-column table and emit in row format</span>
+<span class="w">    </span><span class="n">rowHashmapToColumnChannel</span><span class="p">(</span><span class="n">hashMap</span><span class="p">,</span><span class="w"> </span><span class="n">keyCol</span><span class="p">,</span><span class="w"> </span><span class="n">valueCol</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">rows</span><span class="p">(</span><span class="n">it</span><span class="p">)}</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">flatten</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="util-group-nf">
+<h2><code class="docutils literal notranslate"><span class="pre">util/group.nf</span></code><a class="headerlink" href="#util-group-nf" title="Link to this heading"></a></h2>
+<section id="grouphashmap">
+<h3>groupHashMap<a class="headerlink" href="#grouphashmap" title="Link to this heading"></a></h3>
+<p>Essentially a groupby operation on a channel of hashmaps.</p>
+<p>Example input:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">ch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[[</span><span class="n">param1</span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">param2</span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="n">param1</span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">param2</span><span class="o">:</span><span class="w"> </span><span class="mi">2</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="n">param1</span><span class="o">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">param2</span><span class="o">:</span><span class="w"> </span><span class="mi">3</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="n">param1</span><span class="o">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">param2</span><span class="o">:</span><span class="w"> </span><span class="mi">4</span><span class="p">]]</span>
+<span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;param1&quot;</span><span class="p">]</span>
+<span class="n">sortBy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;param1&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="p">[[[</span><span class="n">param1</span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">param2</span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="n">param1</span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">param2</span><span class="o">:</span><span class="w"> </span><span class="mi">2</span><span class="p">]],</span><span class="w"> </span><span class="p">[[</span><span class="n">param1</span><span class="o">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">param2</span><span class="o">:</span><span class="w"> </span><span class="mi">3</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="n">param1</span><span class="o">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">param2</span><span class="o">:</span><span class="w"> </span><span class="mi">4</span><span class="p">]]]</span>
+</pre></div>
+</div>
+<p>Arguments:</p>
+<ul class="simple">
+<li><p>ch – the sample hashmap channel.</p></li>
+<li><p>by – the list of attributes to group by.</p></li>
+<li><p>sortBy – sort output by these keys for reproducible workflows.</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="n">groupRowsToColumnFormat</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="p">,</span><span class="w"> </span><span class="n">sortBy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;id&quot;</span><span class="p">],</span><span class="w"> </span><span class="n">columnsOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">:</span><span class="p">])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/* Essentially a groupby operation on a channel of hashmaps</span>
+
+<span class="cm">        Example:</span>
+
+<span class="cm">        [[param1: 1, param2: 1], [param1: 1, param2: 2], [param1: 2, param2: 3], [param1: 2, param2: 4]]</span>
+
+<span class="cm">        This is grouped to:</span>
+
+<span class="cm">        [param1: [1, 1], param2: [1, 2]]</span>
+<span class="cm">        [param1: [2, 2], param2: [3, 4]]</span>
+
+<span class="cm">        Arguments:</span>
+<span class="cm">            ch -- the sample hashmap channel</span>
+<span class="cm">            by -- the list of attributes to group by</span>
+<span class="cm">            sortBy -- typically just use id. This function is often used to convert samples to columnar format where a single</span>
+<span class="cm">            hashmap containing lists of sample attributes under each attribute name is provided to the process. Changes in order</span>
+<span class="cm">            typically should not affect process behavior, but will trigger a Nextflow rerun unnecessarily. We therefore use sortBy</span>
+<span class="cm">            to sort the samples to prevent these unnecessary reruns.</span>
+<span class="cm">    */</span>
+<span class="w">    </span><span class="n">ch</span>
+<span class="w">    </span><span class="c1">// Group maps to the format [[bySubmap], [list of samples]] and extract [list of samples]</span>
+<span class="w">    </span><span class="c1">// Note that because the order in which samples are returned is unpredictable, this will result in a different</span>
+<span class="w">    </span><span class="c1">// order of samples on different runs, which is why samples are sorted later.</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">tuple</span><span class="p">(</span><span class="n">it</span><span class="p">.</span><span class="n">subMap</span><span class="p">(</span><span class="n">by</span><span class="p">),</span><span class="w"> </span><span class="n">it</span><span class="p">)}</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">groupTuple</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span>
+
+<span class="w">    </span><span class="c1">// Sort the hashmaps if requested</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span>
+<span class="w">        </span><span class="n">mapList</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">        </span><span class="c1">// Sort the hashmaps to ensure same output for same set of samples on repeated runs</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sortBy</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">mapList</span><span class="p">.</span><span class="n">sort</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">map1</span><span class="p">,</span><span class="w"> </span><span class="n">map2</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">                </span><span class="c1">// sortBy is a list of keys to sort by, in descending order of priority</span>
+<span class="w">                </span><span class="c1">// We collect all the comparisons for each sortBy key, then take the first nonzero as the sort order</span>
+<span class="w">                </span><span class="n">sortBy</span><span class="p">.</span><span class="n">collect</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">key</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">                    </span><span class="c1">// -1, 0, 1 depending on comparison outcome</span>
+<span class="w">                    </span><span class="n">map1</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;=&gt;</span><span class="w"> </span><span class="n">map2</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+<span class="w">                </span><span class="p">}.</span><span class="n">findResult</span><span class="w"> </span><span class="p">{</span><span class="n">it</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">null</span><span class="p">}</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="mi">0</span>
+
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">mapList</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">columns</span><span class="p">(</span><span class="n">it</span><span class="p">,</span><span class="w"> </span><span class="n">columnsOptions</span><span class="p">)}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="coalesce">
+<h3>coalesce<a class="headerlink" href="#coalesce" title="Link to this heading"></a></h3>
+<p>Combine lists of values that are identical into a single non-list value</p>
+<p>Example input:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">param1</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">params</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">param1</span><span class="o">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">params2</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>Arguments:</p>
+<ul>
+<li><p>transposedSample – The sample in columnar format</p></li>
+<li><p>defaultWhenDifferent: – Determines how values that are different are treated</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>_shrink -&gt; take unique values in original order of first apperance</p></li>
+<li><p>_drop -&gt; drop the key:value pair</p></li>
+<li><p>_nullify -&gt; keep the key, set value to null</p></li>
+<li><p>_error -&gt; throw an exception</p></li>
+<li><p>anything else -&gt; replace the value</p></li>
+<li><p>empty values are retained unchanged</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>whenDifferent: – Key-specific behavior when different. The values can be any of the appropriate values for defaultWhenDifferent and are applied to specific keys in transposedSample. For a particular key, whenDifferent’s value will be used if the key is present in whenDifferent, and defaultWhenDifferent otherwise.</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Called from within map function on transposedSamples</span>
+<span class="n">def</span><span class="w"> </span><span class="n">coalesce</span><span class="w"> </span><span class="p">(</span><span class="n">transposedSample</span><span class="p">,</span><span class="w"> </span><span class="n">defaultWhenDifferent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;_unchanged&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">whenDifferent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">:</span><span class="p">])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">:</span><span class="p">]</span>
+
+<span class="w">    </span><span class="c1">// Iterate through values in the transposed sample</span>
+<span class="w">    </span><span class="n">transposedSample</span><span class="p">.</span><span class="n">each</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">        </span><span class="c1">// LinkedHashSet preserves the original order of the ArrayList</span>
+<span class="w">        </span><span class="n">def</span><span class="w"> </span><span class="n">valueSet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="n">instanceof</span><span class="w"> </span><span class="n">ArrayList</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="n">as</span><span class="w"> </span><span class="n">LinkedHashSet</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="n">value</span><span class="p">]</span><span class="w"> </span><span class="n">as</span><span class="w"> </span><span class="n">LinkedHashSet</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">valueSet</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// If there&#39;s only one value, just use that.</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">[(</span><span class="n">key</span><span class="p">)</span><span class="o">:</span><span class="n">valueSet</span><span class="p">.</span><span class="n">first</span><span class="p">()]</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">valueSet</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// Determine strategy for this key when value is non-homogeneous</span>
+<span class="w">            </span><span class="n">def</span><span class="w"> </span><span class="n">todo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">whenDifferent</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">defaultWhenDifferent</span><span class="p">)</span>
+
+<span class="w">            </span><span class="c1">// Error if specified</span>
+<span class="w">            </span><span class="n">assert</span><span class="w"> </span><span class="n">todo</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="err">&#39;</span><span class="n">error</span><span class="err">&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;In coalesce, ${key} is set to error when values are non unique. Values are ${value} for sample:</span><span class="se">\n</span><span class="s">${sample}&quot;</span>
+
+<span class="w">            </span><span class="c1">// Otherwise, use the &#39;todo&#39; strategy to decide how to alter the value</span>
+<span class="w">            </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">todo</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="s">&quot;_unchanged&quot;</span><span class="p">:</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">[(</span><span class="n">key</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">value</span><span class="p">]</span><span class="w">        </span><span class="c1">// Leave unaltered</span>
+<span class="w">                    </span><span class="k">break</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="s">&quot;_shrink&quot;</span><span class="p">:</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">[(</span><span class="n">key</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">valueSet</span><span class="p">]</span><span class="w">     </span><span class="c1">// Keep first instance of each distinct item in value in original order of first appearance</span>
+<span class="w">                    </span><span class="k">break</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="s">&quot;_drop&quot;</span><span class="p">:</span><span class="w">                       </span><span class="c1">// Drop it from the result</span>
+<span class="w">                    </span><span class="k">break</span>
+<span class="w">                </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                    </span><span class="n">result</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">[(</span><span class="n">key</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">todo</span><span class="p">]</span><span class="w">         </span><span class="c1">// Replace with value of &#39;todo&#39;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">valueSet</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">[(</span><span class="n">key</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">value</span><span class="p">]</span><span class="w">                </span><span class="c1">// If there is nothing in value, keep the empty list as the value</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="sqljoin">
+<h3>sqljoin<a class="headerlink" href="#sqljoin" title="Link to this heading"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span><span class="w"> </span><span class="n">sqljoin</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nl">take</span><span class="p">:</span>
+<span class="w">    </span><span class="n">left</span>
+<span class="w">    </span><span class="n">right</span>
+<span class="w">    </span><span class="n">condition</span>
+
+<span class="w">    </span><span class="nl">main</span><span class="p">:</span>
+
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        MOTIVATION: HashMap-based traceability</span>
+
+<span class="cm">        A traceable workflow tracks every file and attribute produced for each</span>
+<span class="cm">        sample in a single per-sample HashMap under meaningful keys. For example,</span>
+<span class="cm">        the initial fastq files are under sample.fastq1 and sample.fastq2. When</span>
+<span class="cm">        alignment producs a bam file, the file handle is stored at sample.sambam.</span>
+
+<span class="cm">        CONTEXT:</span>
+
+<span class="cm">        Nextflow poses a few challenges for traceable workflows.</span>
+<span class="cm">            If the entire sample HashMap is passed in as a process input,</span>
+<span class="cm">            Nextflow will yield a different task cache for the process any time</span>
+<span class="cm">            irrelevant Hashmap attributes change, breaking the -resume feature.</span>
+
+<span class="cm">            In order to be staged, Nextflow requires paths to be extracted from</span>
+<span class="cm">            the HashMap and passed in the format path(pathVariable) in the input</span>
+<span class="cm">            and output sections.</span>
+
+<span class="cm">        Hich solves this by assigning each sample or resource file a unique ID.</span>
+<span class="cm">        This, along with the necessary process inputs, are extracted from the</span>
+<span class="cm">        HashMap, then the outputs (inluding the ID) are built into a new HashMap,</span>
+<span class="cm">        and the ID can be used as a join key to associate the process outputs</span>
+<span class="cm">        with the original per-sample HashMap.</span>
+
+<span class="cm">        The problem is that Nextflow&#39;s standard &#39;join&#39; operator does not really</span>
+<span class="cm">        implement a true SQL inner join (contrary to the documentation&#39;s claims)</span>
+<span class="cm">        and does not work directly on HashMap keys.</span>
+
+<span class="cm">        PURPOSE:</span>
+
+<span class="cm">        Implement a true SQL-like inner, full, left, and right join.</span>
+
+<span class="cm">        IMPLEMENTATION:</span>
+
+<span class="cm">        ARGUMENTS:</span>
+<span class="cm">        left</span>
+<span class="cm">        right</span>
+<span class="cm">        condition</span>
+<span class="cm">            by</span>
+<span class="cm">            suffix</span>
+<span class="cm">            how</span>
+<span class="cm">    */</span>
+
+<span class="w">    </span><span class="cm">/* Similar to a SQL inner join</span>
+
+<span class="cm">    Tables are represented as channels emitting LinkedHashMap &#39;rows&#39;</span>
+
+<span class="cm">    Arguments:</span>
+<span class="cm">    left -- left channel</span>
+<span class="cm">    right -- right channel</span>
+<span class="cm">    by -- Key or list of keys to join on</span>
+<span class="cm">    suffix -- suffix to add to right if necessary to avoid non-key clashes</span>
+
+<span class="cm">    Notes:</span>
+<span class="cm">    1. If there is a conflict (i.e. the left table has a non-key &#39;data&#39;</span>
+<span class="cm">    and the right has a non-key &#39;data&#39; and &#39;data_right&#39; with the suffix</span>
+<span class="cm">    &#39;_right&#39;, then the right keys with higher index have more suffix copies</span>
+<span class="cm">    appended to them.</span>
+
+<span class="cm">    2. sqljoin takes key type into account, so even if key1 == key2,</span>
+<span class="cm">    they will not be joined (and will not be treated as conflicting and</span>
+<span class="cm">    thus distinguished with a suffix) unless their class is the same. One</span>
+<span class="cm">    way this can be an issue is if their types are GString and String.</span>
+<span class="cm">    */</span>
+
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        Motivation and implementation logic:</span>
+
+<span class="cm">        When Nextflow channel items are LinkedHashMaps (&quot;hashmaps&quot;), they are</span>
+<span class="cm">        similar to un-normalized tables. Items are rows, keys represent the</span>
+<span class="cm">        column name for that row, and values represent cell entries.</span>
+
+<span class="cm">        We can therefore do an SQL-like join on them. A left join, for example,</span>
+<span class="cm">        keeps all &#39;left&#39; rows, adding &#39;right&#39; rows where there is a matching]</span>
+<span class="cm">        key and null or default values where there is no matching &#39;right&#39; key.</span>
+<span class="cm">        If two or more &#39;right&#39; rows match one &#39;left&#39; row, then multiple</span>
+<span class="cm">        rows are produced containing one copy of the &#39;left&#39; items and one</span>
+<span class="cm">        copy of one of the matching &#39;right&#39; rows&#39; items.</span>
+
+<span class="cm">        Nextflow&#39;s &#39;join&#39; is similar but importantly different from an SQL</span>
+<span class="cm">        inner join. Other join types are not available. None operate on named</span>
+<span class="cm">        keys from hashmaps. We implement a closer approximation to the SQL</span>
+<span class="cm">        full, left, right and inner joins on Nextflow channels containing</span>
+<span class="cm">        a single LinkedHashMap item here.</span>
+
+<span class="cm">        &#39;keyset&#39;: the values in the by keys of a particular channel item (i.e. table row)</span>
+
+<span class="cm">        The implementation idea is as follows:</span>
+
+<span class="cm">        1. Depending on join type, determine missing keysets that would</span>
+<span class="cm">        inappropriately lead to rows being dropped and add in empty placeholders.</span>
+<span class="cm">        For example, for a left join all left rows should be kept. So any keysets</span>
+<span class="cm">        in the left table not present in the right table must be added as</span>
+<span class="cm">        placeholders to the right table.</span>
+
+<span class="cm">        2. Group the left channel by keyset, giving a [keyset: [list of items]]</span>
+<span class="cm">        channel. This is necessary because the Nextflow join operator returns</span>
+<span class="cm">        only the first item from the left channel for each specific keyset.</span>
+
+<span class="cm">        3. Use Nextflow cross operator to get pairwise combinations of left</span>
+<span class="cm">        channel items and right channel items with matching keysets. For example,</span>
+<span class="cm">        if there are two left items and two right items with a particular</span>
+<span class="cm">        keyset we obtain:</span>
+<span class="cm">            [[keyset, [left_1, left_2]], [keyset, right_1]]</span>
+<span class="cm">            [[keyset, [left_1, left_2]], [keyset, right_2]]</span>
+
+<span class="cm">        4. Reformat to produce hashmap-formatted elements:</span>
+<span class="cm">            [left_1 + right_1]</span>
+<span class="cm">            [left_1 + right_1]</span>
+<span class="cm">            [left_1 + right_1]</span>
+<span class="cm">            [left_1 + right_1]</span>
+
+<span class="cm">            Note: the matching keyset will be represented once in the</span>
+<span class="cm">            resulting hashmaps</span>
+
+<span class="cm">            Where there are non-keyset matching columsn in the left and right</span>
+<span class="cm">            tables, we add a suffix to avoid a clash or (if a blank suffix</span>
+<span class="cm">            is provided) we overwrite.</span>
+<span class="cm">    */</span>
+
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        SETUP: Extract and format by, suffix, and how</span>
+<span class="cm">    */</span>
+
+<span class="w">    </span><span class="c1">// Get the BY-values to join on and convert to an ArrayList if it&#39;s not already</span>
+<span class="w">    </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">condition</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;by&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">instanceof</span><span class="w"> </span><span class="n">List</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="n">by</span><span class="p">]</span>
+
+<span class="w">    </span><span class="c1">// Get the suffix for non-BY values that are found in the left and right channels.</span>
+<span class="w">    </span><span class="n">suffix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">condition</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;suffix&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;_right&quot;</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c1">// Determine what type of join to do, defaulting to a left join.</span>
+<span class="w">    </span><span class="n">how</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">condition</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;how&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;left&quot;</span><span class="p">)</span>
+
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        1. Depending on join type, determine missing keysets that would</span>
+<span class="cm">        inappropriately lead to rows being dropped and add in empty placeholders.</span>
+<span class="cm">        For example, for a left join all left rows should be kept. So any keysets</span>
+<span class="cm">        in the left table not present in the right table must be added as</span>
+<span class="cm">        placeholders to the right table.</span>
+<span class="cm">    */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">how</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;full&quot;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">how</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;left&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Add any keys in left that are missing in right to right.</span>
+<span class="w">        </span><span class="n">missing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">keydiff</span><span class="p">(</span><span class="n">left</span><span class="p">,</span><span class="w"> </span><span class="n">right</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;right&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">right</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">right</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">concat</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">how</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;full&quot;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">how</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;right&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Add any keys in left that are missing in right to right.</span>
+<span class="w">        </span><span class="n">missing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">keydiff</span><span class="p">(</span><span class="n">left</span><span class="p">,</span><span class="w"> </span><span class="n">right</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;left&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">left</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">left</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">concat</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        2.</span>
+
+<span class="cm">        PURPOSE:</span>
+
+<span class="cm">        Extract BY values in preparation for cross, grouping the LEFT hashmaps</span>
+<span class="cm">        that have the same BY value since this is a requirement of</span>
+<span class="cm">        Nextflow&#39;s cross operator.</span>
+
+<span class="cm">        IMPLEMENTATION:</span>
+
+<span class="cm">        This leaves the channels formatted as follows:</span>
+
+<span class="cm">        LEFT:</span>
+<span class="cm">        channel([BY1, [HASHMAP1, HASHMAP2, ...]], [BY2, [HASHMAP3, HASHMAP4, ...]])</span>
+
+<span class="cm">        RIGHT:</span>
+<span class="cm">        channel([BY1, HASHMAP1], [BY2, HASHMAP2])</span>
+<span class="cm">    */</span>
+
+<span class="w">    </span><span class="n">left</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">left</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{[</span><span class="n">it</span><span class="p">.</span><span class="n">subMap</span><span class="p">(</span><span class="n">by</span><span class="p">),</span><span class="w"> </span><span class="n">it</span><span class="p">]}</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">groupTuple</span>
+<span class="w">    </span><span class="n">right</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">right</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{[</span><span class="n">it</span><span class="p">.</span><span class="n">subMap</span><span class="p">(</span><span class="n">by</span><span class="p">),</span><span class="w"> </span><span class="n">it</span><span class="p">]}</span>
+
+<span class="w">    </span><span class="n">dominant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">condition</span><span class="p">.</span><span class="n">dominant</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="s">&quot;left&quot;</span>
+<span class="w">    </span><span class="n">assert</span><span class="w"> </span><span class="n">dominant</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;right&quot;</span><span class="p">],</span><span class="w"> </span><span class="s">&quot;In sqljoin, condition.dominant must be &#39;left&#39; (default) or &#39;right&#39; but was ${dominant}&quot;</span>
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        CONTEXT:</span>
+
+<span class="cm">        At this point, LEFT items with a matching BY value are grouped as a</span>
+<span class="cm">        single LEFT channel item (see above). We need to associate all samples</span>
+<span class="cm">        with matching BY values and reshape them into single, joined HashMap</span>
+<span class="cm">        items.</span>
+
+<span class="cm">        IMPLEMENTATION:</span>
+
+<span class="cm">        Nextflow&#39;s cross operator will associate each LEFT item with any RIGHT</span>
+<span class="cm">        items having the same BY value. For example, if there are two LEFT and</span>
+<span class="cm">        two RIGHT samples having the BY value BY1, cross yields:</span>
+
+<span class="cm">            channel(</span>
+<span class="cm">                [[BY1, [LEFT_MAP1, LEFT_MAP2]], [BY1, RIGHT_MAP1]],</span>
+<span class="cm">                [[BY1, [LEFT_MAP1, LEFT_MAP2]], [BY1, RIGHT_MAP2]]</span>
+<span class="cm">            )</span>
+
+<span class="cm">        For each item, we loosely want to emit items in the format:</span>
+
+<span class="cm">            [LEFT_MAP1 + RIGHT_MAP1]</span>
+<span class="cm">            [LEFT_MAP2 + RIGHT_MAP1]</span>
+<span class="cm">            [LEFT_MAP1 + RIGHT_MAP2]</span>
+<span class="cm">            [LEFT_MAP2 + RIGHT_MAP2]</span>
+
+<span class="cm">        The caveat is that we have to deal with a situation where a LEFT_MAP</span>
+<span class="cm">        and its RIGHT_MAP share non-BY keys. To handle this, we declare one of</span>
+<span class="cm">        the channels &quot;dominant&quot; (left by default) and a suffix to add one or</span>
+<span class="cm">        more times to the non-dominant channel. If the suffix is blank, then</span>
+<span class="cm">        the non-dominant channels&#39; non-BY items are replaced by the dominant</span>
+<span class="cm">        channel&#39;s non-BY items at the same key. Otherwise, the suffix is added</span>
+<span class="cm">        to the non-dominant non-BY keys until they don&#39;t match any keys in the</span>
+<span class="cm">        dominant-channel HashMap.</span>
+<span class="cm">    */</span>
+<span class="w">    </span><span class="n">left</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">cross</span><span class="p">(</span><span class="n">right</span><span class="p">)</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span>
+<span class="w">        </span><span class="n">joinedMapList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">        </span><span class="n">leftMapList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">it</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+<span class="w">        </span><span class="n">rightMap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="w">        </span><span class="c1">// Iterate through each leftrow and combine with rightMap</span>
+<span class="w">        </span><span class="n">leftMapList</span><span class="p">.</span><span class="n">each</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">leftMap</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">            </span><span class="n">joinedMap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dominant</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;left&quot;</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">leftMap</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">rightMap</span>
+
+<span class="w">            </span><span class="c1">// Iterate through each key in rightMap,</span>
+<span class="w">            </span><span class="c1">// appending suffix if needed to avoid clashes with leftrow</span>
+<span class="w">            </span><span class="c1">// and adding it to the joinedMap.</span>
+<span class="w">            </span><span class="p">(</span><span class="n">dominant</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;left&quot;</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">rightMap</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">leftMap</span><span class="p">).</span><span class="n">each</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">                </span><span class="c1">// Add non-keyset keys from right to left.</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">by</span><span class="p">.</span><span class="n">contains</span><span class="p">(</span><span class="n">key</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">                    </span><span class="c1">// Add as many suffixes as necessary to avoid clash</span>
+<span class="w">                    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">suffix</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">joinedMap</span><span class="p">.</span><span class="n">containsKey</span><span class="p">(</span><span class="n">key</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">suffix</span>
+<span class="w">                    </span><span class="p">}</span>
+
+<span class="w">                    </span><span class="cm">/* Add the right key value if either criterion holds:</span>
+<span class="cm">                        - There is no name clash, or</span>
+<span class="cm">                        - The left table is not declared dominant</span>
+<span class="cm">                    */</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">joinedMap</span><span class="p">.</span><span class="n">containsKey</span><span class="p">(</span><span class="n">key</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">joinedMap</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">[(</span><span class="n">key</span><span class="p">)</span><span class="o">:</span><span class="n">value</span><span class="p">]</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="c1">// Add the new hashmap to the list of hashmaps</span>
+<span class="w">            </span><span class="n">joinedMapList</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">[</span><span class="n">joinedMap</span><span class="p">]</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// List of per-keyset joins</span>
+<span class="w">        </span><span class="n">joinedMapList</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">collect</span><span class="w">       </span><span class="c1">// Currently, channel items are lists of per-keyset joins.</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">flatMap</span><span class="w">       </span><span class="c1">// Collects to a single list of lists, then flattens</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">set</span><span class="p">{</span><span class="n">joined</span><span class="p">}</span><span class="w">   </span><span class="c1">// Yielding the desired result of single-hashmap join items.</span>
+
+<span class="w">    </span><span class="nl">emit</span><span class="p">:</span>
+<span class="w">    </span><span class="n">joined</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="pack">
+<h3>pack<a class="headerlink" href="#pack" title="Link to this heading"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="n">pack</span><span class="p">(</span><span class="n">addTo</span><span class="p">,</span><span class="w"> </span><span class="n">addMe</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;id&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        A big feature of Hich is the ability to store sample attributes in hashmaps.</span>
+<span class="cm">        This requires extracting just the features specifically relevant to a particular</span>
+<span class="cm">        process and passing them in. Otherwise, irrelevant changes to the hashmap would trigger</span>
+<span class="cm">        reruns of the process. However, this then requires rejoining the outputs from the process</span>
+<span class="cm">        to the original hashmap. We therefore pass in a unique id for each sample. The sqljoin</span>
+<span class="cm">        function does most of the heavy lifting but is more general than required, so &quot;pack&quot;</span>
+<span class="cm">        provides a simpler gloss over this needed functionality.</span>
+
+<span class="cm">        Update the &quot;addTo&quot; channel of hashmaps with the &quot;addMe&quot; channel of hashmaps</span>
+<span class="cm">        dominant is &quot;right&quot; because this makes addMe overwrite corresponding keys</span>
+<span class="cm">        in addTo rather than the reverse. Suffix is blank so we overwrite rather than</span>
+<span class="cm">        adding new keys when addTo and addMe share keys.</span>
+<span class="cm">    */</span>
+<span class="w">    </span><span class="n">sqljoin</span><span class="p">(</span><span class="n">addTo</span><span class="p">,</span><span class="w"> </span><span class="n">addMe</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="n">by</span><span class="o">:</span><span class="n">by</span><span class="p">,</span><span class="w"> </span><span class="n">suffix</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">dominant</span><span class="o">:</span><span class="s">&quot;right&quot;</span><span class="p">])</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="keydiff">
+<h3>keydiff<a class="headerlink" href="#keydiff" title="Link to this heading"></a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span><span class="w"> </span><span class="n">keydiff</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nl">take</span><span class="p">:</span>
+<span class="w">        </span><span class="n">left</span>
+<span class="w">        </span><span class="n">right</span>
+<span class="w">        </span><span class="n">by</span>
+<span class="w">        </span><span class="n">how</span>
+
+<span class="w">    </span><span class="nl">main</span><span class="p">:</span>
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        CONTEXT:</span>
+
+<span class="cm">        Facilitate sql-like joins on Nextflow channels containing LinkedHashMaps</span>
+
+<span class="cm">        PURPOSE:</span>
+
+<span class="cm">        During a left or right join, identify missing keys that should be replaced</span>
+<span class="cm">        by default values.</span>
+
+<span class="cm">        IMPLEMENTATION:</span>
+
+<span class="cm">        Take two channels LEFT and RIGHT joined on a subset of keys BY</span>
+<span class="cm">            Channel items should be HashMaps</span>
+<span class="cm">        Return:</span>
+<span class="cm">            LEFT KEYS not in RIGHT</span>
+<span class="cm">            RIGHT KEYS not in LEFT</span>
+<span class="cm">    */</span>
+
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        PURPOSE:</span>
+
+<span class="cm">        Extract unique BY values from LEFT and RIGHT channels</span>
+
+<span class="cm">        IMPLEMENTATION:</span>
+
+<span class="cm">        Add a &#39;true&#39; value as this will help keep track of whether a BY value</span>
+<span class="cm">        was left-only, right-only, or in both.</span>
+<span class="cm">    */</span>
+<span class="w">    </span><span class="n">left_keys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">left</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">it</span><span class="p">.</span><span class="n">subMap</span><span class="p">(</span><span class="n">by</span><span class="p">)}</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">unique</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{[</span><span class="n">it</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">]}</span>
+
+<span class="w">    </span><span class="n">right_keys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">right</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">it</span><span class="p">.</span><span class="n">subMap</span><span class="p">(</span><span class="n">by</span><span class="p">)}</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">unique</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{[</span><span class="n">it</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">]}</span>
+
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        PURPOSE:</span>
+
+<span class="cm">        Split which BY-values are missing in the left (i.e. right-only), missing</span>
+<span class="cm">        in the right (i.e. left-only), or missing in neither (i.e. found in both)</span>
+
+<span class="cm">        IMPLEMENTATION:</span>
+<span class="cm">        unique operator above means left_keys and right_keys are non-redundant</span>
+
+<span class="cm">        remainder: true emits [left, null] or [null, right] when a BY value is</span>
+<span class="cm">        left-only or right-only.</span>
+
+<span class="cm">        join will result in a 3-element tuple [BY-value, inLeft, inRight]</span>
+<span class="cm">        where inLeft and inRight are either true or null (null is the default</span>
+<span class="cm">        Nextflow substitutes for joins when &#39;remainder&#39; is true).</span>
+<span class="cm">    */</span>
+<span class="w">    </span><span class="n">missing</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="n">left_keys</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">join</span><span class="p">(</span><span class="n">right_keys</span><span class="p">,</span><span class="w"> </span><span class="n">remainder</span><span class="o">:</span><span class="w"> </span><span class="nb">true</span><span class="p">)</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">branch</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nl">neither</span><span class="p">:</span><span class="w"> </span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w">  </span><span class="n">it</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="c1">//key present in both</span>
+<span class="w">            </span><span class="nl">right</span><span class="p">:</span><span class="w">   </span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">it</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="c1">//key in left only</span>
+<span class="w">            </span><span class="nl">left</span><span class="p">:</span><span class="w">   </span><span class="o">!</span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w">  </span><span class="n">it</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="c1">//key in right only</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        CONTEXT:</span>
+
+<span class="cm">        For left joins, return any right-only values</span>
+<span class="cm">        For right joins, return any left-only values</span>
+
+<span class="cm">        PURPOSE:</span>
+
+<span class="cm">        Return the missing BY-values that are needed depending on the join type.</span>
+
+<span class="cm">        IMPLEMENTATION:</span>
+<span class="cm">    */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">how</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;right&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">missing</span><span class="p">.</span><span class="n">right</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">it</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">set</span><span class="p">{</span><span class="n">result</span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">how</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;left&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">missing</span><span class="p">.</span><span class="n">left</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">it</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">set</span><span class="p">{</span><span class="n">result</span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nl">emit</span><span class="p">:</span>
+<span class="w">        </span><span class="n">result</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="util-samples-nf">
+<h2><code class="docutils literal notranslate"><span class="pre">util/samples.nf</span></code><a class="headerlink" href="#util-samples-nf" title="Link to this heading"></a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">label</span><span class="p">(</span><span class="n">map</span><span class="p">,</span><span class="w"> </span><span class="n">lbl</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Return whether map.lbl contains a non-empty string, used below to determine</span>
+<span class="w">    </span><span class="c1">// if the techrep, biorep and condition keys are present and specified</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">map</span><span class="o">?</span><span class="p">[(</span><span class="n">lbl</span><span class="p">)]</span><span class="o">?</span><span class="p">.</span><span class="n">toString</span><span class="p">()</span><span class="o">?</span><span class="p">.</span><span class="n">length</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span>
+<span class="p">}</span>
+
+<span class="cm">/*</span>
+<span class="cm">    Determine if the techrep, biorep, condition fields are uniquely specified</span>
+
+<span class="cm">    For isSingleCell, the user has to specify a cellBarcodeField (which tag in a sam/bam</span>
+<span class="cm">    file holds the cell barcode in order to extract it to the pairs cellID field)</span>
+<span class="cm">    or has to specify isSingleCell (which can be used for pairs files where the cellID field</span>
+<span class="cm">    is already extracted).</span>
+<span class="cm">*/</span>
+<span class="n">def</span><span class="w"> </span><span class="nf">isTechrep</span><span class="p">(</span><span class="n">map</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="k">return</span><span class="w"> </span><span class="n">label</span><span class="p">(</span><span class="n">map</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;techrep&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">label</span><span class="p">(</span><span class="n">map</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;biorep&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">label</span><span class="p">(</span><span class="n">map</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;condition&quot;</span><span class="p">)}</span>
+<span class="n">def</span><span class="w"> </span><span class="nf">isBiorep</span><span class="p">(</span><span class="n">map</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">label</span><span class="p">(</span><span class="n">map</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;techrep&quot;</span><span class="p">))</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">label</span><span class="p">(</span><span class="n">map</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;biorep&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">label</span><span class="p">(</span><span class="n">map</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;condition&quot;</span><span class="p">)}</span>
+<span class="n">def</span><span class="w"> </span><span class="nf">isCondition</span><span class="p">(</span><span class="n">map</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">label</span><span class="p">(</span><span class="n">map</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;techrep&quot;</span><span class="p">))</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">label</span><span class="p">(</span><span class="n">map</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;biorep&quot;</span><span class="p">))</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">label</span><span class="p">(</span><span class="n">map</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;condition&quot;</span><span class="p">)}</span>
+<span class="n">def</span><span class="w"> </span><span class="nf">isSingleCell</span><span class="p">(</span><span class="n">map</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="k">return</span><span class="w"> </span><span class="n">map</span><span class="p">.</span><span class="n">cellBarcodeField</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">map</span><span class="p">.</span><span class="n">isSingleCell</span><span class="p">}</span>
+
+<span class="cm">/*</span>
+<span class="cm">    Hich depends on each sample having a unique sample.id attribute for joining process results to the</span>
+<span class="cm">    appropriate sample hashmap. A legible name is also convenient for troubleshooting. If the user</span>
+<span class="cm">    wants to let Hich build unique ids automatically, they should specify unique conditions, bioreps and techreps</span>
+<span class="cm">    and not use the _ character in order to ensure that all ids will be unique. The aggregateProfileName is also</span>
+<span class="cm">    included because new copies of the input samples are produced for each aggregateProfile.</span>
+<span class="cm">*/</span>
+<span class="n">def</span><span class="w"> </span><span class="nf">constructIdentifier</span><span class="p">(</span><span class="n">map</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">map</span><span class="p">.</span><span class="n">subMap</span><span class="p">(</span><span class="s">&quot;condition&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;biorep&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;techrep&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;aggregateProfileName&quot;</span><span class="p">).</span><span class="n">values</span><span class="p">().</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="util-analysisplans-nf">
+<h2><code class="docutils literal notranslate"><span class="pre">util/analysisPlans.nf</span></code><a class="headerlink" href="#util-analysisplans-nf" title="Link to this heading"></a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">createCompositeStrategy</span><span class="p">(</span><span class="n">strategyKeys</span><span class="p">,</span><span class="w"> </span><span class="n">strategyMap</span><span class="p">,</span><span class="w"> </span><span class="n">combineHow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">:</span><span class="p">])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/* A composite strategy is a hashmap in which keys are sample attributes and values are lists of permitted sample attribute values. It is created by combining one or more individual strategies specified in params.sampleSelectionStrategies.</span>
+
+<span class="cm">        strategyKeys -- keys in strategyMap for the sub-strategies to combine (i.e. analysisPlan)</span>
+<span class="cm">        strategyMap -- [strategyKey: selectionStrategy] map-of-maps, typically params.sampleSelectionStrategies</span>
+<span class="cm">        combineHow -- not currently used, but permits defining how to combine strategies when</span>
+<span class="cm">            there are conflicts by passing a [key: closure] map where</span>
+<span class="cm">            closure(oldVals, newVals) outputs the updated value for the key. By</span>
+<span class="cm">            default, the later-specified strategy has precedence.</span>
+
+<span class="cm">        Returns empty map if no keys or strategies are supplied.</span>
+<span class="cm">    */</span>
+
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">compositeStrategy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">:</span><span class="p">]</span>
+
+<span class="w">    </span><span class="c1">// Extract the values associated with individual selected strategies to form the composite strategy</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">subStrategies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strategyKeys</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">strategyMap</span><span class="p">.</span><span class="n">subMap</span><span class="p">(</span><span class="n">strategyKeys</span><span class="p">).</span><span class="n">values</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[]</span>
+
+<span class="w">    </span><span class="n">subStrategies</span><span class="p">.</span><span class="n">each</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">subStrategy</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">        </span><span class="n">subStrategy</span><span class="p">.</span><span class="n">each</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">            </span><span class="c1">// Converts val from a single element or ArrayList into a HashSet of elements</span>
+<span class="w">            </span><span class="n">def</span><span class="w"> </span><span class="n">newVals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">asHashSet</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+<span class="w">            </span><span class="c1">// Handle situations where the same key is defined in more than one composite strategy</span>
+<span class="w">            </span><span class="c1">// combineHow may contain a per-key method to define how to do the replacement.</span>
+<span class="w">            </span><span class="c1">// The default behavior is to replace values from earlier-specified keys with</span>
+<span class="w">            </span><span class="c1">// newly-specified keys. For example, if the keys are [&quot;strategy1&quot;, &quot;strategy2&quot;]</span>
+<span class="w">            </span><span class="c1">// and both strategies have a value &quot;v1&quot;, then v1 will take the value for strategy2 by default.</span>
+<span class="w">            </span><span class="n">def</span><span class="w"> </span><span class="n">oldVals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">compositeStrategy</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">new</span><span class="w"> </span><span class="n">HashSet</span><span class="p">())</span>
+<span class="w">            </span><span class="n">def</span><span class="w"> </span><span class="n">updated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">combineHow</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">b</span><span class="p">})(</span><span class="n">oldVals</span><span class="p">,</span><span class="w"> </span><span class="n">newVals</span><span class="p">)</span>
+
+<span class="w">            </span><span class="c1">// Add the value to the composite strategy</span>
+<span class="w">            </span><span class="n">compositeStrategy</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">[(</span><span class="n">key</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">updated</span><span class="p">]</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">compositeStrategy</span>
+<span class="p">}</span>
+
+<span class="n">def</span><span class="w"> </span><span class="nf">filterSamplesByStrategy</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span><span class="w"> </span><span class="n">strategy</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/*  After a composite strategy is built, filter for samples for which all sample attributes are present and are in the list of permitted values specified by the composite strategy.</span>
+
+<span class="cm">        samples - a channel of sample hashmaps</span>
+<span class="cm">        strategy - a hashmap as [attributeName: [permittedValues]]</span>
+<span class="cm">    */</span>
+
+<span class="w">    </span><span class="c1">// Return all samples if no strategy is specified</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">strategy</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">samples</span>
+
+<span class="w">    </span><span class="c1">// Remove reserved keywords from the set of sample-specific strategies</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">reservedKeywords</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;same&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;different&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">sampleAttributeFilter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strategy</span><span class="p">.</span><span class="n">findAll</span><span class="w"> </span><span class="p">{</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">reservedKeywords</span><span class="p">)}</span>
+
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">filtered</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">samples</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">filter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sample</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">        </span><span class="n">def</span><span class="w"> </span><span class="n">passesFilter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sampleAttributeFilter</span><span class="p">.</span><span class="n">every</span><span class="w"> </span><span class="p">{</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">select</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">            </span><span class="c1">// Check that the sample attribute value is in the whitelisted values specified in the composite strategy</span>
+<span class="w">            </span><span class="n">sample</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">select</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">passesFilter</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// For each sample, collect into a single list and ensure that at least one sample was selected</span>
+<span class="w">    </span><span class="n">filtered</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">collect</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">assert</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Error: In filterSamplesByStrategy with sample selection strategy ${strategy}, no samples matched this filter.&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">filtered</span>
+<span class="p">}</span>
+
+<span class="n">def</span><span class="w"> </span><span class="nf">groupSamplesByStrategy</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span><span class="w"> </span><span class="n">strategy</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/* Get all samples having matching values of strategy.same</span>
+<span class="cm">    */</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">samples</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">tuple</span><span class="p">(</span><span class="n">it</span><span class="p">.</span><span class="n">subMap</span><span class="p">(</span><span class="n">strategy</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;same&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[])),</span><span class="w"> </span><span class="n">it</span><span class="p">)}</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">groupTuple</span>
+<span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span>
+<span class="p">}</span>
+
+<span class="n">def</span><span class="w"> </span><span class="nf">pairSamplesByStrategy</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span><span class="w"> </span><span class="n">strategy</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        The diffloops workflow has to define a way to pair up samples, especially</span>
+<span class="cm">        by enforcing that certain attributes are the same or different.</span>
+
+<span class="cm">        samples -- channel of sample hashmaps</span>
+<span class="cm">        strategy -- a composite sample selection strategy [attribute: permittedValues]</span>
+<span class="cm">            two possible attributes are</span>
+<span class="cm">                same: a list of attributes which must be the same to pair two samples</span>
+<span class="cm">                different: a list of attributes which must differ to pair two samples</span>
+<span class="cm">            other attributes are used for filtering individual samples</span>
+<span class="cm">    */</span>
+
+<span class="w">    </span><span class="c1">// Ensure there&#39;s no conflict between &quot;same&quot; and &quot;different&quot;</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">same</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strategy</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;same&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[])</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">different</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strategy</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;different&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[])</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">sameAndDifferent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">same</span><span class="p">.</span><span class="n">intersect</span><span class="p">(</span><span class="n">different</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">sameAndDifferent</span><span class="p">.</span><span class="n">isEmpty</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="n">err</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">&quot;Warning: In filterSamplesByStrategy, comparisons on ${sameAndDifferent} are required to be same and different, so no result is obtained&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">channel</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Filter individual samples before forming pairs of samples</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">filtered</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filterSamplesByStrategy</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span><span class="w"> </span><span class="n">strategy</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c1">// Obtain pairs of samples matching the &quot;same&quot; and &quot;different&quot; criteria</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">combined</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filtered</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">combine</span><span class="p">(</span><span class="n">filtered</span><span class="p">)</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">filter</span><span class="p">{</span><span class="n">it</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">id</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">id</span><span class="p">}</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">unique</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">filter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">s1</span><span class="p">,</span><span class="w"> </span><span class="n">s2</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">        </span><span class="n">def</span><span class="w"> </span><span class="n">sameOK</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">same</span><span class="p">.</span><span class="n">every</span><span class="w"> </span><span class="p">{</span><span class="n">key</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">s1</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">s2</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)}</span>
+<span class="w">        </span><span class="n">def</span><span class="w"> </span><span class="n">differentOK</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">different</span><span class="p">.</span><span class="n">every</span><span class="w"> </span><span class="p">{</span><span class="n">key</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">s1</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">s2</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)}</span>
+<span class="w">        </span><span class="n">sameOK</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">differentOK</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">combined</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">collect</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="p">{</span>
+<span class="w">        </span><span class="n">assert</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;In pairSamplesByStrategy with sample selection strategy ${strategy}, no samples were paired, likely due to &#39;same&#39; or &#39;different&#39; filter.&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">combined</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="util-workflowcontrol-nf">
+<h2><code class="docutils literal notranslate"><span class="pre">util/workflowControl.nf</span></code><a class="headerlink" href="#util-workflowcontrol-nf" title="Link to this heading"></a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">emptyOnLastStep</span><span class="p">(</span><span class="n">step</span><span class="p">,</span><span class="w"> </span><span class="n">samples</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">isExplicitLastStep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">params</span><span class="p">.</span><span class="n">containsKey</span><span class="p">(</span><span class="s">&quot;lastStep&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">params</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;lastStep&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">step</span><span class="p">)</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">isLastStep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">step</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;End&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">isExplicitLastStep</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">hasViewLastStep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">params</span><span class="p">.</span><span class="n">containsKey</span><span class="p">(</span><span class="s">&quot;viewLastStep&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">params</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;viewLastStep&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isLastStep</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">hasViewLastStep</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">samples</span>
+<span class="w">            </span><span class="o">|</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">sample</span><span class="w"> </span><span class="o">-&gt;</span>
+
+<span class="w">                </span><span class="n">params</span><span class="p">.</span><span class="n">viewLastStep</span><span class="w"> </span><span class="n">instanceof</span><span class="w"> </span><span class="n">Boolean</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">sample</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">sample</span><span class="p">.</span><span class="n">subMap</span><span class="p">(</span><span class="n">params</span><span class="p">.</span><span class="n">viewLastStep</span><span class="p">.</span><span class="n">split</span><span class="p">())}</span>
+<span class="w">            </span><span class="o">|</span><span class="w"> </span><span class="n">view</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">isExplicitLastStep</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">channel</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">samples</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">skip</span><span class="p">(</span><span class="n">step</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        Users may want to skip some steps, such as QC or forming a particular kind of contact matrix,</span>
+<span class="cm">        or run only certain steps. This uses both params to define a list of steps to be skipped</span>
+<span class="cm">        (the intersection of skip and runOnly&#39;s complement).</span>
+<span class="cm">    */</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">excluded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">params</span><span class="p">.</span><span class="n">containsKey</span><span class="p">(</span><span class="s">&quot;runOnly&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">params</span><span class="p">.</span><span class="n">runOnly</span><span class="p">.</span><span class="n">split</span><span class="p">().</span><span class="n">contains</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">skipped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">params</span><span class="p">.</span><span class="n">containsKey</span><span class="p">(</span><span class="s">&quot;skip&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">params</span><span class="p">.</span><span class="n">skip</span><span class="p">.</span><span class="n">split</span><span class="p">().</span><span class="n">contains</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">excluded</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">skipped</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="util-cli-nf">
+<h2><code class="docutils literal notranslate"><span class="pre">util/cli.nf</span></code><a class="headerlink" href="#util-cli-nf" title="Link to this heading"></a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">parsePattern</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">str</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">parsePattern</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        Used to extract sample attributes from filenames, such as condition, biorep, and techrep,</span>
+<span class="cm">        via a syntax similar to that offered by Python&#39;s parse library. In parse, users can</span>
+<span class="cm">        extract substrings into a map with patterns like: &quot;{condition}_{biorep}_{techrep}.fastq&quot;,</span>
+<span class="cm">        which would take a string like &quot;cond1_br1_tr1.fastq&quot; and return [&quot;condition&quot;: &quot;cond1&quot;, &quot;biorep&quot;: &quot;br1&quot;, &quot;techrep&quot;: &quot;tr1&quot;].</span>
+<span class="cm">        This is easier to specify at the command line than a regex but AFAIK has no Groovy equivalent.</span>
+
+<span class="cm">        This function implements this parsing functionality, returning the extracted map.</span>
+<span class="cm">    */</span>
+
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">patternPlaceholders</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span>
+
+<span class="w">    </span><span class="c1">// This regex searches the parsePattern string (i.e. &quot;{condition}_{biorep}_{techrep}.fastq&quot;)</span>
+<span class="w">    </span><span class="c1">// for the placeholders between braces (i.e. condition, biorep, techrep) and adds them</span>
+<span class="w">    </span><span class="c1">// to the list of patternPlaceholders to become keys in the output map.</span>
+
+<span class="w">    </span><span class="c1">// It also yields in &quot;pattern&quot; the list of matchers to look for in the input string &quot;str&quot;</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">pattern</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parsePattern</span><span class="p">.</span><span class="n">replaceAll</span><span class="p">(</span><span class="o">/</span><span class="err">\</span><span class="p">{([</span><span class="o">^</span><span class="p">{}]</span><span class="o">*</span><span class="p">)</span><span class="err">\</span><span class="p">}</span><span class="o">/</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">match</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">match</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">trim</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">patternPlaceholders</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">match</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w">  </span><span class="c1">// Track the placeholder name</span>
+<span class="w">            </span><span class="s">&quot;(?&lt;${match[1]}&gt;.+?)&quot;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="s">&quot;&quot;</span><span class="w">  </span><span class="c1">// Ignore empty placeholders</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// This extracts the patterns from str</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">matcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">str</span><span class="w"> </span><span class="o">=~</span><span class="w"> </span><span class="n">pattern</span>
+
+<span class="w">    </span><span class="c1">// Combine the patternPlaceholders with the corresponding matches from &quot;str&quot; into an output map &quot;result&quot;</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">:</span><span class="p">]</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">matcher</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">patternPlaceholders</span><span class="p">.</span><span class="n">eachWithIndex</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">placeholder</span><span class="p">,</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">            </span><span class="n">result</span><span class="p">[</span><span class="n">placeholder</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">matcher</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w">  </span><span class="c1">// Retrieve group by index</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">?:</span><span class="w"> </span><span class="n">null</span>
+<span class="p">}</span>
+
+<span class="n">def</span><span class="w"> </span><span class="nf">formatArg</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span><span class="w"> </span><span class="n">object</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        Some processes receive either a list of values or a single non-list element</span>
+<span class="cm">        as parameter values, but need to call a CLI command passing a delimiter-separated</span>
+<span class="cm">        list of the received values. Other times they get nothing and should</span>
+<span class="cm">        not pass an argument for that parameter at all. This facilitates this interconversion</span>
+<span class="cm">        and returns an empty string if the object passed was falsey.</span>
+
+<span class="cm">        NOTE this is a potential issue if the goal is to pass a boolean false</span>
+<span class="cm">        to the CLI command, but I don&#39;t think Hich currently does this...</span>
+
+<span class="cm">        pattern -- the string pattern to format the results into, like &quot;--numbers {commaSeparatedNums}&quot;</span>
+<span class="cm">        object -- the element or list of elements to join (where necessary) into a delimiter-separated list</span>
+<span class="cm">        sep -- the delimiter, like &quot;,&quot;</span>
+<span class="cm">    */</span>
+<span class="w">    </span><span class="c1">// Put non-lists into a list so when join is called, it has something to (silently) operate on</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">listed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">object</span><span class="w"> </span><span class="n">instanceof</span><span class="w"> </span><span class="n">List</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">object</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">null</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">object</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="n">object</span><span class="p">]</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">joined</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listed</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">listed</span><span class="p">.</span><span class="n">join</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">listed</span>
+
+<span class="w">    </span><span class="c1">// Format the string with the result or return</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">joined</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">String</span><span class="p">.</span><span class="n">format</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span><span class="w"> </span><span class="n">joined</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="util-hashmaps-nf">
+<h2><code class="docutils literal notranslate"><span class="pre">util/hashmaps.nf</span></code><a class="headerlink" href="#util-hashmaps-nf" title="Link to this heading"></a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">asHashSet</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Convert a non-HashSet val into a HashSet</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">val</span><span class="w"> </span><span class="n">instanceof</span><span class="w"> </span><span class="n">ArrayList</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">new</span><span class="w"> </span><span class="n">HashSet</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">val</span><span class="w"> </span><span class="n">instanceof</span><span class="w"> </span><span class="n">HashSet</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">val</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">new</span><span class="w"> </span><span class="n">HashSet</span><span class="p">([</span><span class="n">val</span><span class="p">])</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="util-logs-nf">
+<h2><code class="docutils literal notranslate"><span class="pre">util/logs.nf</span></code><a class="headerlink" href="#util-logs-nf" title="Link to this heading"></a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">prepForJson</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">updated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">obj</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">obj</span><span class="w"> </span><span class="n">instanceof</span><span class="w"> </span><span class="n">Map</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">updated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">:</span><span class="p">]</span>
+<span class="w">        </span><span class="n">obj</span><span class="p">.</span><span class="n">each</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">            </span><span class="n">kStr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k</span><span class="p">.</span><span class="n">toString</span><span class="p">()</span>
+<span class="w">            </span><span class="n">updated</span><span class="p">[(</span><span class="n">kStr</span><span class="p">)]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">prepForJson</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">getClass</span><span class="p">()</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="p">[</span><span class="n">List</span><span class="p">,</span><span class="w"> </span><span class="n">ArrayList</span><span class="p">])</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">updated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">        </span><span class="n">obj</span><span class="p">.</span><span class="n">eachWithIndex</span><span class="w"> </span><span class="p">{</span><span class="n">it</span><span class="p">,</span><span class="w"> </span><span class="n">idx</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">updated</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">prepForJson</span><span class="p">(</span><span class="n">it</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">updated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">obj</span><span class="p">.</span><span class="n">toString</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">updated</span>
+<span class="p">}</span>
+
+
+<span class="n">def</span><span class="w"> </span><span class="nf">withLog</span><span class="p">(</span><span class="n">cmdArg</span><span class="p">,</span><span class="w"> </span><span class="n">mapArg</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapArg</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">[</span><span class="n">command</span><span class="o">:</span><span class="w"> </span><span class="n">cmdArg</span><span class="p">.</span><span class="n">toString</span><span class="p">()]</span>
+<span class="w">    </span><span class="c1">// Convert to a map to avoid cyclic entries</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">preppedMap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">prepForJson</span><span class="p">(</span><span class="n">map</span><span class="p">)</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">JsonOutput</span><span class="p">.</span><span class="n">toJson</span><span class="p">(</span><span class="n">preppedMap</span><span class="p">)</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="s">&quot;${cmdArg} &amp;&amp; cat &lt;&lt;&#39;EOF&#39; &gt; hich_output.json</span><span class="se">\n</span><span class="s">${json}</span><span class="se">\n</span><span class="s">EOF&quot;</span>
+<span class="p">}</span>
+
+<span class="n">def</span><span class="w"> </span><span class="nf">stubLog</span><span class="p">(</span><span class="n">stubArg</span><span class="p">,</span><span class="w"> </span><span class="n">cmdArg</span><span class="p">,</span><span class="w"> </span><span class="n">mapArg</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapArg</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">[</span><span class="n">command</span><span class="o">:</span><span class="w"> </span><span class="n">cmdArg</span><span class="p">.</span><span class="n">toString</span><span class="p">(),</span><span class="w"> </span><span class="n">stub</span><span class="o">:</span><span class="w"> </span><span class="n">stubArg</span><span class="p">.</span><span class="n">toString</span><span class="p">()]</span>
+<span class="w">    </span><span class="c1">// Convert to a map to avoid cyclic entries</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">preppedMap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">prepForJson</span><span class="p">(</span><span class="n">map</span><span class="p">)</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">JsonOutput</span><span class="p">.</span><span class="n">toJson</span><span class="p">(</span><span class="n">preppedMap</span><span class="p">)</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="s">&quot;${stubArg} &amp;&amp; cat &lt;&lt;&#39;EOF&#39; &gt; hich_output.json</span><span class="se">\n</span><span class="s">${json}</span><span class="se">\n</span><span class="s">EOF&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="util-files-nf">
+<h2><code class="docutils literal notranslate"><span class="pre">util/files.nf</span></code><a class="headerlink" href="#util-files-nf" title="Link to this heading"></a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">def</span><span class="w"> </span><span class="nf">isExistingFile</span><span class="p">(</span><span class="n">it</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Type-agnostic way to check if file exists for any file class having an exists() method.</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">metaClass</span><span class="p">.</span><span class="n">respondsTo</span><span class="p">(</span><span class="n">it</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;</span><span class="n">exists</span><span class="err">&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">exists</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="n">def</span><span class="w"> </span><span class="nf">datatypeFromExtension</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">        Look for various known extensions to extract the datatype implicitly from the</span>
+<span class="cm">        input file so that Hich can ingest intermediate file formats appropriately</span>
+<span class="cm">        without explicit specification by the user. This is especially helpful in</span>
+<span class="cm">        permitting the user to use globs at the command line to feed files into Hich.</span>
+<span class="cm">    */</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">extensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">&quot;.fastq&quot;</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;fastq&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s">&quot;.fq&quot;</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;fastq&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s">&quot;.sam&quot;</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;sambam&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s">&quot;.bam&quot;</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;sambam&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s">&quot;.pairs&quot;</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;pairs&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s">&quot;.mcool&quot;</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;mcool&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s">&quot;.hic&quot;</span><span class="o">:</span><span class="w"> </span><span class="s">&quot;hic&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">pathString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">path</span><span class="p">.</span><span class="n">toString</span><span class="p">()</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">foundExtension</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">extensions</span><span class="p">.</span><span class="n">keySet</span><span class="p">().</span><span class="n">find</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ext</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">        </span><span class="n">pathString</span><span class="p">.</span><span class="n">endsWith</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">pathString</span><span class="p">.</span><span class="n">contains</span><span class="p">(</span><span class="s">&quot;${ext}.&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">foundExtension</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">extensions</span><span class="p">[</span><span class="n">foundExtension</span><span class="p">]</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">null</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
 </section>
 
 

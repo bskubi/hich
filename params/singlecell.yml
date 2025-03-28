@@ -81,7 +81,11 @@ defaults:
 aggregationPlans:
   # Each key under aggregate is the name of an aggregation profile
   singleCell:
-    splitTechreps: "cellID"
+    dedupSingleCell: false
+    dedupMaxMismatch: 3
+    dedupMethod: "max"
+    pairtoolsDedupParams: ""
+
 
 
 sampleSelectionStrategies:
