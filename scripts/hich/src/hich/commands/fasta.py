@@ -8,15 +8,17 @@ from smart_open import smart_open
 def fasta():
     pass
 
+# Change to index re-fragments
+
 @fasta.group()
-def digest():
+def index():
     pass
 
-@digest.command
+@index.command
 @click.argument("in_path")
 @click.argument("out_path")
 @click.argument("enzymes_and_protocols", nargs=-1)
-def re(in_path, out_path, enzymes_and_protocols):
+def re_fragments(in_path, out_path, enzymes_and_protocols):
     """Create BED file of restriction fragments
 
     \b

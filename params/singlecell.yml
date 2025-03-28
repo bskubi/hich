@@ -69,7 +69,7 @@ defaults:
   matrix:
     makeMcoolFileFormat: true
     makeHicFileFormat: true
-    resolutions: [1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000]
+    resolutions: [500000]
 
   juicerToolsPreParams: []
 
@@ -80,23 +80,9 @@ defaults:
 # Aggregation plans define how samples are split, merged, downsampled and deduplicated
 aggregationPlans:
   # Each key under aggregate is the name of an aggregation profile
-  fullCoverageDedup:
-    # Specify parameters for how to downsample, merge and deduplicate each level
-    # level can be any or all of [techrep|biorep|condition]
-    # [level]CisStrata: list[int]   List of cis bin maximum positions to group by for downsampling
-    # [level]ReadConjuncts: list[str]     List of column names to group by
-    # [level]DownsampleToMeanDistribution: bool
-    # [level]DownsampleToSize: int | float    If true, downsamples to specific number of reads (int) or fraction of reads (float 0.0-1.0)
-    # [level]Dedup: bool  If true, deduplicate reads
-    # [level]DedupMethod: 'max' | 'sum'  If true, deduplicate reads
-    # dedupSingleCell: bool     Use cellID column as an extra column that must match to call two rows as duplicates
-    # dedupMaxMismatch: bool    Pairs with both sides mapped within this distance (bp) from each other are considered duplicates. 
-    # mergeTechrepToBiorep: bool  If true, merge techrep samples for same aggregate profile, biorep and condition
-    # mergeBiorepToCondition: bool    If true, merge biorep samples for same aggregate profile and condition
-    dedupSingleCell: false
-    dedupMaxMismatch: 3
-    dedupMethod: 'max'
-    techrepDedup: true
+  singleCell:
+    splitTechreps: "cellID"
+
 
 sampleSelectionStrategies:
   test:

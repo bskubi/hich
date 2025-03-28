@@ -1,21 +1,26 @@
-include {ParseArgs} from './subwf/parseArgs.nf'
-include {Setup} from './subwf/setup.nf'
-include {Align} from './subwf/align.nf'
-include {FastqHead} from './subwf/fastqHead.nf'
-include {Parse} from './subwf/parse.nf'
-include {TagRestrictionFragments} from './subwf/tagRestrictionFragments.nf'
-include {IngestPairs} from './subwf/ingestPairs.nf'
-include {Select} from './subwf/select.nf'
-include {HicMatrix} from './subwf/hicMatrix.nf'
-include {McoolMatrix} from './subwf/mcoolMatrix.nf'
-include {IngestMatrix} from './subwf/ingestMatrix.nf'
-include {Hicrep} from './subwf/hicrep.nf'
-include {CompartmentScores} from './subwf/compartmentScores.nf'
-include {Loops} from './subwf/loops.nf'
-include {DifferentialLoops} from './subwf/differentialLoops.nf'
-include {InsulationScores} from './subwf/insulationScores.nf'
+include {ParseArgs} from './subwf/setup/parseArgs.nf'
+include {Setup} from './subwf/setup/setup.nf'
+
+include {Align} from './subwf/reads/align.nf'
+include {FastqHead} from './subwf/reads/fastqHead.nf'
+include {Parse} from './subwf/reads/parse.nf'
+include {TagRestrictionFragments} from './subwf/reads/tagRestrictionFragments.nf'
+include {IngestPairs} from './subwf/reads/ingestPairs.nf'
+include {Select} from './subwf/reads/select.nf'
+
+include {LabelAggregationPlans} from './subwf/aggregate/labelAggregationPlans.nf'
+include {SplitTechreps} from './subwf/aggregate/splitTechreps.nf'
+
+include {HicMatrix} from './subwf/matrix/hicMatrix.nf'
+include {McoolMatrix} from './subwf/matrix/mcoolMatrix.nf'
+include {IngestMatrix} from './subwf/matrix/ingestMatrix.nf'
+include {Hicrep} from './subwf/features/hicrep.nf'
+include {CompartmentScores} from './subwf/features/compartmentScores.nf'
+include {Loops} from './subwf/features/loops.nf'
+include {DifferentialLoops} from './subwf/features/differentialLoops.nf'
+include {InsulationScores} from './subwf/features/insulationScores.nf'
 include {emptyOnLastStep; skip} from './subwf/extraops.nf'
-include {AggregateTechreps; AggregateBioreps; AggregateConditions} from './subwf/aggregate.nf'
+
 
 workflow {
 
@@ -29,22 +34,23 @@ workflow {
         | TagRestrictionFragments   // Only affects samples with "fragmentIndex"
         | Select
 
-        | AggregateTechreps     // Downsample, deduplicate, merge
-        | AggregateBioreps
-        | AggregateConditions
+        | LabelAggregationPlans
+        | Merge
+        // | AggregateBioreps
+        // | AggregateConditions
 
-        | HicMatrix             // Create contact matrices
-        | McoolMatrix
-        | IngestMatrix
+        // | HicMatrix             // Create contact matrices
+        // | McoolMatrix
+        // | IngestMatrix
 
-        | Hicrep                // Call features
-        | CompartmentScores
-        | Loops
-        | DifferentialLoops
-        | InsulationScores
+        // | Hicrep                // Call features
+        // | CompartmentScores
+        // | Loops
+        // | DifferentialLoops
+        // | InsulationScores
 
-        | set{samples}
+    //     | set{samples}
 
-    samples = emptyOnLastStep("End", samples)
+    // samples = emptyOnLastStep("End", samples)
 }
 

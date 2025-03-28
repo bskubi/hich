@@ -28,7 +28,7 @@ protocols = {
 def unique_enzymes(enzymes_and_protocols):
     """Extract unique entries from flattened iterable"""
     protocols_upper = {k.upper(): v for k, v in protocols.items()}
-    enzymes = [protocols_upper.get(it.upper(), it) for it in enzymes_and_protocols]
+    enzymes = [protocols_upper.get(it.upper(), [it]) for it in enzymes_and_protocols]
     return list(set(itertools.chain.from_iterable(enzymes)))
 
 def sequences(fasta: Path | str) -> Generator[SeqRecord, None, None]:
@@ -57,7 +57,11 @@ def pos_to_bed(chrom: str, pos: List[int], end: int) -> pl.DataFrame:
 
 def digest_re(fasta: Path | str, enzymes_and_protocols: List[str]):
     enzymes = unique_enzymes(enzymes_and_protocols)
-    restriction_batch = RestrictionBatch(enzymes)
+    try:
+        restriction_batch = RestrictionBatch(enzymes)
+    except Exception as e:
+        print(f"Failed to create RestrictionBatch using enzymes list {enzymes}")
+        print(e)
 
     for sequence in sequences(fasta):
         digest = restriction_batch.search(sequence.seq)

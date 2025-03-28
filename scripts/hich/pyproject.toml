@@ -12,6 +12,12 @@ hich = "hich.__main__:hich"
 build-backend = "hatchling.build"
 requires = ["hatchling"]
 
+[tool.hatch.build]
+packages = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hich"]
+
 [tool.pixi.project]
 channels = ["conda-forge", "bioconda", "bioconda/label/cf201901"]
 platforms = ["linux-64"]

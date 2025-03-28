@@ -1042,7 +1042,7 @@ packages:
 - pypi: .
   name: hich
   version: 0.1.0
-  sha256: b93ae0e74b43fcd5e5bcf8332d900c9ccc2c59ac0e2e0e5de425519874e1d60e
+  sha256: b9397bc8ec333ab4cdc095a972cae9ecb87e5d879bfa9dbecc7225d54e5333a7
   requires_dist:
   - smart-open-with-pbgzip>=0.1.5,<0.2
   - biopython>=1.85,<2.0

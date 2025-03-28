@@ -27,10 +27,13 @@ def matrix():
 @click.option("--one-norm", is_flag = True, default = False, help = "If multiple normalizations are present, only use one of them.")
 @click.option("--chrom", "-c", "chroms", multiple=True, type=str, default=None, help = "The set of chromosomes to use. If unspecified, SCC scores are called on the subset of chromosomes shared by all contact matrices.")
 @click.option("--skip-chrom", "-s", "skip_chroms", multiple=True, type=str, default=None, help = "Exclude these chromosomes, even if specified by --chrom")
+@click.option("--region", "-g", multiple = True, type = str, default = None, help = "UCSC genome region to compare, i.e. chr1:10000000-11000000")
+@click.option("--bed", "-b", multiple = True, type = str, default = None, help = "BED file defining a partition over the genome with HiCRep called on each region")
+@click.option("--partition", "-p", multiple = True, type = int, default = None, help = "Partition selected chromosomes into uniform regions of this size")
 @click.option("--n_proc", type=int, default=None, help = "Number of parallel processes to use to call SCC scores. By default, uses all available processors.")
 @click.argument("out_path", type=str)
 @click.argument("in_paths", type=str, nargs = -1)
-def hicrep(resolutions, h, d_bp_max, b_downsample, normalizations, raw, one_norm, chroms, skip_chroms, n_proc, out_path, in_paths):
+def hicrep(resolutions, h, d_bp_max, b_downsample, normalizations, raw, one_norm, chroms, skip_chroms, region, bed, partition, n_proc, out_path, in_paths):
     """Call HiCRep SCC scores on combinations of contact matrices and parameterizations
     
     \b

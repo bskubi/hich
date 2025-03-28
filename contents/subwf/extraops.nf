@@ -630,6 +630,13 @@ def columns (mapList, options = [:]) {
     transposed
 }
 
+def mapToColumns (hashMap, keyCol, valueCol) {
+    [
+        (keyCol): hashMap.keySet().toList(), 
+        (valueCol): hashMap.values().toList()
+    ]
+}
+
 def rows (columnsMap) {
     /*
         Convert columnsMap from columnar to row format
