@@ -49,6 +49,6 @@ workflow {
 
         | set{samples}
 
-    // samples = emptyOnLastStep("End", samples)
+    samples = emptyOnLastStep("end", samples)
 }
 

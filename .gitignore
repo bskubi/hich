@@ -1,8 +1,8 @@
-work
-testwork
+/work
 .nextflow*
 .vscode
-resources
-results
+/resources
+/results
 .tmp
 *.log
+.pytest_cache

@@ -1,30 +1,33 @@
 import groovy.json.JsonOutput
 
 def prepForJson(obj) {
-    def updated = obj
     if (obj instanceof Map) {
-        updated = [:]
-        obj.each {
-            k, v ->
-            kStr = k.toString()
-            updated[(kStr)] = prepForJson(v)
+        return obj.collectEntries { k, v ->
+            [(k.toString()): prepForJson(v)]
         }
     } else if (obj.getClass() in [List, ArrayList]) {
-        updated = []
-        obj.eachWithIndex {it, idx -> updated[idx] = prepForJson(it) }
+        return obj.withIndex().collectEntries { item, idx ->
+            [(idx): prepForJson(item)]
+        }
     } else {
-        updated = obj.toString()
+        return obj.toString()
     }
-    return updated
 }
 
 
-def withLog(cmdArg, mapArg) {
+def withLog(cmdArg, mapArg, stubArg = null) {
     def map = mapArg + [command: cmdArg.toString()]
+    if (stubArg) {
+        map += [stub: stubArg.toString()]
+    }
+    def useArg = stubArg ? stubArg : cmdArg
+
     // Convert to a map to avoid cyclic entries
     def preppedMap = prepForJson(map)
+
     def json = JsonOutput.toJson(preppedMap)
-    return "${cmdArg} && cat <<'EOF' > hich_output.json\n${json}\nEOF"
+
+    return "${useArg} && cat <<'EOF' > hich_output.json\n${json}\nEOF"
 }
 
 def stubLog(stubArg, cmdArg, mapArg) {

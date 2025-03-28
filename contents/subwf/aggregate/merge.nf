@@ -1,5 +1,14 @@
 include {withLog; stubLog} from '../util/logs.nf'
 
+def buildCmd(id, toMerge, cpus) {
+    def merged = "${id}.merged.pairs.gz"
+    def mergeList = toMerge.collect({"'${it}'"})
+    def logMap = [task: "Merge", input: [id: id, toMerge: toMerge], output: [merged: merged]]
+    def cmd = "pairtools merge --output '${merged}' --nproc-in ${cpus} --nproc-out ${cpus} ${mergeList.join(' ')}"
+    def stubCmd = "touch '${merged}'"
+    return [merged, mergeList, logMap, cmd, stubCmd]
+}
+
 process Merge {
     label 'pairs'
     
@@ -10,17 +19,10 @@ process Merge {
     tuple val(id), path(merged)
 
     shell:
-    merged = "${id}.merged.pairs.gz"
-    toMerge = toMerge.collect { "'${it}'" }
-    cmd = "pairtools merge --output '${merged}'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${toMerge.join(' ')}"
-    logMap = [task: "PairtoolsMerge", input: [id: id, toMerge: toMerge], output: [merged: merged]]
+    (merged, mergeList, logMap, cmd, stubCmd) = buildCmd(id, toMerge, task.cpus)
     withLog(cmd, logMap)
 
     stub:
-    merged = "${id}.merged.pairs.gz"
-    stub = "touch '${merged}'"
-    toMerge = toMerge.collect { "'${it}'" }
-    cmd = "pairtools merge --output '${merged}'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} ${toMerge.join(' ')}"
-    logMap = [task: "PairtoolsMerge", input: [id: id, toMerge: toMerge], output: [merged: merged]]
-    stubLog(stub, cmd, logMap)  
+    (merged, mergeList, logMap, cmd, stubCmd) = buildCmd(id, toMerge)
+    withLog(cmd, logMap, stubCmd)
 }

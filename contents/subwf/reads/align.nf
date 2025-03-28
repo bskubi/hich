@@ -1,4 +1,6 @@
-include {emptyOnLastStep; pack; skip; withLog; stubLog} from '../extraops.nf'
+include {emptyOnLastStep; skip} from '../util/workflowControl.nf'
+include {pack} from '../util/join.nf'
+include {withLog; stubLog} from '../util/logs.nf'
 
 process BwaAlignMates {
     publishDir params.general.publish.align ? params.general.publish.align : "results",
@@ -43,7 +45,6 @@ process BwaAlignMates {
         logMap = [task: "BwaAlignMates", output: "${id}.bam", input: [id: id, fastq1: fastq1, fastq2: fastq2, aligner: aligner, index: indexDir, flags: flags]]
         cmd = "python3 -m bsbolt Align -t ${task.cpus} -OT ${task.cpus} -O '${id}' -DB '${indexDir}' '${bwaFlags}' -F1 '${fastq1}' -F2 '${fastq2}'"
     }
-
     withLog(cmd, logMap)
 
     stub:

@@ -1,6 +1,7 @@
 include {emptyOnLastStep} from '../util/workflowControl.nf'
-include {processMerge} from './processMerge.nf'
+include {doMerge} from './doMerge.nf'
 include {Merge as MergeTechrepsToBioreps; Merge as MergeBiorepsToConditions} from './merge.nf'
+include {LabelAggregationPlans} from './labelAggregationPlans.nf'
 include {Deduplicate} from './deduplicate.nf'
 include {Split} from './split.nf'
 include {columnsToRows} from '../util/rowsCols.nf'
@@ -14,57 +15,92 @@ workflow Aggregate {
 
     main:
 
-    // Merge samples
+    
     samples
     | branch {
-        techreps: it.aggregateLevel == "techrep"
-        bioreps: it.aggregateLevel == "biorep"
-        conditions: it.aggregateLevel == "condition"
+        yes: it.aggregateLevel == "techrep" && !it.skipMerge && !it.skipTechrepMerge
+        no: true
     }
-    | set {sampleLevels}
+    | set {mergeTechreps}
 
-    processMerge(
-        sampleLevels.techreps, 
+    // Merge techreps to bioreps
+    doMerge(
+        mergeTechreps.yes, 
         ["cell", "biorep", "condition", "aggregationPlanName"], 
         MergeTechrepsToBioreps,
-        "biorep",
-        sampleLevels.bioreps
+        "biorep"
         )
-    | set{bioreps}
+    | LabelAggregationPlans
+    | set {biorepsFromMerge}
 
-    samples = emptyOnLastStep("mergeTechrepsToBioreps", samples)
-
-    processMerge(
-        bioreps, 
-        ["cell", "condition", "aggregationPlanName"], 
-        MergeBiorepsToConditions,
-        "condition",
-        sampleLevels.conditions
-        )
-    | set{conditions}
-
-    samples = emptyOnLastStep("mergeBiorepsToConditions", samples)
-    samples = emptyOnLastStep("merge", samples)
-
-    sampleLevels.techreps
-    | concat(bioreps)
-    | concat(conditions)
+    samples
+    | concat(biorepsFromMerge)
     | set{samples}
 
-    // Deduplicate samples
+    // Deduplicate techreps, bioreps, and input conditions
     samples
+    | branch {
+        yes: (
+            it.dedupMethod 
+            || it.dedupMaxMismatch 
+            || it.dedupSingleCell 
+            || it.dedup
+            || (it.aggregateLevel == "techrep" && it.dedupTechreps)
+            || (it.aggregateLevel == "biorep" && it.dedupBioreps)
+            || (it.aggregateLevel == "condition" && it.dedupConditions)
+        )
+        no: true
+    }
+    | set{dedup}
+
+    dedup.yes
     | map{tuple(it.id, it.latestPairs, it.dedupSingleCell, it.dedupMaxMismatch, it.dedupMethod, it.pairtoolsDedupParams)}
     | Deduplicate
     | map{[id:it[0], dedupPairs:it[1], latest:it[1], latestPairs:it[1]]}
     | set {deduplicated}
 
-    pack(samples, deduplicated)
+    pack(dedup.yes, deduplicated)
+    | concat(dedup.no)
     | set {samples}
 
-    samples = emptyOnLastStep("deduplicate", samples)
+    // Merge bioreps to conditions
 
-    // Split samples based on cell column
     samples
+    | branch {
+        yes: it.aggregateLevel == "biorep" && !it.skipMerge && !it.skipBiorepMerge
+        no: true
+    }
+    | set {mergeBioreps}
+
+    doMerge(
+        mergeBioreps.yes, 
+        ["cell", "condition", "aggregationPlanName"], 
+        MergeBiorepsToConditions,
+        "condition"
+        )
+    | LabelAggregationPlans
+    | set{conditionsFromMerge}
+
+    samples
+    | concat(conditionsFromMerge)
+    | set{samples}
+
+    // Split into multiple samples (i.e. on cell ID)
+
+    samples
+    | branch {
+        yes: (
+            it.split 
+            || it.splitSQL
+            || (it.aggregateLevel == "techrep" && it.splitTechreps)
+            || (it.aggregateLevel == "biorep" && it.splitBioreps)
+            || (it.aggregateLevel == "condition" && it.splitConditions)
+        )
+        no: true
+    }
+    | set {split}
+
+    split.yes
     | map{tuple(it.id, it.latestPairs)}
     | Split
     | map{[id: [it[0]]*it[1].size(), splitPairs: it[1], latestPairs: it[1]]}
@@ -73,18 +109,18 @@ workflow Aggregate {
 
     pack(splitSamples, samples)
     | map{
+        // Extract cell from filename
         cell = it.splitPairs =~ /.*\.cell=([^.]+)\..*/
 
         it += [cell: cell.matches() ? cell[0][1] : null ]
         it += [id: makeID(it)]
     }
+    | LabelAggregationPlans
     | set{samplesFromSplit}
 
     samples
     | concat(samplesFromSplit)
     | set{samples}
-
-    samples = emptyOnLastStep("split", samples)
 
     samples = emptyOnLastStep("aggregate", samples)
 

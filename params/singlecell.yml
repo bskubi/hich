@@ -81,11 +81,8 @@ defaults:
 aggregationPlans:
   # Each key under aggregate is the name of an aggregation profile
   singleCell:
-    dedupSingleCell: false
-    dedupMaxMismatch: 3
-    dedupMethod: "max"
-    pairtoolsDedupParams: ""
-
+    dedup: true
+    skipBiorepMerge: true
 
 
 sampleSelectionStrategies:

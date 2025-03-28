@@ -1,9 +1,0 @@
-channels:
-  - conda-forge
-  - bioconda
-dependencies:
-  - git
-  - python
-  - pip
-  - pip:
-    - git+https://github.com/open2c/MultiQC.git
