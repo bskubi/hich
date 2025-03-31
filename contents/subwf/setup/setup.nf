@@ -2,8 +2,9 @@ include {Chromsizes} from '../resources/chromsizes.nf'
 include {GenomeReference} from '../resources/genomeReference.nf'
 include {AlignerIndex} from '../resources/alignerIndex.nf'
 include {FragmentIndex} from '../resources/fragmentIndex.nf'
-include {withLog; stubLog; emptyOnLastStep; isTechrep; isBiorep; isCondition; aggregateLevelLabel; datatypeFromExtension} from '../extraops.nf'
-
+include {emptyOnLastStep; isTechrep; isBiorep; isCondition; aggregateLevelLabel; datatypeFromExtension} from '../extraops.nf'
+include {withLog; stubLog} from '../util/logs.nf'
+include {makeID} from '../util/samples.nf'
 // Returns true if it is truthy/non-null, and its string representation has
 // at least one non-whitespace character, false otherwise
 def truthyString = {
@@ -198,13 +199,7 @@ workflow UpdateSamples
                 )
             }
 
-            // Select non-null identifiers and separate by _
-            // if all are present, the id string is condition_biorep_techrep
-            identifiers = [condition, biorep, techrep].findAll {it != null}
-            idString = identifiers.join("_").toString()
-
-            // Update the sample with the constructed id string.
-            sample += ["id":idString]
+            sample += ["id":makeID(sample)]
         }
 
         //////////////////////////////////////////////////////////////
@@ -252,57 +247,6 @@ workflow UpdateSamples
                 }
             }
         }
-
-
-        /*
-            Samples that include cellBarcodeIndex, cellBarcodeRegexPattern, or cellBarcodeParsePattern need to have their
-            parseParams and reshapeParams altered to take that into account.
-        */
-        // Ensure there is at least an empty list for reshapeParams
-        if (!sample.reshapeParams){
-            sample.reshapeParams = []
-        }
-        if (sample.cellBarcodeField) {
-            // We can extract the cellID from the cellBarcodeField using either a regex or Python parse library pattern
-            // using Hich reshape, which the output of pairtools parse2 will be piped to if there are any reshapeParams.
-            // If a regex or parse pattern is given, set it as a reshapeParam, parsing cellBarcodeField and putting the
-            // result in the cellID column.
-            // If no pattern is given, use the default specified in globalDefaultReshapeToCellID.option and .pattern
-            // If the readID is the cellBarcodeField and the user wants to drop it (which is a default setting), it is important
-            // not to drop this before Hich reshape can extract the cellID. So we remove --drop-readid if it was a parameter
-            // to pairtools parse2 and then add the equivalent hich reshape --placeholder readID . to accomplish the same thing
-            // after hich reshape has had a chance to parse it.
-
-            // CRITICAL NOTE: We add on the cellID parsing statements before other reshapeParams. This is because
-            // if the user adds extra reshapeParams that drop needed columns for parsing the cellID, we want to extract
-            // the cellID first. If this doesn't fit the user's workflow, then they should explicitly specify the cellID extraction
-            // options in reshapeParams for that sample. The option to replace the readID with a placeholder is added at the end.
-            sample.isSingleCell = true
-
-            if (sample.cellBarcodeRegexPattern) {
-                group = sample.cellBarcodeRegexGroup ?: 0
-                // Create regex pattern option for hich reshape
-                sample.reshapeParams = ["--regex ${sample.cellBarcodeField} cellID '${sample.cellBarcodeRegexPattern}' ${group}".toString()] + sample.reshapeParams
-            } else if (sample.cellBarcodeParsePattern) {
-                // Create Python parse library pattern option for hich reshape
-                sample.reshapeParams = ["--parse ${sample.cellBarcodeField} cellID '${sample.cellBarcodeParsePattern}'".toString()] + sample.reshapeParams
-            } else {
-                // Create default pattern option for hich reshape if none is specified by the user
-                option = params.defaults.globalDefaultReshapeToCellID.option
-                pattern = params.defaults.globalDefaultReshapeToCellID.pattern
-
-                // Set group to the default value if provided or a blank string otherwise
-                group = params.defaults.globalDefaultReshapeToCellID.group ?: ""
-                sample.reshapeParams = ["${option} ${sample.cellBarcodeField} cellID '${pattern}' ${group}".toString()] + sample.reshapeParams
-            }
-            if (sample.cellBarcodeField == "readID" && sample.parseParams && "--drop-readid" in sample.parseParams) {
-                // Remove the --drop-readid parameter from pairtools parse2 if it is needed to parse the cellID column
-                // and accomplish the same thing with hich reshape.
-                sample.parseParams = sample.parseParams.findAll{it != "--drop-readid"}
-                sample.reshapeParams += ["--placeholder readID ."]
-            }
-        }
-
 
         // Put sample first in the HashMap just for convenience
         sample = ["id":sample.id] + sample

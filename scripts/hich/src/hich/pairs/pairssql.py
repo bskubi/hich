@@ -1,4 +1,6 @@
 """.pairssql is a DuckDB version of 4DN .pairs format"""
+import smart_open_with_pbgzip
+from smart_open import smart_open
 import duckdb
 import pyarrow
 from hich.pairs.convert import *
@@ -6,6 +8,7 @@ from hich.pairs.header import *
 from dataclasses import dataclass
 from parse import parse
 import itertools
+import io
 
 @dataclass
 class PairsSQL:
@@ -92,16 +95,23 @@ DELETE FROM metadata WHERE table_name = 'pairs';
 INSERT INTO metadata VALUES ('pairs', '{header.non_columns_text}');
 """
         )
+
+    def write_pairs(self, out_path: Path | str, vector_multiple = 1000):
+        handle = smart_open(out_path, "w")
+
+        handle.write(self.header.text)
+        query = self.conn.execute("SELECT * FROM pairs ORDER BY chrom1, chrom2, pos1, pos2")
+
+        if vector_multiple is None:
+            query.df().to_csv(handle, sep="\t", header=False, index=False, compression=None)
+        else:
+            while (chunk := query.fetch_df_chunk(vector_multiple)) is not None:
+                if chunk.empty:
+                    break
+                else:
+                    chunk.to_csv(handle, sep="\t", header=False, index=False, compression=None)
     
-    def write_pairs(self, out_path: Path | str):
-        self.conn.execute(
-f"""
-COPY (SELECT * FROM pairs)
-TO '{out_path}'
-(FORMAT CSV, DELIMITER '\t', PREFIX '{self.header.text}', SUFFIX '\n', HEADER false)
-"""
-        )
-    
+
     def write_parquet(self, out_path: Path | str):
         self.conn.execute(
 f"""

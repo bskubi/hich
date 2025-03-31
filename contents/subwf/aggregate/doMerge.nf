@@ -19,4 +19,6 @@ def doMerge (samplesToMerge, groupAttributes, proc, level) {
     def attributes = groupsToMerge
         | map{coalesce(it, "_drop")}
         | map{it += [id: makeID(it, columns = true), aggregateLevel: level]}
+    
+    pack(attributes, merged)
 }

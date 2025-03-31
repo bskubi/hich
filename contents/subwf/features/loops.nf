@@ -1,4 +1,5 @@
-include {withLog; stubLog; createCompositeStrategy; filterSamplesByStrategy; skip} from '../extraops.nf'
+include {createCompositeStrategy; filterSamplesByStrategy; skip} from '../extraops.nf'
+include {withLog; stubLog} from '../util/logs.nf'
 
 process MustacheLoops{
     publishDir "results/loops",

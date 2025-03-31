@@ -1,5 +1,4 @@
 import click
-import duckdb as ddb
 import smart_open_with_pbgzip
 import duckdb
 import polars as pl
@@ -145,13 +144,8 @@ def bin(in_format, out_format, idx1, start1, end1, idx2, start2, end2, batch_siz
     assert not same_file or in_format == out_format, "Cannot change format while keeping same filename."
 
     in_db = PairsSQL.open(in_path_pairs, in_format)
-    if not same_file:
-        out_db = PairsSQL(path=out_path)
-    else:
-        out_db = PairsSQL.open(out_path, out_format)
-    
-    if not same_file:
-        out_db.add_metadata(in_db.header)
+    out_db = PairsSQL(path=":memory:")
+    out_db.add_metadata(in_db.header)
 
 
     # Validate that bed file has no gaps or overlaps
@@ -169,15 +163,19 @@ def bin(in_format, out_format, idx1, start1, end1, idx2, start2, end2, batch_siz
     def intersection_labels(pairs_chunk, bed, chrom, pos_col, idx_label, start_label, end_label):
         bed_chrom = bed.filter(pl.col("chrom") == chrom)
 
-        # Validate that the contacts have non-negative positions 
-        if not bed_chrom["start"][0] == 0:
+        if bed_chrom is None or len(bed_chrom) == 0:
+            idx = [0]*len(pairs_chunk)
+            start = [-1]*len(pairs_chunk)
+            end = [-1]*len(pairs_chunk)
+        elif not bed_chrom["start"][0] == 0:
             raise ValueError(f"For {chrom}, BED file is missing start position 0")
-        if pairs_chunk[pos_col].max() >= bed_chrom["end"][-1]:
+        elif pairs_chunk[pos_col].max() >= bed_chrom["end"][-1]:
             raise ValueError(f"For {chrom}, found a position {pairs_chunk[pos_col].max()} higher than max BED file partition ending at {bed_chrom['end'][-1]}")
+        else:
+            idx = np.searchsorted(bed_chrom["end"], pairs_chunk[pos_col], side = "right")
+            start = bed_chrom["start"][idx]
+            end = bed_chrom["end"][idx]
 
-        idx = np.searchsorted(bed_chrom["end"], pairs_chunk[pos_col], side = "right")
-        start = bed_chrom["start"][idx]
-        end = bed_chrom["end"][idx]
         return {idx_label: idx, start_label: start, end_label: end}
 
     for chunk in in_db.iter_chroms(batch_size):
@@ -187,6 +185,8 @@ def bin(in_format, out_format, idx1, start1, end1, idx2, start2, end2, batch_siz
         chrom2 = chunk["chrom2"][0]
         frag2 = intersection_labels(chunk, bed, chrom2, "pos2", idx2, start2, end2)
         tagged_chunk = pl.concat([pl.from_pandas(chunk), pl.DataFrame(frag1), pl.DataFrame(frag2)], how = "horizontal")
+
+
         tagged_chunk_schema = tagged_chunk.filter(False)
         if Path(in_path_pairs) == Path(out_path):
             table = "pairs_temp"

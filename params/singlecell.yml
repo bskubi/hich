@@ -82,7 +82,9 @@ aggregationPlans:
   # Each key under aggregate is the name of an aggregation profile
   singleCell:
     dedup: true
-    skipBiorepMerge: true
+    splitColumns: "chrom1"
+    splitSQL: "DELETE FROM pairs WHERE chrom1 NOT IN [\\\"chr1\\\", \\\"chr2\\\"]"
+
 
 
 sampleSelectionStrategies:

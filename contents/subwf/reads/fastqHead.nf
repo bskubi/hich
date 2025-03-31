@@ -1,4 +1,5 @@
-include {withLog; stubLog; emptyOnLastStep; pack} from '../extraops.nf'
+include {emptyOnLastStep; pack} from '../extraops.nf'
+include {withLog; stubLog} from '../util/logs.nf'
 
 process ZcatHeadFastq {
     input:

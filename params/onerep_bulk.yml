@@ -81,22 +81,8 @@ defaults:
 aggregationPlans:
   # Each key under aggregate is the name of an aggregation profile
   fullCoverageDedup:
-    # Specify parameters for how to downsample, merge and deduplicate each level
-    # level can be any or all of [techrep|biorep|condition]
-    # [level]CisStrata: list[int]   List of cis bin maximum positions to group by for downsampling
-    # [level]ReadConjuncts: list[str]     List of column names to group by
-    # [level]DownsampleToMeanDistribution: bool
-    # [level]DownsampleToSize: int | float    If true, downsamples to specific number of reads (int) or fraction of reads (float 0.0-1.0)
-    # [level]Dedup: bool  If true, deduplicate reads
-    # [level]DedupMethod: 'max' | 'sum'  If true, deduplicate reads
-    # dedupSingleCell: bool     Use cellID column as an extra column that must match to call two rows as duplicates
-    # dedupMaxMismatch: bool    Pairs with both sides mapped within this distance (bp) from each other are considered duplicates. 
-    # mergeTechrepToBiorep: bool  If true, merge techrep samples for same aggregate profile, biorep and condition
-    # mergeBiorepToCondition: bool    If true, merge biorep samples for same aggregate profile and condition
-    dedupSingleCell: false
-    dedupMaxMismatch: 3
-    dedupMethod: 'max'
-    techrepDedup: true
+    dedup: true
+    skipMerge: true
 
 sampleSelectionStrategies:
   test:
@@ -113,14 +99,22 @@ hicrep:
     dBPMax: [5000000]
     bDownSample: [true]
 
-loops: []
+loops:
+  loops_default:
+    sampleSelectionStrategy: "test"
+    mustacheParams: "-r 100000"
 
 differentialLoops: []
 
-insulation: []
+insulation:
+  insulation_default:
+    sampleSelectionStrategy: "test"
+    resolution: 100000
+    cooltoolsInsulationParams: ""
+    window: 100000
 
 compartments:
   hich_compartments_default:
     sampleSelectionStrategy: "test"
     hichCompartmentsParams: ""
-    resolution: 10000
+    resolution: 100000

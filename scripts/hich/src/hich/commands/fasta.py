@@ -2,24 +2,58 @@ import click
 import hich.fasta.digest_re
 import polars
 import smart_open_with_pbgzip
+from collections import Counter
 from smart_open import smart_open
+from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
+import time
 
 @click.group()
 def fasta():
     pass
 
-# Change to index re-fragments
+@fasta.command
+@click.argument("in_path")
+@click.argument("bp", type=int)
+def gc(in_path, bp):
+    """Compute fraction of GC content on uniform-size partition over the genome
 
-@fasta.group()
-def index():
-    pass
+    IN_PATH: Path to a fasta file (may be compressed)
+    BP: Size in bp of partition blocks (the last block on each chromosome may be shorter)
 
-@index.command
+    \b
+    Example:
+    Compute GC on a 100kb partition
+        hich fasta gc hg38.fasta.gz 100000 > hg38_gc_100kb.bed
+    """
+    try:
+        fasta = smart_open(in_path, "rt")
+    except Exception as e:
+        print(f"Unable to open {in_path}.")
+        raise e
+
+    try:
+        for record in SeqIO.parse(fasta, "fasta"):
+            for start in range(0, len(record.seq), bp):
+                end = min(len(record.seq), start + bp)
+                counts = Counter(record[start:end])
+                g = counts.get("G", 0) + counts.get("g", 0)
+                c = counts.get("C", 0) + counts.get("c", 0)
+                t = counts.get("T", 0) + counts.get("t", 0)
+                a = counts.get("A", 0) + counts.get("a", 0)
+                total = g + c + t + a
+                gc_content = (g+c)/total if total else ""
+                print(f"{record.id}\t{start}\t{end}\t{gc_content}\n", end="")
+    except Exception as e:
+        print(f"Exception raised trying to parse {in_path} as fasta file to compute GC content.")
+        raise e
+
+@fasta.command
 @click.argument("in_path")
 @click.argument("out_path")
 @click.argument("enzymes_and_protocols", nargs=-1)
 def re_fragments(in_path, out_path, enzymes_and_protocols):
-    """Create BED file of restriction fragments
+    """Create restriction fragment index in BED format
 
     \b
     IN_PATH: FASTA file to digest

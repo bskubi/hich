@@ -1,22 +1,25 @@
 include {QCReads} from './qcHicReads.nf'
-include {withLog; stubLog; emptyOnLastStep; pack; isExistingFile; skip} from '../extraops.nf'
+include {emptyOnLastStep; pack; isExistingFile; skip} from '../extraops.nf'
+include {withLog; stubLog} from '../util/logs.nf'
 
 process HichFragtag {
     publishDir params.general.publish.fragtag ? params.general.publish.fragtag : "results",
                saveAs: {params.general.publish.fragtag ? it : null},
                mode: params.general.publish.mode
-    container params.general.hichContainer
+
     label 'doJobArray'
     label 'pairs'
+    debug true
 
     input:
     tuple val(id), path(pairs), path(fragmentIndex)
 
     output:
-    tuple val(id), path("${id}_fragtag.pairs.gz")
+    tuple val(id), path(tagged)
 
     shell:
-    cmd = "hich fragtag '${fragmentIndex}' '${id}_fragtag.pairs.gz' '${pairs}'"
+    tagged = "${id}_fragtag.pairs.gz"
+    cmd = "hich pairs bin --idx1 rfrag1 --start1 rfrag_start1 --end1 rfrag_end1 --idx2 rfrag2 --start2 rfrag_start2 --end2 rfrag_end2 '${pairs}' '${fragmentIndex}' '${tagged}'"
 
     logMap = [
         task: "HichFragtag",
@@ -26,16 +29,17 @@ process HichFragtag {
             fragmentIndex: fragmentIndex
         ],
         output: [
-            pairs: "${id}_fragtag.pairs.gz"
+            pairs: tagged
         ]
     ]
 
     withLog(cmd, logMap)
 
     stub:
-    stub = "touch '${id}_fragtag.pairs.gz'"
+    tagged = "${id}_fragtag.pairs.gz"
+    stub = "touch '${tagged}'"
 
-    cmd = "hich pairs bin --idx1 rfrag1 --start1 rfrag_start1 --end1 rfrag_end1 --idx2 rfrag2 --start2 rfrag_end2 --end2 rfrag_end2 '${pairs}' '${fragmentIndex}' '${id}_fragtag.pairs.gz'"
+    cmd = "hich pairs bin --idx1 rfrag1 --start1 rfrag_start1 --end1 rfrag_end1 --idx2 rfrag2 --start2 rfrag_end2 --end2 rfrag_end2 '${pairs}' '${fragmentIndex}' '${tagged}'"
 
     logMap = [
         task: "HichFragtag",
@@ -45,7 +49,7 @@ process HichFragtag {
             fragmentIndex: fragmentIndex
         ],
         output: [
-            pairs: "${id}_fragtag.pairs.gz"
+            pairs: tagged
         ]
     ]
 

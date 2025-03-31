@@ -1,5 +1,5 @@
-include {withLog; stubLog; skip} from '../extraops.nf'
-
+include {skip} from '../extraops.nf'
+include {withLog; stubLog} from '../util/logs.nf'
 
 process PairtoolsStats {
     publishDir params.general.publish.pairStats ? params.general.publish.pairStats : "results",

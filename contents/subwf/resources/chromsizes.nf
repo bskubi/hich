@@ -1,4 +1,5 @@
-include {emptyOnLastStep; pack; skip; isExistingFile; withLog; stubLog} from '../extraops.nf'
+include {emptyOnLastStep; pack; skip; isExistingFile;} from '../extraops.nf'
+include {withLog; stubLog} from '../util/logs.nf'
 
 process FaSize {
     publishDir params.general.publish.chromsizes ? params.general.publish.chromsizes : "results",

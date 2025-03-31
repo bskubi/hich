@@ -1,4 +1,5 @@
-include {withLog; stubLog; createCompositeStrategy; filterSamplesByStrategy; groupSamplesByStrategy; columns; skip; formatArg} from '../extraops.nf'
+include {createCompositeStrategy; filterSamplesByStrategy; groupSamplesByStrategy; columns; skip; formatArg} from '../extraops.nf'
+include {withLog; stubLog} from '../util/logs.nf'
 
 process HicrepCombos{
     publishDir "results/hicrep", mode: params.general.publish.mode

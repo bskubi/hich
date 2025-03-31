@@ -91,6 +91,7 @@ workflow Aggregate {
     | branch {
         yes: (
             it.split 
+            || it.splitColumns
             || it.splitSQL
             || (it.aggregateLevel == "techrep" && it.splitTechreps)
             || (it.aggregateLevel == "biorep" && it.splitBioreps)
@@ -101,13 +102,13 @@ workflow Aggregate {
     | set {split}
 
     split.yes
-    | map{tuple(it.id, it.latestPairs)}
+    | map{tuple(it.id, it.latestPairs, it.splitColumns, it.splitSQL)}
     | Split
     | map{[id: [it[0]]*it[1].size(), splitPairs: it[1], latestPairs: it[1]]}
     | columnsToRows
     | set{splitSamples}
 
-    pack(splitSamples, samples)
+    pack(splitSamples, split.yes)
     | map{
         // Extract cell from filename
         cell = it.splitPairs =~ /.*\.cell=([^.]+)\..*/

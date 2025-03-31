@@ -1,5 +1,6 @@
 include {QCReads} from './qcHicReads.nf'
-include {withLog; stubLog; emptyOnLastStep; pack; skip} from '../extraops.nf'
+include {emptyOnLastStep; pack; skip} from '../extraops.nf'
+include {withLog; stubLog} from '../util/logs.nf'
 
 process PairtoolsParse2 {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",

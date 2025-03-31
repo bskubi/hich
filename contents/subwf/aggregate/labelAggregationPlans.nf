@@ -14,29 +14,33 @@ workflow LabelAggregationPlans {
         // Split samples into those with and without an aggregation plan name
         samples
             | branch {
-                noAggPlan: it.aggregationPlanName == null
-                hasAggPlan: true
+                yes: it.aggregationPlanName != null
+                no: true
             }
-            | set{samples}
+            | set{alreadyLabeled}
 
         // For samples without an aggregation plan name, add one with the appropriate parameters
         // using the "aggregationPlans" section
         rowHashmapToRowChannel(params.aggregationPlans, "planName", "planParams")
-            | combine(samples.noAggPlan)
+            | combine(alreadyLabeled.no)
             | map {
                 plan = it[0]
                 sample = it[1]
                 sample += [aggregationPlanName: plan.planName] + plan.planParams
                 sample
             }
-            | set{samples}
+            | set{newlyLabeled}
+        
+        alreadyLabeled.yes
+            | concat(newlyLabeled)
+            | set {samples}
 
         if (params.containsKey("keepUnaggregated")) {
-            samples | concat(samples.hasAggPlan) | set{samples}
+            samples
+                | concat(alreadyLabeled.no)
+                | set{samples}
         }
     }
-
-    samples = emptyOnLastStep("labelAggregationPlans", samples)
 
     emit:
     samples

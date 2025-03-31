@@ -1,4 +1,5 @@
-include {withLog; stubLog; createCompositeStrategy; filterSamplesByStrategy; skip} from '../extraops.nf'
+include {createCompositeStrategy; filterSamplesByStrategy; skip} from '../extraops.nf'
+include {withLog; stubLog} from '../util/logs.nf'
 
 process CooltoolsInsulation {
     publishDir "results/insulation",
@@ -14,7 +15,7 @@ process CooltoolsInsulation {
     tuple val(id), path("${id}_insulation.tsv"), path("${id}_insulation.tsv.${resolution}.bw")
 
     shell:
-    cmd = ["cooltools insulation", 
+    cmd = ["cooltools insulation --bigwig", 
            "--output '${id}_insulation.tsv'"] +
           cooltoolsInsulationParams +
           ["'${mcool}::/resolutions/${resolution}' ${window}"]

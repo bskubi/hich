@@ -1,4 +1,5 @@
-include {emptyOnLastStep; isExistingFile; pack; skip; withLog; stubLog} from '../extraops.nf'
+include {emptyOnLastStep; isExistingFile; pack; skip;} from '../extraops.nf'
+include {withLog; stubLog} from '../util/logs.nf'
 
 process BwaMem2Index {
     conda "bioconda::bwa-mem2"

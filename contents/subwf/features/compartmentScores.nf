@@ -1,36 +1,32 @@
-include {withLog; stubLog; createCompositeStrategy; filterSamplesByStrategy; skip} from '../extraops.nf'
+include {createCompositeStrategy; filterSamplesByStrategy; skip} from '../extraops.nf'
+include {withLog; stubLog} from '../util/logs.nf'
 
-
-process HichCompartments {
+process CallCompartments {
     publishDir "results/compartments",
                mode: params.general.publish.mode
 
-    container params.general.hichContainer
     label 'features'
 
 
     input:
-    tuple val(id), path(genomeReference), path(matrix), val(resolution), val(hichCompartmentsParams)
+    tuple val(id), path(genomeReference), path(matrix), val(resolution), val(hichCompartmentsParams), val(n_eigs)
 
     output:
-    tuple val(id), path("${id}_0.bw"), path("${id}_1.bw"), path("${id}_2.bw")
+    tuple val(id), path("*.cis.bw"), path("*.cis.vecs.tsv"), path("*.cis.lam.txt"), path("*.phase.bed")
 
     shell:
-    cmd = ["hich compartments --n_eigs 3"] +
-          hichCompartmentsParams +
-          ["'${genomeReference}' '${matrix}' ${resolution}"]
-    cmd = cmd.join(" ")
-    logMap = [task: "HichCompartments", input: [id: id, genomeReference: genomeReference, matrix: matrix, resolution: resolution, hichCompartmentsParams: hichCompartmentsParams], output: [eigs1score: "${id}_0.bw", eigs2score: "${id}_1.bw", eigs3score: "${id}_0.bw"]]
+    n_eigs = n_eigs ? n_eigs : 3
+    cmd = "hich fasta gc ${genomeReference} ${resolution} > ${id}.phase.bed && cooltools eigs-cis --phasing-track ${id}.phase.bed --n-eigs ${n_eigs} --out-prefix ${id}_compartments --bigwig ${matrix}::/resolutions/${resolution}"
+    
+    logMap = [task: "CallCompartments", input: [id: id, genomeReference: genomeReference, matrix: matrix, resolution: resolution, hichCompartmentsParams: hichCompartmentsParams], output: [eigs1score: "${id}_0.bw", eigs2score: "${id}_1.bw", eigs3score: "${id}_0.bw"]]
     withLog(cmd, logMap)
 
     stub:
-    stub = "touch '${id}_0.bw' '${id}_1.bw' '${id}_2.bw'"
-    cmd = ["hich compartments --n_eigs 3"] +
-          hichCompartmentsParams +
-          ["'${genomeReference}' '${matrix}' ${resolution}"]
-    cmd = cmd.join(" ")
-    logMap = [task: "HichCompartments", input: [id: id, genomeReference: genomeReference, matrix: matrix, resolution: resolution, hichCompartmentsParams: hichCompartmentsParams], output: [eigs1score: "${id}_0.bw", eigs2score: "${id}_1.bw", eigs3score: "${id}_0.bw"]]
-    stubLog(stub, cmd, logMap)
+    n_eigs = n_eigs ? n_eigs : 3
+    cmd = "hich fasta gc ${genomeReference} ${resolution} > ${id}.phase.bed && cooltools eigs-cis --phasing-track ${id}.phase.bed --n-eigs ${n_eigs} --out-prefix ${id}_compartments --bigwig ${matrix}::/resolutions/${resolution}"
+    stub = "touch ${id}_compartments.bw"
+    logMap = [task: "CallCompartments", input: [id: id, genomeReference: genomeReference, matrix: matrix, resolution: resolution, hichCompartmentsParams: hichCompartmentsParams], output: [eigs1score: "${id}_0.bw", eigs2score: "${id}_1.bw", eigs3score: "${id}_0.bw"]]
+    withLog(cmd, logMap, stub)
 }
 
 workflow CompartmentScores {
@@ -47,9 +43,9 @@ workflow CompartmentScores {
             filterSamplesByStrategy(samples, strategy)
                 | map{
                     sample ->
-                    tuple(sample.id, sample.genomeReference, sample.latestMatrix, analysisPlan.resolution, analysisPlan.hichCompartmentsParams)
+                    tuple(sample.id, sample.genomeReference, sample.latestMatrix, analysisPlan.resolution, analysisPlan.hichCompartmentsParams, analysisPlan.n_eigs)
                 }
-                | HichCompartments
+                | CallCompartments
         }
     }
 
