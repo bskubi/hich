@@ -1,0 +1,26 @@
+name: hich
+channels:
+  - conda-forge
+  - bioconda
+  - bioconda/label/cf201901
+dependencies:
+  - python>=3.11,<4.0
+  - duckdb>=1.2.1,<2
+  - polars>=1.24.0,<2
+  - pbgzip>=2015.10.28,<2016
+  - click>=8.1.8,<9
+  - pyarrow>=19.0.1,<20
+  - parse>=1.20.2,<2
+  - hictkpy>=0.0.5,<0.0.6
+  - cooltools>=0.7.1,<0.8
+  - tinydb>=4.8.2,<5
+  - scipy>=1.15.2,<2
+  - openjdk=17
+  - pip
+  - pip:
+    - smart-open-with-pbgzip>=0.1.5,<0.2
+    - "biopython>=1.85,<2.0"
+    - hicrep>=0.2.6,<0.3
+    - pybigwig
+    - partitioned
+    - hich

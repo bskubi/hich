@@ -29,3 +29,4 @@ dependencies:
     - hicrep>=0.2.6,<0.3
     - pybigwig
     - partitioned
+    - hich

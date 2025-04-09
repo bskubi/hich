@@ -6,6 +6,10 @@ from hich.commands.matrix import matrix
 
 @click.group()
 def hich():
+    """CLI tools to process Hi-C data
+    
+    Version: 0.1.9
+    """
     pass
 
 hich.add_command(fasta)

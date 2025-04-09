@@ -1,40 +1,16 @@
-[project]
-authors = [{name = "Ben Skubi", email = "skubi@ohsu.edu"}]
+[tool.poetry]
 name = "hich"
-requires-python = ">= 3.11, <4.0"
-version = "0.1.7"
-dependencies = []
+version = "0.1.9"
+description = "CLI tools for Hi-C data processing"
+authors = ["Ben Skubi <skubi@ohsu.edu>"]
+license = "MIT"
 
-[project.scripts]
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.scripts]
 hich = "hich.__main__:hich"
 
 [build-system]
-build-backend = "hatchling.build"
-requires = ["hatchling"]
-
-[tool.hatch.build]
-packages = ["src"]
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/hich"]
-
-[tool.pixi.project]
-channels = ["conda-forge", "bioconda", "bioconda/label/cf201901"]
-platforms = ["linux-64"]
-
-[tool.pixi.pypi-dependencies]
-hich = { path = ".", editable = true }
-
-[tool.pixi.tasks]
-
-[tool.pixi.dependencies]
-duckdb = ">=1.2.1,<2"
-polars = ">=1.24.0,<2"
-pbgzip = { version = ">=2015.10.28,<2016", channel = "bioconda/label/cf201901" }
-click = ">=8.1.8,<9"
-pyarrow = ">=19.0.1,<20"
-parse = ">=1.20.2,<2"
-hictkpy = ">=0.0.5,<0.0.6"
-cooltools = ">=0.7.1,<0.8"
-tinydb = ">=4.8.2,<5"
-scipy = ">=1.15.2,<2"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
