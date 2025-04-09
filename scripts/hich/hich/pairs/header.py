@@ -4,7 +4,6 @@ https://github.com/4dn-dcic/pairix/blob/master/pairs_format_specification.md
 Works with compressed files using smart_open. The pairtools suite saves using pbgzip, which smart_open can't use by default. The smart_open_with_pbgzip makes both smart_open and DuckDB use pbgzip.
 """
 
-# 
 import smart_open_with_pbgzip
 from smart_open import smart_open
 from pathlib import Path

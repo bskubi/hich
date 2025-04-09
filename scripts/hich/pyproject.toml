@@ -2,8 +2,8 @@
 authors = [{name = "Ben Skubi", email = "skubi@ohsu.edu"}]
 name = "hich"
 requires-python = ">= 3.11, <4.0"
-version = "0.1.0"
-dependencies = ["smart-open-with-pbgzip>=0.1.5,<0.2", "biopython (>=1.85,<2.0)", "hicrep>=0.2.6,<0.3"]
+version = "0.1.7"
+dependencies = []
 
 [project.scripts]
 hich = "hich.__main__:hich"

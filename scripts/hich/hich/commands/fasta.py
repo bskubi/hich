@@ -5,8 +5,7 @@ import smart_open_with_pbgzip
 from collections import Counter
 from smart_open import smart_open
 from Bio import SeqIO
-from Bio.SeqRecord import SeqRecord
-import time
+
 
 @click.group()
 def fasta():
