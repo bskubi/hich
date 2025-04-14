@@ -8,7 +8,7 @@ from hich.commands.matrix import matrix
 def hich():
     """CLI tools to process Hi-C data
     
-    Version: 0.1.9
+    Version: 0.2.0
     """
     pass
 

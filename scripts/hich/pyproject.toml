@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hich"
-version = "0.1.10"
+version = "0.2.0"
 description = "CLI tools for Hi-C data processing"
 authors = ["Ben Skubi <skubi@ohsu.edu>"]
 license = "MIT"

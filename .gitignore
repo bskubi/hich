@@ -6,3 +6,4 @@
 .tmp
 *.log
 .pytest_cache
+/dist
