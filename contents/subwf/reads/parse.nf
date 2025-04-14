@@ -80,22 +80,20 @@ process PairtoolsParse2 {
 
     // The parseParams are typically a list of individual pairtools parse flags.
     // Join them separated by spaces to use in the parse2Cmd
-    parseParams = parseParams.join(" ")
-    reshapeParams = reshapeParams.join(" ")
-
     // Set up the individual commands in lists to make them easier to combine with pipes into a complete command
     // sambamba is both slower than samtools as of 2017, and also can't pipe to stdout, so we use samtools
-    
-    sortCmd = ["samtools sort -n '${sambam}'"]
-    viewCmd = ["samtools view -b '${sambam}'"]
-
+    parseParams = parseParams.join(" ")
     parse2Cmd = ["pairtools parse2 --flip --assembly '${assembly}' --chroms-path '${chromsizes}' ${parseParams}"]
-    reshapeCmd = reshapeParams ? ["hich reshape ${reshapeParams}"] : []
+    reshapeParams = reshapeParams.join(" ")
+    reshapeCmd = reshapeParams ? ["hich pairs sql ${reshapeParams}"] : []
     pairsSortCmd = ["pairtools sort --output '${id}.pairs.gz' --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
+    parseCmd = parse2Cmd + reshapeCmd + pairsSortCmd
 
     // Combine the individual commands, then join with a pipe to form the full command
-    parseCmd = parse2Cmd + reshapeCmd + pairsSortCmd
+    sortCmd = ["samtools sort -n '${sambam}'"]
     sortParse = (sortCmd + parseCmd).join(" | ")
+    
+    viewCmd = ["samtools view -b '${sambam}'"]
     viewParse = (viewCmd + parseCmd).join(" | ")
     
     cmd = "samtools view '${sambam}' | awk -F'\\t' '{ print \$1 }' | partitioned && ${viewParse} || ${sortParse}"

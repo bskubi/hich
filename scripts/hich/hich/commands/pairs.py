@@ -1,5 +1,6 @@
 import click
 import smart_open_with_pbgzip
+from smart_open import smart_open
 import duckdb
 import polars as pl
 import shutil
@@ -22,10 +23,12 @@ def pairs():
 @click.option("--sql", type = str, default = None, help = "SQL to run on input file before partition.")
 @click.option("--squote", default = "\"", help = "Replace this string with a single quote ' in the sql string")
 @click.option("--unlink", is_flag = True, default = False, help = "Delete original partitioned file if renaming.")
+@click.option("--memory-limit", type = int, default = None, help = "DuckDB memory limit in GB")
+@click.option("--threads", type = int, default = None, help = "DuckDB thread limit")
 @click.argument("in-path")
 @click.argument("out-path")
 @click.argument("partition_by", nargs=-1)
-def partition(in_format, out_format, in_pattern, out_pattern, sql, squote, unlink, in_path, out_path, partition_by):
+def partition(in_format, out_format, in_pattern, out_pattern, sql, squote, unlink, memory_limit, threads, in_path, out_path, partition_by):
     """Split a .pairs-like file into multiple .pairs-like outputs
 
     \b
@@ -49,6 +52,9 @@ def partition(in_format, out_format, in_pattern, out_pattern, sql, squote, unlin
 
     try:
         db = PairsSQL().open(in_path, in_format)
+        db.set_memory_limit(memory_limit)
+        db.set_threads(threads)
+        
     except Exception as e:
         print(f"Failed to open {in_path} with format {in_format}")
         raise e
@@ -77,23 +83,24 @@ def partition(in_format, out_format, in_pattern, out_pattern, sql, squote, unlin
 @click.option("--in-format", type = click.Choice(["autodetect", "duckdb", "pairs"]), default = "autodetect", help = "Input file format")
 @click.option("--out-format", type = click.Choice(["autodetect", "duckdb", "parquet", "pairs", "tsv", "csv", "sql"]), default = "autodetect", help = "Output file format")
 @click.option("--squote", default = "\"", help = "Replace this string with a single quote ' in the sql string")
-@click.option("--out-path", default = None, help = "If supplied, changes are rewritten to a new file")
-@click.option("--print-sql", default = False, is_flag = True, help = "Print SQL")
+@click.option("--out-path", default = None, help = "If supplied, changes are rewritten to this file, otherwise to stdout")
+@click.option("--print-sql", default = False, is_flag = True, help = "Print SQL instead of running it")
+@click.option("--memory-limit", type = int, default = None, help = "DuckDB memory limit in GB")
+@click.option("--threads", type = int, default = None, help = "DuckDB thread limit")
 @click.argument("sql")
 @click.argument("in-path")
-def sql(in_format, out_format, squote, out_path, print_sql, sql, in_path):
+def sql(in_format, out_format, squote, out_path, print_sql, memory_limit, threads, sql, in_path):
     """Run a DuckDB SQL query on a .pairs-like file
 
     The 4DN .pairs format is ingested to '.pairssql' format using DuckDB, which has a `pairs` table having the same columns and names as the original .pairs file. Column types are autodetected through a full scan of the entire .pairs file. If outputting to .pairs, the header will be updated with any changed column names. If outputting to Parquet or DuckDB, the output will store the original .pairs header, either as a parquet kv metadata value "header" or the DuckDB table "metadata". The header will lack the #columns: line as this is generated on the fly when outputting to .pairs from the pairs table columns. 
 
     \b
-    SQL: The DuckDB SQL query to run over file after ingesting to DuckDB. May also be a file containing an SQL command.
-    IN_PATH: Path to input file
-    OUT_PATH: .pairs-like filename where results are saved (updates IN_PATH_PAIRS if they are the same)
+    SQL: The DuckDB SQL query to run over file after ingesting to DuckDB. May also be a path to a file containing an SQL command.
+    IN_PATH: Path to input file; use /dev/stdin to read from stdin
 
     \b
     Examples:
-
+    \b
     Extract the substring of the readID column prior to the first ':' character and set as the value of the cellID column
         hich pairs sql "ALTER TABLE pairs ADD COLUMN cellID VARCHAR; UPDATE pairs SET cellID = regexp_extract(readID, \"(.*):(.*)\", 1);" no_cellID.pairs cellID_labeled.pairs
     Add a log10 distance strata with null values for transchromosomal or zero-distance contacts
@@ -105,19 +112,26 @@ def sql(in_format, out_format, squote, out_path, print_sql, sql, in_path):
 S distance, COUNT(*) AS count FROM pairs WHERE pos1 != pos2 AND chrom1 == chrom2 GROUP BY distance; DROP TABLE pairs; CREATE TABLE pairs AS SELECT * FROM pairs_counts;"
     """
     try:
+        # Load SQL from file
         sql_path = Path(sql)
         if sql_path.exists():
-            sql = open(sql_path).read()
+            sql = smart_open(sql_path).read()
     except:
         pass
     if squote:
         sql = sql.replace(squote, "'")
     if print_sql:
         print(sql)
-    db = PairsSQL.open(in_path, in_format)
-    if sql:
-        db.conn.execute(sql)
-    if out_path:
+    else:
+        db = PairsSQL.open(in_path, in_format)
+        db.set_memory_limit(memory_limit)
+        db.set_threads(threads)
+        try:
+            if sql:
+                db.conn.execute(sql)
+        except Exception as e:
+            print(f"SQL command failed on {in_path}:\n{sql}")
+            print(e)
         db.write(out_path, out_format)
 
 @pairs.command()
@@ -130,10 +144,12 @@ S distance, COUNT(*) AS count FROM pairs WHERE pos1 != pos2 AND chrom1 == chrom2
 @click.option("--start2", default = "start2", show_default=True, help = "Label of second BED start")
 @click.option("--end2", default = "end2", show_default=True, help = "Label of second BED end")
 @click.option("--batch-size", default = 1000, show_default=True, help = "Number of blocks of 1024 rows at a time to treat as batch size")
+@click.option("--memory-limit", type = int, default = None, help = "DuckDB memory limit in GB")
+@click.option("--threads", type = int, default = None, help = "DuckDB thread limit")
 @click.argument("in_path_pairs")
 @click.argument("in_path_bed")
 @click.argument("out_path")
-def bin(in_format, out_format, idx1, start1, end1, idx2, start2, end2, batch_size, in_path_pairs, in_path_bed, out_path):
+def bin(in_format, out_format, idx1, start1, end1, idx2, start2, end2, batch_size, memory_limit, threads, in_path_pairs, in_path_bed, out_path):
     """Bin contacts using a nonuniform partition
 
     IN_PATH_PAIRS: A .pairs-like file to compute intersections on the ends of its contacts
@@ -144,7 +160,12 @@ def bin(in_format, out_format, idx1, start1, end1, idx2, start2, end2, batch_siz
     assert not same_file or in_format == out_format, "Cannot change format while keeping same filename."
 
     in_db = PairsSQL.open(in_path_pairs, in_format)
+    in_db.set_memory_limit(memory_limit)
+    in_db.set_threads(threads)
+
     out_db = PairsSQL(path=":memory:")
+    out_db.set_memory_limit(memory_limit)
+    out_db.set_threads(threads)
     out_db.add_metadata(in_db.header)
 
 
@@ -167,9 +188,9 @@ def bin(in_format, out_format, idx1, start1, end1, idx2, start2, end2, batch_siz
             idx = [0]*len(pairs_chunk)
             start = [-1]*len(pairs_chunk)
             end = [-1]*len(pairs_chunk)
-        elif not bed_chrom["start"][0] == 0:
-            raise ValueError(f"For {chrom}, BED file is missing start position 0")
-        elif pairs_chunk[pos_col].max() >= bed_chrom["end"][-1]:
+        elif not bed_chrom["start"][0] == 1:
+            raise ValueError(f"For {chrom}, BED file is missing start position 1")
+        elif pairs_chunk[pos_col].max() >= 1 + bed_chrom["end"][-1]:
             raise ValueError(f"For {chrom}, found a position {pairs_chunk[pos_col].max()} higher than max BED file partition ending at {bed_chrom['end'][-1]}")
         else:
             idx = np.searchsorted(bed_chrom["end"], pairs_chunk[pos_col], side = "right")

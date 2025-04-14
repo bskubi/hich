@@ -2,13 +2,10 @@
 import smart_open_with_pbgzip
 from smart_open import smart_open
 import duckdb
-import pyarrow
 from hich.pairs.convert import *
 from hich.pairs.header import * 
 from dataclasses import dataclass
-from parse import parse
-import itertools
-import io
+import sys
 
 @dataclass
 class PairsSQL:
@@ -16,9 +13,16 @@ class PairsSQL:
     _conn: duckdb.DuckDBPyConnection = None
     memory_limit: str = None
 
-    def set_memory_limit(self, limit: str | None):
-        self.conn.execute("SET memory_limit = $limit", {"limit": limit})
+    def set_memory_limit(self, memory_limit: str | int | float):
+        if type(memory_limit) in [float, int]:
+            memory_limit = f"{memory_limit}GB"
 
+        if memory_limit is not None:
+            self.conn.execute("SET memory_limit = $memory_limit", {"memory_limit": memory_limit})
+
+    def set_threads(self, threads: int | None):
+        if threads is not None:
+            self.conn.execute("SET threads = $threads", {"threads": threads})
 
     def from_pairs(self, in_path: Path, out_path: Path | str = ":memory:"):
         self.connect(out_path)
@@ -27,15 +31,19 @@ class PairsSQL:
         
         
         self.path = out_path
-        self.conn.execute(
+        sql = (
 f"""
 DROP TABLE IF EXISTS pairs;
 DROP TABLE IF EXISTS metadata;
 
 CREATE TABLE pairs AS
-SELECT * FROM read_csv($in_path, names=$names, comment='#', sample_size=-1);
-""",
-        {"in_path": str(in_path), "names":header.columns}
+SELECT * FROM read_csv($in_path, names={header.columns}, delim='\t', skip={len(header.lines)}, sample_size=-1, header=false);
+"""
+        )
+
+        self.conn.execute(
+        sql,
+        {"in_path": str(in_path)}
         )
 
         self.add_metadata(header)
@@ -96,8 +104,8 @@ INSERT INTO metadata VALUES ('pairs', '{header.non_columns_text}');
 """
         )
 
-    def write_pairs(self, out_path: Path | str, vector_multiple = 1000):
-        handle = smart_open(out_path, "w")
+    def write_pairs(self, out_path: Path | str | None, vector_multiple = 1000):
+        handle = smart_open(out_path, "w") if out_path is not None else sys.stdout
 
         handle.write(self.header.text)
         query = self.conn.execute("SELECT * FROM pairs ORDER BY chrom1, chrom2, pos1, pos2")
@@ -133,7 +141,7 @@ TO '{out_path}'
     ) -> duckdb.DuckDBPyConnection:
         """Write to pairs, duckdb, or parquet"""
 
-        out_path = Path(out_path)
+        out_path = Path(out_path) if out_path else None
 
         if not out_format or out_format == "autodetect":
             out_format, _ = autodetect_extension(out_path)
@@ -142,7 +150,7 @@ TO '{out_path}'
             self.write_duckdb(out_path)
         elif out_format == "parquet":
             self.write_parquet(out_path)
-        elif out_format == "pairs":
+        elif out_format == "pairs" or out_path is None:
             self.write_pairs(out_path)
         else:
             raise Exception(f"Format {out_format} not recognized. Should be one of duckdb, parquet, or pairs.")

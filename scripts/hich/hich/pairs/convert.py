@@ -21,6 +21,9 @@ def autodetect_extension(path: Path | str, default: Tuple[str, str] = (None, Non
     Raises:
         Exception if multiple file format extensions are detected
     """
+    if path is None:
+        return None, None
+
     path = Path(path)
     suffixes = set(path.suffixes)
 
