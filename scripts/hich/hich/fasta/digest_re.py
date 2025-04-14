@@ -37,13 +37,13 @@ def sequences(fasta: Path | str) -> Generator[SeqRecord, None, None]:
     handle = smart_open(fasta, "rt")
     yield from SeqIO.parse(handle, "fasta")
 
-def pos_to_bed(chrom: str, pos: List[int], end: int) -> pl.DataFrame:
+def pos_to_bed(chrom: str, pos: List[int], end: int, start: int = 1) -> pl.DataFrame:
     """Convert list of positions to a BED dataframe
     """
     # Ensure starts contains zero and not the last value
     # Ensure ends contains the last value and not zero
-    starts = sorted(list(set([p for p in [0, *pos] if p != end])))
-    ends = sorted(list(set([p for p in [*pos, end] if p != 0]))) 
+    starts = sorted(list(set([p for p in [start, *pos] if p != end])))
+    ends = sorted(list(set([p for p in [*pos, end] if p != start]))) 
     chroms = [chrom]*len(starts)
 
     return (
