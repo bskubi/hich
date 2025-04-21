@@ -7,3 +7,5 @@
 *.log
 .pytest_cache
 /dist
+/scripts/hich/dist
+*.pyc

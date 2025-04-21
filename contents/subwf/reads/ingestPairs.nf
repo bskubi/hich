@@ -13,23 +13,18 @@ process PairtoolsFlipSort {
     cpus 8
 
     input:
-    tuple val(id), path(pairs), path(chromsizes), val(reshapeParams)
+    tuple val(id), path(pairs), path(chromsizes), val(sql)
 
     output:
     tuple val(id), path("${id}.pairs.gz")
 
     shell:
 
-    reshapeParams = reshapeParams.join(" ")
-
-    reshapeCmd = reshapeParams ? ["hich reshape ${reshapeParams}"] : []
+    reshapeCmd = sql ? ["hich pairs sql --memory-limit '${task.memory}' --threads '${task.cpus}' '${sql}' '${pairs}'"] : []
     flipCmd = ["pairtools flip --chroms-path '${chromsizes}'  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
     sortCmd = ["pairtools sort --output '${id}.pairs.gz'  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
 
-    if (reshapeParams) {
-        reshapeCmd = reshapeCmd + ["--read_from '${pairs}'"]
-        reshapeCmd = [reshapeCmd.join(" ")]
-    } else {
+    if (!reshapeCmd) {
         flipCmd = flipCmd + ["'${pairs}'"]
         flipCmd = [flipCmd.join(" ")]
     }

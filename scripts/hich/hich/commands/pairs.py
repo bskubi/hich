@@ -85,7 +85,7 @@ def partition(in_format, out_format, in_pattern, out_pattern, sql, squote, unlin
 @click.option("--squote", default = "\"", help = "Replace this string with a single quote ' in the sql string")
 @click.option("--out-path", default = None, help = "If supplied, changes are rewritten to this file, otherwise to stdout")
 @click.option("--print-sql", default = False, is_flag = True, help = "Print SQL instead of running it")
-@click.option("--memory-limit", type = int, default = None, help = "DuckDB memory limit in GB")
+@click.option("--memory-limit", type = str, default = None, help = "DuckDB memory limit in GB")
 @click.option("--threads", type = int, default = None, help = "DuckDB thread limit")
 @click.argument("sql")
 @click.argument("in-path")
@@ -135,104 +135,38 @@ S distance, COUNT(*) AS count FROM pairs WHERE pos1 != pos2 AND chrom1 == chrom2
         db.write(out_path, out_format)
 
 @pairs.command()
-@click.option("--in-format", type = click.Choice(["autodetect", "duckdb", "pairs"]), default = "autodetect", help = "Input file format")
-@click.option("--out-format", type = click.Choice(["autodetect", "duckdb", "parquet", "pairs", "sql"]), default = "autodetect", help = "Output file format")
-@click.option("--idx1", default = "idx1", show_default=True, help = "Label of first index")
-@click.option("--start1", default = "start1", show_default=True, help = "Label of second BED interval")
-@click.option("--end1", default = "end1", show_default=True, help = "Label of first BED interval")
-@click.option("--idx2", default = "idx2", show_default=True, help = "Label of second BED index")
-@click.option("--start2", default = "start2", show_default=True, help = "Label of second BED start")
-@click.option("--end2", default = "end2", show_default=True, help = "Label of second BED end")
-@click.option("--batch-size", default = 1000, show_default=True, help = "Number of blocks of 1024 rows at a time to treat as batch size")
-@click.option("--memory-limit", type = int, default = None, help = "DuckDB memory limit in GB")
+@click.option("--idx1", default = "idx1")
+@click.option("--start1", default = "start1")
+@click.option("--end1", default = "end1")
+@click.option("--idx2", default = "idx2")
+@click.option("--start2", default = "start2")
+@click.option("--end2", default = "end2")
+@click.option("--memory-limit", type = str, default = None, help = "DuckDB memory limit in GB")
 @click.option("--threads", type = int, default = None, help = "DuckDB thread limit")
-@click.argument("in_path_pairs")
-@click.argument("in_path_bed")
-@click.argument("out_path")
-def bin(in_format, out_format, idx1, start1, end1, idx2, start2, end2, batch_size, memory_limit, threads, in_path_pairs, in_path_bed, out_path):
-    """Bin contacts using a nonuniform partition
-
-    IN_PATH_PAIRS: A .pairs-like file to compute intersections on the ends of its contacts
-    IN_PATH_BED: A BED file defining the partition
-    OUT_PATH: .pairs-like filename where results are saved (updates IN_PATH_PAIRS if they are the same)
-    """   
-    same_file = Path(in_path_pairs) == Path(out_path)
-    assert not same_file or in_format == out_format, "Cannot change format while keeping same filename."
-
-    in_db = PairsSQL.open(in_path_pairs, in_format)
-    in_db.set_memory_limit(memory_limit)
-    in_db.set_threads(threads)
-
-    out_db = PairsSQL(path=":memory:")
-    out_db.set_memory_limit(memory_limit)
-    out_db.set_threads(threads)
-    out_db.add_metadata(in_db.header)
-
-
-    # Validate that bed file has no gaps or overlaps
-    bed = duckdb.read_csv(in_path_bed, names=["chrom", "start", "end"]).pl().sort("chrom", "start")
-    row1_iter = bed.iter_rows()
-    row2_iter = bed.iter_rows()
-    next(row2_iter)
-    for row1, row2 in zip(row1_iter, row2_iter):
-        chroms_match = row1[0] == row2[0]
-        gap_or_overlap = row2[1] != row1[2]
-        if chroms_match and gap_or_overlap:
-            raise ValueError(f"Bed file {in_path_bed} does not define a partition. Gap at {row1} and {row2}.")
-        
-
-    def intersection_labels(pairs_chunk, bed, chrom, pos_col, idx_label, start_label, end_label):
-        bed_chrom = bed.filter(pl.col("chrom") == chrom)
-
-        if bed_chrom is None or len(bed_chrom) == 0:
-            idx = [0]*len(pairs_chunk)
-            start = [-1]*len(pairs_chunk)
-            end = [-1]*len(pairs_chunk)
-        elif not bed_chrom["start"][0] == 1:
-            raise ValueError(f"For {chrom}, BED file is missing start position 1")
-        elif pairs_chunk[pos_col].max() >= 1 + bed_chrom["end"][-1]:
-            raise ValueError(f"For {chrom}, found a position {pairs_chunk[pos_col].max()} higher than max BED file partition ending at {bed_chrom['end'][-1]}")
-        else:
-            idx = np.searchsorted(bed_chrom["end"], pairs_chunk[pos_col], side = "right")
-            start = bed_chrom["start"][idx]
-            end = bed_chrom["end"][idx]
-
-        return {idx_label: idx, start_label: start, end_label: end}
-
-    for chunk in in_db.iter_chroms(batch_size):
-        chrom1 = chunk["chrom1"][0]
-        frag1 = intersection_labels(chunk, bed, chrom1, "pos1", idx1, start1, end1)
-        
-        chrom2 = chunk["chrom2"][0]
-        frag2 = intersection_labels(chunk, bed, chrom2, "pos2", idx2, start2, end2)
-        tagged_chunk = pl.concat([pl.from_pandas(chunk), pl.DataFrame(frag1), pl.DataFrame(frag2)], how = "horizontal")
-
-
-        tagged_chunk_schema = tagged_chunk.filter(False)
-        if Path(in_path_pairs) == Path(out_path):
-            table = "pairs_temp"
-        else:
-            table = "pairs"
-        out_db.conn.execute(
-f"""
-CREATE TABLE IF NOT EXISTS {table} AS
-SELECT *
-FROM tagged_chunk_schema;
-
-INSERT INTO {table}
-SELECT * FROM tagged_chunk;
-"""
-        )
-
-    if same_file:
-        out_db.conn.execute(
-"""
-DROP TABLE IF EXISTS pairs;
-
-CREATE TABLE pairs AS SELECT * FROM pairs_temp;
-
-DROP TABLE IF EXISTS pairs_temp;
-"""
-        )
-
-    out_db.write(out_path, out_format)
+@click.argument("bed-intervals")
+@click.argument("in-path")
+@click.argument("out-path")
+def ends_to_intervals(idx1, start1, end1, idx2, start2, end2, memory_limit, threads, bed_intervals, in_path, out_path):
+    from hich.pairs.ends_to_intervals import ends_to_intervals as e2i
+    from hich.pairs.header import PairsHeader
+    import pandas as pd
+    from io import StringIO
+    header = PairsHeader(in_path)
+    intervals = pd.read_csv(bed_intervals, delimiter = "\t", names = ["chrom", "start", "end"])
+    intervals["index"] = intervals.index
+    in_handle = smart_open(in_path, "rt")
+    out_handle = smart_open(out_path, "wt")
+    try:
+        memory_limit = f"{int(memory_limit)} GB"
+    except:
+        try:
+            memory_limit = " ".join([memory_limit[:-2].strip(), memory_limit[-2:].strip()])
+        except:
+            raise ValueError(f"Could not parse memory limit {memory_limit}")
+    
+    for chunk in pd.read_csv(in_handle, delimiter="\t", skiprows=len(header.lines), names=header.columns, chunksize=1000000):
+        chunk = e2i(chunk, intervals, idx1, start1, end1, idx2, start2, end2, memory_limit=memory_limit, threads=threads)
+        buffer = StringIO()
+        chunk.write_csv(buffer, include_header = False, separator = "\t")
+        buffer.seek(0)        
+        out_handle.write(buffer.read())

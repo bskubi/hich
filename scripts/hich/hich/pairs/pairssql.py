@@ -14,8 +14,14 @@ class PairsSQL:
     memory_limit: str = None
 
     def set_memory_limit(self, memory_limit: str | int | float):
+        try:
+            memory_limit = int(memory_limit)
+        except:
+            pass
         if type(memory_limit) in [float, int]:
             memory_limit = f"{memory_limit}GB"
+        elif type(memory_limit) == str:
+            memory_limit = "".join(memory_limit.split())
 
         if memory_limit is not None:
             self.conn.execute("SET memory_limit = $memory_limit", {"memory_limit": memory_limit})
@@ -108,7 +114,7 @@ INSERT INTO metadata VALUES ('pairs', '{header.non_columns_text}');
         handle = smart_open(out_path, "w") if out_path is not None else sys.stdout
 
         handle.write(self.header.text)
-        query = self.conn.execute("SELECT * FROM pairs ORDER BY chrom1, chrom2, pos1, pos2")
+        query = self.conn.execute("SELECT * FROM pairs")
 
         if vector_multiple is None:
             query.df().to_csv(handle, sep="\t", header=False, index=False, compression=None)
