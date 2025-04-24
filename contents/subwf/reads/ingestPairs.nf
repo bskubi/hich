@@ -55,7 +55,7 @@ process PairtoolsFlipSort {
     cmdParts = reshapeCmd + flipCmd + sortCmd
     cmd = cmdParts.join(" | ")
 
-    logMap = [task: "PairtoolsFlipSort", input: [id: id, pairs: pairs, chromsizes: chromsizes, reshapeParams: reshapeParams], 
+    logMap = [task: "PairtoolsFlipSort", input: [id: id, pairs: pairs, chromsizes: chromsizes, sql: sql], 
     output: [pairs: "${id}.pairs.gz"]]
     stubLog(stub, cmd, logMap)
 }
