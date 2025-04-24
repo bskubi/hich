@@ -47,7 +47,7 @@ ON pairs.chrom2 == intervals2.chrom
     AND (pairs.pos2 BETWEEN intervals2.start AND intervals2.end - 1)
 ORDER BY chrom1, chrom2, pos1, pos2{', pair_type' if pair_type else ''}
 """
-    print(sql)
+
     try:
         result = duckdb.execute(
             sql
@@ -56,12 +56,16 @@ ORDER BY chrom1, chrom2, pos1, pos2{', pair_type' if pair_type else ''}
         print(f"SQL that generated this error:\n{sql}")
         raise(e)
 
-    return result.with_columns(
-        pl.col(idx1).fill_null(idx_null),
-        pl.col(start1).fill_null(pos_null),
-        pl.col(end1).fill_null(pos_null),
-        pl.col(idx2).fill_null(idx_null),
-        pl.col(start2).fill_null(pos_null),
-        pl.col(end2).fill_null(pos_null),
-    )
+    try:
+        return result.with_columns(
+            pl.col(idx1).fill_null(idx_null),
+            pl.col(start1).fill_null(pos_null),
+            pl.col(end1).fill_null(pos_null),
+            pl.col(idx2).fill_null(idx_null),
+            pl.col(start2).fill_null(pos_null),
+            pl.col(end2).fill_null(pos_null),
+        )
+    except Exception as e:
+        print(f"Failed to fill null columns on ends_to_intervals with idx_null {idx_null} and pos_null {pos_null} after SQL:\n{sql} resulting in dataframe: {result}")
+        raise (e)
 

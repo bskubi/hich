@@ -143,30 +143,32 @@ S distance, COUNT(*) AS count FROM pairs WHERE pos1 != pos2 AND chrom1 == chrom2
 @click.option("--end2", default = "end2")
 @click.option("--memory-limit", type = str, default = None, help = "DuckDB memory limit in GB")
 @click.option("--threads", type = int, default = None, help = "DuckDB thread limit")
+@click.option("--chunk-size", type = int, default = 1000000, show_default = True, help = "Number of lines to parse at a time")
 @click.argument("bed-intervals")
 @click.argument("in-path")
 @click.argument("out-path")
-def ends_to_intervals(idx1, start1, end1, idx2, start2, end2, memory_limit, threads, bed_intervals, in_path, out_path):
+def ends_to_intervals(idx1, start1, end1, idx2, start2, end2, memory_limit, threads, chunk_size, bed_intervals, in_path, out_path):
     from hich.pairs.ends_to_intervals import ends_to_intervals as e2i
     from hich.pairs.header import PairsHeader
     import pandas as pd
     from io import StringIO
     header = PairsHeader(in_path)
+    input_columns = header.columns.copy()
+    header.columns += ["rfrag1", "rfrag_start1", "rfrag_end1", "rfrag2", "rfrag_start2", "rfrag_end2"]
     intervals = pd.read_csv(bed_intervals, delimiter = "\t", names = ["chrom", "start", "end"])
     intervals["index"] = intervals.index
     in_handle = smart_open(in_path, "rt")
     out_handle = smart_open(out_path, "wt")
-    try:
-        memory_limit = f"{int(memory_limit)} GB"
-    except:
-        try:
-            memory_limit = " ".join([memory_limit[:-2].strip(), memory_limit[-2:].strip()])
-        except:
-            raise ValueError(f"Could not parse memory limit {memory_limit}")
-    
-    for chunk in pd.read_csv(in_handle, delimiter="\t", skiprows=len(header.lines), names=header.columns, chunksize=1000000):
-        chunk = e2i(chunk, intervals, idx1, start1, end1, idx2, start2, end2, memory_limit=memory_limit, threads=threads)
+    header.lines[-1] = f"#columns: " + " ".join(header.columns) + "\n"
+    out_handle.write(header.text)
+    pl.Config.set_tbl_cols(-1)
+
+    for chunk in pd.read_csv(in_handle, delimiter="\t", skiprows=len(header.lines), names=input_columns, chunksize=1000000):
+        new_cols = e2i(chunk, intervals, idx1, start1, end1, idx2, start2, end2, memory_limit = memory_limit, threads = threads)
+        new_cols = new_cols.unique()
+        chunk = pl.from_pandas(chunk)
+        chunk = chunk.join(new_cols, on = ["chrom1", "pos1", "chrom2", "pos2", "pair_type"], how = "left")
         buffer = StringIO()
         chunk.write_csv(buffer, include_header = False, separator = "\t")
-        buffer.seek(0)        
+        buffer.seek(0)
         out_handle.write(buffer.read())
