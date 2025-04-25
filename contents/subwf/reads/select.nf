@@ -146,8 +146,8 @@ workflow Select {
     main:
 
     samples
-        | filter{!skip("select") && (it.pairtoolsSelectParams || it.selectFilters) && (it.pairs || it.latestPairs)}
-        | map{tuple(it.id, it.latestPairs, it.pairtoolsSelectParams, it.selectFilters)}
+        | filter{!skip("select") && (it.pairtoolsSelectParams || it.pairtoolsSelectFilters) && (it.pairs || it.latestPairs)}
+        | map{tuple(it.id, it.latestPairs, it.pairtoolsSelectParams, it.pairtoolsSelectFilters)}
         | PairtoolsSelect
         | map{[id:it[0], selectPairs:it[1], latest:it[1], latestPairs:it[1]]}
         | set{result}
