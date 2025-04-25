@@ -135,39 +135,45 @@ S distance, COUNT(*) AS count FROM pairs WHERE pos1 != pos2 AND chrom1 == chrom2
         db.write(out_path, out_format)
 
 @pairs.command()
-@click.option("--idx1", default = "idx1")
-@click.option("--start1", default = "start1")
-@click.option("--end1", default = "end1")
-@click.option("--idx2", default = "idx2")
-@click.option("--start2", default = "start2")
-@click.option("--end2", default = "end2")
-@click.option("--memory-limit", type = str, default = None, help = "DuckDB memory limit in GB")
-@click.option("--threads", type = int, default = None, help = "DuckDB thread limit")
+@click.option("--idx1", default = "rfrag1")
+@click.option("--start1", default = "rfrag_start1")
+@click.option("--end1", default = "rfrag_end1")
+@click.option("--idx2", default = "rfrag2")
+@click.option("--start2", default = "rfrag_start2")
+@click.option("--end2", default = "rfrag_end2")
+@click.option("--chrom1", default = "chrom1")
+@click.option("--pos1", default = "pos1")
+@click.option("--chrom2", default = "chrom2")
+@click.option("--pos2", default = "pos2")
 @click.option("--chunk-size", type = int, default = 1000000, show_default = True, help = "Number of lines to parse at a time")
 @click.argument("bed-intervals")
 @click.argument("in-path")
 @click.argument("out-path")
-def ends_to_intervals(idx1, start1, end1, idx2, start2, end2, memory_limit, threads, chunk_size, bed_intervals, in_path, out_path):
-    from hich.pairs.ends_to_intervals import ends_to_intervals as e2i
+def map_ends(idx1, start1, end1, idx2, start2, end2, chrom1, pos1, chrom2, pos2, chunk_size, bed_intervals, in_path, out_path):
+    from hich.pairs.map_ends import map_ends as map_ends_HELPER
     from hich.pairs.header import PairsHeader
     import pandas as pd
     from io import StringIO
     header = PairsHeader(in_path)
     input_columns = header.columns.copy()
-    header.columns += ["rfrag1", "rfrag_start1", "rfrag_end1", "rfrag2", "rfrag_start2", "rfrag_end2"]
-    intervals = pd.read_csv(bed_intervals, delimiter = "\t", names = ["chrom", "start", "end"])
+    header.columns += [idx1, start1, end1, idx2, start2, end2]
+    intervals = pd.read_csv(
+        bed_intervals, 
+        delimiter = "\t", 
+        names = ["chrom", "start", "end"], 
+        dtype = {"chrom": str, "start": np.int64, "end": np.int64}
+    )
     intervals["index"] = intervals.index
+    intervals = pl.from_pandas(intervals)
     in_handle = smart_open(in_path, "rt")
     out_handle = smart_open(out_path, "wt")
     header.lines[-1] = f"#columns: " + " ".join(header.columns) + "\n"
     out_handle.write(header.text)
     pl.Config.set_tbl_cols(-1)
 
-    for chunk in pd.read_csv(in_handle, delimiter="\t", skiprows=len(header.lines), names=input_columns, chunksize=1000000):
-        new_cols = e2i(chunk, intervals, idx1, start1, end1, idx2, start2, end2, memory_limit = memory_limit, threads = threads)
-        new_cols = new_cols.unique()
+    for chunk in pd.read_csv(in_handle, delimiter="\t", skiprows=len(header.lines), names=input_columns, chunksize=chunk_size):
         chunk = pl.from_pandas(chunk)
-        chunk = chunk.join(new_cols, on = ["chrom1", "pos1", "chrom2", "pos2", "pair_type"], how = "left")
+        chunk = map_ends_HELPER(chunk, intervals, chrom1, pos1, chrom2, pos2, "chrom", "start", "end", idx1, start1, end1, idx2, start2, end2)
         buffer = StringIO()
         chunk.write_csv(buffer, include_header = False, separator = "\t")
         buffer.seek(0)
