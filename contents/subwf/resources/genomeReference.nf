@@ -44,8 +44,11 @@ workflow GenomeReference {
                causes Nextflow to automatically stage URLs for download and
                then treat them as local files going forward.
         */
-        synonyms = ["hg38":"hg38",
-         "homo_sapiens":"hg38",
+        synonyms = [
+         "t2t-hcm13v2.0":"t2t-hcm13v2.0",
+         "t2t-chm13":"t2t-hcm13v2.0",
+         "t2t":"t2t-hcm13v2.0",
+         "hg38":"hg38",
          "GRCh38":"hg38",
          "mm10":"mm10",
          "dm6":"dm6",
