@@ -11,10 +11,10 @@ process BwaMem2Index {
     label 'index'
 
     input:
-    tuple path(genomeReference), val(prefix)
+    tuple val(genomeReferenceString), path(genomeReference), val(prefix)
 
     output:
-    tuple val(genomeReference), path("bwa-mem2/index"), val(prefix), path("bwa-mem2/index/${prefix}.0123"), path("bwa-mem2/index/${prefix}.amb"),
+    tuple val(genomeReferenceString), path("bwa-mem2/index"), val(prefix), path("bwa-mem2/index/${prefix}.0123"), path("bwa-mem2/index/${prefix}.amb"),
           path("bwa-mem2/index/${prefix}.ann"), path("bwa-mem2/index/${prefix}.bwt.2bit.64"),
           path("bwa-mem2/index/${prefix}.pac")
 
@@ -103,7 +103,7 @@ workflow AlignerIndex {
         | filter {!skip("alignerIndex") && it.datatype == "fastq" && it.aligner == "bwa-mem2"}
         | filter {!isExistingFile(it.alignerIndexDir)}
         | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
-        | map{tuple(it.genomeReference, it.alignerIndexPrefix)}
+        | map{tuple(it.genomeReference, it.genomeReference, it.alignerIndexPrefix)}
         | unique
         | BwaMem2Index
         | map{genomeReference, alignerIndexDir, alignerIndexPrefix, prefix_0123, prefix_amb, prefix_ann, prefix_bwt_2bit_64, prefix_pac ->
