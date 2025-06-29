@@ -98,11 +98,9 @@ workflow QCReads {
     | map{
         sample ->
         pairs = ["pairs",
-                  "frag_pairs",
-                  "dedup_pairs",
-                  "select_pairs",
-                  "biorep_merge_pairs",
-                  "condition_merge_pairs"]
+                  "fragPairs",
+                  "selectPairs",
+                  "dedupPairs"]
         
         emit = pairs.collect{
             pairfile ->

@@ -118,7 +118,7 @@ workflow McoolMatrix {
 
     samples
     | filter{!skip("mcoolMatrix") && it.matrix.makeMcoolFileFormat && (it.pairs || it.latestPairs) && !it.mcool}
-    | map{tuple(it.id, it.latest, it.chromsizes, it.pairsFormat, it.assembly, it.matrix, it.coolerCloadParams, it.coolerZoomifyParams)}
+    | map{tuple(it.id, it.latestPairs, it.chromsizes, it.pairsFormat, it.assembly, it.matrix, it.coolerCloadParams, it.coolerZoomifyParams)}
     | CoolerZoomify
     | map{id, mcool -> [id: id, mcool: mcool, latestMatrix: mcool]}
     | set{result}

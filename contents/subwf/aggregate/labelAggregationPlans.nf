@@ -9,7 +9,7 @@ workflow LabelAggregationPlans {
     main:
 
     // Add aggregationPlanName and plan parameters to previously unlabeled samples
-    if (params.containsKey("aggregationPlans")) {
+    if (params.containsKey("aggregate")) {
 
         // Split samples into those with and without an aggregation plan name
         samples
@@ -21,7 +21,7 @@ workflow LabelAggregationPlans {
 
         // For samples without an aggregation plan name, add one with the appropriate parameters
         // using the "aggregationPlans" section
-        rowHashmapToRowChannel(params.aggregationPlans, "planName", "planParams")
+        rowHashmapToRowChannel(params.aggregate, "planName", "planParams")
             | combine(alreadyLabeled.no)
             | map {
                 plan = it[0]

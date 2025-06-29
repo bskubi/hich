@@ -87,7 +87,7 @@ workflow HicMatrix {
     main:
     samples
         | filter{!skip("hicMatrix") && it.matrix.makeHicFileFormat && (it.pairs || it.latestPairs) && !it.hic}
-        | map{tuple(it.id, it.latest, it.chromsizes, it.pairsFormat, it.matrix, it.juicerToolsPreParams, it.subMap("minMapq"))}
+        | map{tuple(it.id, it.latestPairs, it.chromsizes, it.pairsFormat, it.matrix, it.juicerToolsPreParams, it.subMap("minMapq"))}
         | JuicerToolsPre
         | map{id, hic -> [id: id, hic: hic, latestMatrix: hic]}
         | set{result}

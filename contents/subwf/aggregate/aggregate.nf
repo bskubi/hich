@@ -3,6 +3,7 @@ include {doMerge} from './doMerge.nf'
 include {Merge as MergeTechrepsToBioreps; Merge as MergeBiorepsToConditions} from './merge.nf'
 include {LabelAggregationPlans} from './labelAggregationPlans.nf'
 include {Deduplicate} from './deduplicate.nf'
+include {QCReads} from './../reads/qcHicReads.nf'
 include {Split} from './split.nf'
 include {columnsToRows} from '../util/rowsCols.nf'
 include {pack} from '../util/join.nf'
@@ -122,6 +123,10 @@ workflow Aggregate {
     samples
     | concat(samplesFromSplit)
     | set{samples}
+
+    if ("aggregate" in params.general.get("qcAfter")) {
+        QCReads(samples, "aggregate")
+    }
 
     samples = emptyOnLastStep("aggregate", samples)
 
