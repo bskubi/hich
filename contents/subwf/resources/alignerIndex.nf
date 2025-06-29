@@ -143,3 +143,4 @@ workflow AlignerIndex {
         samples
 
 }
+

@@ -172,3 +172,4 @@ workflow Align {
     emit:
     samples
 }
+
