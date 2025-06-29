@@ -108,7 +108,7 @@ process PairtoolsParse2 {
             chromsizes: chromsizes,
             assembly: assembly,
             parseParams: parseParams,
-            reshapeParams: reshapeParams,
+            sql: sql,
             flags: flags
         ],
         output: [

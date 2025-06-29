@@ -32,22 +32,18 @@ process PairtoolsFlipSort {
     cmdParts = reshapeCmd + flipCmd + sortCmd
     cmd = cmdParts.join(" | ")
 
-    logMap = [task: "PairtoolsFlipSort", input: [id: id, pairs: pairs, chromsizes: chromsizes, reshapeParams: reshapeParams], 
+    logMap = [task: "PairtoolsFlipSort", input: [id: id, pairs: pairs, chromsizes: chromsizes, sql: sql], 
     output: [pairs: "${id}.pairs.gz"]]
     withLog(cmd, logMap)
 
     stub:
     stub = "touch ${id}.pairs.gz"
-    reshapeParams = reshapeParams.join(" ")
 
-    reshapeCmd = reshapeParams ? ["hich reshape ${reshapeParams}"] : []
+    reshapeCmd = sql ? ["hich pairs sql --memory-limit '${task.memory}' --threads '${task.cpus}' '${sql}' '${pairs}'"] : []
     flipCmd = ["pairtools flip --chroms-path '${chromsizes}'  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
     sortCmd = ["pairtools sort --output '${id}.pairs.gz'  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
 
-    if (reshapeParams) {
-        reshapeCmd = reshapeCmd + ["--read_from '${pairs}'"]
-        reshapeCmd = [reshapeCmd.join(" ")]
-    } else {
+    if (!reshapeCmd) {
         flipCmd = flipCmd + ["'${pairs}'"]
         flipCmd = [flipCmd.join(" ")]
     }
