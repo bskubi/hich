@@ -19,7 +19,7 @@ workflow Aggregate {
     
     samples
     | branch {
-        yes: it.aggregateLevel == "techrep" && !it.skipMerge && !it.skipTechrepMerge
+        yes: it.aggregateLevel == "techrep" && !it.skipMerge && !it.skipTechrepMerge && it.mergeTechrepToBiorep
         no: true
     }
     | set {mergeTechreps}
@@ -68,7 +68,7 @@ workflow Aggregate {
 
     samples
     | branch {
-        yes: it.aggregateLevel == "biorep" && !it.skipMerge && !it.skipBiorepMerge
+        yes: it.aggregateLevel == "biorep" && !it.skipMerge && !it.skipBiorepMerge && it.mergeBiorepToCondition
         no: true
     }
     | set {mergeBioreps}
