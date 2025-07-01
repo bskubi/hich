@@ -23,6 +23,6 @@ process Merge {
     withLog(cmd, logMap)
 
     stub:
-    (merged, mergeList, logMap, cmd, stubCmd) = buildCmd(id, toMerge)
+    (merged, mergeList, logMap, cmd, stubCmd) = buildCmd(id, toMerge, task.cpus)
     withLog(cmd, logMap, stubCmd)
 }

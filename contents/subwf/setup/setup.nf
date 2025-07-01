@@ -144,8 +144,12 @@ workflow UpdateSamples
             sampleSpecificHumidReadCount = params.get("humid")
 
             n_reads = useDefaultHumidReadCount ? defaultHumidReadCount : sampleSpecificHumidReadCount
-            if (n_reads) {
+            
+            if (n_reads > 0 && n_reads instanceof Integer) {
                 sample += ["n_reads": n_reads]
+            }
+            else {
+                error("On humid run, n_reads was ${n_reads}, but must be a positive integer.")
             }
         }
 
@@ -179,6 +183,7 @@ workflow UpdateSamples
 
         // Set a marker for the aggregationLevel
         sample += ["aggregateLevel" : aggregateLevelLabel(sample)]
+        
         /////////////////////////////////
         // If an id is not explicitly given by the user for the sample,
         // Or is just whitespace, create one based on its condition, biorep, and techrep

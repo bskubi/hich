@@ -76,7 +76,7 @@ workflow columnsToRows {
 def rowHashmapToColumnChannel (hashMap, keyCol, valueCol) {
     // Treat key-value pairs of hashMap as row entries in a two-column table and emit in column format
     (
-        channel.of(params.aggregationPlans)
+        channel.of(params.aggregate)
         | map {
             [
                 (keyCol): hashMap.keySet().toList(), 
