@@ -1,251 +1,124 @@
 
 nextflow_function {
 
-    name "Test Functions"
+    name "rowsCols"
     script "contents/subwf/util/rowsCols.nf"
 
-	
-
-    test("Test Function columns") {
+    test("columnsNullOK") {
 
         function "columns"
 
         when {
             function {
                 """
-                // define inputs of the function here. Example:
-                // input[0] = 1
+                input[0] = [ [a:1, b:2, c:3], [a:4] ]
+                input[1] = [defaults: [b: 2, c: null], nullOK: ["c"]]
                 """
             }
         }
-
         then {
-            assert function.success
-            assert snapshot(function.result).match()
+            with (function) {
+                assert success
+                assert result == [a: [1, 4], b: [2, 2], c: [3, null]]
+            }
         }
-
     }
 
-	
+    test("columnsNullNotOK") {
 
-    test("Test Function value = map.get(key, options.defaults?[") {
-
-        function "value = map.get(key, options.defaults?["
+        function "columns"
 
         when {
             function {
                 """
-                // define inputs of the function here. Example:
-                // input[0] = 1
+                input[0] = [ [a:1, b: 2], [a:3] ]
+                input[1] = []
                 """
             }
         }
-
         then {
-            assert function.success
-            assert snapshot(function.result).match()
+            with (function) {
+                assert failed
+            }
         }
-
     }
 
-	
+    test("columnsDropNull") {
 
-    test("Test Function previous = transposed.get") {
-
-        function "previous = transposed.get"
+        function "columns"
 
         when {
             function {
                 """
-                // define inputs of the function here. Example:
-                // input[0] = 1
+                input[0] = [ [a:1, b:2], [a:4] ]
+                input[1] = [dropAllNull: true]
                 """
             }
         }
-
         then {
-            assert function.success
-            assert snapshot(function.result).match()
+            with (function) {
+                assert success
+                assert result == [a: [1, 4], b: [2]]
+            }
         }
-
     }
 
-	
+	test("wrongOptionName") {
 
-    test("Test Function updatedItem = [") {
+        function "columns"
+        
+        when {
+            function {
+                """
+                input[0] = []
+                input[1] = [wrongOptionName:1]
+                """
+            }
+        }
+        then {
+            with (function) {
+                assert failed
+            }
+        }
+    }
 
-        function "updatedItem = ["
+	test("wrongOptionType") {
+
+        function "columns"
+        
+        when {
+            function {
+                """
+                input[0] = []
+                input[1] = [dropNull:true]
+                """
+            }
+        }
+        then {
+            with (function) {
+                assert failed
+            }
+        }
+    }
+
+	test("columnsWrongType") {
+
+        function "columns"
 
         when {
             function {
                 """
-                // define inputs of the function here. Example:
-                // input[0] = 1
+                input[0] = [1, 2, 3]
+                input[1] = [:]
                 """
             }
         }
-
         then {
-            assert function.success
-            assert snapshot(function.result).match()
-        }
-
-    }
-
-	
-
-    test("Test Function rows") {
-
-        function "rows"
-
-        when {
-            function {
-                """
-                // define inputs of the function here. Example:
-                // input[0] = 1
-                """
+            with (function) {
+                assert failed
             }
         }
-
-        then {
-            assert function.success
-            assert snapshot(function.result).match()
-        }
-
     }
 
-	
-
-    test("Test Function keys = columnsMap.keySet().toList") {
-
-        function "keys = columnsMap.keySet().toList"
-
-        when {
-            function {
-                """
-                // define inputs of the function here. Example:
-                // input[0] = 1
-                """
-            }
-        }
-
-        then {
-            assert function.success
-            assert snapshot(function.result).match()
-        }
-
-    }
-
-	
-
-    test("Test Function values = columnsMap.values().toList") {
-
-        function "values = columnsMap.values().toList"
-
-        when {
-            function {
-                """
-                // define inputs of the function here. Example:
-                // input[0] = 1
-                """
-            }
-        }
-
-        then {
-            assert function.success
-            assert snapshot(function.result).match()
-        }
-
-    }
-
-	
-
-    test("Test Function formattedValues = values.collect") {
-
-        function "formattedValues = values.collect"
-
-        when {
-            function {
-                """
-                // define inputs of the function here. Example:
-                // input[0] = 1
-                """
-            }
-        }
-
-        then {
-            assert function.success
-            assert snapshot(function.result).match()
-        }
-
-    }
-
-	
-
-    test("Test Function transposed = formattedValues.transpose") {
-
-        function "transposed = formattedValues.transpose"
-
-        when {
-            function {
-                """
-                // define inputs of the function here. Example:
-                // input[0] = 1
-                """
-            }
-        }
-
-        then {
-            assert function.success
-            assert snapshot(function.result).match()
-        }
-
-    }
-
-	
-
-    test("Test Function rowHashmapToColumnChannel") {
-
-        function "rowHashmapToColumnChannel"
-
-        when {
-            function {
-                """
-                // define inputs of the function here. Example:
-                // input[0] = 1
-                """
-            }
-        }
-
-        then {
-            assert function.success
-            assert snapshot(function.result).match()
-        }
-
-    }
-
-	
-
-    test("Test Function rowHashmapToRowChannel") {
-
-        function "rowHashmapToRowChannel"
-
-        when {
-            function {
-                """
-                // define inputs of the function here. Example:
-                // input[0] = 1
-                """
-            }
-        }
-
-        then {
-            assert function.success
-            assert snapshot(function.result).match()
-        }
-
-    }
-
-	
-
+    test("")
 }
