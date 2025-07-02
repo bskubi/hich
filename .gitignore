@@ -9,3 +9,4 @@
 /dist
 /scripts/hich/dist
 *.pyc
+.nf-test

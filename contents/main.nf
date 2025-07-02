@@ -1,4 +1,4 @@
-include {ParseArgs} from './subwf/setup/parseArgs.nf'
+include {ParseParams} from './subwf/setup/parseParams.nf'
 include {Setup} from './subwf/setup/setup.nf'
 
 include {Align} from './subwf/reads/align.nf'
@@ -24,7 +24,7 @@ include {emptyOnLastStep; skip} from './subwf/extraops.nf'
 
 workflow {
 
-    ParseArgs              // Setup workflow inputs
+    ParseParams              // Setup workflow inputs
         | Setup
         | FastqHead
 

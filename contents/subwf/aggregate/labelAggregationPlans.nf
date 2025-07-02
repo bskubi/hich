@@ -1,5 +1,5 @@
 include {rowHashmapToRowChannel} from '../util/rowsCols.nf'
-include {emptyOnLastStep} from '../util/workflowControl.nf'
+include {emptyOnLastStep} from '../util/cli.nf'
 include {Setup} from '../setup/setup.nf'
 
 workflow LabelAggregationPlans {

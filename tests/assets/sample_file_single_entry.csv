@@ -1,0 +1,2 @@
+condition,biorep,techrep,fastq1,fastq2,assembly
+test,1,1,test_1_1_R1.fq.gz,test_1_1_R2.fq.gz,hg38

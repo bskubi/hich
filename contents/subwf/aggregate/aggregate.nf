@@ -1,4 +1,4 @@
-include {emptyOnLastStep} from '../util/workflowControl.nf'
+include {emptyOnLastStep} from '../util/cli.nf'
 include {doMerge} from './doMerge.nf'
 include {Merge as MergeTechrepsToBioreps; Merge as MergeBiorepsToConditions} from './merge.nf'
 include {LabelAggregationPlans} from './labelAggregationPlans.nf'

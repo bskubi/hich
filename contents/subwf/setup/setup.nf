@@ -2,9 +2,11 @@ include {Chromsizes} from '../resources/chromsizes.nf'
 include {GenomeReference} from '../resources/genomeReference.nf'
 include {AlignerIndex} from '../resources/alignerIndex.nf'
 include {FragmentIndex} from '../resources/fragmentIndex.nf'
-include {emptyOnLastStep; isTechrep; isBiorep; isCondition; aggregateLevelLabel; datatypeFromExtension} from '../extraops.nf'
+include {emptyOnLastStep} from '../util/cli.nf'
+include {datatypeFromExtension} from '../util/files.nf'
+include {isTechrep; isBiorep; isCondition; aggregateLevelLabel; makeID} from '../util/samples.nf'
 include {withLog; stubLog} from '../util/logs.nf'
-include {makeID} from '../util/samples.nf'
+
 // Returns true if it is truthy/non-null, and its string representation has
 // at least one non-whitespace character, false otherwise
 def truthyString = {

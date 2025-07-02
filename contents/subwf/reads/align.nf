@@ -1,4 +1,4 @@
-include {emptyOnLastStep; skip} from '../util/workflowControl.nf'
+include {emptyOnLastStep; skip} from '../util/cli.nf'
 include {pack} from '../util/join.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 

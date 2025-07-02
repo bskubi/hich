@@ -48,3 +48,4 @@ def aggregateLevelLabel(sample) {
     if (isCondition(sample)) return "condition"
     return "unknown"
 }
+

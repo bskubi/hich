@@ -1,0 +1,89 @@
+nextflow_workflow {
+
+    name "Test Workflow ParseSampleFile"
+    script "contents/subwf/setup/parseParams/parseSampleFile.nf"
+    workflow "ParseSampleFile"
+
+    test("singleEntrySampleFile") {
+
+        when {
+            params {
+        		sampleFile = "$baseDir/tests/assets/sample_file_single_entry.tsv"
+                sampleFileSep = "\t"
+            }
+            workflow {
+                """
+                input[0] = Channel.empty()
+		        """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert workflow.out.samples.size() == 1
+            assert params.sampleFileSep == '\t'
+            with (workflow.out.samples.get(0)) {
+                assert condition == 'test'
+                assert biorep == '1'
+                assert techrep == '1'
+                assert fastq1 == 'test_1_1_R1.fq.gz'
+                assert fastq2 == 'test_1_1_R2.fq.gz'
+                assert assembly == 'hg38'
+            }
+        }
+    }
+
+    test("emptyWithHeaderSampleFile") {
+
+        when {
+            params {
+        		sampleFile = "$baseDir/tests/assets/sample_file_empty_with_header.tsv"
+            }
+            workflow {
+                """
+                input[0] = Channel.empty()
+		        """
+            }
+        }
+
+        then {
+            assert workflow.failed
+        }
+    }
+
+    test("Empty sample file, no header") {
+
+        when {
+            params {
+        		sampleFile = "$baseDir/tests/assets/sample_file_empty.tsv"
+            }
+            workflow {
+                """
+                input[0] = Channel.empty()
+		        """
+            }
+        }
+
+        then {
+            assert workflow.failed
+        }
+    }
+
+    test("missingSampleFile") {
+
+        when {
+            params {
+        		sampleFile = "$baseDir/tests/assets/sample_file_missing.tsv"
+            }
+            workflow {
+                """
+                input[0] = Channel.empty()
+		        """
+            }
+        }
+
+        then {
+            assert workflow.failed
+        }
+    }
+}

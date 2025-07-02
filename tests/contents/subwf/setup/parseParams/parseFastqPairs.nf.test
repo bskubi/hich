@@ -1,0 +1,52 @@
+nextflow_workflow {
+
+    name "Test Workflow ParseFastqPairs"
+    script "contents/subwf/setup/parseParams/parseFastqPairs.nf"
+    workflow "ParseFastqPairs"
+
+    test("fastqPairs") {
+
+        when {
+            params {
+                fastqPairs = "$baseDir/vignettes/akgol2021/downsampled/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R{1,2}.fastq.gz"
+            }
+            workflow {
+                """
+                input[0] = Channel.empty()
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out.samples.get(0)) {
+                f1 = file(fastq1)
+                f2 = file(fastq2)
+
+                assert f1.getName() == "Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R1.fastq.gz"
+                assert f1.exists()
+                assert f2.getName() == "Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz"
+                assert f2.exists()
+            }
+        }
+    }
+
+    test("fastqPairsMissing") {
+
+        when {
+            params {
+                fastqPairs = "$baseDir/vignettes/akgol2021/downsampled/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R{3,4}.fastq.gz"
+            }
+            workflow {
+                """
+                input[0] = Channel.empty()
+                """
+            }
+        }
+
+        then {
+            assert workflow.failed
+        }
+    }
+
+}
