@@ -119,6 +119,4 @@ nextflow_function {
             }
         }
     }
-
-    test("")
 }

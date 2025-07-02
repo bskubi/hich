@@ -1,5 +1,18 @@
 include {checkMapTypes} from './validation.nf'
 
+def sortMapList(List<Map> mapList, List sortBy) {
+    return mapList.sort {
+        map1, map2 ->
+
+        sortBy.collect {
+            key ->
+
+            // -1, 0, 1 depending on comparison outcome
+            map1[key] <=> map2[key]
+        }.findResult {it != 0 ? it : null} ?: 0
+    }
+}
+
 def columns (List<Map> mapList, Map options = [:]) {
     /* Convert list of maps to single map containing list of values for each key
        
@@ -15,9 +28,9 @@ def columns (List<Map> mapList, Map options = [:]) {
        options:
         "defaults" (Map): Default values for missing keys (defaults to [:])
         "dropNull" (List): Keys whose values will be dropped if null (defaults to [:])
-        "dropAllNull" (boolean): If true, drop all null values (defaults to false)
+        "dropAllNull" (Boolean): If true, drop all null values (defaults to false)
         "nullOK" (List): Keys whose values are allowed to be null (error otherwise, defaults to [:])
-        "nullAllOK" (boolean): If true, all values may be null (defaults to true if dropAllNull is true, false otherwise)
+        "nullAllOK" (Boolean): If true, all values may be null (defaults to true if dropAllNull is true, false otherwise)
     */
 
     // Input validation

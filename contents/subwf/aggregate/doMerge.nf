@@ -1,4 +1,4 @@
-include {groupRowsToColumnFormat; coalesce} from '../util/group.nf'
+include {GroupAsColumns; coalesce} from '../util/group.nf'
 include {makeID} from '../util/samples.nf'
 include {pack} from '../util/join.nf'
 
@@ -7,7 +7,13 @@ def doMerge (samplesToMerge, groupAttributes, proc, level) {
     // Group samples
     def groupsToMerge = null
     try {
-        groupsToMerge = groupRowsToColumnFormat(samplesToMerge, groupAttributes, ["id"], ["dropAllNull":true])
+        GroupAsColumns(
+            samplesToMerge, 
+            groupAttributes, 
+            ["id"], 
+            ["dropAllNull":true]
+        ) | set{groupsToMerge}
+
     }
     catch (Exception e) {
         error("doMerge failed with exception ${e}")

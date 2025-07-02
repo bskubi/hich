@@ -1,31 +1,44 @@
-include {columns} from './rowsCols.nf'
+include {columns; sortMapList} from './rowsCols.nf'
 
-def groupRowsToColumnFormat(ch, by, sortBy = ["id"], columnsOptions = [:]) {
-    ch
-    | map{tuple(it.subMap(by), it)} 
-    | groupTuple
-    | map{it[1]}
-    | map{
-        mapList ->
+workflow GroupAsColumns {
+    take:
+    chan
+    groupBy
+    sortBy
+    columnsOptions
 
-        if (sortBy) {
-                mapList.sort {
-                map1, map2 ->
+    main:
+    /*
+        Group map channel by keys and convert each group to column format
 
-                sortBy.collect {
-                    key ->
+        Example:
+            chan channel.of([a: 1, b: 1, id: 2], [a: 1, b: 2, id: 1], [a: 2, b: 3, id: 3])
+            groupBy ["a"]
+            sortBy ["id"]
+            columnsOptions [:]
 
-                    // -1, 0, 1 depending on comparison outcome
-                    map1[key] <=> map2[key]
-                }.findResult {it != 0 ? it : null} ?: 0
-                
-            }
-        } else {
-            mapList
-        }
-    }
-    | map{columns(it, columnsOptions)}
+            returns
+                [
+                    [a: [1, 1], b: [2, 1], id: [1, 2]],
+                    [a: [2], b: [3], id: [3]]
+                ]
+        
+        List groupBy: Keys to group maps by
+        List sortBy: Keys to sort within groups for deterministic group outputs
+        Map columnsOptions: Map of options to 'columns' method 
+    */
+    chan
+        | map{tuple(it.subMap(groupBy), it)}
+        | groupTuple                    
+        | map{it[1]}
+        | map{ mapList -> sortBy ? sortMapList(mapList, sortBy) : mapList }
+        | map{ mapList -> columns(mapList, columnsOptions)}
+        | set{chan}
+
+    emit:
+    chan
 }
+
 
 // Called from within map function on transposedSamples
 def coalesce (transposedSample, defaultWhenDifferent = "_unchanged", whenDifferent = [:]) {
