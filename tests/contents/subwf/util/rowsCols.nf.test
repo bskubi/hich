@@ -1,0 +1,251 @@
+
+nextflow_function {
+
+    name "Test Functions"
+    script "contents/subwf/util/rowsCols.nf"
+
+	
+
+    test("Test Function columns") {
+
+        function "columns"
+
+        when {
+            function {
+                """
+                // define inputs of the function here. Example:
+                // input[0] = 1
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            assert snapshot(function.result).match()
+        }
+
+    }
+
+	
+
+    test("Test Function value = map.get(key, options.defaults?[") {
+
+        function "value = map.get(key, options.defaults?["
+
+        when {
+            function {
+                """
+                // define inputs of the function here. Example:
+                // input[0] = 1
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            assert snapshot(function.result).match()
+        }
+
+    }
+
+	
+
+    test("Test Function previous = transposed.get") {
+
+        function "previous = transposed.get"
+
+        when {
+            function {
+                """
+                // define inputs of the function here. Example:
+                // input[0] = 1
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            assert snapshot(function.result).match()
+        }
+
+    }
+
+	
+
+    test("Test Function updatedItem = [") {
+
+        function "updatedItem = ["
+
+        when {
+            function {
+                """
+                // define inputs of the function here. Example:
+                // input[0] = 1
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            assert snapshot(function.result).match()
+        }
+
+    }
+
+	
+
+    test("Test Function rows") {
+
+        function "rows"
+
+        when {
+            function {
+                """
+                // define inputs of the function here. Example:
+                // input[0] = 1
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            assert snapshot(function.result).match()
+        }
+
+    }
+
+	
+
+    test("Test Function keys = columnsMap.keySet().toList") {
+
+        function "keys = columnsMap.keySet().toList"
+
+        when {
+            function {
+                """
+                // define inputs of the function here. Example:
+                // input[0] = 1
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            assert snapshot(function.result).match()
+        }
+
+    }
+
+	
+
+    test("Test Function values = columnsMap.values().toList") {
+
+        function "values = columnsMap.values().toList"
+
+        when {
+            function {
+                """
+                // define inputs of the function here. Example:
+                // input[0] = 1
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            assert snapshot(function.result).match()
+        }
+
+    }
+
+	
+
+    test("Test Function formattedValues = values.collect") {
+
+        function "formattedValues = values.collect"
+
+        when {
+            function {
+                """
+                // define inputs of the function here. Example:
+                // input[0] = 1
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            assert snapshot(function.result).match()
+        }
+
+    }
+
+	
+
+    test("Test Function transposed = formattedValues.transpose") {
+
+        function "transposed = formattedValues.transpose"
+
+        when {
+            function {
+                """
+                // define inputs of the function here. Example:
+                // input[0] = 1
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            assert snapshot(function.result).match()
+        }
+
+    }
+
+	
+
+    test("Test Function rowHashmapToColumnChannel") {
+
+        function "rowHashmapToColumnChannel"
+
+        when {
+            function {
+                """
+                // define inputs of the function here. Example:
+                // input[0] = 1
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            assert snapshot(function.result).match()
+        }
+
+    }
+
+	
+
+    test("Test Function rowHashmapToRowChannel") {
+
+        function "rowHashmapToRowChannel"
+
+        when {
+            function {
+                """
+                // define inputs of the function here. Example:
+                // input[0] = 1
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            assert snapshot(function.result).match()
+        }
+
+    }
+
+	
+
+}

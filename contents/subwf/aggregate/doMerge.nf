@@ -7,7 +7,7 @@ def doMerge (samplesToMerge, groupAttributes, proc, level) {
     // Group samples
     def groupsToMerge = null
     try {
-        groupsToMerge = groupRowsToColumnFormat(samplesToMerge, groupAttributes, ["dropNull":true])
+        groupsToMerge = groupRowsToColumnFormat(samplesToMerge, groupAttributes, ["id"], ["dropNull":true])
     }
     catch (Exception e) {
         error("doMerge failed with exception ${e}")
