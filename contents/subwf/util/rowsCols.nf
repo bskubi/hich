@@ -22,7 +22,7 @@ def columns (mapList, options = [:]) {
             def value = map.get(key, options.defaults?[(key)])
             if (value != null || !options.dropNull) {
                 def previous = transposed.get(key, [])
-                assert value != null || options.nullOK?.contains(key), "In call to 'columns' without dropNull, '${key}' is not in nullOK, and is missing/null for:\n${map}"
+                assert value != null || options.nullOK?.contains(key), "In call to 'columns' without dropNull (options = ${options}, key = ${key}, value = ${value}), '${key}' is not in nullOK, and is missing/null for:\n${map}\nFrom maplist ${maplist}"
                 def valueList = previous + [value]
                 def updatedItem = [(key): valueList]
                 transposed += updatedItem
