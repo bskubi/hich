@@ -5,8 +5,9 @@ include {pack} from '../util/join.nf'
 
 def doMerge (samplesToMerge, groupAttributes, proc, level) {
     // Group samples
+    def groupsToMerge = null
     try {
-        def groupsToMerge = groupRowsToColumnFormat(samplesToMerge, groupAttributes, ["dropNull":true])
+        groupsToMerge = groupRowsToColumnFormat(samplesToMerge, groupAttributes, ["dropNull":true])
     }
     catch (Exception e) {
         error("doMerge failed with exception ${e}")
