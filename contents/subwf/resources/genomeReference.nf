@@ -1,5 +1,5 @@
 include {emptyOnLastStep; skip} from '../util/cli.nf'
-include {keyJoin} from '../util/keyJoin.nf'
+include {keyUpdate} from '../util/keyUpdate.nf'
 include {isExistingFile} from '../util/files.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
@@ -99,7 +99,7 @@ workflow GenomeReference {
         | map{assembly, genomeReference -> [assembly: assembly, genomeReference: genomeReference]}
         | set{result}
 
-    keyJoin(samples, result, "assembly") | set{samples}
+    keyUpdate(samples, result, "assembly") | set{samples}
 
     samples = emptyOnLastStep("genomeReference", samples)
 

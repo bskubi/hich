@@ -1,5 +1,5 @@
 include {emptyOnLastStep} from '../util/cli.nf'
-include {keyJoin} from '../util/keyJoin.nf'
+include {keyUpdate} from '../util/keyUpdate.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process ZcatHeadFastq {
@@ -39,7 +39,7 @@ workflow FastqHead {
         | map{id, fastq1, fastq2 -> [id: id, fastq1: fastq1, fastq2: fastq2]}
         | set{result}
 
-    keyJoin(samples, result, "id") | set{samples}
+    keyUpdate(samples, result, "id") | set{samples}
 
     samples = emptyOnLastStep("fastqHead", samples)
 

@@ -1,5 +1,5 @@
 include {emptyOnLastStep; skip} from '../util/cli.nf'
-include {keyJoin} from '../util/keyJoin.nf'
+include {keyUpdate} from '../util/keyUpdate.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process BwaAlignMates {
@@ -157,7 +157,7 @@ workflow Align {
         | BwaAlignMates
         | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
         | set{matesResult}
-    keyJoin(samples, matesResult, "id") | set{samples}
+    keyUpdate(samples, matesResult, "id") | set{samples}
 
     samples
         | filter{!skip("align") && it.datatype == "fastq" && it.fastq1 && (!it.fastq2 || it.fastq1 == it.fastq2)}
@@ -165,7 +165,7 @@ workflow Align {
         | BwaAlignSingle
         | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
         | set{singleResult}
-    keyJoin(samples, singleResult, "id") | set{samples}
+    keyUpdate(samples, singleResult, "id") | set{samples}
 
     samples = emptyOnLastStep("align", samples)
 

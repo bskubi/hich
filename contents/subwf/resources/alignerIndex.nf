@@ -1,5 +1,5 @@
 include {emptyOnLastStep; skip} from '../util/cli.nf'
-include {keyJoin} from '../util/keyJoin.nf'
+include {keyUpdate} from '../util/keyUpdate.nf'
 include {isExistingFile} from '../util/files.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
@@ -135,9 +135,9 @@ workflow AlignerIndex {
                 [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
         | set{resultBSBoltIndex}
 
-    keyJoin(samples, resultBwaMem2Index, "genomeReference") | set{samples}
-    keyJoin(samples, resultBwaMemIndex, "genomeReference") | set{samples}
-    keyJoin(samples, resultBSBoltIndex, "genomeReference") | set{samples}
+    keyUpdate(samples, resultBwaMem2Index, "genomeReference") | set{samples}
+    keyUpdate(samples, resultBwaMemIndex, "genomeReference") | set{samples}
+    keyUpdate(samples, resultBSBoltIndex, "genomeReference") | set{samples}
 
     samples = emptyOnLastStep("alignerIndex", samples)
 

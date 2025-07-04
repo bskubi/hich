@@ -1,5 +1,5 @@
 include {emptyOnLastStep; skip} from '../util/cli.nf'
-include {keyJoin} from '../util/keyJoin.nf'
+include {keyUpdate} from '../util/keyUpdate.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process CoolerZoomify {
@@ -123,7 +123,7 @@ workflow McoolMatrix {
     | CoolerZoomify
     | map{id, mcool -> [id: id, mcool: mcool, latestMatrix: mcool]}
     | set{result}
-    keyJoin(samples, result, "id") | set{samples}
+    keyUpdate(samples, result, "id") | set{samples}
     
     samples = emptyOnLastStep("mcoolMatrix", samples)
 

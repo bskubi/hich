@@ -1,13 +1,11 @@
 include {emptyOnLastStep; skip} from '../util/cli.nf'
-include {keyJoin} from '../util/keyJoin.nf'
+include {keyUpdate} from '../util/keyUpdate.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process HicToMcool {
     publishDir params.general.publish.mcool ? params.general.publish.mcool : "results",
                saveAs: {params.general.publish.mcool ? it : null},
                mode: params.general.publish.mode
-    conda "bioconda::hictk"
-    container "ghcr.io/paulsengroup/hictk:1.0.0"
     label 'doJobArray'
     label 'convertHicToMcool'
     cpus 2
@@ -45,8 +43,6 @@ process McoolToHic {
     publishDir params.general.publish.hic ? params.general.publish.hic : "results",
                saveAs: {params.general.publish.hic ? it : null},
                mode: params.general.publish.mode
-    conda "bioconda::hictk"
-    container "ghcr.io/paulsengroup/hictk:1.0.0"
     label 'doJobArray'
     label 'convertMcoolToHic'
 
@@ -106,8 +102,8 @@ workflow IngestMatrix {
             [id:id, mcool:mcoolFile, latest:mcoolFile, latestMatrix:mcoolFile]}
         | set{hicToMcool}
     
-    keyJoin(samples, mcoolToHic, "id") | set{samples}
-    keyJoin(samples, hicToMcool, "id") | set{samples}
+    keyUpdate(samples, mcoolToHic, "id") | set{samples}
+    keyUpdate(samples, hicToMcool, "id") | set{samples}
 
     samples = emptyOnLastStep("ingestMatrix", samples)
 

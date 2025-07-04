@@ -3,12 +3,18 @@ nextflow_pipeline {
     name "Test Workflow main.nf"
     script "contents/main.nf"
 
+    stage {
+        symlink: "vignettes"
+    }
+
     test("onerepAkgolBulk") {
-        options "-config $baseDir/nextflow.config -params-file $baseDir/params/onerep_bulk.yml -profile localPC"
+        config "$baseDir/tests/assets/onerep_bulk.config"
+        options "-profile localPC"
+        
 
         when {
             params {
-                sampleFile = "vignettes/akgol2021/onerep_nocreate.tsv"
+                sampleFile = "$baseDir/tests/assets/onerep_nocreate.tsv"
             }
         }
 

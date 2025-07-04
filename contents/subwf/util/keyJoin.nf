@@ -21,11 +21,13 @@ workflow keyJoin {
     validOptions = [
         how: String,
         by: null,
-        suffix: String
+        suffix: String,
+        update: Boolean
     ]
     validateMap(options.subMap("by"), validOptions.subMap("by"), ["requireKeys"])
-    validateMap(options.findAll{it.key != "by"}, validOptions.subMap(["suffix", "how"]), ["limitKeys", "limitTypes"])
+    validateMap(options.findAll{it.key != "by"}, validOptions.subMap(["suffix", "how", "update"]), ["limitKeys", "limitTypes"])
 
+    update = options.get("update", false)
     
     how = options.get("how", "left")
     validHow = ["left", "right", "full"]
@@ -72,6 +74,7 @@ workflow keyJoin {
         | set{right}
 
     preserved = options.preserved ?: "left"
+    other = preserved == "left" ? "right" : "left"
     assert preserved in ["left", "right"], "In sqljoin, options.preserved must be 'left' (default) or 'right' but was ${preserved}"
 
     
@@ -83,33 +86,28 @@ workflow keyJoin {
         leftMapList = it[0][1]
         rightMap = it[1][1]
 
-        // Iterate through each leftrow and combine with rightMap
         leftMapList.each() {
             leftMap ->
 
             (preservedMap, otherMap) = (preserved == "left" ? [leftMap, rightMap] : [rightMap, leftMap])
-            
-            // Iterate through each key in rightMap,
-            // appending suffix if needed to avoid clashes with leftrow
-            // and adding it to the joinedMap.
              
             otherMap.each() {
                 key, value ->
 
-                // On key collisions, try renaming the key from the other map
+                // On key collisions, either update the preservedMap
+                // try renaming the key from the other map
                 if (!by.contains(key)) {
-                    if (preservedMap.containsKey(key)) {
+                    if (!update && preservedMap.containsKey(key)) {
                         renamedKey = key + suffix
-                        assert !otherMap.containsKey(renamedKey), "Key '${renamedKey}' renamed from '${key}' in map\n${otherMap}\nalready exists in that map"
-                        assert !preservedMap.containsKey(renamedKey), "Key '${renamedKey}' renamed from '${key}' in map\n${otherMap}\nalready exists in ${preserved} map ${preservedMap}" 
+                        assert !otherMap.containsKey(renamedKey), "During ${how} join, ${other} key '${renamedKey}' renamed from '${key}' in ${other} map already exists in ${other} map.\n${otherMap}\n"
+                        assert !preservedMap.containsKey(renamedKey), "During ${how} join, ${other} key '${renamedKey}' renamed from '${key}' in ${other} map already exists in ${preserved} map. ${other} map:\n${otherMap}\n${preserved} map:\n${preservedMap}" 
                         key = renamedKey
                     }
 
-                    // If we get here, we can add the key to the preserved map
                     preservedMap += [(key):value]
                 }
             }
-            // Add the new hashmap to the list of hashmaps
+
             joinedMapList += [preservedMap.clone()]
         }
 
@@ -118,8 +116,8 @@ workflow keyJoin {
     }
     | collect       // Currently, channel items are lists of per-keyset joins.
     | flatMap       // Collects to a single list of lists, then flattens
-    | set{joined}   // Yielding the desired result of single-hashmap join items.
+    | set{result}   // Yielding the desired result of single-hashmap join items.
     
     emit:
-    joined
+    result
 }

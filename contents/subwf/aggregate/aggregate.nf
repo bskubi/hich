@@ -6,7 +6,7 @@ include {Split} from './split.nf'
 include {QCReads} from '../reads/qcHicReads.nf'
 include {emptyOnLastStep} from '../util/cli.nf'
 include {columnsToRows} from '../util/reshape.nf'
-include {keyJoin} from '../util/keyJoin.nf'
+include {keyUpdate} from '../util/keyUpdate.nf'
 include {makeID} from '../util/samples.nf'
 
 
@@ -61,7 +61,7 @@ workflow Aggregate {
     | map{[id:it[0], dedupPairs:it[1], latest:it[1], latestPairs:it[1]]}
     | set {deduplicated}
 
-    keyJoin(dedup.yes, deduplicated, "id")
+    keyUpdate(dedup.yes, deduplicated, "id")
     | concat(dedup.no)
     | set {samples}
 
@@ -113,7 +113,7 @@ workflow Aggregate {
     | columnsToRows
     | set{splitSamples}
 
-    keyJoin(splitSamples, split.yes, "id")
+    keyUpdate(splitSamples, split.yes, "id")
     | map{
         // Extract cell from filename
         cell = it.splitPairs =~ /.*\.cell=([^.]+)\..*/

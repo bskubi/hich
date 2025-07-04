@@ -1,7 +1,7 @@
 include {GroupToColumnar} from '../util/groupToColumnar.nf'
 include {PairtoolsMerge} from './processes/pairtoolsMerge.nf'
 include {makeID} from '../util/samples.nf'
-include {keyJoin} from '../util/keyJoin.nf'
+include {keyUpdate} from '../util/keyUpdate.nf'
 include {coalesce} from '../util/reshape.nf'
 
 workflow Merge {
@@ -36,7 +36,7 @@ workflow Merge {
         | map{it += [id: makeID(it, columns = false), aggregateLevel: level]} // New id, aggregateLevel
         | set{attributes}
 
-    keyJoin(attributes, merged, "id") | set{result}
+    keyUpdate(attributes, merged, "id") | set{result}
 
     emit:
     result
