@@ -1,5 +1,6 @@
 include {QCReads} from './qcHicReads.nf'
-include {emptyOnLastStep; pack; skip} from '../extraops.nf'
+include {emptyOnLastStep; skip} from '../util/cli.nf'
+include {keyJoin} from '../util/keyJoin.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process PairtoolsParse2 {
@@ -130,7 +131,7 @@ workflow Parse {
         | PairtoolsParse2
         | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
         | set{result}
-    pack(samples, result) | set{samples}
+    keyJoin(samples, result, "id") | set{samples}
 
     // It might be good to simplify these workflow control steps since they
     // are repeated frequently.

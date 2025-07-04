@@ -1,0 +1,265 @@
+nextflow_workflow {
+
+    name "Test Workflow keyJoin"
+    script "contents/subwf/util/keyJoin.nf"
+    workflow "keyJoin"
+
+    test("keyJoinOptionsIsString") {
+        when {
+            workflow {
+                """
+                input[0] = channel.of([a: 1, b: 1])
+                input[1] = channel.of([a: 1, c: 1])
+                input[2] = "a"
+                """
+            }
+        }
+        then {
+            with (workflow) {
+                assert success
+                assert out.joined.size() == 1
+                assert out.joined.contains([a: 1, b: 1, c: 1])
+            }
+        }
+    }
+
+    test("keyJoinOptionsIsStringList") {
+        when {
+            workflow {
+                """
+                input[0] = channel.of([a: 1, b: 1, c: 1])
+                input[1] = channel.of([a: 1, b: 1, d: 1])
+                input[2] = ["a", "b"]
+                """
+            }
+        }
+        then {
+            with (workflow) {
+                assert success
+                assert out.joined.size() == 1
+                assert out.joined.contains([a: 1, b: 1, c: 1, d: 1])
+            }
+        }
+    }
+
+    test("keyJoinRenameCollisionWithPreserved") {
+        when {
+            workflow {
+                """
+                input[0] = channel.of([a: 1, b: 1, b2: 1])
+                input[1] = channel.of([a: 1, b: 1])
+                input[2] = [by: "a", how: "left", suffix: "2"]
+                """
+            }
+        }
+        then {
+            with (workflow) {
+                assert failed
+                assert stdout.join().contains("Key 'b2' renamed from 'b' in map")
+                assert stdout.join().contains("already exists in left map")
+            }
+        }
+    }
+
+    test("keyJoinRenameCollisionWithOther") {
+        when {
+            workflow {
+                """
+                input[0] = channel.of([a: 1, b: 1])
+                input[1] = channel.of([a: 1, b: 1, b2: 1])
+                input[2] = [by: "a", how: "left", suffix: "2"]
+                """
+            }
+        }
+        then {
+            with (workflow) {
+                assert failed
+                assert stdout.join().contains("Key 'b2' renamed from 'b' in map")
+                assert stdout.join().contains("already exists in that map")
+            }
+        }
+    }
+
+    test("keyJoinMissingKey") {
+        when {
+            workflow {
+                """
+                input[0] = channel.of([b: 1])
+                input[1] = channel.of([a: 2, b: 2])
+                input[2] = [by: "a", how: "left"]
+                """
+            }
+        }
+        then {
+            with (workflow) {
+                assert failed
+                assert stdout.join().contains("a sample is missing the join by key \'a\'")
+            }
+        }
+    }
+
+    test("keyJoinLeftNoRight") {
+        when {
+            workflow {
+                """
+                input[0] = channel.of([a: 1, b: 1], [a: 2, b: 2])
+                input[1] = channel.empty()
+                input[2] = [by: "a", how: "left"]
+                """
+            }
+        }
+        then {
+            with (workflow) {
+                assert success
+                assert out.joined.size() == 2
+                assert out.joined.contains([a: 1, b: 1])
+                assert out.joined.contains([a: 2, b: 2])
+            }
+        }
+    }
+
+    test("keyJoinLeftNoLeft") {
+        when {
+            workflow {
+                """
+                input[0] = channel.empty()
+                input[1] = channel.of([a: 1, b: 1], [a: 2, b: 2])
+                input[2] = [by: "a", how: "left"]
+                """
+            }
+        }
+        then {
+            with (workflow) {
+                assert success
+                assert out.joined.size() == 0
+            }
+        }
+    }
+
+    test("keyJoinLeft") {
+        when {
+            workflow {
+                """
+                input[0] = channel.of([a: 1, b: 1, d: 1], [a: 2, b: 2], [a: 3, b: 3])
+                input[1] = channel.of([a: 1, c: 1, d: 1], [a: 2, c: 2], [a: 4, b: 4])
+                input[2] = [by: "a", how: "left", suffix: "2"]
+                """
+            }
+        }
+
+        then {
+            with (workflow) {
+                assert success
+                with (out.joined) {
+                    assert contains([a: 1, b: 1, c: 1, d: 1, d2: 1])
+                    assert contains([a: 2, b: 2, c: 2])
+                    assert contains([a: 3, b: 3])
+                }
+            }
+
+        }
+    }
+
+    test("keyJoinRight") {
+        when {
+            workflow {
+                """
+                input[0] = channel.of([a: 1, b: 1, d: 1], [a: 2, b: 2], [a: 4, b: 4])
+                input[1] = channel.of([a: 1, c: 1, d: 1], [a: 2, c: 2], [a: 3, c: 3])
+                input[2] = [by: "a", how: "right", suffix: "2"]
+                """
+            }
+        }
+
+        then {
+            with (workflow) {
+                assert success
+                with (out.joined) {
+                    assert contains([a: 1, b: 1, c: 1, d: 1, d2: 1])
+                    assert contains([a: 2, b: 2, c: 2])
+                    assert contains([a: 3, c: 3])
+                }
+            }
+
+        }
+    }
+
+    test("keyJoinFull") {
+        when {
+            workflow {
+                """
+                input[0] = channel.of([a: 1, b: 1], [a: 2, b: 2])
+                input[1] = channel.of([a: 1, c: 1], [a: 3, c: 3])
+                input[2] = [by: "a", how: "full"]
+                """
+            }
+        }
+
+        then {
+            with (workflow) {
+                assert success
+                assertContainsInAnyOrder(
+                    out.joined, 
+                    [
+                        [a: 1, b: 1, c: 1],
+                        [a: 2, b: 2],
+                        [a: 3, c: 3]
+                    ]
+                )
+            }
+
+        }
+    }
+
+    test("keyJoinMissingBy") {
+
+        when {
+            workflow {
+                """
+                input[0] = channel.empty()
+                input[1] = channel.empty()
+                input[2] = [how: "left"]
+                """
+            }
+        }
+
+        then {
+            assert workflow.failed
+        }
+    }
+
+    test("keyJoinBadHow") {
+
+        when {
+            workflow {
+                """
+                input[0] = channel.empty()
+                input[1] = channel.empty()
+                input[2] = [by: 1, how: "badOption"]
+                """
+            }
+        }
+
+        then {
+            assert workflow.failed
+        }
+    }
+
+    test("keyJoinBadOption") {
+
+        when {
+            workflow {
+                """
+                input[0] = channel.empty()
+                input[1] = channel.empty()
+                input[2] = [by: 1, badOption: 1, how: "left"]
+                """
+            }
+        }
+
+        then {
+            assert workflow.failed
+        }
+    }
+
+}

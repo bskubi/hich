@@ -1,4 +1,4 @@
-include {coalesce} from './group.nf'
+include {coalesce} from './reshape.nf'
 
 def label(map, lbl) {
     // Return whether map.lbl contains a non-empty string, used below to determine
@@ -26,18 +26,14 @@ def isSingleCell(map) {return map.cellBarcodeField || map.isSingleCell}
     and not use the _ character in order to ensure that all ids will be unique. The aggregateProfileName is also
     included because new copies of the input samples are produced for each aggregateProfile.
 */
-def makeID(map, columns = false) {
-    if (columns) {
-        // Drop any columns that don't coalesce
-        map = coalesce(map, "_drop")
-    }
+def makeID(map, columns) {
     
+    if (columns) {
+        map = coalesce(map, true)
+    }
+
     return (
-        map.subMap("cell", "techrep", "biorep", "condition", "aggregateProfileName")
-        .collect {
-            k, v -> 
-            "${k.length() >= 4 ? k.substring(0, 4).toUpperCase() : k.toUpperCase()}_${v}"
-        }.join('_')
+        map.subMap("condition", "biorep", "cell", "techrep", "aggregateProfileName").values().join('_')
     )
 }
 

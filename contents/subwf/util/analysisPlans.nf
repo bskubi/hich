@@ -1,3 +1,5 @@
+include {asHashSet} from "./dataStructures.nf"
+
 def createCompositeStrategy(strategyKeys, strategyMap, combineHow = [:]) {
     /* A composite strategy is a hashmap in which keys are sample attributes and values are lists of permitted sample attribute values. It is created by combining one or more individual strategies specified in params.sampleSelectionStrategies.
 

@@ -1,4 +1,6 @@
-include {emptyOnLastStep; pack; skip; isExistingFile;} from '../extraops.nf'
+include {emptyOnLastStep; skip} from '../util/cli.nf'
+include {keyJoin} from '../util/keyJoin.nf'
+include {isExistingFile} from '../util/files.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process FaSize {
@@ -42,7 +44,7 @@ workflow Chromsizes {
         | FaSize
         | map{genomeReference, assembly, chromsizes -> [genomeReference: file(genomeReference), assembly: assembly, chromsizes: chromsizes]}
         | set{result}
-    pack(samples, result, ["genomeReference", "assembly"]) | set{samples}
+    keyJoin(samples, result, ["genomeReference", "assembly"]) | set{samples}
 
     samples = emptyOnLastStep("chromsizes", samples)
 

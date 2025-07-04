@@ -1,0 +1,59 @@
+nextflow_workflow {
+
+    name "Test Workflow groupToColumnar.nf"
+    script "contents/subwf/util/groupToColumnar.nf"
+    
+
+    test("groupToColumnar") {
+        workflow "GroupToColumnar"
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([a: 1, b: 1, id: 2], [a: 1, b: 2, id: 1], [a: 2, b: 3, id: 3])
+                input[1] = ["a"]
+                input[2] = ["id"]
+                input[3] = [:]
+                """
+            }
+        }
+
+        then {
+            with (workflow) {
+                assert success
+                def expected = [
+                    [a: [1, 1], b: [2, 1], id: [1, 2]],
+                    [a: [2], b: [3], id: [3]]
+                ]
+                assertContainsInAnyOrder(out.chan, expected)
+            }
+        }
+    }
+
+    test("groupToColumnarTwoElementGroupBy") {
+        workflow "GroupToColumnar"
+
+        when {
+            workflow {
+                """
+                input[0] = channel.of(
+                    [id: "a1", condition: "a", biorep: "1", techrep: "1", latestPairs: "a1.pairs"],
+                    [id: "a2", condition: "a", biorep: "1", techrep: "2", latestPairs: "a2.pairs"],
+                    [id: "b1", condition: "b", biorep: "1", techrep: "1", latestPairs: "b1.pairs"],
+                    [id: "b2", condition: "b", biorep: "1", techrep: "2", latestPairs: "b2.pairs"]
+                )
+                input[1] = ["condition", "biorep"]
+                input[2] = ["id"]
+                input[3] = [:]
+                """
+            }
+        }
+
+        then {
+            with (workflow) {
+                assert success
+                assert out.chan.contains([id: ["a1", "a2"], condition: ["a", "a"], biorep: ["1", "1"], techrep: ["1", "2"], latestPairs: ["a1.pairs", "a2.pairs"]])
+            }
+        }
+    }
+}

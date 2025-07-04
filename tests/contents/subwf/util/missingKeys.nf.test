@@ -1,0 +1,64 @@
+nextflow_workflow {
+
+    name "Test Workflow missingKeys"
+    script "contents/subwf/util/missingKeys.nf"
+    workflow "missingKeys"
+
+    test("noMissingKeys") {
+
+        when {
+            workflow {
+                """
+                input[0] = channel.of([a: 1, b: 1], [a: 1, b: 2], [a: 2, b: 1], [a: 2, b: 2])
+                input[1] = channel.of([a: 1, b: 1], [a: 1, b: 2], [a: 2, b: 1], [a: 2, b: 2])
+                input[2] = ["a", "b"]
+                """
+            }
+        }
+
+        then {
+            with (workflow) {
+                assert success
+                assert out.missing.size() == 0
+            }
+        }
+    }
+
+    test("withMissingKeys") {
+
+        when {
+            workflow {
+                """
+                input[0] = channel.of([a: 1, b: 1], [a: 1, b: 2], [a: 2, b: 1])
+                input[1] = channel.of([a: 1, b: 2], [a: 2, b: 1], [a: 2, b: 2])
+                input[2] = ["a", "b"]
+                """
+            }
+        }
+
+        then {
+            with (workflow) {
+                assert success
+                assert out.missing.size() == 1
+                assert out.missing.contains([a: 1, b: 1])
+            }
+        }
+    }
+
+    test("badByMissingKeys") {
+
+        when {
+            workflow {
+                """
+                input[0] = channel.empty()
+                input[1] = channel.empty()
+                input[2] = null
+                """
+            }
+        }
+
+        then {
+            assert workflow.failed
+        }
+    }
+}

@@ -1,4 +1,6 @@
-include {emptyOnLastStep; pack; isExistingFile; skip} from "../extraops.nf"
+include {emptyOnLastStep; skip} from '../util/cli.nf'
+include {keyJoin} from '../util/keyJoin.nf'
+include {isExistingFile} from '../util/files.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process StageGenomeReference {
@@ -97,7 +99,7 @@ workflow GenomeReference {
         | map{assembly, genomeReference -> [assembly: assembly, genomeReference: genomeReference]}
         | set{result}
 
-    pack(samples, result, "assembly") | set{samples}
+    keyJoin(samples, result, "assembly") | set{samples}
 
     samples = emptyOnLastStep("genomeReference", samples)
 

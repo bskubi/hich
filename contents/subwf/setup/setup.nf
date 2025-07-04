@@ -206,7 +206,7 @@ workflow UpdateSamples
                 )
             }
 
-            sample += ["id":makeID(sample)]
+            sample += ["id":makeID(sample, false)]
         }
 
         //////////////////////////////////////////////////////////////

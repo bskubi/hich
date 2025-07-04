@@ -1,4 +1,5 @@
-include {createCompositeStrategy; pairSamplesByStrategy; skip} from '../extraops.nf'
+include {createCompositeStrategy; pairSamplesByStrategy} from '../util/analysisPlans.nf'
+include {skip} from '../util/cli.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process MustacheDiffloops{

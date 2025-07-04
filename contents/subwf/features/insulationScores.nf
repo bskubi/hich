@@ -1,4 +1,5 @@
-include {createCompositeStrategy; filterSamplesByStrategy; skip} from '../extraops.nf'
+include {createCompositeStrategy; filterSamplesByStrategy} from '../util/analysisPlans.nf'
+include {skip} from '../util/cli.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process CooltoolsInsulation {

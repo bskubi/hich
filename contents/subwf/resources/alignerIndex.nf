@@ -1,4 +1,6 @@
-include {emptyOnLastStep; isExistingFile; pack; skip;} from '../extraops.nf'
+include {emptyOnLastStep; skip} from '../util/cli.nf'
+include {keyJoin} from '../util/keyJoin.nf'
+include {isExistingFile} from '../util/files.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process BwaMem2Index {
@@ -133,9 +135,9 @@ workflow AlignerIndex {
                 [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
         | set{resultBSBoltIndex}
 
-    pack(samples, resultBwaMem2Index, "genomeReference") | set{samples}
-    pack(samples, resultBwaMemIndex, "genomeReference") | set{samples}
-    pack(samples, resultBSBoltIndex, "genomeReference") | set{samples}
+    keyJoin(samples, resultBwaMem2Index, "genomeReference") | set{samples}
+    keyJoin(samples, resultBwaMemIndex, "genomeReference") | set{samples}
+    keyJoin(samples, resultBSBoltIndex, "genomeReference") | set{samples}
 
     samples = emptyOnLastStep("alignerIndex", samples)
 

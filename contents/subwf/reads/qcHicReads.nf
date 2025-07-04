@@ -1,4 +1,4 @@
-include {skip} from '../extraops.nf'
+include {skip} from '../util/cli.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process PairtoolsStats {

@@ -1,0 +1,51 @@
+nextflow_workflow {
+
+    name "Test Workflow Merge"
+    script "contents/subwf/aggregate/merge.nf"
+    workflow "Merge"
+
+    test("mergeRep") {
+        options "-stub-run"
+
+        when {
+            params {
+            }
+            workflow {
+                """
+                input[0] = channel.of(
+                    [id: "a1", condition: "a", biorep: "1", techrep: "1", latestPairs: file("a1.pairs.gz")],
+                    [id: "a2", condition: "a", biorep: "1", techrep: "2", latestPairs: file("a2.pairs.gz")],
+                    [id: "b1", condition: "b", biorep: "1", techrep: "1", latestPairs: file("b1.pairs.gz")],
+                    [id: "b2", condition: "b", biorep: "1", techrep: "2", latestPairs: file("b2.pairs.gz")]
+                )
+                input[1] = ["condition", "biorep"]
+                input[2] = "biorep"
+                """
+            }
+        }
+
+        then {
+            with (workflow) {
+                assert success
+                def expectedKeys = ["id", "condition", "biorep", "latest", "pairs", "latestPairs", "aggregateLevel"] as Set
+                def submaps = out.result.collect {
+                    [id: it.id, condition: it.condition, biorep: it.biorep, pairs: file(it.pairs).name, latestPairs: file(it.latestPairs).name, latest: file(it.latest).name]
+                }
+                
+                assert out.result.size() == 2
+                assertContainsInAnyOrder(
+                    submaps, 
+                    [ 
+                        [id: "a_1", condition: "a", biorep: "1", pairs: "a_1.merged.pairs.gz", latestPairs: "a_1.merged.pairs.gz", latest: "a_1.merged.pairs.gz"], 
+                        [id: "b_1", condition: "b", biorep: "1", pairs: "b_1.merged.pairs.gz", latestPairs: "b_1.merged.pairs.gz", latest: "b_1.merged.pairs.gz"] 
+                    ]
+                )
+
+                out.result.each {
+                    assert it.keySet() == expectedKeys
+                    assert it.aggregateLevel == "biorep"
+                }
+            }
+        }
+    }
+}

@@ -19,7 +19,7 @@ include {CompartmentScores} from './subwf/features/compartmentScores.nf'
 include {Loops} from './subwf/features/loops.nf'
 include {DifferentialLoops} from './subwf/features/differentialLoops.nf'
 include {InsulationScores} from './subwf/features/insulationScores.nf'
-include {emptyOnLastStep; skip} from './subwf/extraops.nf'
+include {emptyOnLastStep; skip} from './subwf/util/cli.nf'
 
 
 workflow {

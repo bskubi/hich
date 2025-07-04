@@ -1,0 +1,21 @@
+nextflow_pipeline {
+
+    name "Test Workflow main.nf"
+    script "contents/main.nf"
+
+    test("onerepAkgolBulk") {
+        options "-config $baseDir/nextflow.config -params-file $baseDir/params/onerep_bulk.yml -profile localPC"
+
+        when {
+            params {
+                sampleFile = "vignettes/akgol2021/onerep_nocreate.tsv"
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+
+    }
+
+}

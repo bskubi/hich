@@ -1,4 +1,6 @@
-include {emptyOnLastStep; pack; isExistingFile; skip} from "../extraops.nf"
+include {emptyOnLastStep; skip} from '../util/cli.nf'
+include {keyJoin} from '../util/keyJoin.nf'
+include {isExistingFile} from '../util/files.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 include {asList; cmdList} from '../util/dataStructures.nf'
 
@@ -50,7 +52,7 @@ workflow FragmentIndex {
             | map{genomeReference, restrictionEnzymes, fragmentIndex, assembly -> 
                 [genomeReference: file(genomeReference), restrictionEnzymes: restrictionEnzymes, fragmentIndex: fragmentIndex, assembly: assembly]}
             | set{result}
-        pack(samples, result, ["genomeReference", "assembly", "restrictionEnzymes"]) | set{samples}
+        keyJoin(samples, result, ["genomeReference", "assembly", "restrictionEnzymes"]) | set{samples}
     }
 
     

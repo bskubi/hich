@@ -1,4 +1,5 @@
-include {emptyOnLastStep; pack; skip} from '../extraops.nf'
+include {emptyOnLastStep; skip} from '../util/cli.nf'
+include {keyJoin} from '../util/keyJoin.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process JuicerToolsPre {
@@ -91,7 +92,7 @@ workflow HicMatrix {
         | JuicerToolsPre
         | map{id, hic -> [id: id, hic: hic, latestMatrix: hic]}
         | set{result}
-    pack(samples, result) | set{samples}
+    keyJoin(samples, result, "id") | set{samples}
 
     samples = emptyOnLastStep("hicMatrix", samples)
 

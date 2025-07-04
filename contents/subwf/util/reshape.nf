@@ -1,4 +1,4 @@
-include {checkMapTypes} from './validation.nf'
+include {validateMap} from './validation.nf'
 
 def sortMapList(List<Map> mapList, List sortBy) {
     return mapList.sort {
@@ -46,7 +46,7 @@ def columns (List<Map> mapList, Map options = [:]) {
         "dropAllNull": Boolean, 
         "nullAllOK": Boolean
     ]
-    checkMapTypes(options, validOptions)
+    validateMap(options, validOptions, ["limitKeys", "limitTypes"])
 
     // Get set of all keys from all maps
     def allKeys = mapList.collectMany{
@@ -120,6 +120,53 @@ def rows (columnsMap) {
     }
 
     result
+}
+
+// Called from within map function on transposedSamples
+def coalesce (
+        Map sample, 
+        Boolean requireSingle
+    ) {
+    /* Extract shared values from columnar sample to form a row-oriented sample
+
+        Example:
+
+        sample:
+        [a: [1, 1, 1], b: [1, 2], c: []]
+        
+        requireSingle: true
+
+        result: 
+         [a: 1]
+
+        Arguments
+            sample -- The sample in columnar format
+            requireSingle -- If true, then keys with 0 or 2+ distinct values are dropped
+    */
+
+    def result = [:]
+
+    // Iterate through values in the sample
+    sample.each {
+        key, values ->
+        
+        if (values instanceof List) {
+            def distinct = values as LinkedHashSet
+            def size = distinct.size()
+
+            if (size != 1 && !requireSingle) {
+                result += [(key): values]
+            }
+            else if (size == 1) {
+                result += [(key): values[0]]
+            }
+        }
+        else {
+            result += [(key): values]
+        }
+
+    }
+    return result
 }
 
 workflow columnsToRows {

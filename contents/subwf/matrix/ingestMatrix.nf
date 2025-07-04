@@ -1,4 +1,5 @@
-include {emptyOnLastStep; pack; skip} from '../extraops.nf'
+include {emptyOnLastStep; skip} from '../util/cli.nf'
+include {keyJoin} from '../util/keyJoin.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process HicToMcool {
@@ -105,8 +106,8 @@ workflow IngestMatrix {
             [id:id, mcool:mcoolFile, latest:mcoolFile, latestMatrix:mcoolFile]}
         | set{hicToMcool}
     
-    pack(samples, mcoolToHic) | set{samples}
-    pack(samples, hicToMcool) | set{samples}
+    keyJoin(samples, mcoolToHic, "id") | set{samples}
+    keyJoin(samples, hicToMcool, "id") | set{samples}
 
     samples = emptyOnLastStep("ingestMatrix", samples)
 

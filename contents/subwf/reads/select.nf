@@ -1,5 +1,6 @@
 include {QCReads} from './qcHicReads.nf'
-include {emptyOnLastStep; pack; skip} from '../extraops.nf'
+include {emptyOnLastStep; skip} from '../util/cli.nf'
+include {keyJoin} from '../util/keyJoin.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process PairtoolsSelect {
@@ -151,7 +152,7 @@ workflow Select {
         | PairtoolsSelect
         | map{[id:it[0], selectPairs:it[1], latest:it[1], latestPairs:it[1]]}
         | set{result}
-    pack(samples, result) | set{samples}
+    keyJoin(samples, result, "id") | set{samples}
 
     
     if ("select" in params.general.get("qcAfter")) {

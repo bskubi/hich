@@ -1,4 +1,4 @@
-include {rowHashmapToRowChannel} from '../util/rowsCols.nf'
+include {rowHashmapToRowChannel} from '../util/reshape.nf'
 include {emptyOnLastStep} from '../util/cli.nf'
 include {Setup} from '../setup/setup.nf'
 

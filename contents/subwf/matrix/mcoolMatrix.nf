@@ -1,4 +1,5 @@
-include {emptyOnLastStep; pack; skip} from '../extraops.nf'
+include {emptyOnLastStep; skip} from '../util/cli.nf'
+include {keyJoin} from '../util/keyJoin.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process CoolerZoomify {
@@ -122,7 +123,7 @@ workflow McoolMatrix {
     | CoolerZoomify
     | map{id, mcool -> [id: id, mcool: mcool, latestMatrix: mcool]}
     | set{result}
-    pack(samples, result) | set{samples}
+    keyJoin(samples, result, "id") | set{samples}
     
     samples = emptyOnLastStep("mcoolMatrix", samples)
 

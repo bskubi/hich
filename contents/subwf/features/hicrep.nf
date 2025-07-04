@@ -1,4 +1,6 @@
-include {createCompositeStrategy; filterSamplesByStrategy; groupSamplesByStrategy; columns; skip; formatArg} from '../extraops.nf'
+include {createCompositeStrategy; filterSamplesByStrategy; groupSamplesByStrategy} from '../util/analysisPlans.nf'
+include {skip; formatArg} from '../util/cli.nf'
+include {columns} from '../util/reshape.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process HicrepCombos{

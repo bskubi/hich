@@ -2,7 +2,7 @@
 nextflow_function {
 
     name "rowsCols"
-    script "contents/subwf/util/rowsCols.nf"
+    script "contents/subwf/util/reshape.nf"
 
     test("columnsNullOK") {
 
@@ -116,6 +116,46 @@ nextflow_function {
         then {
             with (function) {
                 assert failed
+            }
+        }
+    }
+
+    test("coalesceRequireSingleFalse") {
+        function "coalesce"
+
+        when {
+            function {
+                """
+                input[0] = [a: [1, 1], b: [1, 2], c: []]
+                input[1] = true
+                """
+            }
+        }
+
+        then {
+            with (function) {
+                assert success
+                assert result == [a: 1]
+            }
+        }
+    }
+
+    test("coalesceRequireSingleTrue") {
+        function "coalesce"
+
+        when {
+            function {
+                """
+                input[0] = [a: [1, 1], b: [1, 2], c: []]
+                input[1] = false
+                """
+            }
+        }
+
+        then {
+            with (function) {
+                assert success
+                assert result == [a: 1, b: [1, 2], c: []]
             }
         }
     }

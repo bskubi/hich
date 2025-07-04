@@ -1,28 +1,43 @@
-include {withLog; stubLog} from '../util/logs.nf'
+include {GroupToColumnar} from '../util/groupToColumnar.nf'
+include {PairtoolsMerge} from './processes/pairtoolsMerge.nf'
+include {makeID} from '../util/samples.nf'
+include {keyJoin} from '../util/keyJoin.nf'
+include {coalesce} from '../util/reshape.nf'
 
-def buildCmd(id, toMerge, cpus) {
-    def merged = "${id}.merged.pairs.gz"
-    def mergeList = toMerge.collect({"'${it}'"})
-    def logMap = [task: "Merge", input: [id: id, toMerge: toMerge], output: [merged: merged]]
-    def cmd = "pairtools merge --output '${merged}' --nproc-in ${cpus} --nproc-out ${cpus} ${mergeList.join(' ')}"
-    def stubCmd = "touch '${merged}'"
-    return [merged, mergeList, logMap, cmd, stubCmd]
-}
+workflow Merge {
+    take:
+    samples
+    groupBy
+    level
 
-process Merge {
-    label 'pairs'
+    main:
+
+    // Group samples by groupBy keys (i.e. condition, biorep, techrep) and convert
+    // to columnar format after values by id to get deterministic output so -resume will work. 
+    GroupToColumnar(
+        samples, 
+        groupBy, 
+        ["id"], 
+        ["dropAllNull":true]
+    ) | set{sampleGroups}
     
-    input:
-    tuple val(id), path(toMerge)
+    // Create new id and pairs attributes for merged sample
+    sampleGroups
+        | map{coalesce(it, false)}
+        | map{it += [id: makeID(it, true)]}
+        | map{tuple(it.id, it.latestPairs)}
+        | PairtoolsMerge
+        | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
+        | set{merged}
 
-    output:
-    tuple val(id), path(merged)
+    // Obtain attribute values for the merged sample 
+    sampleGroups
+        | map{coalesce(it, true)}   // Common attributes from input samples
+        | map{it += [id: makeID(it, columns = false), aggregateLevel: level]} // New id, aggregateLevel
+        | set{attributes}
 
-    shell:
-    (merged, mergeList, logMap, cmd, stubCmd) = buildCmd(id, toMerge, task.cpus)
-    withLog(cmd, logMap)
+    keyJoin(attributes, merged, "id") | set{result}
 
-    stub:
-    (merged, mergeList, logMap, cmd, stubCmd) = buildCmd(id, toMerge, task.cpus)
-    withLog(cmd, logMap, stubCmd)
+    emit:
+    result
 }
