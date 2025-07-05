@@ -3,6 +3,7 @@ nextflow_workflow {
     name "Test Workflow ParseSampleFile"
     script "contents/subwf/setup/parseParams/parseSampleFile.nf"
     workflow "ParseSampleFile"
+    tag "priority1"
 
     test("singleEntrySampleFile") {
 

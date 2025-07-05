@@ -1,8 +1,9 @@
 
 nextflow_function {
 
-    name "rowsCols"
+    name "reshape"
     script "contents/subwf/util/reshape.nf"
+    tag "priority1"
 
     test("columnsNullOK") {
 

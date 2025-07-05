@@ -1,5 +1,5 @@
 
-include {Merge as MergeTechrepsToBioreps; Merge as MergeBiorepsToConditions} from './merge.nf'
+include {Merge as MergeTechrepToBiorep; Merge as MergeBiorepToCondition} from './merge.nf'
 include {LabelAggregationPlans} from './labelAggregationPlans.nf'
 include {Deduplicate} from './deduplicate.nf'
 include {Split} from './split.nf'
@@ -16,26 +16,30 @@ workflow Aggregate {
 
     main:
 
+    samples
+        | LabelAggregationPlans
+        | set{samples}
+
     
     samples
-    | branch {
-        yes: it.aggregateLevel == "techrep" && !it.skipMerge && !it.skipTechrepMerge && it.mergeTechrepToBiorep
-        no: true
-    }
-    | set {mergeTechreps}
+        | branch {
+            yes: it.aggregateLevel == "techrep" && !it.skipMerge && !it.skipTechrepMerge && it.mergeTechrepToBiorep
+            no: true
+        }
+        | set {mergeTechreps}
+
 
     // Merge techreps to bioreps
-    MergeTechrepsToBioreps(
+    MergeTechrepToBiorep(
         mergeTechreps.yes, 
         ["cell", "biorep", "condition", "aggregationPlanName"],
         "biorep"
         )
     | LabelAggregationPlans
-    | set {biorepsFromMerge}
+    | concat(samples)
+    | set {samples}
 
-    samples
-    | concat(biorepsFromMerge)
-    | set{samples}
+    samples = emptyOnLastStep("mergeTechrepToBiorep", samples)
 
     ///////////////////////////////////////////////////
 
@@ -65,6 +69,8 @@ workflow Aggregate {
     | concat(dedup.no)
     | set {samples}
 
+    samples = emptyOnLastStep("dedup", samples)
+
     ///////////////////////////////////////////////////
 
     // Merge bioreps to conditions
@@ -76,17 +82,16 @@ workflow Aggregate {
     }
     | set {mergeBioreps}
 
-    MergeBiorepsToConditions(
+    MergeBiorepToCondition(
         mergeBioreps.yes, 
         ["cell", "condition", "aggregationPlanName"],
         "condition"
         )
     | LabelAggregationPlans
-    | set{conditionsFromMerge}
-
-    samples
-    | concat(conditionsFromMerge)
+    | concat(samples)
     | set{samples}
+
+    samples = emptyOnLastStep("mergeBiorepToCondition", samples)
 
     ///////////////////////////////////////////////////
 

@@ -19,14 +19,14 @@ process CallCompartments {
     n_eigs = n_eigs ? n_eigs : 3
     cmd = "hich fasta gc ${genomeReference} ${resolution} > ${id}.phase.bed && cooltools eigs-cis --phasing-track ${id}.phase.bed --n-eigs ${n_eigs} --out-prefix ${id}_compartments --bigwig ${matrix}::/resolutions/${resolution}"
     
-    logMap = [task: "CallCompartments", input: [id: id, genomeReference: genomeReference, matrix: matrix, resolution: resolution, hichCompartmentsParams: hichCompartmentsParams], output: [eigs1score: "${id}_0.bw", eigs2score: "${id}_1.bw", eigs3score: "${id}_0.bw"]]
+    logMap = [task: "CallCompartments", input: [id: id, genomeReference: genomeReference, matrix: matrix, resolution: resolution, hichCompartmentsParams: hichCompartmentsParams], output: [cisBW: "${id}.cis.bw", cisVecs: "${id}.cis.vecs.tsv", cisLam: "${id}.cis.lam.txt", phase: "${id}.phase.bed"]]
     withLog(cmd, logMap)
 
     stub:
     n_eigs = n_eigs ? n_eigs : 3
     cmd = "hich fasta gc ${genomeReference} ${resolution} > ${id}.phase.bed && cooltools eigs-cis --phasing-track ${id}.phase.bed --n-eigs ${n_eigs} --out-prefix ${id}_compartments --bigwig ${matrix}::/resolutions/${resolution}"
-    stub = "touch ${id}_compartments.bw"
-    logMap = [task: "CallCompartments", input: [id: id, genomeReference: genomeReference, matrix: matrix, resolution: resolution, hichCompartmentsParams: hichCompartmentsParams], output: [eigs1score: "${id}_0.bw", eigs2score: "${id}_1.bw", eigs3score: "${id}_0.bw"]]
+    stub = "touch ${id}_compartments.bw ${id}.cis.bw ${id}.cis.vecs.tsv ${id}.cis.lam.txt ${id}.phase.bed"
+    logMap = [task: "CallCompartments", input: [id: id, genomeReference: genomeReference, matrix: matrix, resolution: resolution, hichCompartmentsParams: hichCompartmentsParams], output: [cisBW: "${id}.cis.bw", cisVecs: "${id}.cis.vecs.tsv", cisLam: "${id}.cis.lam.txt", phase: "${id}.phase.bed"]]
     withLog(cmd, logMap, stub)
 }
 
@@ -35,6 +35,8 @@ workflow CompartmentScores {
     samples
 
     main:
+    
+
     if (!skip("compartments")) {
         params.compartments.each {
             planName, analysisPlan ->

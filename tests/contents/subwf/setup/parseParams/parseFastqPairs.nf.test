@@ -3,6 +3,7 @@ nextflow_workflow {
     name "Test Workflow ParseFastqPairs"
     script "contents/subwf/setup/parseParams/parseFastqPairs.nf"
     workflow "ParseFastqPairs"
+    tag "priority1"
 
     test("fastqPairs") {
 

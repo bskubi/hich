@@ -176,29 +176,10 @@ workflow columnsToRows {
     main:
 
     samples
-    | map{rows(it)}
-    | flatten
-    | set{samples}
+        | map{rows(it)}
+        | flatten
+        | set{samples}
 
     emit:
     samples
 }
-
-def rowHashmapToColumnChannel (hashMap, keyCol, valueCol) {
-    // Treat key-value pairs of hashMap as row entries in a two-column table and emit in column format
-    (
-        channel.of(params.aggregate)
-        | map {
-            [
-                (keyCol): hashMap.keySet().toList(), 
-                (valueCol): hashMap.values().toList()
-            ]
-        }
-    )
-}
-
-def rowHashmapToRowChannel (hashMap, keyCol, valueCol) {
-    // Treat key-value pairs of hashMap as row entries in a two-column table and emit in row format
-    rowHashmapToColumnChannel(hashMap, keyCol, valueCol) | map{rows(it)} | flatten
-}
-

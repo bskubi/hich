@@ -1,4 +1,4 @@
-include {rowHashmapToRowChannel} from '../util/reshape.nf'
+include {columnsToRows} from '../util/reshape.nf'
 include {emptyOnLastStep} from '../util/cli.nf'
 include {Setup} from '../setup/setup.nf'
 
@@ -19,9 +19,13 @@ workflow LabelAggregationPlans {
             }
             | set{alreadyLabeled}
 
-        // For samples without an aggregation plan name, add one with the appropriate parameters
-        // using the "aggregationPlans" section
-        rowHashmapToRowChannel(params.aggregate, "planName", "planParams")
+        // Add aggregation plans to samples not yet labeled with one
+        channel.of(params.aggregate)
+            | map {[
+                    planName: it.keySet() as List, 
+                    planParams: it.values() as List
+                ]}
+            | columnsToRows
             | combine(alreadyLabeled.no)
             | map {
                 plan = it[0]

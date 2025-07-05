@@ -1,0 +1,39 @@
+nextflow_workflow {
+
+    name "end to end"
+    script "contents/hichWorkflow.nf"
+    workflow "HichWorkflow"
+    tag "priority3"
+
+    test("multirepAkgolToMatrix") {
+        config "$baseDir/tests/assets/multirep_bulk.config"
+        options """-profile localPC -stub-run"""
+        
+
+        when {
+            params {
+                sampleFile = "$baseDir/tests/assets/multirep_nocreate.tsv"
+                skip = "loops differentialLoops compartments insulation hicrep"
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out) {
+                assert samples.size() == 21
+                assert samples.findAll{it.aggregateLevel == "techrep"}.size() == 18
+                assert samples.findAll{it.aggregateLevel == "biorep"}.size() == 2
+                assert samples.findAll{it.aggregateLevel == "condition"}.size() == 1
+                assert samples.findAll{it.containsKey("dedupPairs")}.size() == 20
+                assert samples.every{
+                    it.containsKey("hic") &&
+                    it.containsKey("mcool") &&
+                    it.containsKey("latestMatrix") &&
+                    it.containsKey("latestPairs")
+                }
+            }
+        }
+
+    }
+
+}

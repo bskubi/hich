@@ -100,12 +100,11 @@ workflow QCReads {
                   "selectPairs",
                   "dedupPairs"]
         
-        emit = pairs.collect{
+        pairs.collect{
             pairfile ->
             
             sample.containsKey(pairfile) && sample.get(pairfile).getClass() == sun.nio.fs.UnixPath ? [sample.id, pairfile, sample[pairfile]] : null
         }.findAll{it != null}
-        emit
     }
     | collect
     | flatMap

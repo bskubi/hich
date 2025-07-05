@@ -11,7 +11,6 @@ workflow Merge {
     level
 
     main:
-
     // Group samples by groupBy keys (i.e. condition, biorep, techrep) and convert
     // to columnar format after values by id to get deterministic output so -resume will work. 
     GroupToColumnar(

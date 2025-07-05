@@ -41,7 +41,7 @@ workflow InsulationScores {
 
     main:
 
-    if (!skip("insulationScores")) {
+    if (!skip("insulation")) {
         params.insulation.each {
             planName, analysisPlan ->
 

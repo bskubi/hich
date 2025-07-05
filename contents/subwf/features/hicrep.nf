@@ -25,7 +25,7 @@ process HicrepCombos{
            formatArg("--b-downsample %s", bDownSample, ','),
            "--output '${hicrep}'",
            formatArg("%s", mcools, ' ')].findAll{it}.join(" ")
-    logMap = [task: "HicrepCombos", input: [id: id, planName: planName, mcools: mcools, resolutions: resolutions, chroms: chroms, exclude: exclude, chromFilter: chromFilter, dBPMax: dBPMax, bDownSample: bDownSample], 
+    logMap = [task: "HicrepCombos", input: [planName: planName, mcools: mcools, resolutions: resolutions, chroms: chroms, exclude: exclude, chromFilter: chromFilter, dBPMax: dBPMax, bDownSample: bDownSample], 
     output: [hicrep: hicrep]]
     withLog(cmd, logMap)
 
@@ -42,7 +42,7 @@ process HicrepCombos{
            formatArg("--b-downsample %s", bDownSample, ','),
            "--output '${hicrep}'",
            formatArg("%s", mcools, ' ')].findAll{it}.join(" ")
-    logMap = [task: "HicrepCombos", input: [id: id, planName: planName, mcools: mcools, resolutions: resolutions, chroms: chroms, exclude: exclude, chromFilter: chromFilter, dBPMax: dBPMax, bDownSample: bDownSample], 
+    logMap = [task: "HicrepCombos", input: [planName: planName, mcools: mcools, resolutions: resolutions, chroms: chroms, exclude: exclude, chromFilter: chromFilter, dBPMax: dBPMax, bDownSample: bDownSample], 
     output: [hicrep: hicrep]]
     stubLog(stub, cmd, logMap)
 

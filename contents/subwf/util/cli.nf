@@ -72,13 +72,12 @@ def formatArg(pattern, object, sep) {
 */
 def emptyOnLastStep(step, samples) {
     def isExplicitLastStep = (params.containsKey("lastStep") && params.get("lastStep") == step)
-    def isLastStep = (step == "End") || isExplicitLastStep
+    def isLastStep = (step == "end") || isExplicitLastStep
     def hasViewLastStep = params.containsKey("viewLastStep") && params.get("viewLastStep")
     if (isLastStep && hasViewLastStep) {
         samples
             | map {
                 sample ->
-                
                 params.viewLastStep instanceof Boolean ? sample : sample.subMap(params.viewLastStep.split())}
             | view
     }
