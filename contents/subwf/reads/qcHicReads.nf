@@ -5,8 +5,6 @@ process PairtoolsStats {
     publishDir params.general.publish.pairStats ? params.general.publish.pairStats : "results",
                saveAs: {params.general.publish.pairStats ? it : null},
                mode: params.general.publish.mode
-    conda "bioconda::pairtools"
-    container params.general.hichContainer
     label 'pairs'
     cpus 8
 

@@ -4,8 +4,6 @@ include {isExistingFile} from '../util/files.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process BwaMem2Index {
-    conda "bioconda::bwa-mem2"
-    container params.general.hichContainer
     publishDir params.general.publish.bwaMem2Index ? params.general.publish.bwaMem2Index : "results",
                saveAs: {params.general.publish.bwaMem2Index ? it : null},
                mode: params.general.publish.mode
@@ -30,8 +28,6 @@ process BwaMem2Index {
 }
 
 process BwaMemIndex {
-    conda "bioconda::bwa"
-    container params.general.hichContainer
     publishDir params.general.publish.bwaIndex ? params.general.publish.bwaIndex : "results",
                saveAs: {params.general.publish.bwaIndex ? it : null},
                mode: params.general.publish.mode

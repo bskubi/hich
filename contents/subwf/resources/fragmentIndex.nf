@@ -9,8 +9,7 @@ process HichDigest {
                saveAs: {params.general.publish.fragmentIndex ? it : null},
                mode: params.general.publish.mode
     label 'smallResource'
-    debug true
-    
+
     input:
     tuple val(genomeReferenceString), path(genomeReference), val(restrictionEnzymes), val(fragmentIndex), val(assembly)
 

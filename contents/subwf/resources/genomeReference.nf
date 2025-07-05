@@ -13,7 +13,6 @@ process StageGenomeReference {
                saveAs: {params.general.publish.genomeReference ? it : null},
                mode: params.general.publish.mode
     label 'smallResource'
-    debug true
 
     input:
     tuple val(assembly), path(uri)

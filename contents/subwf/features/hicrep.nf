@@ -5,7 +5,6 @@ include {withLog; stubLog} from '../util/logs.nf'
 
 process HicrepCombos{
     publishDir "results/hicrep", mode: params.general.publish.mode
-    container params.general.hichContainer
     
     input:
     tuple val(planName), path(mcools), val(resolutions), val(chroms), val(exclude), val(chromFilter), val(h), val(dBPMax), val(bDownSample)
@@ -70,7 +69,7 @@ workflow Hicrep {
             grouped = groupSamplesByStrategy(filtered, strategy)
             grouped
                 | filter{it.size() >= 2}
-                | map{columns(it, ["dropNull":true])}
+                | map{columns(it, ["dropAllNull":true])}
                 | map{
                     samples ->
                     tuple(planName,

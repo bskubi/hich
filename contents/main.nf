@@ -21,9 +21,8 @@ include {DifferentialLoops} from './subwf/features/differentialLoops.nf'
 include {InsulationScores} from './subwf/features/insulationScores.nf'
 include {emptyOnLastStep; skip} from './subwf/util/cli.nf'
 
-
 workflow {
-
+    
     ParseParams              // Setup workflow inputs
         | Setup
         | FastqHead

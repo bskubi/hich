@@ -6,8 +6,6 @@ process BwaAlignMates {
     publishDir params.general.publish.align ? params.general.publish.align : "results",
                saveAs: {params.general.publish.align ? it : null},
                mode: params.general.publish.mode
-
-    conda "bioconda::bwa bioconda::bwa-mem2 bioconda::samtools"
     
     label 'whenLocal_allConsuming'
     label 'align'

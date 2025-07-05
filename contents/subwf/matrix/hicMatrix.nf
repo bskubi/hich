@@ -12,7 +12,7 @@ process JuicerToolsPre {
     publishDir params.general.publish.hic ? params.general.publish.hic : "results",
                saveAs: {params.general.publish.hic ? it : null},
                mode: params.general.publish.mode
-    container params.general.juicerContainer
+
     label 'createMatrix'
 
     input:
@@ -43,7 +43,7 @@ process JuicerToolsPre {
     hic = "${id}.hic"
     memory = task.memory ? task.memory.toGiga() : "8"
 
-    cmd = ["java -Xmx${memory}g -jar /app/juicer_tools_1.22.01.jar pre --threads ${task.cpus}" ] + juicerToolsPreParams + ["'${pairs}' '${hic}' '${chromsizes}'"]
+    cmd = ["juicer_tools pre --threads ${task.cpus}" ] + juicerToolsPreParams + ["'${pairs}' '${hic}' '${chromsizes}'"]
     cmd.removeAll([null])
     cmd = cmd.join(" ")
     logMap = [task: "JuicerToolsPre", input: [id: id, pairs: pairs, chromsizes: chromsizes, pairsFormat: pairsFormat, matrix: matrix, juicerToolsPreParams: juicerToolsPreParams, flags: flags], 

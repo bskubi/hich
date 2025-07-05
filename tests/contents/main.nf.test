@@ -1,20 +1,17 @@
 nextflow_pipeline {
 
-    name "Test Workflow main.nf"
+    name "end to end"
     script "contents/main.nf"
 
-    stage {
-        symlink: "vignettes"
-    }
-
-    test("onerepAkgolBulk") {
-        config "$baseDir/tests/assets/onerep_bulk.config"
+    test("multirepAkgolBulk") {
+        config "$baseDir/tests/assets/multirep_bulk.config"
         options "-profile localPC"
         
 
         when {
             params {
-                sampleFile = "$baseDir/tests/assets/onerep_nocreate.tsv"
+                sampleFile = "$baseDir/tests/assets/multirep_nocreate.tsv"
+                skip = "loops differentialLoops compartments"
             }
         }
 

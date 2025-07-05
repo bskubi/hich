@@ -7,8 +7,6 @@ process PairtoolsFlipSort {
     publishDir params.general.publish.flip_sort ? params.general.publish.flip_sort : "results",
                saveAs: {params.general.publish.flip_sort ? it : null},
                mode: params.general.publish.mode
-    conda "bioconda::pairtools"
-    container params.general.hichContainer
     label 'doJobArray'
     label 'pairs'
     cpus 8

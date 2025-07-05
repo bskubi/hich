@@ -11,7 +11,6 @@ process HichFragtag {
 
     label 'doJobArray'
     label 'pairs'
-    debug true
 
     input:
     tuple val(id), path(pairs), path(fragmentIndex)

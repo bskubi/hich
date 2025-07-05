@@ -6,8 +6,6 @@ process CoolerZoomify {
     publishDir params.general.publish.mcool ? params.general.publish.mcool : "results",
                saveAs: {params.general.publish.mcool ? it : null},
                mode: params.general.publish.mode
-    conda "bioconda::cooler"
-    container params.general.hichContainer
     label 'createMatrix'
 
     input:

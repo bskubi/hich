@@ -35,7 +35,7 @@ workflow CompartmentScores {
     samples
 
     main:
-    if (!skip("compartmentScores")) {
+    if (!skip("compartments")) {
         params.compartments.each {
             planName, analysisPlan ->
 

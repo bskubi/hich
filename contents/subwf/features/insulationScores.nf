@@ -5,8 +5,6 @@ include {withLog; stubLog} from '../util/logs.nf'
 process CooltoolsInsulation {
     publishDir "results/insulation",
                mode: params.general.publish.mode
-    container params.general.hichContainer
-    conda "bioconda::cooltools"
     label 'features'
 
     input:
