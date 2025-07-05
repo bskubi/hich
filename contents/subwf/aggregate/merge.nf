@@ -18,7 +18,17 @@ workflow Merge {
         groupBy, 
         ["id"], 
         ["dropAllNull":true]
-    ) | set{sampleGroups}
+    )
+        | map{
+            if (level == "biorep") {
+                result = it.findAll {key, value -> !(key in ["techrep", "id"])}
+            }
+            else if (level == "condition") {
+                result = it.findAll {key, value -> !(key in ["techrep", "biorep", "id"])}
+            }
+            result
+        }
+        | set{sampleGroups}
     
     // Create new id and pairs attributes for merged sample
     sampleGroups
