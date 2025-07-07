@@ -29,12 +29,12 @@ workflow Merge {
             result
         }
         | set{sampleGroups}
-    
+   
     // Create new id and pairs attributes for merged sample
     sampleGroups
         | map{coalesce(it, false)}
         | map{it += [id: makeID(it, true)]}
-        | map{tuple(it.id, it.latestPairs)}
+        | map{tuple(it.id, it.latestPairs instanceof List ? it.latestPairs : [it.latestPairs])}
         | PairtoolsMerge
         | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
         | set{merged}

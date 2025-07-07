@@ -2,7 +2,8 @@ include {withLog; stubLog} from '../../util/logs.nf'
 
 def buildCmd(id, toMerge, cpus) {
     def merged = "${id}.merged.pairs.gz"
-    def mergeList = toMerge instanceof List ? toMerge.collect({"'${it}'"}) : "'${toMerge}'"
+    toMerge = toMerge instanceof List ? toMerge : [toMerge]
+    def mergeList = toMerge.collect({"'${it}'"})
     def logMap = [task: "Merge", input: [id: id, toMerge: toMerge], output: [merged: merged]]
     def cmd = "pairtools merge --output '${merged}' --nproc-in ${cpus} --nproc-out ${cpus} ${mergeList.join(' ')}"
     def stubCmd = "touch '${merged}'"
