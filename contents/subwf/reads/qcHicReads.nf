@@ -5,8 +5,7 @@ process PairtoolsStats {
     publishDir params.general.publish.pairStats ? params.general.publish.pairStats : "results",
                saveAs: {params.general.publish.pairStats ? it : null},
                mode: params.general.publish.mode
-    label 'pairs'
-    cpus 8
+    label 'stats'
 
     input:
     tuple val(id), val(pairs_id), path(pairs)
@@ -55,7 +54,7 @@ process MultiQC {
     publishDir params.general.publish.qc ? params.general.publish.qc : "results",
                saveAs: {params.general.publish.qc ? it : null},
                mode: params.general.publish.mode
-    conda "env/multiqc.yml"
+
     container "bskubi/hich:latest"
 
     input:

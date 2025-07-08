@@ -26,6 +26,7 @@ dependencies:
   - bwa-mem2
   - hictk
   - juicer
+  - multiqc
   - pip:
     - smart-open-with-pbgzip>=0.1.5,<0.2
     - biopython>=1.85,<2.0
