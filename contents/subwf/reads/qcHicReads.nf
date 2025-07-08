@@ -6,6 +6,7 @@ process PairtoolsStats {
                saveAs: {params.general.publish.pairStats ? it : null},
                mode: params.general.publish.mode
     label 'stats'
+    conda 'env/cli_env.yml'
 
     input:
     tuple val(id), val(pairs_id), path(pairs)
@@ -55,7 +56,7 @@ process MultiQC {
                saveAs: {params.general.publish.qc ? it : null},
                mode: params.general.publish.mode
 
-    container "bskubi/hich:latest"
+    conda 'env/cli_env.yml'
 
     input:
     tuple val(report_name), path(stats)
