@@ -9,6 +9,7 @@ process BwaMem2Index {
                mode: params.general.publish.mode
     label 'whenLocal_allConsuming'
     label 'index'
+    conda "$projectDir/dev_env.yml"
 
     input:
     tuple val(genomeReferenceString), path(genomeReference), val(prefix)
