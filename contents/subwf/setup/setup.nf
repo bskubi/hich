@@ -3,7 +3,7 @@ include {GenomeReference} from '../resources/genomeReference.nf'
 include {AlignerIndex} from '../resources/alignerIndex.nf'
 include {FragmentIndex} from '../resources/fragmentIndex.nf'
 include {emptyOnLastStep} from '../util/cli.nf'
-include {datatypeFromExtension} from '../util/files.nf'
+include {datatypeFromExtension; tryBaseDir} from '../util/files.nf'
 include {isTechrep; isBiorep; isCondition; aggregateLevelLabel; makeID} from '../util/samples.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
@@ -245,13 +245,16 @@ workflow UpdateSamples
             // or if there is no data file specified for the sample.
             if (truthyString(sample[key])) {
                 // Convert to a file
-                value = sample[key]
-                sample += [(key):file(value)]
-
+                fileObj = tryBaseDir(sample[key])
+                
                 // Check that the file exists
-                if (!sample[key].exists()) {
+                if (!fileObj.exists()) {
                     error "In sample with id ${sample.id}, ${key} is specified as ${value} but does not exist."
                 }
+
+                sample += [(key):fileObj]
+
+
             }
         }
 

@@ -24,3 +24,9 @@ def datatypeFromExtension(path) {
     }
     return foundExtension ? extensions[foundExtension] : null
 }
+
+def tryBaseDir(it) {
+    def basePath = file("${baseDir}")
+    
+    return (isExistingFile(file(it)) ? it : file("${baseDir}/"))
+}
