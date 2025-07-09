@@ -10,7 +10,7 @@ process PairtoolsParse2 {
 
     label 'doJobArray'
     label 'pairs'
-    conda "$projectDir/dev_env.yml"
+    conda "$projectDir/env/dev_env.yml"
 
     input:
     tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseParams), val(sql), val(flags)

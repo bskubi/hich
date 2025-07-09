@@ -6,7 +6,7 @@ process PairtoolsStats {
                saveAs: {params.general.publish.pairStats ? it : null},
                mode: params.general.publish.mode
     label 'stats'
-    conda "$projectDir/dev_env.yml"
+    conda "$projectDir/env/dev_env.yml"
 
     input:
     tuple val(id), val(pairs_id), path(pairs)
@@ -56,7 +56,7 @@ process MultiQC {
                saveAs: {params.general.publish.qc ? it : null},
                mode: params.general.publish.mode
 
-    conda "$projectDir/dev_env.yml"
+    conda "$projectDir/env/dev_env.yml"
 
     input:
     tuple val(report_name), path(stats)

@@ -9,7 +9,7 @@ process BwaAlignMates {
     
     label 'whenLocal_allConsuming'
     label 'align'
-    conda "$projectDir/dev_env.yml"
+    conda "$projectDir/env/dev_env.yml"
     
     // NOTE: Alignment speed is trivially parallelizeable and does not benefit
     // from running alignment in parallel multiple files at once. Each instance

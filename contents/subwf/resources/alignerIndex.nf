@@ -9,7 +9,7 @@ process BwaMem2Index {
                mode: params.general.publish.mode
     label 'whenLocal_allConsuming'
     label 'index'
-    conda "$projectDir/dev_env.yml"
+    conda "$projectDir/env/dev_env.yml"
 
     input:
     tuple val(genomeReferenceString), path(genomeReference), val(prefix)
@@ -35,7 +35,7 @@ process BwaMemIndex {
     label 'whenLocal_allConsuming'
     label 'index'
     memory {20.GB + 10.GB * (task.attempt - 1)}
-    
+    conda "$projectDir/env/dev_env.yml"
 
 
     input:
