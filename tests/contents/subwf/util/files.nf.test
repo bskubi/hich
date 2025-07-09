@@ -1,0 +1,26 @@
+
+nextflow_function {
+
+    name "Test Functions"
+    script "contents/subwf/util/files.nf"
+
+    test("smartFileFinder_missing") {
+
+        function "smartFileFinder"
+
+        when {
+            function {
+                """
+                input[0] = "missing.txt"
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            assert function.result == "$projectDir/missing.txt"
+        }
+
+    }
+
+}

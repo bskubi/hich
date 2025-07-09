@@ -3,7 +3,7 @@ include {GenomeReference} from '../resources/genomeReference.nf'
 include {AlignerIndex} from '../resources/alignerIndex.nf'
 include {FragmentIndex} from '../resources/fragmentIndex.nf'
 include {emptyOnLastStep} from '../util/cli.nf'
-include {datatypeFromExtension; tryBaseDir} from '../util/files.nf'
+include {datatypeFromExtension; smartFileFinder} from '../util/files.nf'
 include {isTechrep; isBiorep; isCondition; aggregateLevelLabel; makeID} from '../util/samples.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
@@ -245,7 +245,7 @@ workflow UpdateSamples
             // or if there is no data file specified for the sample.
             if (truthyString(sample[key])) {
                 // Convert to a file
-                fileObj = tryBaseDir(sample[key])
+                fileObj = smartFileFinder(sample[key])
                 
                 // Check that the file exists
                 if (!fileObj.exists()) {

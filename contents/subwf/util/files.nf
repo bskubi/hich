@@ -29,8 +29,8 @@ def datatypeFromExtension(path) {
     return foundExtension ? extensions[foundExtension] : null
 }
 
-def tryBaseDir(pathString) {
+def smartFileFinder(pathString) {
     def givenPath = Path.of(pathString)
-    def inBaseDir = Path.of("${baseDir}").resolve(pathString)
-    return Files.exists(givenPath) ? file(pathString) : file(inBaseDir.toString())
+    def inProjectDir = Path.of("${projectDir}").resolve(pathString)
+    return Files.exists(givenPath) ? file(pathString) : file(inProjectDir.toString())
 }

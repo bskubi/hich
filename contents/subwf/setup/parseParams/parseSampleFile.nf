@@ -1,4 +1,4 @@
-include {tryBaseDir} from '../../util/files.nf'
+include {smartFileFinder} from '../../util/files.nf'
 
 workflow ParseSampleFile {
     take:
@@ -7,9 +7,9 @@ workflow ParseSampleFile {
     main:
 
     if (params.containsKey("sampleFile")) {
-        params.sampleFile = tryBaseDir(params.sampleFile).toString()
+        sampleFile = smartFileFinder(params.sampleFile).toString()
 
-        channel.fromPath(params.sampleFile, checkIfExists: true)
+        channel.fromPath(sampleFile, checkIfExists: true)
             | splitCsv(header: true, sep: params.sampleFileSep)
             | set {newSamples}
 
