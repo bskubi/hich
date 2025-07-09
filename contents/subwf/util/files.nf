@@ -1,3 +1,7 @@
+import java.nio.file.Path
+import java.nio.file.Files
+
+
 def isExistingFile(it) {
     // Type-agnostic way to check if file exists for any file class having an exists() method.
     return it && it.metaClass.respondsTo(it, 'exists') && it.exists()
@@ -25,8 +29,8 @@ def datatypeFromExtension(path) {
     return foundExtension ? extensions[foundExtension] : null
 }
 
-def tryBaseDir(it) {
-    def basePath = file("${baseDir}")
-    
-    return (isExistingFile(file(it)) ? it : file("${baseDir}/"))
+def tryBaseDir(pathString) {
+    def givenPath = Path.of(pathString)
+    def inBaseDir = Path.of("${baseDir}").resolve(pathString)
+    return Files.exists(givenPath) ? file(pathString) : file(inBaseDir.toString())
 }
