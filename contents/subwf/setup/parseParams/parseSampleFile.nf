@@ -1,3 +1,5 @@
+import {tryBaseDir} from '../../util/files.nf'
+
 workflow ParseSampleFile {
     take:
     samples
@@ -5,6 +7,8 @@ workflow ParseSampleFile {
     main:
 
     if (params.containsKey("sampleFile")) {
+        params.sampleFile = tryBaseDir(params.sampleFile).toString()
+        
         channel.fromPath(params.sampleFile, checkIfExists: true)
             | splitCsv(header: true, sep: params.sampleFileSep)
             | set {newSamples}
