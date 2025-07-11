@@ -10,7 +10,6 @@ process FaSize {
 
     container params.general.chromsizesContainer
     label 'smallResource'
-    memory 8.GB
 
     input:
     tuple val(genomeReferenceString), path(genomeReference), val(assembly), val(chromsizes)

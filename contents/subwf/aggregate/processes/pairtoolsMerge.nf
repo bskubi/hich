@@ -12,6 +12,7 @@ def buildCmd(id, toMerge, cpus) {
 
 process PairtoolsMerge {
     label 'pairs'
+    conda "$projectDir/env/dev_env.yml"
     
     input:
     tuple val(id), path(toMerge)

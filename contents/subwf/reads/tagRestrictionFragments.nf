@@ -9,8 +9,8 @@ process HichFragtag {
                saveAs: {params.general.publish.fragtag ? it : null},
                mode: params.general.publish.mode
 
-    label 'doJobArray'
     label 'pairs'
+    conda "$projectDir/env/dev_env.yml"
 
     input:
     tuple val(id), path(pairs), path(fragmentIndex)

@@ -7,9 +7,9 @@ process PairtoolsSelect {
     publishDir params.general.publish.select ? params.general.publish.select : "results",
                saveAs: {params.general.publish.select ? it : null},
                mode: params.general.publish.mode
-    label 'doJobArray'
+
     label 'pairs'
-    cpus 8
+    conda "$projectDir/env/dev_env.yml"
 
     input:
     tuple val(id), path(pairs), val(pairtoolsSelectParams), val(condition)

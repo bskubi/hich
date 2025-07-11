@@ -7,9 +7,9 @@ process PairtoolsFlipSort {
     publishDir params.general.publish.flip_sort ? params.general.publish.flip_sort : "results",
                saveAs: {params.general.publish.flip_sort ? it : null},
                mode: params.general.publish.mode
-    label 'doJobArray'
+
     label 'pairs'
-    cpus 8
+    conda "$projectDir/env/dev_env.yml"
 
     input:
     tuple val(id), path(pairs), path(chromsizes), val(sql)

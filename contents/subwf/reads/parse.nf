@@ -8,7 +8,6 @@ process PairtoolsParse2 {
                saveAs: {params.general.publish.parse ? it : null},
                mode: params.general.publish.mode
 
-    label 'doJobArray'
     label 'pairs'
     conda "$projectDir/env/dev_env.yml"
 

@@ -14,6 +14,7 @@ process JuicerToolsPre {
                mode: params.general.publish.mode
 
     label 'createMatrix'
+    conda "$projectDir/env/dev_env.yml"
 
     input:
     tuple val(id), path(pairs), path(chromsizes), val(pairsFormat), val(matrix), val(juicerToolsPreParams), val(flags)

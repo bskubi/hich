@@ -6,6 +6,7 @@ process Deduplicate {
                mode: params.general.publish.mode
 
     label 'pairs'
+    conda "$projectDir/env/dev_env.yml"
 
     input:
     tuple val(id), path(pairs), val(singleCell), val(maxMismatch), val(method), val(pairtoolsDedupParams)

@@ -6,10 +6,11 @@ process HicToMcool {
     publishDir params.general.publish.mcool ? params.general.publish.mcool : "results",
                saveAs: {params.general.publish.mcool ? it : null},
                mode: params.general.publish.mode
-    label 'doJobArray'
+    
     label 'convertHicToMcool'
     cpus 2
     maxForks 1  // Necessary due to unexplained bug in hictk
+    conda "$projectDir/env/dev_env.yml"
 
     input:
     tuple val(id), path(hicFile)
@@ -43,9 +44,10 @@ process McoolToHic {
     publishDir params.general.publish.hic ? params.general.publish.hic : "results",
                saveAs: {params.general.publish.hic ? it : null},
                mode: params.general.publish.mode
-    label 'doJobArray'
+    
     label 'convertMcoolToHic'
-
+    conda "$projectDir/env/dev_env.yml"
+    
     input:
     tuple val(id), path(mcoolFile)
 

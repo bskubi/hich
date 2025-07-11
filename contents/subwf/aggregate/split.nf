@@ -2,6 +2,8 @@ include {withLog; stubLog} from '../util/logs.nf'
 include {cmdList} from '../util/dataStructures.nf'
 
 process Split {
+    conda "$projectDir/env/dev_env.yml"
+    
     input:
     tuple val(id), path(pairs), val(splitColumns), val(sql)
 
