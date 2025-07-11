@@ -55,6 +55,7 @@ process MultiQC {
     publishDir params.general.publish.qc ? params.general.publish.qc : "results",
                saveAs: {params.general.publish.qc ? it : null},
                mode: params.general.publish.mode
+    label 'stats'
 
     input:
     tuple val(report_name), path(stats)
