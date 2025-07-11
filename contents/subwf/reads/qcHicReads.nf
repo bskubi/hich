@@ -1,50 +1,50 @@
 include {skip} from '../util/cli.nf'
 include {withLog; stubLog} from '../util/logs.nf'
+include {keyUpdate} from '../util/keyUpdate.nf'
 
 process PairtoolsStats {
     publishDir params.general.publish.pairStats ? params.general.publish.pairStats : "results",
                saveAs: {params.general.publish.pairStats ? it : null},
                mode: params.general.publish.mode
     label 'stats'
-    conda "$projectDir/env/dev_env.yml"
 
     input:
-    tuple val(id), val(pairs_id), path(pairs)
+    tuple val(id), val(pairsID), val (statsKey), path(pairs)
 
     output:
-    tuple val(id), val(pairs_id), path("${id}.${pairs_id}.stats.txt")
+    tuple val(id), val(pairsID), val (statsKey), path("${id}.${pairsID}.stats.txt")
 
     shell:
-    cmd = "pairtools stats --output '${id}.${pairs_id}.stats.txt'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
+    cmd = "pairtools stats --output '${id}.${pairsID}.stats.txt'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
 
     logMap = [
         task: "PairtoolsStats",
         input: [
             id: id,
-            pairs_id: pairs_id,
+            pairsID: pairsID,
             pairs: pairs
         ],
         output: [
-            stats: "${id}.${pairs_id}.stats.txt"
+            stats: "${id}.${pairsID}.stats.txt"
         ]
     ]
 
     withLog(cmd, logMap)
 
     stub:
-    stub = "touch '${id}.${pairs_id}.stats.txt'"
+    stub = "touch '${id}.${pairsID}.stats.txt'"
 
-    cmd = "pairtools stats --output '${id}.${pairs_id}.stats.txt'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
+    cmd = "pairtools stats --output '${id}.${pairsID}.stats.txt'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
 
     logMap = [
         task: "PairtoolsStats",
         input: [
             id: id,
-            pairs_id: pairs_id,
+            pairsID: pairsID,
             pairs: pairs
         ],
         output: [
-            stats: "${id}.${pairs_id}.stats.txt"
+            stats: "${id}.${pairsID}.stats.txt"
         ]
     ]
 
@@ -55,8 +55,6 @@ process MultiQC {
     publishDir params.general.publish.qc ? params.general.publish.qc : "results",
                saveAs: {params.general.publish.qc ? it : null},
                mode: params.general.publish.mode
-
-    conda "$projectDir/env/dev_env.yml"
 
     input:
     tuple val(report_name), path(stats)
@@ -88,32 +86,65 @@ process MultiQC {
 workflow QCReads {
     take:
     samples
-    report_name
+    reportName
     
     main:
     samples
-    | filter{!skip("qcReads")}
-    | map{
-        sample ->
-        pairs = ["pairs",
-                  "fragPairs",
-                  "selectPairs",
-                  "dedupPairs"]
-        
-        pairs.collect{
-            pairfile ->
+        | filter{!skip("qcReads")}
+        | map{
+            sample ->
+            pairs = ["pairs",
+                    "fragPairs",
+                    "selectPairs",
+                    "dedupPairs"]
             
-            sample.containsKey(pairfile) && sample.get(pairfile).getClass() == sun.nio.fs.UnixPath ? [sample.id, pairfile, sample[pairfile]] : null
-        }.findAll{it != null}
-    }
-    | collect
-    | flatMap
-    | PairtoolsStats
-    | map{it[2]}
-    | collect
-    | map{[report_name, it]}
-    | MultiQC
-    
+            pairs.collect{
+                pairfile ->
+                hasPairFile = sample.containsKey(pairfile)
+                pairFileIsPath = sample.get(pairfile).getClass() == sun.nio.fs.UnixPath
+                statsKey = pairfile + "Stats"
+                noStatsFile = !sample.containsKey(statsKey)
+                computeStats = hasPairFile && pairFileIsPath && noStatsFile
+                statsInput = [sample.id, pairfile, statsKey, sample[pairfile]]
+                computeStats ? statsInput : null
+            }.findAll{it != null}
+        }
+        | collect
+        | flatMap
+        | PairtoolsStats
+        | map{
+            id = it[0]
+            statsKey = it[2]
+            statsFile = it[3]
+            [id: id, (statsKey): statsFile]
+        }
+        | set {statsResult}
+
+    keyUpdate(samples, statsResult, "id") | set{samples}
+
+    samples
+        | map {
+            sample ->
+            pairs = ["pairs",
+                    "fragPairs",
+                    "selectPairs",
+                    "dedupPairs"]
+            
+            pairs.collect{
+                pairfile ->
+                statsKey = pairfile + "Stats"
+                hasStatsFile = sample.containsKey(statsKey)
+                multiQCInput = sample.get(statsKey)
+                statsFileIsPath = sample.get(statsKey).getClass() == sun.nio.fs.UnixPath
+                addToReport = hasStatsFile && statsFileIsPath
+                addToReport ? multiQCInput : null
+            }.findAll{it != null}
+        }
+        | collect
+        | map{[reportName, it]}
+        | view
+        | MultiQC
+
 
     emit:
     samples

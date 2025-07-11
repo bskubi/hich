@@ -1,0 +1,40 @@
+nextflow_workflow {
+
+    name "Test Workflow QCReads"
+    script "contents/subwf/reads/qcHicReads.nf"
+    workflow "QCReads"
+
+    test("qcHicReads1") {
+        options "-stub-run"
+
+        when {
+            workflow {
+                """
+                input[0] = channel.of(
+                    [id: "1", pairs: file("1.pairs")],
+                    [id: "2", pairs: file("2.pairs")]
+                )
+                input[1] = "test"
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out.samples) {
+                assert size() == 2
+                def expected = [
+                    [id: "1", pairs: "1.pairs", pairsStats: "1.pairs.stats.txt"],
+                    [id: "2", pairs: "2.pairs", pairsStats: "2.pairs.stats.txt"]
+                ]
+                def observed = [get(0), get(1)]
+                observed.collect {
+                    it = [id: it.id, pairs: file(it.pairs).name, pairsStats: file(it.pairsStats).name]
+                    assert it in expected
+                }
+            }
+        }
+
+    }
+
+}
