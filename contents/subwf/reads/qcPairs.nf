@@ -94,10 +94,6 @@ workflow QCPairs {
         | filter{!skip("qcpairs")}
         | map{
             sample ->
-            pairs = ["pairs",
-                    "fragPairs",
-                    "selectPairs",
-                    "dedupPairs"]
             
             pairs.collect{
                 pairfile ->
