@@ -1,10 +1,10 @@
 nextflow_workflow {
 
-    name "Test Workflow QCReads"
-    script "contents/subwf/reads/qcHicReads.nf"
-    workflow "QCReads"
+    name "Test Workflow QCPairs"
+    script "contents/subwf/reads/qcPairs.nf"
+    workflow "QCPairs"
 
-    test("qcHicReads1") {
+    test("qcPairs1") {
         options "-stub-run"
 
         when {
@@ -14,7 +14,8 @@ nextflow_workflow {
                     [id: "1", pairs: file("1.pairs")],
                     [id: "2", pairs: file("2.pairs")]
                 )
-                input[1] = "test"
+                input[1] = ["pairs"]
+                input[2] = "test"
                 """
             }
         }
@@ -24,12 +25,12 @@ nextflow_workflow {
             with (workflow.out.samples) {
                 assert size() == 2
                 def expected = [
-                    [id: "1", pairs: "1.pairs", pairsStats: "1.pairs.stats.txt"],
-                    [id: "2", pairs: "2.pairs", pairsStats: "2.pairs.stats.txt"]
+                    [id: "1", pairs: "1.pairs"],
+                    [id: "2", pairs: "2.pairs"]
                 ]
                 def observed = [get(0), get(1)]
                 observed.collect {
-                    it = [id: it.id, pairs: file(it.pairs).name, pairsStats: file(it.pairsStats).name]
+                    it = [id: it.id, pairs: file(it.pairs).name]
                     assert it in expected
                 }
             }

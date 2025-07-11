@@ -83,14 +83,15 @@ process MultiQC {
     stubLog(stub, cmd, logMap)
 }
 
-workflow QCReads {
+workflow QCPairs {
     take:
     samples
+    pairs
     reportName
     
     main:
     samples
-        | filter{!skip("qcReads")}
+        | filter{!skip("qcpairs")}
         | map{
             sample ->
             pairs = ["pairs",
@@ -112,37 +113,9 @@ workflow QCReads {
         | collect
         | flatMap
         | PairtoolsStats
-        | map{
-            id = it[0]
-            statsKey = it[2]
-            statsFile = it[3]
-            [id: id, (statsKey): statsFile]
-        }
-        | set {statsResult}
-
-    keyUpdate(samples, statsResult, "id") | set{samples}
-
-    samples
-        | map {
-            sample ->
-            pairs = ["pairs",
-                    "fragPairs",
-                    "selectPairs",
-                    "dedupPairs"]
-            
-            pairs.collect{
-                pairfile ->
-                statsKey = pairfile + "Stats"
-                hasStatsFile = sample.containsKey(statsKey)
-                multiQCInput = sample.get(statsKey)
-                statsFileIsPath = sample.get(statsKey).getClass() == sun.nio.fs.UnixPath
-                addToReport = hasStatsFile && statsFileIsPath
-                addToReport ? multiQCInput : null
-            }.findAll{it != null}
-        }
+        | map{it[3]}
         | collect
         | map{[reportName, it]}
-        | view
         | MultiQC
 
 

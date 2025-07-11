@@ -3,7 +3,7 @@ include {Merge as MergeTechrepToBiorep; Merge as MergeBiorepToCondition} from '.
 include {LabelAggregationPlans} from './labelAggregationPlans.nf'
 include {Deduplicate} from './deduplicate.nf'
 include {Split} from './split.nf'
-include {QCReads} from '../reads/qcHicReads.nf'
+include {QCPairs} from '../reads/qcPairs.nf'
 include {emptyOnLastStep} from '../util/cli.nf'
 include {columnsToRows} from '../util/reshape.nf'
 include {keyUpdate} from '../util/keyUpdate.nf'
@@ -68,6 +68,10 @@ workflow Aggregate {
     keyUpdate(dedup.yes, deduplicated, "id")
     | concat(dedup.no)
     | set {samples}
+
+    if ("dedup" in params.general.get("qcAfter")) {
+        QCPairs(samples, ["dedupPairs"], "dedup")
+    }
 
     samples = emptyOnLastStep("dedup", samples)
 
@@ -136,7 +140,7 @@ workflow Aggregate {
     ///////////////////////////////////////////////////
 
     if ("aggregate" in params.general.get("qcAfter")) {
-        QCReads(samples, "aggregate")
+        QCPairs(samples, ["latestPairs"], "aggregate")
     }
 
     samples = emptyOnLastStep("aggregate", samples)

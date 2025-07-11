@@ -1,4 +1,4 @@
-include {QCReads} from './qcHicReads.nf'
+include {QCPairs} from './qcPairs.nf'
 include {emptyOnLastStep; skip} from '../util/cli.nf'
 include {keyUpdate} from '../util/keyUpdate.nf'
 include {withLog; stubLog} from '../util/logs.nf'
@@ -141,7 +141,7 @@ workflow Parse {
     // It might be good to simplify these workflow control steps since they
     // are repeated frequently.
     if ("parse" in params.general.get("qcAfter")) {
-        QCReads(samples, "parse")
+        QCPairs(samples, ["pairs"], "parse")
     }
 
     samples = emptyOnLastStep("parse", samples)

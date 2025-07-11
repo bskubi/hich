@@ -1,4 +1,4 @@
-include {QCReads} from './qcHicReads.nf'
+include {QCPairs} from './qcPairs.nf'
 include {emptyOnLastStep; skip} from '../util/cli.nf'
 include {keyUpdate} from '../util/keyUpdate.nf'
 include {isExistingFile} from '../util/files.nf'
@@ -72,7 +72,7 @@ workflow TagRestrictionFragments {
     keyUpdate(samples, result, "id") | set{samples}
 
     if ("tagRestrictionFragments" in params.general.get("qcAfter")) {
-        samples = QCReads(samples, "tagRestrictionFragments")
+        samples = QCPairs(samples, ["fragPairs"], "tagRestrictionFragments")
     }
 
     samples = emptyOnLastStep("tagRestrictionFragments", samples)

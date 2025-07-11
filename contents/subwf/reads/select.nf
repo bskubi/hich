@@ -1,4 +1,4 @@
-include {QCReads} from './qcHicReads.nf'
+include {QCPairs} from './qcPairs.nf'
 include {emptyOnLastStep; skip} from '../util/cli.nf'
 include {keyUpdate} from '../util/keyUpdate.nf'
 include {withLog; stubLog} from '../util/logs.nf'
@@ -156,7 +156,7 @@ workflow Select {
 
     
     if ("select" in params.general.get("qcAfter")) {
-        QCReads(samples, "select")
+        QCPairs(samples, ["selectPairs"], "select")
     }
 
     samples = emptyOnLastStep("select", samples)
