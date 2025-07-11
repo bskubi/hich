@@ -21,7 +21,9 @@ process PairtoolsFlipSort {
 
     reshapeCmd = sql ? ["hich pairs sql --memory-limit '${task.memory}' --threads '${task.cpus}' '${sql}' '${pairs}'"] : []
     flipCmd = ["pairtools flip --chroms-path '${chromsizes}'  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
-    sortCmd = ["pairtools sort --output '${id}.pairs.gz'  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
+    
+    memory = task.memory ? task.memory.toGiga() : "2"
+    sortCmd = ["pairtools sort --output '${id}.pairs.gz'  --memory ${memory}G --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
 
     if (!reshapeCmd) {
         flipCmd = flipCmd + ["'${pairs}'"]
@@ -40,7 +42,8 @@ process PairtoolsFlipSort {
 
     reshapeCmd = sql ? ["hich pairs sql --memory-limit '${task.memory}' --threads '${task.cpus}' '${sql}' '${pairs}'"] : []
     flipCmd = ["pairtools flip --chroms-path '${chromsizes}'  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
-    sortCmd = ["pairtools sort --output '${id}.pairs.gz'  --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
+    memory = task.memory ? task.memory.toGiga() : "2"
+    sortCmd = ["pairtools sort --output '${id}.pairs.gz'  --memory ${memory}G --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
 
     if (!reshapeCmd) {
         flipCmd = flipCmd + ["'${pairs}'"]

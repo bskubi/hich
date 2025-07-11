@@ -37,7 +37,9 @@ process PairtoolsParse2 {
 
     parse2Cmd = ["pairtools parse2 --flip --assembly '${assembly}' --chroms-path '${chromsizes}' ${parseParams}"]
     sqlCmd = sql ? ["hich pairs sql --memory-limit '${task.memory}' --threads '${task.cpus}' '${sql}' /dev/stdin"] : []
-    pairsSortCmd = ["pairtools sort --output '${id}.pairs.gz' --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
+    
+    memory = task.memory ? task.memory.toGiga() : "2"
+    pairsSortCmd = ["pairtools sort --output '${id}.pairs.gz' --memory ${memory}G --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
 
     // Combine the individual commands, then join with a pipe to form the full command
     parseCmd = parse2Cmd + sqlCmd + pairsSortCmd
@@ -45,7 +47,9 @@ process PairtoolsParse2 {
     viewParse = (viewCmd + parseCmd).join(" | ")
 
     
-    cmd = "samtools view '${sambam}' | awk -F'\\t' '{ print \$1 }' | partitioned && ${viewParse} || ${sortParse}"
+
+    
+    cmd = "samtools view '${sambam}' | head -n 10000 | awk -F'\\t' '{ print \$1 }' | partitioned && ${viewParse} || ${sortParse}"
 
     logMap = [
         task: "PairtoolsParse2",
@@ -90,7 +94,8 @@ process PairtoolsParse2 {
 
     parse2Cmd = ["pairtools parse2 --flip --assembly '${assembly}' --chroms-path '${chromsizes}' ${parseParams}"]
     sqlCmd = sql ? ["hich pairs sql --memory-limit ${} '${sql}' /dev/stdin"] : []
-    pairsSortCmd = ["pairtools sort --output '${id}.pairs.gz' --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
+    memory = task.memory ? task.memory.toGiga() : "2"
+    pairsSortCmd = ["pairtools sort --output '${id}.pairs.gz' --memory ${memory}G --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
 
     // Combine the individual commands, then join with a pipe to form the full command
     parseCmd = parse2Cmd + sqlCmd + pairsSortCmd
@@ -98,7 +103,7 @@ process PairtoolsParse2 {
     viewParse = (viewCmd + parseCmd).join(" | ")
 
     
-    cmd = "samtools view '${sambam}' | awk -F'\\t' '{ print \$1 }' | partitioned && ${viewParse} || ${sortParse}"
+    cmd = "samtools view '${sambam}' | head -n 10000 | awk -F'\\t' '{ print \$1 }' | partitioned && ${viewParse} || ${sortParse}"
 
 
     logMap = [
