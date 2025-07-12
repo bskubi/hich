@@ -36,14 +36,17 @@ workflow Chromsizes {
 
     main:
     
-    samples
-        | filter {!skip("chromsizes") && !isExistingFile(it.chromsizes)}
-        | map{tuple(it.genomeReference, it.genomeReference, it.assembly, "${it.assembly}.sizes")}
-        | unique
-        | FaSize
-        | map{genomeReference, assembly, chromsizes -> [genomeReference: file(genomeReference), assembly: assembly, chromsizes: chromsizes]}
-        | set{result}
-    keyUpdate(samples, result, ["genomeReference", "assembly"]) | set{samples}
+    if (!skip("chromsizes")) {
+        samples
+            | filter {!isExistingFile(it.chromsizes)}
+            | map{tuple(it.genomeReference, it.genomeReference, it.assembly, "${it.assembly}.sizes")}
+            | unique
+            | FaSize
+            | map{genomeReference, assembly, chromsizes -> [genomeReference: file(genomeReference), assembly: assembly, chromsizes: chromsizes]}
+            | set{result}
+        keyUpdate(samples, result, ["genomeReference", "assembly"]) | set{samples}
+    }
+
 
     samples = emptyOnLastStep("chromsizes", samples)
 

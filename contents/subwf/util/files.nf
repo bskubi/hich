@@ -7,7 +7,7 @@ def isExistingFile(it) {
     return it && it.metaClass.respondsTo(it, 'exists') && it.exists()
 }
 
-def datatypeFromExtension(path) {
+def formatFromExtension(path) {
     /*
         Look for various known extensions to extract the datatype implicitly from the
         input file so that Hich can ingest intermediate file formats appropriately

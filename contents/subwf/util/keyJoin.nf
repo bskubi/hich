@@ -31,7 +31,7 @@ workflow keyJoin {
     
     how = options.get("how", "left")
     validHow = ["left", "right", "full"]
-    assert validHow.contains(how), "In sqljoin, how must be one of ${validHow} but was ${how}"
+    assert validHow.contains(how), "In keyJoin, how must be one of ${validHow} but was ${how}"
 
     
     // Get the join by values and convert to list if it's not already
@@ -60,7 +60,7 @@ workflow keyJoin {
             sample ->
             by.every {
                 key ->
-                assert sample.containsKey(key), "In sqljoin with options ${options}, a sample is missing the join by key '${key}':\n${sample}"
+                assert sample.containsKey(key), "In keyJoin with options ${options}, a sample is missing the join by key '${key}':\n${sample}"
             }
         }
 
@@ -75,7 +75,7 @@ workflow keyJoin {
 
     preserved = options.preserved ?: "left"
     other = preserved == "left" ? "right" : "left"
-    assert preserved in ["left", "right"], "In sqljoin, options.preserved must be 'left' (default) or 'right' but was ${preserved}"
+    assert preserved in ["left", "right"], "In keyJoin, options.preserved must be 'left' (default) or 'right' but was ${preserved}"
 
     
 

@@ -1,3 +1,5 @@
+include {formatFromExtension} from './files.nf'
+
 def parsePattern(String str, String parsePattern) {
     /*
         Used to extract sample attributes from filenames, such as condition, biorep, and techrep,
@@ -99,7 +101,7 @@ def sampleFromFastqPairs(files) {
     file1 = files[0]
     file2 = files[1]
 
-    bothFastq = datatypeFromExtension(file1) == "fastq" && datatypeFromExtension(file2) == "fastq"
+    bothFastq = formatFromExtension(file1) == "fastq" && formatFromExtension(file2) == "fastq"
     assert bothFastq, "--fastqPairs grouped ${file1} and ${file2}, but these do not contain a .fastq or .fq extension as expected."
     sample = [fastq1:file1, fastq2: file2, datatype: "fastq"]
 

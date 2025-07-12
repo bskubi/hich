@@ -91,29 +91,31 @@ workflow QCPairs {
     reportName
     
     main:
-    samples
-        | filter{!skip("qcpairs")}
-        | map{
-            sample ->
-            
-            pairs.collect{
-                pairfile ->
-                hasPairFile = sample.containsKey(pairfile)
-                pairFileIsPath = sample.get(pairfile).getClass() == sun.nio.fs.UnixPath
-                statsKey = pairfile + "Stats"
-                noStatsFile = !sample.containsKey(statsKey)
-                computeStats = hasPairFile && pairFileIsPath && noStatsFile
-                statsInput = [sample.id, pairfile, statsKey, sample[pairfile]]
-                computeStats ? statsInput : null
-            }.findAll{it != null}
-        }
-        | collect
-        | flatMap
-        | PairtoolsStats
-        | map{it[3]}
-        | collect
-        | map{[reportName, it]}
-        | MultiQC
+    if (!skip("qcpairs")) {
+        samples
+            | map{
+                sample ->
+                
+                pairs.collect{
+                    pairfile ->
+                    hasPairFile = sample.containsKey(pairfile)
+                    pairFileIsPath = sample.get(pairfile).getClass() == sun.nio.fs.UnixPath
+                    statsKey = pairfile + "Stats"
+                    noStatsFile = !sample.containsKey(statsKey)
+                    computeStats = hasPairFile && pairFileIsPath && noStatsFile
+                    statsInput = [sample.id, pairfile, statsKey, sample[pairfile]]
+                    computeStats ? statsInput : null
+                }.findAll{it != null}
+            }
+            | collect
+            | flatMap
+            | PairtoolsStats
+            | map{it[3]}
+            | collect
+            | map{[reportName, it]}
+            | MultiQC
+    }
+
 
 
     emit:

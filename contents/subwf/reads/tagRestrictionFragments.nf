@@ -63,17 +63,20 @@ workflow TagRestrictionFragments {
 
     main:
 
-    samples
-        | filter{!skip("tagRestrictionFragments") && isExistingFile(it.fragmentIndex) && isExistingFile(it.latestPairs)}
-        | map{tuple(it.id, it.latestPairs, it.fragmentIndex)}
-        | HichFragtag
-        | map{[id:it[0], fragPairs:it[1], latest:it[1], latestPairs:it[1]]}
-        | set{result}
-    keyUpdate(samples, result, "id") | set{samples}
+    if (!skip("tagRestrictionFragments")) {
+        samples
+            | filter{isExistingFile(it.fragmentIndex) && isExistingFile(it.latestPairs)}
+            | map{tuple(it.id, it.latestPairs, it.fragmentIndex)}
+            | HichFragtag
+            | map{[id:it[0], fragPairs:it[1], latest:it[1], latestPairs:it[1]]}
+            | set{result}
+        keyUpdate(samples, result, "id") | set{samples}
 
-    if ("tagRestrictionFragments" in params.general.get("qcAfter")) {
-        samples = QCPairs(samples, ["fragPairs"], "tagRestrictionFragments")
+        if ("tagRestrictionFragments" in params.general.get("qcAfter")) {
+            samples = QCPairs(samples, ["fragPairs"], "tagRestrictionFragments")
+        }
     }
+
 
     samples = emptyOnLastStep("tagRestrictionFragments", samples)
 

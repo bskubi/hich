@@ -1,4 +1,4 @@
-include {emptyOnLastStep} from '../util/cli.nf'
+include {emptyOnLastStep; skip} from '../util/cli.nf'
 include {keyUpdate} from '../util/keyUpdate.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 

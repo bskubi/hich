@@ -16,6 +16,7 @@ dependencies:
   - tinydb>=4.8.2,<5
   - scipy>=1.15.2,<2
   - openjdk=17
+  - hicexplorer
   - pip
   - pip:
     - smart-open-with-pbgzip>=0.1.5,<0.2

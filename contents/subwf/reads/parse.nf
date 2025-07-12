@@ -130,18 +130,20 @@ workflow Parse {
     samples
 
     main:
-    samples
-        | filter{!skip("parse") && it.datatype in ["fastq", "sambam"]}
-        | map{tuple(it.id, it.sambam, it.chromsizes, it.assembly, it.pairtoolsParse2Params, it.parseSQL, it.subMap("minMapq"))}
-        | PairtoolsParse2
-        | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
-        | set{result}
-    keyUpdate(samples, result, "id") | set{samples}
+    if (!skip("parse")) {
+        samples
+            | filter{it.datatype in ["fastq", "sambam"]}
+            | map{tuple(it.id, it.sambam, it.chromsizes, it.assembly, it.pairtoolsParse2Params, it.parseSQL, it.subMap("minMapq"))}
+            | PairtoolsParse2
+            | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
+            | set{result}
+        keyUpdate(samples, result, "id") | set{samples}
 
-    // It might be good to simplify these workflow control steps since they
-    // are repeated frequently.
-    if ("parse" in params.general.get("qcAfter")) {
-        QCPairs(samples, ["pairs"], "parse")
+        // It might be good to simplify these workflow control steps since they
+        // are repeated frequently.
+        if ("parse" in params.general.get("qcAfter")) {
+            QCPairs(samples, ["pairs"], "parse")
+        }
     }
 
     samples = emptyOnLastStep("parse", samples)

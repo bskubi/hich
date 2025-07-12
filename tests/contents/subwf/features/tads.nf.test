@@ -1,0 +1,29 @@
+nextflow_process {
+
+    name "Test Process HiCExplorerFindTADs"
+    script "contents/subwf/features/tads.nf"
+    process "HiCExplorerFindTADs"
+
+    test("findTADs") {
+
+        when {
+            process {
+                """
+                input[0] = tuple(
+                    "test", 
+                    "$projectDir/tests/assets/Akgol_2021_4DNFI8ZYY7VT_HFF_hic3.0_chr19_100k.mcool", 
+                    "100000", 
+                    "--minDepth 400000 --maxDepth 1000000 --step 100000 --chromosomes chr19 --correctForMultipleTesting bonferroni"
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert snapshot(process.out).match()
+        }
+
+    }
+
+}

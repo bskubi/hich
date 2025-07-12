@@ -146,23 +146,22 @@ workflow Select {
     
     main:
 
-    samples
-        | filter{!skip("select") && (it.pairtoolsSelectParams || it.pairtoolsSelectFilters) && (it.pairs || it.latestPairs)}
-        | map{tuple(it.id, it.latestPairs, it.pairtoolsSelectParams, it.pairtoolsSelectFilters)}
-        | PairtoolsSelect
-        | map{[id:it[0], selectPairs:it[1], latest:it[1], latestPairs:it[1]]}
-        | set{result}
-    keyUpdate(samples, result, "id") | set{samples}
+    if (!skip("select")) {
+        samples
+            | filter{(it.pairtoolsSelectParams || it.pairtoolsSelectFilters) && (it.pairs || it.latestPairs)}
+            | map{tuple(it.id, it.latestPairs, it.pairtoolsSelectParams, it.pairtoolsSelectFilters)}
+            | PairtoolsSelect
+            | map{[id:it[0], selectPairs:it[1], latest:it[1], latestPairs:it[1]]}
+            | set{result}
+        keyUpdate(samples, result, "id") | set{samples}
 
-    
-    if ("select" in params.general.get("qcAfter")) {
-        QCPairs(samples, ["selectPairs"], "select")
+        
+        if ("select" in params.general.get("qcAfter")) {
+            QCPairs(samples, ["selectPairs"], "select")
+        }
     }
 
     samples = emptyOnLastStep("select", samples)
-
-
-
 
     emit:
     samples

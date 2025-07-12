@@ -116,13 +116,16 @@ workflow McoolMatrix {
     
     main:
 
-    samples
-    | filter{!skip("mcoolMatrix") && it.matrix.makeMcoolFileFormat && (it.pairs || it.latestPairs) && !it.mcool}
-    | map{tuple(it.id, it.latestPairs, it.chromsizes, it.pairsFormat, it.assembly, it.matrix, it.coolerCloadParams, it.coolerZoomifyParams)}
-    | CoolerZoomify
-    | map{id, mcool -> [id: id, mcool: mcool, latestMatrix: mcool]}
-    | set{result}
-    keyUpdate(samples, result, "id") | set{samples}
+    if (!skip("mcoolMatrix")) {
+        samples
+            | filter{it.matrix.makeMcoolFileFormat && (it.pairs || it.latestPairs) && !it.mcool}
+            | map{tuple(it.id, it.latestPairs, it.chromsizes, it.pairsFormat, it.assembly, it.matrix, it.coolerCloadParams, it.coolerZoomifyParams)}
+            | CoolerZoomify
+            | map{id, mcool -> [id: id, mcool: mcool, latestMatrix: mcool]}
+            | set{result}
+            keyUpdate(samples, result, "id") | set{samples}
+    }
+
     
     samples = emptyOnLastStep("mcoolMatrix", samples)
 

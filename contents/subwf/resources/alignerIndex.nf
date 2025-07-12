@@ -98,8 +98,11 @@ workflow AlignerIndex {
         samples
     
     main:
+
+    if (!skip("alignerIndex")) {
+
     samples
-        | filter {!skip("alignerIndex") && it.datatype == "fastq" && it.aligner == "bwa-mem2"}
+        | filter {it.datatype == "fastq" && it.aligner == "bwa-mem2"}
         | filter {!isExistingFile(it.alignerIndexDir)}
         | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
         | map{tuple(it.genomeReference, it.genomeReference, it.alignerIndexPrefix)}
@@ -110,7 +113,7 @@ workflow AlignerIndex {
         | set{resultBwaMem2Index}
 
     samples
-        | filter {!skip("alignerIndex") && it.datatype == "fastq" && it.aligner == "bwa"}
+        | filter {it.datatype == "fastq" && it.aligner == "bwa"}
         | filter {!isExistingFile(it.alignerIndexDir)}
         | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
         | map{tuple(it.genomeReference, it.genomeReference, it.alignerIndexPrefix)}
@@ -121,7 +124,7 @@ workflow AlignerIndex {
         | set{resultBwaMemIndex}
 
     samples
-        | filter {!skip("alignerIndex") && it.datatype == "fastq" && it.aligner == "bsbolt"}
+        | filter {it.datatype == "fastq" && it.aligner == "bsbolt"}
         | filter {!isExistingFile(it.alignerIndexDir)}
         | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
         | map{tuple(it.genomeReference, it.genomeReference, it.alignerIndexPrefix)}
@@ -132,9 +135,11 @@ workflow AlignerIndex {
                 [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
         | set{resultBSBoltIndex}
 
-    keyUpdate(samples, resultBwaMem2Index, "genomeReference") | set{samples}
-    keyUpdate(samples, resultBwaMemIndex, "genomeReference") | set{samples}
-    keyUpdate(samples, resultBSBoltIndex, "genomeReference") | set{samples}
+        keyUpdate(samples, resultBwaMem2Index, "genomeReference") | set{samples}
+        keyUpdate(samples, resultBwaMemIndex, "genomeReference") | set{samples}
+        keyUpdate(samples, resultBSBoltIndex, "genomeReference") | set{samples}
+    }
+
 
     samples = emptyOnLastStep("alignerIndex", samples)
 

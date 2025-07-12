@@ -86,26 +86,31 @@ workflow IngestMatrix {
 
     main:
 
-    samples
-        | filter{!skip("ingestMatrix") && it.datatype == "matrix" && it.mcool && !it.hic}
-        | map{tuple(it.id, it.mcool)}
-        | McoolToHic
-        | map{
-            id, hicFile ->
-            [id:id, hic:hicFile, latest:hicFile, latestMatrix:hicFile]}
-        | set{mcoolToHic}
+    if (!skip("ingestMatrix")) {
+        samples
+            | filter{it.datatype == "matrix" && it.mcool && !it.hic}
+            | map{tuple(it.id, it.mcool)}
+            | McoolToHic
+            | map{
+                id, hicFile ->
+                [id:id, hic:hicFile, latest:hicFile, latestMatrix:hicFile]}
+            | set{mcoolToHic}
+        
+        samples
+            | filter{it.datatype == "matrix" && it.hic && !it.mcool}
+            | map{tuple(it.id, it.hic)}
+            | HicToMcool
+            | map{
+                id, mcoolFile ->
+                [id:id, mcool:mcoolFile, latest:mcoolFile, latestMatrix:mcoolFile]}
+            | set{hicToMcool}
+
+        keyUpdate(samples, mcoolToHic, "id") | set{samples}
+        keyUpdate(samples, hicToMcool, "id") | set{samples}
+    }
+
     
-    samples
-        | filter{!skip("ingestMatrix") && it.datatype == "matrix" && it.hic && !it.mcool}
-        | map{tuple(it.id, it.hic)}
-        | HicToMcool
-        | map{
-            id, mcoolFile ->
-            [id:id, mcool:mcoolFile, latest:mcoolFile, latestMatrix:mcoolFile]}
-        | set{hicToMcool}
-    
-    keyUpdate(samples, mcoolToHic, "id") | set{samples}
-    keyUpdate(samples, hicToMcool, "id") | set{samples}
+
 
     samples = emptyOnLastStep("ingestMatrix", samples)
 

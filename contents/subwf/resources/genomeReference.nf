@@ -77,28 +77,31 @@ workflow GenomeReference {
             5. Download
             6. Set file as output path
         */
-    samples
-        | filter{!skip("genomeReference") && !isExistingFile(it.genomeReference)}
-        | map{
-            errorMessage = """
-            Sample ${it.id} with assembly '${it.assembly}' had genomeReference '${it.genomeReference}' which is either null or nonexistent.
-            Hich can automatically download genomeReference for common model organisms based on assembly nickname, but this only supports
-            the following options: ${synonyms.keySet()}. You can search on https://www.ncbi.nlm.nih.gov/home/genomes/ for genomes for your organism,
-            manually download, and specify the path to the filename in the sample file under the genomeReference column. 
-            """
+    if (!skip("genomeReference")) {
+        samples
+            | filter{!isExistingFile(it.genomeReference)}
+            | map{
+                errorMessage = """
+                Sample ${it.id} with assembly '${it.assembly}' had genomeReference '${it.genomeReference}' which is either null or nonexistent.
+                Hich can automatically download genomeReference for common model organisms based on assembly nickname, but this only supports
+                the following options: ${synonyms.keySet()}. You can search on https://www.ncbi.nlm.nih.gov/home/genomes/ for genomes for your organism,
+                manually download, and specify the path to the filename in the sample file under the genomeReference column. 
+                """
 
-            it.genomeReference = it.genomeReference ?: urls.get(synonyms.get(it.assembly))
-            
-            assert it.genomeReference, errorMessage
-            it
-        }
-        | map{tuple(it.assembly, it.genomeReference)}
-        | unique
-        | StageGenomeReference
-        | map{assembly, genomeReference -> [assembly: assembly, genomeReference: genomeReference]}
-        | set{result}
+                it.genomeReference = it.genomeReference ?: urls.get(synonyms.get(it.assembly))
+                
+                assert it.genomeReference, errorMessage
+                it
+            }
+            | map{tuple(it.assembly, it.genomeReference)}
+            | unique
+            | StageGenomeReference
+            | map{assembly, genomeReference -> [assembly: assembly, genomeReference: genomeReference]}
+            | set{result}
 
-    keyUpdate(samples, result, "assembly") | set{samples}
+        keyUpdate(samples, result, "assembly") | set{samples}
+    }
+
 
     samples = emptyOnLastStep("genomeReference", samples)
 

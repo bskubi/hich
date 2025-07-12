@@ -16,9 +16,11 @@ include {McoolMatrix} from './subwf/matrix/mcoolMatrix.nf'
 include {IngestMatrix} from './subwf/matrix/ingestMatrix.nf'
 include {Hicrep} from './subwf/features/hicrep.nf'
 include {CompartmentScores} from './subwf/features/compartmentScores.nf'
+include {InsulationScores} from './subwf/features/insulationScores.nf'
+include {TADs} from './subwf/features/tads.nf'
 include {Loops} from './subwf/features/loops.nf'
 include {DifferentialLoops} from './subwf/features/differentialLoops.nf'
-include {InsulationScores} from './subwf/features/insulationScores.nf'
+
 include {emptyOnLastStep; skip} from './subwf/util/cli.nf'
 
 workflow HichWorkflow {
@@ -41,9 +43,11 @@ workflow HichWorkflow {
 
         | Hicrep
         | CompartmentScores
+        | InsulationScores
+        | TADs
         | Loops
         | DifferentialLoops
-        | InsulationScores
+        
 
         | set{samples}
 
