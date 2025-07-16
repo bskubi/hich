@@ -32,7 +32,7 @@ process PairtoolsParse2 {
     // Set up the individual commands in lists to make them easier to combine with pipes into a complete command
     // sambamba is both slower than samtools as of 2017, and also can't pipe to stdout, so we use samtools
     
-    sortCmd = ["samtools sort -n '${sambam}'"]
+    sortCmd = ["samtools sort -@ ${task.cpus} -n '${sambam}'"]
     viewCmd = ["samtools view -b '${sambam}'"]
 
     parse2Cmd = ["pairtools parse2 --flip --assembly '${assembly}' --chroms-path '${chromsizes}' ${parseParams}"]
@@ -45,11 +45,8 @@ process PairtoolsParse2 {
     parseCmd = parse2Cmd + sqlCmd + pairsSortCmd
     sortParse = (sortCmd + parseCmd).join(" | ")
     viewParse = (viewCmd + parseCmd).join(" | ")
-
     
-
-    
-    cmd = "samtools view '${sambam}' | head -n 10000 | awk -F'\\t' '{ print \$1 }' | partitioned && ${viewParse} || ${sortParse}"
+    cmd = "samtools view '${sambam}' | head -n 10000 | awk -F'\\t' '{ print \$1 }' | partitioned && (echo sorted > log && ${viewParse}) || (echo unsorted > log && ${sortParse})"
 
     logMap = [
         task: "PairtoolsParse2",
