@@ -46,7 +46,7 @@ process PairtoolsParse2 {
     sortParse = (sortCmd + parseCmd).join(" | ")
     viewParse = (viewCmd + parseCmd).join(" | ")
     
-    cmd = "samtools view '${sambam}' | head -n 10000 | awk -F'\\t' '{ print \$1 }' | partitioned && (echo sorted > log && ${viewParse}) || (echo unsorted > log && ${sortParse})"
+    cmd = viewParse
 
     logMap = [
         task: "PairtoolsParse2",
@@ -100,7 +100,8 @@ process PairtoolsParse2 {
     viewParse = (viewCmd + parseCmd).join(" | ")
 
     
-    cmd = "samtools view '${sambam}' | head -n 10000 | awk -F'\\t' '{ print \$1 }' | partitioned && ${viewParse} || ${sortParse}"
+    // cmd = "samtools view '${sambam}' | head -n 10000 | awk -F'\\t' '{ print \$1 }' | partitioned && ${viewParse} || ${sortParse}"
+    cmd = viewParse
 
 
     logMap = [
