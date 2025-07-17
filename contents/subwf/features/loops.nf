@@ -7,6 +7,7 @@ process MustacheLoops{
                mode: params.general.publish.mode
     container params.general.mustacheContainer
     label 'features'
+    tag "$id"
 
     input:
     tuple val(id), val(prefix), path(mx), val(mustacheParams)

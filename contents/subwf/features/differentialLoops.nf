@@ -7,6 +7,7 @@ process MustacheDiffloops{
                mode: params.general.publish.mode
     container params.general.mustacheContainer
     label 'features'
+    tag "$id1 $id2"
 
     input:
     tuple val(id1), val(id2), val(prefix), path(mx1, stageAs: 'mx1/*'), path(mx2, stageAs: 'mx2/*'), val(mustacheParams)
@@ -46,6 +47,7 @@ workflow DifferentialLoops {
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
 
             pairSamplesByStrategy(samples, strategy)
+                | filter{s1, s2 -> s1.id != s2.id && s1.matrixPlanName == s2.matrixPlanName}
                 | map{
                     s1, s2 ->
                     prefix = "${s1.id}_${s2.id}"

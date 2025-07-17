@@ -12,15 +12,16 @@ process JuicerToolsPre {
     publishDir params.general.publish.hic ? params.general.publish.hic : "results",
                saveAs: {params.general.publish.hic ? it : null},
                mode: params.general.publish.mode
+    tag "$id"
 
     label 'createMatrix'
     conda "$projectDir/env/dev_env.yml"
 
     input:
-    tuple val(id), path(pairs), path(chromsizes), val(pairsFormat), val(matrix), val(juicerToolsPreParams), val(flags)
+    tuple val(id), val(matrixPlanName), path(pairs), path(chromsizes), val(pairsFormat), val(matrix), val(juicerToolsPreParams), val(flags)
 
     output:
-    tuple val(id), path(hic)
+    tuple val(id), val(matrixPlanName), path(hic)
 
     shell:
     juicerToolsPreParams = juicerToolsPreParams ?: []
@@ -89,12 +90,14 @@ workflow HicMatrix {
     main:
     if (!skip("hicMatrix")) {
         samples
-            | filter{it.matrix.makeHicFileFormat && (it.pairs || it.latestPairs) && !it.hic}
-            | map{tuple(it.id, it.latestPairs, it.chromsizes, it.pairsFormat, it.matrix, it.juicerToolsPreParams, it.subMap("minMapq"))}
+            | filter{it.makeHicFileFormat && it.latestPairs && !it.hic}
+            | map{tuple(it.id, it.matrixPlanName, it.latestPairs, it.chromsizes, it.pairsFormat, it.matrix, it.juicerToolsPreParams, it.subMap("minMapq"))}
             | JuicerToolsPre
-            | map{id, hic -> [id: id, hic: hic, latestMatrix: hic]}
+            | map{id, matrixPlanName, hic -> [id: id, matrixPlanName: matrixPlanName, hic: hic, latestMatrix: hic]}
             | set{result}
-        keyUpdate(samples, result, "id") | set{samples}
+            
+            keyUpdate(samples, result, ["id", "matrixPlanName"])
+                | set{samples}
     }
 
 

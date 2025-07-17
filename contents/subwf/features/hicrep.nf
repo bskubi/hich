@@ -5,6 +5,7 @@ include {withLog; stubLog} from '../util/logs.nf'
 
 process HicrepCombos{
     publishDir "results/hicrep", mode: params.general.publish.mode
+    tag "$planName"
     
     input:
     tuple val(planName), path(mcools), val(resolutions), val(chroms), val(exclude), val(chromFilter), val(h), val(dBPMax), val(bDownSample)

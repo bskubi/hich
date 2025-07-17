@@ -2,11 +2,12 @@ include {createCompositeStrategy; filterSamplesByStrategy} from '../util/analysi
 include {skip} from '../util/cli.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
-process CallCompartments {
+process CooltoolsCompartments {
     publishDir "results/compartments",
                mode: params.general.publish.mode
 
     label 'features'
+    tag "$id"
 
 
     input:
@@ -48,7 +49,7 @@ workflow CompartmentScores {
                     sample ->
                     tuple(sample.id, sample.genomeReference, sample.latestMatrix, analysisPlan.resolution, analysisPlan.hichCompartmentsParams, analysisPlan.n_eigs)
                 }
-                | CallCompartments
+                | CooltoolsCompartments
         }
     }
 

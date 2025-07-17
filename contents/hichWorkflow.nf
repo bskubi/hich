@@ -11,6 +11,7 @@ include {Select} from './subwf/reads/select.nf'
 include {LabelAggregationPlans} from './subwf/aggregate/labelAggregationPlans.nf'
 include {Aggregate} from './subwf/aggregate/aggregate.nf'
 
+include {LabelMatrixPlans} from './subwf/matrix/labelMatrixPlans.nf'
 include {HicMatrix} from './subwf/matrix/hicMatrix.nf'
 include {McoolMatrix} from './subwf/matrix/mcoolMatrix.nf'
 include {IngestMatrix} from './subwf/matrix/ingestMatrix.nf'
@@ -37,9 +38,11 @@ workflow HichWorkflow {
 
         | Aggregate
 
+        | LabelMatrixPlans
+        | IngestMatrix
         | HicMatrix
         | McoolMatrix
-        | IngestMatrix
+        
 
         | Hicrep
         | CompartmentScores

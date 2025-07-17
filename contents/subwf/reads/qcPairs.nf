@@ -7,6 +7,7 @@ process PairtoolsStats {
                saveAs: {params.general.publish.pairStats ? it : null},
                mode: params.general.publish.mode
     label 'stats'
+    tag "$id"
 
     input:
     tuple val(id), val(pairsID), val (statsKey), path(pairs)
@@ -15,9 +16,9 @@ process PairtoolsStats {
     tuple val(id), val(pairsID), val (statsKey), path("${id}.${pairsID}.stats.txt")
 
     shell:
-    cmd = "pairtools stats --output '${id}.${pairsID}.stats.txt'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
+    def cmd = "pairtools stats --output '${id}.${pairsID}.stats.txt'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
 
-    logMap = [
+    def logMap = [
         task: "PairtoolsStats",
         input: [
             id: id,
@@ -32,11 +33,11 @@ process PairtoolsStats {
     withLog(cmd, logMap)
 
     stub:
-    stub = "touch '${id}.${pairsID}.stats.txt'"
+    def stub = "touch '${id}.${pairsID}.stats.txt'"
 
-    cmd = "pairtools stats --output '${id}.${pairsID}.stats.txt'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
+    def cmd = "pairtools stats --output '${id}.${pairsID}.stats.txt'  --nproc-in ${task.cpus} --nproc-out ${task.cpus} '${pairs}'"
 
-    logMap = [
+    def logMap = [
         task: "PairtoolsStats",
         input: [
             id: id,
@@ -56,28 +57,40 @@ process MultiQC {
                saveAs: {params.general.publish.qc ? it : null},
                mode: params.general.publish.mode
     label 'stats'
+    tag "$reportName"
 
     input:
-    tuple val(report_name), path(stats)
+    tuple val(reportName), path(stats)
 
     output:
-    path("${report_name}.multiqc_report.html")
+    path("${reportName}.multiqcReport.html")
 
     shell:
-    cmd = "multiqc --force --no-version-check --filename '${report_name}.multiqc_report.html' --module pairtools . && chmod -R a+w ."
-    cmd
-
-    stub:
-    stub = "touch '${report_name}.multiqc_report.html'"
-    cmd = "multiqc --force --no-version-check --filename '${report_name}.multiqc_report.html' --module pairtools . && chmod -R a+w ."
-    logMap = [
+    def cmd = "multiqc --force --no-version-check --filename '${reportName}.multiqcReport.html' --module pairtools . && chmod -R a+w ."
+    def logMap = [
         task: task,
         input: [
-            report_name: report_name,
+            reportName: reportName,
             stats: stats
         ],
         output: [
-            report: "${report_name}.multiqc_report.html"
+            report: "${reportName}.multiqcReport.html"
+        ]
+    ]
+
+    withLog(cmd, logMap)
+
+    stub:
+    def stub = "touch '${reportName}.multiqcReport.html'"
+    def cmd = "multiqc --force --no-version-check --filename '${reportName}.multiqcReport.html' --module pairtools . && chmod -R a+w ."
+    def logMap = [
+        task: task,
+        input: [
+            reportName: reportName,
+            stats: stats
+        ],
+        output: [
+            report: "${reportName}.multiqcReport.html"
         ]
     ]
 
@@ -91,6 +104,7 @@ workflow QCPairs {
     reportName
     
     main:
+
     if (!skip("qcpairs")) {
         samples
             | map{
@@ -112,7 +126,7 @@ workflow QCPairs {
             | PairtoolsStats
             | map{it[3]}
             | collect
-            | map{[reportName, it]}
+            | map{paths -> [reportName, paths]}
             | MultiQC
     }
 

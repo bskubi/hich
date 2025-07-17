@@ -6,6 +6,7 @@ process CooltoolsInsulation {
     publishDir "results/insulation",
                mode: params.general.publish.mode
     label 'features'
+    tag "$id"
 
     input:
     tuple val(id), path(mcool), val(resolution), val(cooltoolsInsulationParams), val(window)
