@@ -35,11 +35,17 @@ process PairtoolsParse2 {
     sortCmd = ["samtools sort -@ ${task.cpus} -n '${sambam}'"]
     viewCmd = ["samtools view -b '${sambam}'"]
 
+    // Use 2G less than the total memory allocated for the job
+    // to a minimum of 2G
+    memory = task.memory ? task.memory.toGiga() as Integer : 4
+    memory = memory - 2
+    memory = memory.max(2)
+
     parse2Cmd = ["pairtools parse2 --flip --assembly '${assembly}' --chroms-path '${chromsizes}' ${parseParams}"]
-    sqlCmd = sql ? ["hich pairs sql --memory-limit '${task.memory}' --threads '${task.cpus}' '${sql}' /dev/stdin"] : []
+    sqlCmd = sql ? ["hich pairs sql --memory-limit '${memory}' --threads '${task.cpus}' '${sql}' /dev/stdin"] : []
     
-    memory = task.memory ? task.memory.toGiga() : "2"
-    pairsSortCmd = ["pairtools sort --output '${id}.pairs.gz' --memory ${memory}G --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
+    
+    pairsSortCmd = ["pairtools sort --output '${id}.pairs.gz' --memory ${memory-2}G --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
 
     // Combine the individual commands, then join with a pipe to form the full command
     parseCmd = parse2Cmd + sqlCmd + pairsSortCmd
