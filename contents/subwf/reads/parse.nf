@@ -45,7 +45,7 @@ process PairtoolsParse2 {
     sqlCmd = sql ? ["hich pairs sql --memory-limit '${memory}' --threads '${task.cpus}' '${sql}' /dev/stdin"] : []
     
     
-    pairsSortCmd = ["pairtools sort --output '${id}.pairs.gz' --memory ${memory-2}G --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
+    pairsSortCmd = ["pairtools sort --output '${id}.pairs.gz' --memory ${memory}G --nproc-in ${task.cpus} --nproc-out ${task.cpus}"]
 
     // Combine the individual commands, then join with a pipe to form the full command
     parseCmd = parse2Cmd + sqlCmd + pairsSortCmd
