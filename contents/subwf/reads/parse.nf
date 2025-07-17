@@ -39,7 +39,7 @@ process PairtoolsParse2 {
     // to a minimum of 2G
     memory = task.memory ? task.memory.toGiga() as Integer : 4
     memory = memory - 2
-    memory = memory.max(2)
+    memory = max(memory, 2)
 
     parse2Cmd = ["pairtools parse2 --flip --assembly '${assembly}' --chroms-path '${chromsizes}' ${parseParams}"]
     sqlCmd = sql ? ["hich pairs sql --memory-limit '${memory}' --threads '${task.cpus}' '${sql}' /dev/stdin"] : []
