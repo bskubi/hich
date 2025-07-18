@@ -6,6 +6,9 @@ include {withLog; stubLog} from '../util/logs.nf'
 process HicrepCombos{
     publishDir "results/hicrep", mode: params.general.publish.mode
     tag "$planName"
+
+    conda "$projectDir/env/dev_env.yml"
+    container params.general.hichContainer
     
     input:
     tuple val(planName), path(mcools), val(resolutions), val(chroms), val(exclude), val(chromFilter), val(h), val(dBPMax), val(bDownSample)
@@ -15,16 +18,17 @@ process HicrepCombos{
 
     shell:
     hicrep = "${planName}.tsv"
+    resolution = "-r " + resolutions.join(" -r")
 
-    cmd = ["hich hicrep",
-           formatArg("--resolutions %s", resolutions, ','),
+    cmd = ["hich matrix hicrep",
+           resolution,
            formatArg("--chroms %s", chroms, ','),
            formatArg("--exclude %s", exclude, ','),
            formatArg("--chrom-filter '%s'", chromFilter, ''),
            formatArg("--h %s", h, ','),
            formatArg("--d-bp-max %s", dBPMax, ','),
            formatArg("--b-downsample %s", bDownSample, ','),
-           "--output '${hicrep}'",
+           "'${hicrep}'",
            formatArg("%s", mcools, ' ')].findAll{it}.join(" ")
     logMap = [task: "HicrepCombos", input: [planName: planName, mcools: mcools, resolutions: resolutions, chroms: chroms, exclude: exclude, chromFilter: chromFilter, dBPMax: dBPMax, bDownSample: bDownSample], 
     output: [hicrep: hicrep]]
@@ -33,15 +37,16 @@ process HicrepCombos{
     stub:
     hicrep = "${planName}.tsv"
     stub = "touch ${hicrep}"
-    cmd = ["hich hicrep",
-           formatArg("--resolutions %s", resolutions, ','),
+    resolution = "-r " + resolutions.join(" -r")
+    cmd = ["hich matrix hicrep",
+           resolution,
            formatArg("--chroms %s", chroms, ','),
            formatArg("--exclude %s", exclude, ','),
            formatArg("--chrom-filter '%s'", chromFilter, ''),
            formatArg("--h %s", h, ','),
            formatArg("--d-bp-max %s", dBPMax, ','),
            formatArg("--b-downsample %s", bDownSample, ','),
-           "--output '${hicrep}'",
+           "'${hicrep}'",
            formatArg("%s", mcools, ' ')].findAll{it}.join(" ")
     logMap = [task: "HicrepCombos", input: [planName: planName, mcools: mcools, resolutions: resolutions, chroms: chroms, exclude: exclude, chromFilter: chromFilter, dBPMax: dBPMax, bDownSample: bDownSample], 
     output: [hicrep: hicrep]]

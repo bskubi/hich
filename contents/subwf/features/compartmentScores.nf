@@ -6,6 +6,8 @@ process CooltoolsCompartments {
     publishDir "results/compartments",
                mode: params.general.publish.mode
 
+    conda "$projectDir/env/dev_env.yml"
+    container params.general.hichContainer
     label 'features'
     tag "$id"
 
@@ -18,14 +20,16 @@ process CooltoolsCompartments {
 
     shell:
     n_eigs = n_eigs ? n_eigs : 3
-    cmd = "hich fasta gc ${genomeReference} ${resolution} > ${id}.phase.bed && cooltools eigs-cis --phasing-track ${id}.phase.bed --n-eigs ${n_eigs} --out-prefix ${id}_compartments --bigwig ${matrix}::/resolutions/${resolution}"
+    extraCompartmentsParams = hichCompartmentsParams.join(" ")
+    cmd = "hich fasta gc ${genomeReference} ${resolution} > ${id}.phase.bed && cooltools eigs-cis --phasing-track ${id}.phase.bed ${extraCompartmentsParams} --n-eigs ${n_eigs} --out-prefix ${id}_compartments --bigwig ${matrix}::/resolutions/${resolution}"
     
     logMap = [task: "CallCompartments", input: [id: id, genomeReference: genomeReference, matrix: matrix, resolution: resolution, hichCompartmentsParams: hichCompartmentsParams], output: [cisBW: "${id}.cis.bw", cisVecs: "${id}.cis.vecs.tsv", cisLam: "${id}.cis.lam.txt", phase: "${id}.phase.bed"]]
     withLog(cmd, logMap)
 
     stub:
     n_eigs = n_eigs ? n_eigs : 3
-    cmd = "hich fasta gc ${genomeReference} ${resolution} > ${id}.phase.bed && cooltools eigs-cis --phasing-track ${id}.phase.bed --n-eigs ${n_eigs} --out-prefix ${id}_compartments --bigwig ${matrix}::/resolutions/${resolution}"
+    extraCompartmentsParams = hichCompartmentsParams.join(" ")
+    cmd = "hich fasta gc ${genomeReference} ${resolution} > ${id}.phase.bed && cooltools eigs-cis --phasing-track ${id}.phase.bed ${extraCompartmentsParams} --n-eigs ${n_eigs} --out-prefix ${id}_compartments --bigwig ${matrix}::/resolutions/${resolution}"
     stub = "touch ${id}_compartments.bw ${id}.cis.bw ${id}.cis.vecs.tsv ${id}.cis.lam.txt ${id}.phase.bed"
     logMap = [task: "CallCompartments", input: [id: id, genomeReference: genomeReference, matrix: matrix, resolution: resolution, hichCompartmentsParams: hichCompartmentsParams], output: [cisBW: "${id}.cis.bw", cisVecs: "${id}.cis.vecs.tsv", cisLam: "${id}.cis.lam.txt", phase: "${id}.phase.bed"]]
     withLog(cmd, logMap, stub)

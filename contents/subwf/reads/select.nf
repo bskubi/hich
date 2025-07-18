@@ -9,7 +9,9 @@ process PairtoolsSelect {
                mode: params.general.publish.mode
 
     label 'pairs'
+    tag "$id"
     conda "$projectDir/env/dev_env.yml"
+    container params.general.hichContainer
 
     input:
     tuple val(id), path(pairs), val(pairtoolsSelectParams), val(condition)

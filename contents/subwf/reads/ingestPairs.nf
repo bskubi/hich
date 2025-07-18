@@ -8,8 +8,11 @@ process PairtoolsFlipSort {
                saveAs: {params.general.publish.flip_sort ? it : null},
                mode: params.general.publish.mode
 
-    label 'pairs'
     conda "$projectDir/env/dev_env.yml"
+    container params.general.hichContainer
+    label 'pairs'
+    tag "$id"
+
 
     input:
     tuple val(id), path(pairs), path(chromsizes), val(sql)

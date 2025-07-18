@@ -8,6 +8,9 @@ process PairtoolsStats {
                mode: params.general.publish.mode
     label 'stats'
     tag "$id"
+    conda "$projectDir/env/dev_env.yml"
+    container params.general.hichContainer
+
 
     input:
     tuple val(id), val(pairsID), val (statsKey), path(pairs)
@@ -58,6 +61,9 @@ process MultiQC {
                mode: params.general.publish.mode
     label 'stats'
     tag "$reportName"
+    conda "$projectDir/env/dev_env.yml"
+    container params.general.multiqcContainer
+    
 
     input:
     tuple val(reportName), path(stats)

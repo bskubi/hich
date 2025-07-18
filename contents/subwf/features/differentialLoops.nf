@@ -16,7 +16,7 @@ process MustacheDiffloops{
     tuple path("${prefix}.loop1"), path("${prefix}.loop2"), path("${prefix}.diffloop1"), path("${prefix}.diffloop2")
 
     shell:
-    cmd = ["python /mustache/mustache/diff_mustache.py",
+    cmd = ["diff_mustache",
            "-f1 '${mx1}' -f2 '${mx2}'",
            "-o '${prefix}'"] + mustacheParams
     cmd = cmd.join(" ")
@@ -25,7 +25,7 @@ process MustacheDiffloops{
 
     stub:
     stub = "touch '${prefix}.loop1' '${prefix}.loop2' '${prefix}.diffloop1' '${prefix}.diffloop2'"
-    cmd = ["python /mustache/mustache/diff_mustache.py",
+    cmd = ["diff_mustache",
            "-f1 '${mx1}' -f2 '${mx2}'",
            "-o '${prefix}'"] + mustacheParams
     cmd = cmd.join(" ")

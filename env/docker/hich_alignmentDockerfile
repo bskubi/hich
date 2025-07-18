@@ -1,0 +1,3 @@
+FROM mambaorg/micromamba:ubuntu22.04
+RUN micromamba install -y -c conda-forge -c bioconda -c cpfarrell samtools bwa bwa-mem2 bsbolt
+CMD ["bash"]

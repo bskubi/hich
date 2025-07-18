@@ -16,6 +16,7 @@ process JuicerToolsPre {
 
     label 'createMatrix'
     conda "$projectDir/env/dev_env.yml"
+    container params.general.juicerContainer
 
     input:
     tuple val(id), val(matrixPlanName), path(pairs), path(chromsizes), val(pairsFormat), val(matrix), val(juicerToolsPreParams), val(flags)
@@ -45,7 +46,7 @@ process JuicerToolsPre {
     hic = "${id}.hic"
     memory = task.memory ? task.memory.toGiga() : "8"
 
-    cmd = ["juicer_tools pre -Xms${memory}g -Xmx${memory}g --threads ${task.cpus}" ] + juicerToolsPreParams + ["'${pairs}' '${hic}' '${chromsizes}'"]
+    cmd = ["juicer_tools pre -Xms${memory - 2}g -Xmx${memory}g --threads ${task.cpus}" ] + juicerToolsPreParams + ["'${pairs}' '${hic}' '${chromsizes}'"]
     cmd.removeAll([null])
     cmd = cmd.join(" ")
     logMap = [task: "JuicerToolsPre", input: [id: id, pairs: pairs, chromsizes: chromsizes, pairsFormat: pairsFormat, matrix: matrix, juicerToolsPreParams: juicerToolsPreParams, flags: flags], 
@@ -75,7 +76,7 @@ process JuicerToolsPre {
     hic = "${id}.hic"
     memory = task.memory ? task.memory.toGiga() : "8"
 
-    cmd = ["java -Xmx${memory}g -jar /app/juicer_tools_1.22.01.jar pre --threads ${task.cpus}" ] + juicerToolsPreParams + ["'${pairs}' '${hic}' '${chromsizes}'"]
+    cmd = ["juicer_tools pre -Xms${memory - 2}g -Xmx${memory}g --threads ${task.cpus}" ] + juicerToolsPreParams + ["'${pairs}' '${hic}' '${chromsizes}'"]
     cmd.removeAll([null])
     cmd = cmd.join(" ")
     logMap = [task: "JuicerToolsPre", input: [id: id, pairs: pairs, chromsizes: chromsizes, pairsFormat: pairsFormat, matrix: matrix, juicerToolsPreParams: juicerToolsPreParams, flags: flags], 

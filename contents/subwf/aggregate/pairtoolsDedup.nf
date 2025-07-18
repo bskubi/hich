@@ -1,12 +1,13 @@
 include {withLog; stubLog} from '../util/logs.nf'
 
-process Deduplicate {
+process PairtoolsDedup {
     publishDir params.general.publish.parse ? params.general.publish.dedup : "results",
                saveAs: {params.general.publish.dedup ? it : null},
                mode: params.general.publish.mode
 
     label 'pairs'
     conda "$projectDir/env/dev_env.yml"
+    container params.general.hichContainer
 
     input:
     tuple val(id), path(pairs), val(singleCell), val(maxMismatch), val(method), val(pairtoolsDedupParams)

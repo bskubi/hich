@@ -6,6 +6,7 @@ process HiCExplorerFindTADs {
     publishDir "results/tads",
                mode: params.general.publish.mode
     label 'features'
+    container params.general.hicexplorerContainer
     tag "$id"
 
     input:

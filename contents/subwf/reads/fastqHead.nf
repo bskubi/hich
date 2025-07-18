@@ -3,6 +3,11 @@ include {keyUpdate} from '../util/keyUpdate.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
 process ZcatHeadFastq {
+    conda "$projectDir/env/dev_env.yml"
+    container params.general.hichContainer
+
+    tag "$id"
+
     input:
     tuple val(id), path(fastq1), path(fastq2), val(n_reads)
 

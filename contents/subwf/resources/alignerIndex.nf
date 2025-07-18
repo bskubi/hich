@@ -10,6 +10,7 @@ process BwaMem2Index {
     label 'whenLocal_allConsuming'
     label 'index'
     conda "$projectDir/env/dev_env.yml"
+    container params.general.alignmentContainer
 
     input:
     tuple val(genomeReferenceString), path(genomeReference), val(prefix)
@@ -36,6 +37,7 @@ process BwaMemIndex {
     label 'index'
     memory {20.GB + 10.GB * (task.attempt - 1)}
     conda "$projectDir/env/dev_env.yml"
+    container params.general.alignmentContainer
 
 
     input:
@@ -62,6 +64,7 @@ process BSBoltIndex {
     label 'whenLocal_allConsuming'
     label 'index'
     memory {20.GB + 10.GB * (task.attempt - 1)}
+    container params.general.alignmentContainer
     
 
 

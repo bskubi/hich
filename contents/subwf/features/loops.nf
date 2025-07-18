@@ -16,7 +16,7 @@ process MustacheLoops{
     path("${prefix}.loop")
 
     shell:
-    cmd = ["python -m mustache -f '${mx}' -o '${prefix}.loop'"] + mustacheParams
+    cmd = ["mustache -f '${mx}' -o '${prefix}.loop'"] + mustacheParams
     cmd = cmd.join(" ")
     logMap = [task: "MustacheLoops", input: [id: id, prefix: prefix, mx: mx, mustacheParams: mustacheParams], 
     output: [loops: "${prefix}.loop"]]
@@ -24,7 +24,7 @@ process MustacheLoops{
 
     stub:
     stub = "touch '${prefix}.loop'"
-    cmd = ["python -m mustache -f '${mx}' -o '${prefix}.loop'"] + mustacheParams
+    cmd = ["mustache -f '${mx}' -o '${prefix}.loop'"] + mustacheParams
     cmd = cmd.join(" ")
     logMap = [task: "MustacheLoops", input: [id: id, prefix: prefix, mx: mx, mustacheParams: mustacheParams], 
     output: [loops: "${prefix}.loop"]]

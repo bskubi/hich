@@ -9,7 +9,9 @@ process PairtoolsParse2 {
                mode: params.general.publish.mode
 
     label 'pairs'
+    tag "$id"
     conda "$projectDir/env/dev_env.yml"
+    container params.general.hichContainer
 
     input:
     tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseParams), val(sql), val(flags)

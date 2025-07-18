@@ -9,7 +9,9 @@ process BwaAlignMates {
     
     label 'whenLocal_allConsuming'
     label 'align'
+    tag "$id"
     conda "$projectDir/env/dev_env.yml"
+    container params.general.alignmentContainer
     
     // NOTE: Alignment speed is trivially parallelizeable and does not benefit
     // from running alignment in parallel multiple files at once. Each instance
@@ -80,6 +82,8 @@ process BwaAlignSingle {
     
     label 'whenLocal_allConsuming'
     label 'align'
+    tag "$id"
+    container params.general.alignmentContainer
     
     // NOTE: Alignment speed is trivially parallelizeable and does not benefit
     // from running alignment in parallel multiple files at once. Each instance

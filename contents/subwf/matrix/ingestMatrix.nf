@@ -11,6 +11,7 @@ process HicToMcool {
     cpus 2
     maxForks 1  // Necessary due to unexplained bug in hictk
     conda "$projectDir/env/dev_env.yml"
+    container params.general.hictkContainer
 
     input:
     tuple val(id), path(hicFile)
@@ -47,7 +48,8 @@ process McoolToHic {
     
     label 'convertMcoolToHic'
     conda "$projectDir/env/dev_env.yml"
-    
+    container params.general.hictkContainer
+
     input:
     tuple val(id), path(mcoolFile)
 

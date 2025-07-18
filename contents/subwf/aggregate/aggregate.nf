@@ -1,7 +1,7 @@
 
 include {Merge as MergeTechrepToBiorep; Merge as MergeBiorepToCondition} from './merge.nf'
 include {LabelAggregationPlans} from './labelAggregationPlans.nf'
-include {Deduplicate} from './deduplicate.nf'
+include {PairtoolsDedup} from './pairtoolsDedup.nf'
 include {Split} from './split.nf'
 include {QCPairs as DedupQCPairs; QCPairs as AggregateQCPairs} from '../reads/qcPairs.nf'
 include {emptyOnLastStep; skip} from '../util/cli.nf'
@@ -63,7 +63,7 @@ workflow Aggregate {
 
             dedup.yes
             | map{tuple(it.id, it.latestPairs, it.dedupSingleCell, it.dedupMaxMismatch, it.dedupMethod, it.pairtoolsDedupParams)}
-            | Deduplicate
+            | PairtoolsDedup
             | map{[id:it[0], dedupPairs:it[1], latest:it[1], latestPairs:it[1]]}
             | set {deduplicated}
 

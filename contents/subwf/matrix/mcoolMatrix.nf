@@ -9,6 +9,7 @@ process CoolerZoomify {
                mode: params.general.publish.mode
     label 'createMatrix'
     conda "$projectDir/env/dev_env.yml"
+    container params.general.coolerContainer
     tag "$id"
 
     input:
