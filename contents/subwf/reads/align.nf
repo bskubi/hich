@@ -168,6 +168,9 @@ workflow Align {
             | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
             | set{singleResult}
         keyUpdate(samples, singleResult, "id") | set{samples}
+
+        // TODO add bwameth indexing
+        // TODO refactor so that each aligner has a separate process
     }
 
 

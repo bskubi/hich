@@ -5,7 +5,7 @@ nextflow_workflow {
     workflow "HichWorkflow"
     tag "priority3"
 
-    test("multirepAkgolToMatrix") {
+    test("stubMultiRepAkgolToMatrix") {
         config "$baseDir/tests/assets/multirep_bulk.config"
         options """-profile localPC -stub-run"""
         
@@ -13,7 +13,7 @@ nextflow_workflow {
         when {
             params {
                 sampleFile = "$baseDir/tests/assets/multirep_nocreate.tsv"
-                skip = "loops differentialLoops compartments insulation hicrep"
+                skip = "hicrep compartments insulation tads loops differentialLoops"
             }
         }
 
@@ -33,7 +33,5 @@ nextflow_workflow {
                 }
             }
         }
-
     }
-
 }

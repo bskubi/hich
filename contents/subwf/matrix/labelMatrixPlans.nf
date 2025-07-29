@@ -21,6 +21,7 @@ workflow LabelMatrixPlans {
             | set{newSamples}
         
     }
+    // TODO: Warn about no matrices.
     if (!params.containsKey("keepNoMatrixPlan")) {
         newSamples
             | set{samples}

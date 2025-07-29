@@ -42,7 +42,6 @@ workflow HichWorkflow {
         | IngestMatrix
         | HicMatrix
         | McoolMatrix
-        
 
         | Hicrep
         | CompartmentScores
@@ -50,7 +49,6 @@ workflow HichWorkflow {
         | TADs
         | Loops
         | DifferentialLoops
-        
 
         | set{samples}
 
