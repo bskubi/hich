@@ -19,6 +19,7 @@ process BwaMemIndex {
           path("${alignerIndexDir}/${prefix}.sa")
 
     shell:
+    // TODO: Add withLog/stubLog pattern
     alignerIndexDir = "bwa/index"
     "bwa index -p '${prefix}' ${genomeReference} && mkdir -p '${alignerIndexDir}' && mv '${prefix}.amb' '${prefix}.ann' '${prefix}.pac' '${prefix}.bwt' '${prefix}.sa' '${alignerIndexDir}'"
 

@@ -17,15 +17,18 @@ workflow missingKeys {
     */
 
     // Use submapBy to get distinct submaps from left and right channel items
-    fullSetKeys = fullSet
-        | map{it.subMap(submapBy)}
-        | unique
-        | map{[it, true]}
 
-    subSetKeys = subSet
+    fullSet
         | map{it.subMap(submapBy)}
         | unique
         | map{[it, true]}
+        | set{fullSetKeys}
+
+    subSet
+        | map{it.subMap(submapBy)}
+        | unique
+        | map{[it, true]}
+        | set{subSetKeys}
 
     // Identify submaps present in left only or right only
     fullSetKeys

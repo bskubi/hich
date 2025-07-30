@@ -17,7 +17,8 @@ process BwamethMem2Index {
           path("${D}.pac"), path("${D}.0123")
 
     shell:
-    alignerIndexDir = "bwameth/index"
+    // TODO: Add withLog/stubLog pattern
+    alignerIndexDir = "bwameth-mem2/index"
     S = "${genomeReference}.bwameth.c2t"
     D = "${alignerIndexDir}/${prefix}.c2t"
 
@@ -33,7 +34,7 @@ mv ${S}.0123 ${D}.0123
 """
 
     stub:
-    alignerIndexDir = "bwameth/index"
+    alignerIndexDir = "bwameth-mem2/index"
     D = "${alignerIndexDir}/${prefix}.c2t"
 """
 mkdir -p ${alignerIndexDir}

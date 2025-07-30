@@ -1,0 +1,131 @@
+nextflow_workflow {
+
+    name "Test Workflow AlignerIndex"
+    script "contents/subwf/resources/alignerIndex.nf"
+    workflow "AlignerIndex"
+
+    test("stubAlignerIndex") {
+        options "-stub-run"
+        tag "priority1"
+        tag "stubAlignerIndex"
+
+        when {
+            params {
+            }
+            workflow {
+                """
+                common = [datatype: "fastq", 
+                          alignerIndexDir: null, 
+                          alignerIndexPrefix: null, 
+                          assembly: "hg38_chr19", 
+                          genomeReference: file("$projectDir/tests/assets/hg38_chr19.fa.gz"),
+                          fastq1: file("$projectDir/vignettes/akgol2021/downsampled/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R1.fastq.gz"), 
+                          fastq2: file("$projectDir/vignettes/akgol2021/downsampled/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz")
+                ]
+
+                bwameth_1 = common + [id: "bwameth_1", aligner: "bwameth"]
+                bwameth_2 = common + [id: "bwameth_2", aligner: "bwameth"]
+                bwamethMem2_1 = common + [id: "bwamethMem2_1", aligner: "bwameth-mem2"]
+                bwamethMem2_2 = common + [id: "bwamethMem2_2", aligner: "bwameth-mem2"]
+                bwa_1 = common + [id: "bwa_1", aligner: "bwa"]
+                bwa_2 = common + [id: "bwa_2", aligner: "bwa"]
+                bwaMem2_1 = common + [id: "bwaMem2_1", aligner: "bwa-mem2"]
+                bwaMem2_2 = common + [id: "bwaMem2_2", aligner: "bwa-mem2"]
+                input[0] = channel.of(
+                    bwameth_1,
+                    bwameth_2,
+                    bwamethMem2_1,
+                    bwamethMem2_2,
+                    bwa_1,
+                    bwa_2,
+                    bwaMem2_1,
+                    bwaMem2_2
+                )
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out) {
+                result = samples.collect{it.subMap(["id", "aligner", "alignerIndexDir", "alignerIndexPrefix"])}
+                result = result.collect{it.subMap(["id", "aligner", "alignerIndexPrefix"]) + [alignerIndexDir: it.alignerIndexDir.split("/")[-2..-1].join("/")]}
+                expected = [
+                    [id: "bwameth_1", aligner: "bwameth", alignerIndexDir: "bwameth/index", alignerIndexPrefix: "hg38_chr19"],
+                    [id: "bwameth_2", aligner: "bwameth", alignerIndexDir: "bwameth/index", alignerIndexPrefix: "hg38_chr19"],
+                    [id: "bwamethMem2_1", aligner: "bwameth-mem2", alignerIndexDir: "bwameth-mem2/index", alignerIndexPrefix: "hg38_chr19"],
+                    [id: "bwamethMem2_2", aligner: "bwameth-mem2", alignerIndexDir: "bwameth-mem2/index", alignerIndexPrefix: "hg38_chr19"],
+                    [id: "bwa_1", aligner: "bwa", alignerIndexDir: "bwa/index", alignerIndexPrefix: "hg38_chr19"],
+                    [id: "bwa_2", aligner: "bwa", alignerIndexDir: "bwa/index", alignerIndexPrefix: "hg38_chr19"],
+                    [id: "bwaMem2_1", aligner: "bwa-mem2", alignerIndexDir: "bwa-mem2/index", alignerIndexPrefix: "hg38_chr19"],
+                    [id: "bwaMem2_2", aligner: "bwa-mem2", alignerIndexDir: "bwa-mem2/index", alignerIndexPrefix: "hg38_chr19"]
+                ]
+
+                assertContainsInAnyOrder(result, expected)
+            }
+            
+        }
+    }
+
+    test("fullAlignerIndex") {
+        tag "priority3"
+
+        when {
+            params {
+            }
+            workflow {
+                """
+                common = [datatype: "fastq", 
+                          alignerIndexDir: null, 
+                          alignerIndexPrefix: null, 
+                          assembly: "hg38_chr19", 
+                          genomeReference: file("$projectDir/tests/assets/hg38_chr19.fa.gz"),
+                          fastq1: file("$projectDir/vignettes/akgol2021/downsampled/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R1.fastq.gz"), 
+                          fastq2: file("$projectDir/vignettes/akgol2021/downsampled/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz")
+                ]
+
+                bwameth_1 = common + [id: "bwameth_1", aligner: "bwameth"]
+                bwameth_2 = common + [id: "bwameth_2", aligner: "bwameth"]
+                bwamethMem2_1 = common + [id: "bwamethMem2_1", aligner: "bwameth-mem2"]
+                bwamethMem2_2 = common + [id: "bwamethMem2_2", aligner: "bwameth-mem2"]
+                bwa_1 = common + [id: "bwa_1", aligner: "bwa"]
+                bwa_2 = common + [id: "bwa_2", aligner: "bwa"]
+                bwaMem2_1 = common + [id: "bwaMem2_1", aligner: "bwa-mem2"]
+                bwaMem2_2 = common + [id: "bwaMem2_2", aligner: "bwa-mem2"]
+                input[0] = channel.of(
+                    bwameth_1,
+                    bwameth_2,
+                    bwamethMem2_1,
+                    bwamethMem2_2,
+                    bwa_1,
+                    bwa_2,
+                    bwaMem2_1,
+                    bwaMem2_2
+                )
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out) {
+                result = samples.collect{it.subMap(["id", "aligner", "alignerIndexDir", "alignerIndexPrefix"])}
+                result = result.collect{it.subMap(["id", "aligner", "alignerIndexPrefix"]) + [alignerIndexDir: it.alignerIndexDir.split("/")[-2..-1].join("/")]}
+                expected = [
+                    [id: "bwameth_1", aligner: "bwameth", alignerIndexDir: "bwameth/index", alignerIndexPrefix: "hg38_chr19"],
+                    [id: "bwameth_2", aligner: "bwameth", alignerIndexDir: "bwameth/index", alignerIndexPrefix: "hg38_chr19"],
+                    [id: "bwamethMem2_1", aligner: "bwameth-mem2", alignerIndexDir: "bwameth-mem2/index", alignerIndexPrefix: "hg38_chr19"],
+                    [id: "bwamethMem2_2", aligner: "bwameth-mem2", alignerIndexDir: "bwameth-mem2/index", alignerIndexPrefix: "hg38_chr19"],
+                    [id: "bwa_1", aligner: "bwa", alignerIndexDir: "bwa/index", alignerIndexPrefix: "hg38_chr19"],
+                    [id: "bwa_2", aligner: "bwa", alignerIndexDir: "bwa/index", alignerIndexPrefix: "hg38_chr19"],
+                    [id: "bwaMem2_1", aligner: "bwa-mem2", alignerIndexDir: "bwa-mem2/index", alignerIndexPrefix: "hg38_chr19"],
+                    [id: "bwaMem2_2", aligner: "bwa-mem2", alignerIndexDir: "bwa-mem2/index", alignerIndexPrefix: "hg38_chr19"]
+                ]
+
+                assertContainsInAnyOrder(result, expected)
+            }
+            
+        }
+    }
+
+}

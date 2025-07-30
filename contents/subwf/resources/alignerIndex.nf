@@ -1,25 +1,10 @@
 include {emptyOnLastStep; skip} from '../util/cli.nf'
 include {keyUpdate} from '../util/keyUpdate.nf'
-include {isExistingFile} from '../util/files.nf'
-include {withLog; stubLog} from '../util/logs.nf'
-include {BSBoltIndex} from './processes/bsboltIndex.nf'
+include {PrepIndex} from './helper/prepIndex.nf'
 include {BwaMemIndex} from './processes/bwaMemIndex.nf'
 include {BwaMem2Index} from './processes/bwaMem2Index.nf'
-
-workflow PrepIndex {
-    take:
-        samples
-    main:
-        samples
-            | filter {it.datatype == "fastq"}
-            | filter {!isExistingFile(it.alignerIndexDir)}
-            | map{it.alignerIndexPrefix = it.alignerIndexPrefix ?: it.assembly; it}
-            | map{tuple(it.genomeReference, it.genomeReference, it.alignerIndexPrefix)}
-            | unique
-            | set{result}
-    emit:
-        result
-}
+include {BwamethMem2Index} from './processes/bwamethMem2Index.nf'
+include {BwamethIndex} from './processes/bwamethIndex.nf'
 
 workflow AlignerIndex {
 
@@ -30,40 +15,53 @@ workflow AlignerIndex {
 
     if (!skip("alignerIndex")) {
 
-    samples
-        | filter{it.aligner == "bwa-mem2"}
-        | PrepIndex
-        | BwaMem2Index
-        | map{genomeReference, alignerIndexDir, alignerIndexPrefix, prefix_0123, prefix_amb, prefix_ann, prefix_bwt_2bit_64, prefix_pac ->
-                [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
-        | set{resultBwaMem2Index}
+        samples
+            | filter{it.aligner == "bwa-mem2"}
+            | PrepIndex
+            | BwaMem2Index
+            | map{genomeReference, alignerIndexDir, alignerIndexPrefix, prefix_0123, prefix_amb, prefix_ann, prefix_bwt_2bit_64, prefix_pac ->
+                    [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix, aligner: "bwa-mem2"]}
+            | set{resultBwaMem2Index}
 
-    samples
-        | filter{it.aligner == "bwa"}
-        | PrepIndex
-        | BwaMemIndex
-        | map{genomeReference, alignerIndexDir, alignerIndexPrefix, prefix_ann, prefix_amb, prefix_pac, prefix_bwt, prefix_sa ->
-                [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
-        | set{resultBwaMemIndex}
+        samples
+            | filter{it.aligner == "bwa"}
+            | PrepIndex
+            | BwaMemIndex
+            | map{genomeReference, alignerIndexDir, alignerIndexPrefix, prefix_ann, prefix_amb, prefix_pac, prefix_bwt, prefix_sa ->
+                    [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix, aligner: "bwa"]}
+            | set{resultBwaMemIndex}
 
-    // TODO add bwameth indexing
+        samples
+            | filter{it.aligner == "bwameth-mem2"}
+            | PrepIndex
+            | BwamethMem2Index
+            | map{genomeReference, alignerIndexDir, alignerIndexPrefix,
+                c2t, c2t_amb, c2t_ann, c2t_bwt_2bit_64, c2t_pac, c2t_0123 ->
+                    [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix, aligner: "bwameth-mem2"]}
+            | set{resultBwamethMem2Index}
 
-    samples
-        | filter {it.datatype == "fastq" && it.aligner == "bsbolt"}
-        | PrepIndex
-        | BSBoltIndex
-        | map{genomeReference, alignerIndexDir, alignerIndexPrefix,
-              prefix_fa, prefix_ann, prefix_amb, prefix_opac, prefix_pac, prefix_bwt, prefix_sa ->
-                [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix]}
-        | set{resultBSBoltIndex}
+        samples
+            | filter{it.aligner == "bwameth"}
+            | PrepIndex
+            | BwamethIndex
+            | map{genomeReference, alignerIndexDir, alignerIndexPrefix,
+                c2t, c2t_amb, c2t_ann, c2t_bwt, c2t_pac, c2t_sa ->
+                    [genomeReference: file(genomeReference), alignerIndexDir: alignerIndexDir, alignerIndexPrefix: alignerIndexPrefix, aligner: "bwameth"]}
+            | set{resultBwamethIndex}
 
-        keyUpdate(samples, resultBwaMem2Index, "genomeReference") | set{samples}
-        keyUpdate(samples, resultBwaMemIndex, "genomeReference") | set{samples}
-        keyUpdate(samples, resultBSBoltIndex, "genomeReference") | set{samples}
+            joinOn = ["genomeReference", "aligner"]
+
+        // TODO: Skip samples with an aligner index and prefix already given
+
+        keyUpdate(samples, resultBwaMem2Index, joinOn) | set{samples}
+        keyUpdate(samples, resultBwaMemIndex, joinOn) | set{samples}
+        keyUpdate(samples, resultBwamethMem2Index, joinOn) | set{samples}
+        keyUpdate(samples, resultBwamethIndex, joinOn) | set{samples}
     }
 
 
     samples = emptyOnLastStep("alignerIndex", samples)
+
 
     emit:
         samples

@@ -17,10 +17,11 @@ process BwamethIndex {
           path("${D}.pac"), path("${D}.sa")
 
     shell:
+    // TODO: Add withLog/stubLog pattern
     alignerIndexDir = "bwameth/index"
     S = "${genomeReference}.bwameth.c2t"
     D = "${alignerIndexDir}/${prefix}.c2t"
-    
+
 """
 mkdir -p ${alignerIndexDir}
 bwameth.py index ${genomeReference}

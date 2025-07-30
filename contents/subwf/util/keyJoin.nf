@@ -8,7 +8,7 @@ workflow keyJoin {
     options
 
     main:
-    
+
     // 1. Input validation
     // Must contain 'by', and is limited to by, suffix, and how options
     if (options instanceof String) {
@@ -24,6 +24,7 @@ workflow keyJoin {
         suffix: String,
         update: Boolean
     ]
+
     validateMap(options.subMap("by"), validOptions.subMap("by"), ["requireKeys"])
     validateMap(options.findAll{it.key != "by"}, validOptions.subMap(["suffix", "how", "update"]), ["limitKeys", "limitTypes"])
 
@@ -40,19 +41,21 @@ workflow keyJoin {
 
     // Get the suffix for keys other than those to join by
     suffix = options.get("suffix", "_right")
-
     
     if (how == "full" || how == "left") {
-        // Add any keys in left that are missing in right to right.
+        // For any join by keys whose values are present in 'left' but lack a match in 'right',
+        // add a stub match in 'right' so that the entry from 'left' will be preserved by the cross operation below.
         missingKeys(left, right, by) | set{missingFromRight}
         right | concat(missingFromRight) | set{right}
     }
     if (how == "full" || how == "right") {
-        // Add any keys in left that are missing in left to left.
+        // For any join by keys whose values are present in 'right' but lack a match in 'left',
+        // add a stub match in 'left' so that the entry from 'right' will be preserved by the cross operation below.
         missingKeys(right, left, by) | set{missingFromLeft}
         left | concat(missingFromLeft) | set{left}
     }
-    
+
+
     // Ensure that all items in left and right contain all by keys
     left
         | concat(right)
@@ -70,14 +73,12 @@ workflow keyJoin {
         | groupTuple 
         | set{left}
     right 
-        | map{[it.subMap(by), it]} 
+        | map{[it.subMap(by), it]}
         | set{right}
 
     preserved = options.preserved ?: "left"
     other = preserved == "left" ? "right" : "left"
     assert preserved in ["left", "right"], "In keyJoin, options.preserved must be 'left' (default) or 'right' but was ${preserved}"
-
-    
 
     left
     | cross(right)
@@ -90,11 +91,11 @@ workflow keyJoin {
             leftMap ->
 
             (preservedMap, otherMap) = (preserved == "left" ? [leftMap, rightMap] : [rightMap, leftMap])
-             
+
             otherMap.each() {
                 key, value ->
 
-                // On key collisions, either update the preservedMap
+                // On key collisions, either update the preservedMap or if unspecified
                 // try renaming the key from the other map
                 if (!by.contains(key)) {
                     if (!update && preservedMap.containsKey(key)) {
