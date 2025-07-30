@@ -4,6 +4,7 @@ nextflow_workflow {
     script "contents/hichWorkflow.nf"
     workflow "HichWorkflow"
     tag "priority3"
+    tag "e2e"
 
     test("stubMultiRepAkgolToMatrix") {
         config "$baseDir/tests/assets/multirep_bulk.config"
