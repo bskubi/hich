@@ -10,3 +10,4 @@
 /scripts/hich/dist
 *.pyc
 .nf-test
+/tests/assets/ignore

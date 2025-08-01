@@ -1,0 +1,66 @@
+nextflow_workflow {
+
+    name "Test Workflow Align"
+    script "contents/subwf/reads/align.nf"
+    workflow "Align"
+    
+    test("AlignTest") {
+        options """-profile localPC"""
+        tag "priority3"
+
+        when {
+            params {
+                
+            }
+            workflow {
+                """
+                std1 = file("$projectDir/tests/assets/align/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R1.fastq.gz")
+                std2 = file("$projectDir/tests/assets/align/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz")
+                stdInterleaved = file("$projectDir/tests/assets/align/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz")
+                met1 = file("$projectDir/tests/assets/align/CEMBA3C_18B3C_R2_P5-2-M17-L15.R1.fq.gz")
+                met2 = file("$projectDir/tests/assets/align/CEMBA3C_18B3C_R2_P5-2-M17-L15.R2.fq.gz")
+                metInterleaved = file("$projectDir/tests/assets/align/CEMBA3C_18B3C_R2_P5-2-M17-L15_interleaved.fastq.gz")
+                common = [
+                    datatype: "fastq",
+                    alignerIndexPrefix: "hg38.fasta.gz",
+                    minMapq: 30,
+                    bwaFlags: ["-S", "-P", "-5", "-M", "-p", "-C"]
+                ]
+
+                bwa = [aligner: "bwa", alignerIndexDir: file("$projectDir/resources/hich/bwa/bwa/index")]
+                bwaMem2 = [aligner: "bwa-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwa-mem2/bwa-mem2/index")]
+                bwameth = [aligner: "bwameth", alignerIndexDir: file("$projectDir/resources/hich/bwameth/bwameth/index")]
+                bwamethMem2 = [aligner: "bwameth-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwameth-mem2/bwameth-medm2/index")]
+                stdPaired = [fastq1: std1, fastq2: std2]
+                stdSingle = [fastq: std1]
+                stdInterleaved = [fastq: stdInterleaved]
+                metPaired = [fastq1: met1, fastq2: met2]
+                metSingle = [fastq: met1]
+                metInterleaved = [fastq: metInterleaved]
+
+                samples = [
+                    common + bwa + stdPaired + [id: "1"],
+                    common + bwa + stdSingle + [id: "2"],
+                    common + bwa + stdInterleaved + [id: "3"],
+                    common + bwaMem2 + stdPaired + [id: "4"],
+                    common + bwaMem2 + stdSingle + [id: "5"],
+                    common + bwaMem2 + stdInterleaved + [id: "6"],
+                    common + bwameth + metPaired + [id: "7"],
+                    common + bwameth + metSingle + [id: "8"],
+                    common + bwameth + metInterleaved + [id: "9"],
+                    common + bwamethMem2 + metPaired + [id: "10"],
+                    common + bwamethMem2 + metSingle + [id: "11"],
+                    common + bwamethMem2 + metInterleaved + [id: "12"]
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+
+    }
+
+}
