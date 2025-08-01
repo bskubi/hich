@@ -4,7 +4,7 @@ nextflow_workflow {
     script "contents/subwf/reads/align.nf"
     workflow "Align"
     
-    test("AlignTest") {
+    test("Align10Reads") {
         options """-profile localPC"""
         tag "priority3"
 
@@ -14,23 +14,24 @@ nextflow_workflow {
             }
             workflow {
                 """
-                std1 = file("$projectDir/tests/assets/align/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R1.fastq.gz")
-                std2 = file("$projectDir/tests/assets/align/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz")
-                stdInterleaved = file("$projectDir/tests/assets/align/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz")
-                met1 = file("$projectDir/tests/assets/align/CEMBA3C_18B3C_R2_P5-2-M17-L15.R1.fq.gz")
-                met2 = file("$projectDir/tests/assets/align/CEMBA3C_18B3C_R2_P5-2-M17-L15.R2.fq.gz")
-                metInterleaved = file("$projectDir/tests/assets/align/CEMBA3C_18B3C_R2_P5-2-M17-L15_interleaved.fastq.gz")
+                std1 = file("$projectDir/tests/assets/fastq/10/10_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R1.fastq.gz")
+                std2 = file("$projectDir/tests/assets/fastq/10/10_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz")
+                stdInterleaved = file("$projectDir/tests/assets/fastq/10/10_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz")
+                met1 = file("$projectDir/tests/assets/fastq/10/10_CEMBA3C_18B3C_R2_P5-2-M17-L15.R1.fastq.gz")
+                met2 = file("$projectDir/tests/assets/fastq/10/10_CEMBA3C_18B3C_R2_P5-2-M17-L15.R2.fastq.gz")
+                metInterleaved = file("$projectDir/tests/assets/fastq/10/10_CEMBA3C_18B3C_R2_P5-2-M17-L15_interleaved.fastq.gz")
                 common = [
                     datatype: "fastq",
-                    alignerIndexPrefix: "hg38.fasta.gz",
-                    minMapq: 30,
-                    bwaFlags: ["-S", "-P", "-5", "-M", "-p", "-C"]
+                    alignerIndexPrefix: "hg38",
+                    minMapq: 30
                 ]
+                bwaFlags = ["-S", "-P", "-5", "-M", "-p"]
+                bwamethFlags = ["--do-not-penalize-chimeras", "-p"]
 
-                bwa = [aligner: "bwa", alignerIndexDir: file("$projectDir/resources/hich/bwa/bwa/index")]
-                bwaMem2 = [aligner: "bwa-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwa-mem2/bwa-mem2/index")]
-                bwameth = [aligner: "bwameth", alignerIndexDir: file("$projectDir/resources/hich/bwameth/bwameth/index")]
-                bwamethMem2 = [aligner: "bwameth-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwameth-mem2/bwameth-medm2/index")]
+                bwa = [aligner: "bwa", alignerIndexDir: file("$projectDir/resources/hich/bwa/bwa/index"), bwaFlags: bwaFlags]
+                bwaMem2 = [aligner: "bwa-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwa-mem2/bwa-mem2/index"), bwaFlags: bwaFlags]
+                bwameth = [aligner: "bwameth", alignerIndexDir: file("$projectDir/resources/hich/bwameth/bwameth/index"), bwaFlags: bwamethFlags]
+                bwamethMem2 = [aligner: "bwameth-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwameth-mem2/bwameth-mem2/index"), bwaFlags: bwamethFlags]
                 stdPaired = [fastq1: std1, fastq2: std2]
                 stdSingle = [fastq: std1]
                 stdInterleaved = [fastq: stdInterleaved]
@@ -59,6 +60,27 @@ nextflow_workflow {
 
         then {
             assert workflow.success
+            /*
+            with (workflow.out) {
+                assert samples.size() == 12
+                sambams = samples.collect{it.sambam.split("/")[-1]}
+
+                assertContainsInAnyOrder(sambams, [
+                    "1.bam",
+                    "2.bam",
+                    "3.bam",
+                    "4.bam",
+                    "5.bam",
+                    "6.bam",
+                    "7.bam",
+                    "8.bam",
+                    "9.bam",
+                    "10.bam",
+                    "11.bam",
+                    "12.bam"
+                ])
+            }
+            */
         }
 
     }

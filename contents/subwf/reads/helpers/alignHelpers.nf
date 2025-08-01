@@ -18,24 +18,20 @@ def buildCmdAlignBwa(aligner, id, indexDir, indexPrefix, fastq, bwaFlags, minMap
     def alignerCmds = [
         "bwa": "bwa mem",
         "bwa-mem2": "bwa-mem2 mem",
-        "bwameth": "bwa mem",
-        "bwameth-mem2": "bwa-mem2 mem"
+        "bwameth": "bwameth.py",
+        "bwameth-mem2": "bwameth.py"
     ]
-    def flagsArgs = formatFlags(bwaFlags, minMapq)    
+    def flagsArgs = null 
     def alignerCmd = alignerCmds.get(aligner, aligner)
     def fastqArgs = fastq.findAll{it}.collect{"'${it}'"}.join(" ")
-    def indexBase = "${indexDir}/${indexPrefix}"
-    def inputArgs = null
-    def index = null
-    def extraFlags = []
+    def index = "${indexDir}/${indexPrefix}"
     if (aligner in ["bwameth", "bwameth-mem2"]) {
-        inputArgs = "'<python bwameth.py c2t ${fastqArgs}'"
-        index = "${indexBase}.bwameth.c2t"
+        flagsArgs = flagsArgs = formatFlags(bwaFlags, null)
+        index = "--reference '${index}'"
     } else {
-        inputArgs = fastqArgs
-        index = indexBase
+        flagsArgs = formatFlags(bwaFlags, minMapq)
     }
-    def cmd = "${alignerCmd} -t ${cpus} ${flagsArgs} '${index}' ${inputArgs} | samtools view -b -o '${id}.bam'"
+    def cmd = "${alignerCmd} -t ${cpus} ${flagsArgs} ${index} ${fastqArgs} | samtools view -b -o '${id}.bam'"
     def inputMap = [id: id, fastq: fastq, aligner: aligner, index: index, bwaFlags: bwaFlags, minMapq: minMapq]
     def logMap = [task: "AlignBwa", output: "${id}.bam", input: inputMap]
     return [cmd, logMap]
