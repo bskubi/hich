@@ -1,7 +1,7 @@
 include {buildCmdAlignBwa} from '../helpers/alignHelpers.nf'
 include {withLog; stubLog} from '../../util/logs.nf'
 
-process AlignBwa {
+process Align {
     publishDir params.general.publish.align ? params.general.publish.align : "results",
                saveAs: {params.general.publish.align ? it : null},
                mode: params.general.publish.mode

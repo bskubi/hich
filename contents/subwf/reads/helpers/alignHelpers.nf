@@ -33,7 +33,7 @@ def buildCmdAlignBwa(aligner, id, indexDir, indexPrefix, fastq, bwaFlags, minMap
     }
     def cmd = "${alignerCmd} -t ${cpus} ${flagsArgs} ${index} ${fastqArgs} | samtools view -b -o '${id}.bam'"
     def inputMap = [id: id, fastq: fastq, aligner: aligner, index: index, bwaFlags: bwaFlags, minMapq: minMapq]
-    def logMap = [task: "AlignBwa", output: "${id}.bam", input: inputMap]
+    def logMap = [task: "Align", output: "${id}.bam", input: inputMap]
     return [cmd, logMap]
 }
 
