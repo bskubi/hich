@@ -80,7 +80,7 @@ def formatWriteChroms(chroms) {
     return [chroms, chromsFile]
 }
 
-def buildCmdPairtoolsSelect(id, pairs, pairtoolsSelectParams, pairtoolsSelectFilters, cpus) {
+def buildCmd(id, pairs, pairtoolsSelectParams, pairtoolsSelectFilters, cpus) {
     def pairTypes = formatKeepPairTypes(pairtoolsSelectFilters.keepPairTypes)
     def cisTrans = formatCisTrans(pairtoolsSelectFilters.onlyCis, pairtoolsSelectFilters.onlyTrans)
     def strandDist = formatStrandDistFilters(pairtoolsSelectFilters.minDistFR, pairtoolsSelectFilters.minDistRF, pairtoolsSelectFilters.minDistFF, pairtoolsSelectFilters.minDistRR)
@@ -88,11 +88,12 @@ def buildCmdPairtoolsSelect(id, pairs, pairtoolsSelectParams, pairtoolsSelectFil
     def filters = formatFilters([pairTypes, cisTrans, strandDist, discardSingleFrag])
     pairtoolsSelectParams = formatPairtoolsSelectParams(id, pairtoolsSelectParams)
     def (writeChroms, chromsFile) = formatWriteChroms(pairtoolsSelectFilters.chroms)
-    def outputName = sq("${id}_select.pairs.gz")
-    def pairsOutput = "--output ${outputName}"
+    def output = "${id}_select.pairs.gz"
+    def pairsOutput = "--output ${sq(output)}"
     def nprocIn = "--nproc-in ${cpus}"
     def nprocOut = "--nproc-out ${cpus}"
     def pairsInput = sq(pairs)
+
 
 
     def cmd = [
@@ -118,9 +119,9 @@ def buildCmdPairtoolsSelect(id, pairs, pairtoolsSelectParams, pairtoolsSelectFil
             pairtoolsSelectFilters: pairtoolsSelectFilters
         ],
         output: [
-            pairs: outputName
+            pairs: output
         ]
     ]
 
-    return [cmd, logMap]
+    return [cmd, logMap, output]
 }

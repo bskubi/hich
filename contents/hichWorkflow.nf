@@ -5,7 +5,7 @@ include {Align} from './subwf/reads/align.nf'
 include {Parse} from './subwf/reads/parse.nf'
 include {TagRestrictionFragments} from './subwf/reads/TagRestrictionFragments/workflow.nf'
 include {IngestPairs} from './subwf/reads/ingestPairs.nf'
-include {Select} from './subwf/reads/select.nf'
+include {Select} from './subwf/reads/Select/workflow.nf'
 
 include {LabelAggregationPlans} from './subwf/aggregate/labelAggregationPlans.nf'
 include {Aggregate} from './subwf/aggregate/aggregate.nf'

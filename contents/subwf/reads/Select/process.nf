@@ -1,7 +1,7 @@
 include {withLog; stubLog} from '../../util/logs.nf'
-include {buildCmdPairtoolsSelect} from './selectHelpers.nf'
+include {buildCmd} from './functions.nf'
 
-process PairtoolsSelect {
+process SELECT {
     publishDir params.general.publish.select ? params.general.publish.select : "results",
                saveAs: {params.general.publish.select ? it : null},
                mode: params.general.publish.mode
@@ -15,14 +15,15 @@ process PairtoolsSelect {
     tuple val(id), path(pairs), val(pairtoolsSelectParams), val(pairtoolsSelectFilters)
 
     output:
-    tuple val(id), path("${id}_select.pairs.gz")
+    tuple val(id), path(output)
 
     shell:
-    (cmd, logMap) = buildCmdPairtoolsSelect(id, pairs, pairtoolsSelectParams, pairtoolsSelectFilters, task.cpus)
+    (cmd, logMap, output) = buildCmd(id, pairs, pairtoolsSelectParams, pairtoolsSelectFilters, task.cpus)
     withLog(cmd, logMap)
 
     stub:
-    stub = "touch '${id}_select.pairs.gz'"
-    (cmd, logMap) = buildCmdPairtoolsSelect(id, pairs, pairtoolsSelectParams, pairtoolsSelectFilters, task.cpus)
+    
+    (cmd, logMap, output) = buildCmd(id, pairs, pairtoolsSelectParams, pairtoolsSelectFilters, task.cpus)
+    stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 }
