@@ -1,0 +1,47 @@
+nextflow_workflow {
+
+    name "Test Workflow Select"
+    script "contents/subwf/reads/select.nf"
+    workflow "Select"
+
+    test("TestSelect") {
+        options """-profile localPC"""
+        tag "priority3"
+
+        when {
+            params {
+                // define parameters here. Example:
+                // outdir = "tests/results"
+            }
+            workflow {
+                """
+                pairTypes = [pairTypes: ["UU", "UR", "RU"]]
+                onlyCis = [onlyCis: true]
+                onlyTrans = [onlyTrans: true]
+                strandDist = [minDistFR: 1, minDistRF: 2, minDistFF: 3, minDistRR: 4]
+                discardSingleFrag = [discardSingleFrag: true]
+                outputRest = ["--output-rest"]
+                pairsDrop = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.drop.pairs.gz")
+                pairsNoDrop = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.noDrop.pairs.gz")
+                samples = [
+                    [id: 1, latestPairs: pairsDrop] + [pairtoolsSelectFilters: pairTypes + onlyCis + strandDist],
+                    [id: 2, latestPairs: pairsNoDrop] + [pairtoolsSelectFilters: onlyTrans],
+                    [id: 3, latestPairs: pairsDrop],
+                    [id: 4, latestPairs: pairsDrop] + [pairtoolsSelectFilters: null],
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out) {
+                assert samples.collect{it.selectPairs}.findAll{it}.size() == 2
+                assert samples.size() == 4
+            }
+        }
+
+    }
+
+}
