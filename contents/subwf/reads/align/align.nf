@@ -1,4 +1,4 @@
-include {buildCmdAlignBwa} from '../helpers/alignHelpers.nf'
+include {buildCmdAlignBwa} from './alignHelpers.nf'
 include {withLog; stubLog} from '../../util/logs.nf'
 
 process Align {

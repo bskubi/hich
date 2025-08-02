@@ -16,7 +16,7 @@ def validateMemory(memory) {
 }
 
 def buildCmdPairtoolsParse2(id, sambam, chromsizes, assembly, parseParams, sql, flags, memory, cpus) {
-    def parseParamsV = validateParseParams(parseParams)
+    def parseParamsV = validateParseParams(parseParams, flags)
     def memoryV = validateMemory(memory)
    
     def viewCmd = "samtools view -b '${sambam}'"

@@ -1,7 +1,7 @@
 include {emptyOnLastStep; skip} from '../util/cli.nf'
 include {keyUpdate} from '../util/keyUpdate.nf'
 include {withLog; stubLog} from '../util/logs.nf'
-include {Align} from './processes/align.nf'
+include {Align} from './align/align.nf'
 include {getFastq} from './helpers/alignHelpers.nf'
 
 workflow Align {

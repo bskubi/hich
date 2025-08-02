@@ -1,7 +1,7 @@
 include {QCPairs} from './qcPairs.nf'
 include {emptyOnLastStep; skip} from '../util/cli.nf'
 include {keyUpdate} from '../util/keyUpdate.nf'
-include {PairtoolsParse2} from './processes/pairtoolsParse2.nf'
+include {PairtoolsParse2} from './parse/pairtoolsParse2.nf'
 
 
 workflow Parse {
