@@ -1,0 +1,55 @@
+nextflow_workflow {
+
+    name "Test Workflow Parse"
+    script "contents/subwf/reads/parse.nf"
+    workflow "Parse"
+
+    test("Parse1kReads") {
+        options """-profile localPC"""
+        tag "priority2"
+
+        when {
+            params {
+                // define parameters here. Example:
+                // outdir = "tests/results"
+            }
+            workflow {
+                """
+                stdsam = file("$projectDir/tests/assets/bam/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.sam")
+                stdbam = file("$projectDir/tests/assets/bam/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.bam")
+                metbam = file("$projectDir/tests/assets/bam/1k/1k_CEMBA3C_18B3C_R2_P5-2-M17-L15.bam")
+                chromsizes = file("$projectDir/resources/hich/chromsizes/hg38.sizes")
+                common = [chromsizes: chromsizes, assembly: "hg38"]
+                minMapq = [minMapq: 30]
+                emptyParams = [pairtoolsParse2Params: []]
+                nullParams = [pairtoolsParse2Params: null]
+                dropParams = [pairtoolsParse2Params: ["--drop-readid", "--drop-seq", "--drop-sam"]]
+                samples = [
+                    common + [id: "1", datatype: "fastq", sambam: stdbam],
+                    common + [id: "2", datatype: "fastq", sambam: stdbam] + emptyParams,
+                    common + [id: "3", datatype: "fastq", sambam: stdbam] + nullParams,
+                    common + [id: "4", datatype: "fastq", sambam: stdbam] + dropParams,
+                    common + [id: "5", datatype: "fastq", sambam: stdbam] + minMapq,
+                    common + [id: "6", datatype: "sambam", sambam: stdbam] + minMapq,
+                    common + [id: "7", datatype: "hic"],
+                    common + [id: "8", datatype: "fastq", sambam: metbam],
+                    common + [id: "9", datatype: "fastq", sambam: stdsam],
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out) {
+                assert samples.size() == 9
+                hasPairs = samples.findAll{it.pairs}
+                assert hasPairs.size() == 8
+                assert hasPairs.findAll{it.datatype in ["fastq", "sambam"]}
+            }
+        }
+
+    }
+
+}

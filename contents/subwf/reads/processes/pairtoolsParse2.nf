@@ -1,4 +1,4 @@
-include {withLog; stubLog} from '../util/logs.nf'
+include {withLog; stubLog} from '../../util/logs.nf'
 
 process PairtoolsParse2 {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",
