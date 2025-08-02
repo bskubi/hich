@@ -18,7 +18,7 @@ workflow Parse {
             | set{result}
         keyUpdate(samples, result, "id") | set{samples}
 
-        // It might be good to simplify these workflow control steps since they
+        // TODO: simplify these workflow control steps since they
         // are repeated frequently.
         if ("parse" in params.general.get("qcAfter")) {
             QCPairs(samples, ["pairs"], "parse")
