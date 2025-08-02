@@ -1,0 +1,96 @@
+
+nextflow_function {
+
+    name "Test Functions"
+    script "contents/subwf/reads/select/selectHelpers.nf"
+
+	
+    test("buildCmdPairtoolsSelect") {
+
+        function "buildCmdPairtoolsSelect"
+
+        when {
+            function {
+                """
+                filters = [
+                    keepPairTypes: ["UU", "UR", "RU"],
+                    onlyCis: true,
+                    discardSingleFrag: true,
+                    minDistFR: 1,
+                    minDistRF: 2,
+                    minDistFF: 3,
+                    minDistRR: 4,
+                    chroms: ["chr1", "chr2"]
+                ]
+                input[0] = "1"
+                input[1] = "1.pairs.gz"
+                input[2] = ["--output-rest"]
+                input[3] = filters
+                input[4] = 8
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            with (function) {
+                def cmd = result[0]
+                def expected = [
+                    "echo 'chr1\nchr2' > '__chroms__.bed'",
+                    "pairtools select",
+                    "--output '1_select.pairs.gz'",
+                    "--chrom-subset '__chroms__.bed'",
+                    "--nproc-in",
+                    "--nproc-out",
+                    "(pair_type in ['UU', 'UR', 'RU'])",
+                    "(chrom1 == chrom2)",
+                    "(strand1 + strand2 == '+-' and abs(pos2 - pos1) >= 1)",
+                    "(strand1 + strand2 == '-+' and abs(pos2 - pos1) >= 2)",
+                    "(strand1 + strand2 == '++' and abs(pos2 - pos1) >= 3)",
+                    "(strand1 + strand2 == '--' and abs(pos2 - pos1) >= 4)",
+                    "(rfrag1 != rfrag2)",
+                    "'1.pairs.gz'"
+
+                ]
+                expected.each{
+                    assert cmd.contains(it)
+                }
+            }
+        }
+    }
+
+    test("buildCmdPairtoolsSelectEmpty") {
+
+        function "buildCmdPairtoolsSelect"
+        when {
+            function {
+                """
+                input[0] = "1"
+                input[1] = "1.pairs.gz"
+                input[2] = []
+                input[3] = [:]
+                input[4] = 8
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            with (function) {
+                def cmd = result[0]
+                def expectedMissing = [
+                    "pair_type",
+                    "rfrag",
+                    "strand",
+                    "chrom"
+                ]
+                expectedMissing.each{
+                    assert !cmd.contains(it)
+                }
+                assert cmd.contains("\"True\"")
+                print(cmd)
+            }
+        }
+    }	
+
+}
