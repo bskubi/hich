@@ -3,7 +3,7 @@ include {Setup} from './subwf/setup/setup.nf'
 
 include {Align} from './subwf/reads/align.nf'
 include {Parse} from './subwf/reads/parse.nf'
-include {TagRestrictionFragments} from './subwf/reads/tagRestrictionFragments.nf'
+include {TagRestrictionFragments} from './subwf/reads/TagRestrictionFragments/workflow.nf'
 include {IngestPairs} from './subwf/reads/ingestPairs.nf'
 include {Select} from './subwf/reads/select.nf'
 

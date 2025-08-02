@@ -1,0 +1,36 @@
+nextflow_workflow {
+
+    name "Test Workflow TagRestrictionFragments"
+    script "contents/subwf/reads/TagRestrictionFragments/workflow.nf"
+    workflow "TagRestrictionFragments"
+
+    test("SmokeTestTagRestrictionFragments") {
+
+        when {
+            params {
+                // define parameters here. Example:
+                // outdir = "tests/results"
+            }
+            workflow {
+                """
+                pairs1 = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.drop.pairs.gz")
+                index1 = file("$projectDir/resources/hich/fragmentIndex/hg38_DdeI,DpnII.bed")
+                common = [latestPairs: pairs1, fragmentIndex: index1]
+                samples = [
+                    [id: "1"] + common
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out) {
+                assert samples.size() == 1
+            }
+        }
+
+    }
+
+}
