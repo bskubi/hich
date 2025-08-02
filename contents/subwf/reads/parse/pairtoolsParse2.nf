@@ -12,17 +12,17 @@ process PairtoolsParse2 {
     container params.general.hichContainer
 
     input:
-    tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseParams), val(sql), val(flags)
+    tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseParams), val(sql), val(minMapq)
 
     output:
     tuple val(id), path("${id}.pairs.gz")
 
     shell:
-    (cmd, logMap) = buildCmdPairtoolsParse2(id, sambam, chromsizes, assembly, parseParams, sql, flags, task.memory, task.cpus)
+    (cmd, logMap) = buildCmdPairtoolsParse2(id, sambam, chromsizes, assembly, parseParams, sql, minMapq, task.memory, task.cpus)
     withLog(cmd, logMap)
 
     stub:
     stub = "touch '${id}.pairs.gz'"
-    (cmd, logMap) = buildCmdPairtoolsParse2(id, sambam, chromsizes, assembly, parseParams, sql, flags, task.memory, task.cpus)
+    (cmd, logMap) = buildCmdPairtoolsParse2(id, sambam, chromsizes, assembly, parseParams, sql, minMapq, task.memory, task.cpus)
     stubLog(stub, cmd, logMap)
 }

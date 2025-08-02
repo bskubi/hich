@@ -1,9 +1,9 @@
-def validateParseParams(parseParams, flags) {
+def validateParseParams(parseParams, minMapq) {
     def parseParamsV = parseParams ?: []
 
     // Use minMapq as default, but override with manually specified --min-mapq
-    if (flags.minMapq instanceof Integer && !parseParamsV.any{it.contains("--min-mapq")}) {
-        parseParamsV += ["--min-mapq ${flags.minMapq}"]
+    if (minMapq instanceof Integer && !parseParamsV.any{it.contains("--min-mapq")}) {
+        parseParamsV += ["--min-mapq ${minMapq}"]
     } 
 
     parseParamsV = parseParamsV.join(" ")
@@ -15,8 +15,8 @@ def validateMemory(memory) {
     memory ? Math.max(memory.toGiga() - 2, 2) : 2
 }
 
-def buildCmdPairtoolsParse2(id, sambam, chromsizes, assembly, parseParams, sql, flags, memory, cpus) {
-    def parseParamsV = validateParseParams(parseParams, flags)
+def buildCmdPairtoolsParse2(id, sambam, chromsizes, assembly, parseParams, sql, minMapq, memory, cpus) {
+    def parseParamsV = validateParseParams(parseParams, minMapq)
     def memoryV = validateMemory(memory)
    
     def viewCmd = "samtools view -b '${sambam}'"
@@ -35,7 +35,7 @@ def buildCmdPairtoolsParse2(id, sambam, chromsizes, assembly, parseParams, sql, 
             assembly: assembly,
             parseParams: parseParams,
             sql: sql,
-            flags: flags,
+            minMapq: minMapq,
             memory: memory,
             cpus: cpus
         ],
