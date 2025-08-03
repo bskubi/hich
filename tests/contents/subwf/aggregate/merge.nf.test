@@ -1,10 +1,10 @@
 nextflow_workflow {
 
-    name "Test Workflow Merge"
-    script "contents/subwf/aggregate/merge.nf"
-    workflow "Merge"
+    name "Test Workflow MergePairs"
+    script "contents/subwf/aggregate/MergePairs/workflow.nf"
+    workflow "MergePairs"
 
-    test("mergeRep") {
+    test("SmokeTest_MergePairs") {
         options "-stub-run"
 
         when {
@@ -36,8 +36,10 @@ nextflow_workflow {
                 assertContainsInAnyOrder(
                     submaps, 
                     [ 
-                        [id: "a_1", condition: "a", biorep: "1", pairs: "a_1.merged.pairs.gz", latestPairs: "a_1.merged.pairs.gz", latest: "a_1.merged.pairs.gz"], 
-                        [id: "b_1", condition: "b", biorep: "1", pairs: "b_1.merged.pairs.gz", latestPairs: "b_1.merged.pairs.gz", latest: "b_1.merged.pairs.gz"] 
+                        [id: "a_1", condition: "a", biorep: "1", pairs: "a_1.merged.pairs.gz", 
+                            latestPairs: "a_1.merged.pairs.gz", latest: "a_1.merged.pairs.gz"], 
+                        [id: "b_1", condition: "b", biorep: "1", pairs: "b_1.merged.pairs.gz", 
+                            latestPairs: "b_1.merged.pairs.gz", latest: "b_1.merged.pairs.gz"] 
                     ]
                 )
 
