@@ -1,18 +1,17 @@
 include {createCompositeStrategy; filterSamplesByStrategy} from '../../util/analysisPlans.nf'
 include {skip; emptyOnLastStep} from '../../util/cli.nf'
-include {COMPARTMENT_SCORES} from './process.nf'
+include {TADS} from './process.nf'
 
-workflow CompartmentScores {
+workflow TADs {
     take:
     samples
 
     main:
-    
-    myName = "CompartmentScores"
+
+    myName = "TADs"
     if (!skip(myName)) {
         processInputs = channel.empty()
-
-        params.compartments.each {
+        params.tads.each {
             planName, analysisPlan ->
 
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
@@ -20,7 +19,7 @@ workflow CompartmentScores {
             filterSamplesByStrategy(samples, strategy)
                 | map{
                     sample ->
-                    tuple(sample.id, sample.genomeReference, sample.mcool, analysisPlan.resolution, analysisPlan.eigsCisParams, analysisPlan.nEigs)
+                    tuple(sample.id, sample.mcool, analysisPlan.resolution, analysisPlan.hicExplorerFindTADsParams)
                 }
                 | concat(processInputs)
                 | set{processInputs}
@@ -28,7 +27,7 @@ workflow CompartmentScores {
         // Note: nf-test raises error if calling process within
         // params.loops.each. Don't know why. Collect results and call
         // outside of each closure.
-        processInputs | COMPARTMENT_SCORES
+        processInputs | TADS
     }
     samples = emptyOnLastStep(myName, samples)
 
