@@ -1,14 +1,14 @@
 include {validateMemory} from '../../util/memory.nf'
 
-def buildCmd(id, matrixPlanName, pairs, chromsizes, pairsFormat, matrix, juicerToolsPreParams, flags, memory, cpus) {
+def buildCmd(id, matrixPlanName, pairs, chromsizes, matrix, juicerToolsPreParams, minMapq, memory, cpus) {
     juicerToolsPreParams = juicerToolsPreParams ?: []
     matrix = matrix ?: [:]
 
     // The user can manually set -q in juicerToolsPreParams.
     // Otherwise, use minMapq if specified.
     // Otherwise, no mapq filter is applied.
-    if (flags.minMapq instanceof Integer && !juicerToolsPreParams.any{it.contains("-q")}) {
-        juicerToolsPreParams += ["-q ${flags.minMapq}"]
+    if (minMapq instanceof Integer && !juicerToolsPreParams.any{it.contains("-q")}) {
+        juicerToolsPreParams += ["-q ${minMapq}"]
     }
 
     // The user can manually set -r in juicerToolsPreParams.
@@ -22,9 +22,9 @@ def buildCmd(id, matrixPlanName, pairs, chromsizes, pairsFormat, matrix, juicerT
     def output = "${id}.hic"
     memory = validateMemory(memory, 2, 8)
 
-    cmd = ["juicer_tools pre -Xms${memory - 2}g -Xmx${memory}g --threads ${cpus}" ] + juicerToolsPreParams + ["'${pairs}' '${output}' '${chromsizes}'"]
+    def cmd = ["juicer_tools pre -Xms${memory - 2}g -Xmx${memory}g --threads ${cpus}" ] + juicerToolsPreParams + ["'${pairs}' '${output}' '${chromsizes}'"]
     cmd = cmd.findAll{it}
     cmd = cmd.join(" ")
-    logMap = [task: "JUICER_TOOLS_PRE", output: output, input: [id: id, pairs: pairs, chromsizes: chromsizes, pairsFormat: pairsFormat, matrix: matrix, juicerToolsPreParams: juicerToolsPreParams, flags: flags]]
+    def logMap = [task: "JUICER_TOOLS_PRE", output: output, input: [id: id, pairs: pairs, chromsizes: chromsizes, matrix: matrix, juicerToolsPreParams: juicerToolsPreParams, minMapq: minMapq]]
     return [cmd, logMap, output]
 }
