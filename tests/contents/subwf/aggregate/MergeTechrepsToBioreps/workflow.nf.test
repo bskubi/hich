@@ -1,0 +1,55 @@
+nextflow_workflow {
+
+    name "Test Workflow MergeTechrepsToBioreps"
+    script "contents/subwf/aggregate/MergeTechrepsToBioreps/workflow.nf"
+    workflow "MergeTechrepsToBioreps"
+
+    test("SmokeTest_MergeTechrepsToBioreps") {
+
+        when {
+            params {}
+            workflow {
+                """
+                pairs = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.drop.pairs.gz")
+                techreps = [aggregateLevel: "techrep", mergeTechrepToBiorep: true, latestPairs: pairs]
+                b1c1 = [biorep: 1, condition: 1] + techreps
+                b1c2 = [biorep: 1, condition: 2] + techreps
+                b2c1 = [biorep: 2, condition: 1] + techreps
+                b2c2 = [biorep: 2, condition: 2] + techreps
+                
+                samples = [
+                    [id: "1"] + b1c1,
+                    [id: "2"] + b1c1,
+                    [id: "3"] + b2c1,
+                    [id: "4"] + b2c1,
+                    [id: "5"] + b1c2,
+                    [id: "6"] + b1c2,
+                    [id: "7"] + b2c2,
+                    [id: "8"] + b2c2,
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out) {
+                assert samples.size() == 12
+                def techreps = samples.findAll{it.aggregateLevel == "techrep"}
+                def bioreps = samples.findAll{it.aggregateLevel == "biorep"}
+                assert techreps.size() == 8
+                assert bioreps.size() == 4
+                def id = bioreps.collect{it.id}
+                assertContainsInAnyOrder(id, ["1_1", "1_2", "2_1", "2_2"])
+                def pairs = bioreps.collect{[id: it.id, file: it.pairs.split("/")[-1]]}
+                assert pairs.size() == 4
+                pairs.each{
+                    assert it.file.toString() == "${it.id}.merged.pairs.gz".toString()
+                }
+            }
+        }
+
+    }
+
+}
