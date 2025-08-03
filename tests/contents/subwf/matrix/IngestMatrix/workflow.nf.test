@@ -1,0 +1,37 @@
+nextflow_workflow {
+
+    name "Test Workflow IngestMatrix"
+    script "contents/subwf/matrix/IngestMatrix/workflow.nf"
+    workflow "IngestMatrix"
+
+    test("SmokeTest_IngestMatrix") {
+
+        when {
+            params {
+
+            }
+            workflow {
+                """
+                hic = file("$projectDir/tests/assets/hic/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.hic")
+                mcool = file("$projectDir/tests/assets/mcool/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.mcool")
+                common = [datatype: "matrix", makeMcoolFileFormat: true, makeHicFileFormat: true]
+                samples = [
+                    [id: "1", hic: hic] + common,
+                    [id: "2", mcool: mcool] + common
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out) {
+                assert samples.findAll{it.hic}.size() == 2
+                assert samples.findAll{it.mcool}.size() == 2
+            }
+        }
+
+    }
+
+}
