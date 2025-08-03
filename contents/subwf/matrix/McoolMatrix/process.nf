@@ -1,4 +1,4 @@
-include {withLog; stubLog} from '../util/logs.nf'
+include {withLog; stubLog} from '../../util/logs.nf'
 include {buildCmd} from './functions.nf'
 
 process MCOOL_MATRIX {
@@ -11,17 +11,17 @@ process MCOOL_MATRIX {
     tag "$id"
 
     input:
-    tuple val(id), val(matrixPlanName), path(pairs), path(chromsizes), val(pairsFormat), val(assembly), val(resolutions), val(coolerCloadParams), val(coolerZoomifyParams)
+    tuple val(id), val(matrixPlanName), path(pairs), path(chromsizes), val(assembly), val(matrix), val(coolerCloadParams), val(coolerZoomifyParams)
 
     output:
     tuple val(id), val(matrixPlanName), path("${id}.mcool")
 
     shell:
-    (cmd, logMap, output) = buildCmd(id, matrixPlanName, pairs, chromsizes, pairsFormat, assembly, resolutions, coolerCloadParams, coolerZoomifyParams, task.cpus)
+    (cmd, logMap, output) = buildCmd(id, matrixPlanName, pairs, chromsizes, assembly, matrix, coolerCloadParams, coolerZoomifyParams, task.cpus)
     withLog(cmd, logMap)
 
     stub:
-    (cmd, logMap, output) = buildCmd(id, matrixPlanName, pairs, chromsizes, pairsFormat, assembly, resolutions, coolerCloadParams, coolerZoomifyParams, task.cpus)
+    (cmd, logMap, output) = buildCmd(id, matrixPlanName, pairs, chromsizes, assembly, matrix, coolerCloadParams, coolerZoomifyParams, task.cpus)
     stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 }

@@ -1,6 +1,7 @@
-def buildCmd(id, matrixPlanName, pairs, chromsizes, assembly, resolutions, coolerCloadParams, coolerZoomifyParams, cpus) {
+def buildCmd(id, matrixPlanName, pairs, chromsizes, assembly, matrix, coolerCloadParams, coolerZoomifyParams, cpus) {
     coolerCloadParams = coolerCloadParams ?: []
     coolerZoomifyParams = coolerZoomifyParams ?: []
+    def resolutions = matrix.resolutions
 
     // Extract resolutions from --resolutions or -r parameter if specified
     // Otherwise use resolutions
@@ -29,7 +30,7 @@ def buildCmd(id, matrixPlanName, pairs, chromsizes, assembly, resolutions, coole
 
     assert bins, "In CoolerZoomify on id ${id}, matrix.resolutions is unspecified and no --resolutions is given."
     assert bins.every{it instanceof Integer}, "In CoolerZoomify on id ${id}, resolutions ${resolutions}, matrix.resolutions ${matrix.resolutions}, bins was parsed as ${bins} which contains a non-integer"
-
+    def minBin = bins.min()
     def cmd = (["cooler cload pairs"]
            + coolerCloadParams
            + ["'${chromsizes}:${minBin}'", "'${pairs}' '${id}.cool'", "&& cooler zoomify"]
@@ -39,7 +40,7 @@ def buildCmd(id, matrixPlanName, pairs, chromsizes, assembly, resolutions, coole
     cmd = cmd.join(" ")
     output = "${id}.mcool"
 
-    logMap = [task: "MCOOL_MATRIX", output: output, input: [id: id, pairs: pairs, chromsizes: chromsizes, pairsFormat: pairsFormat, assembly: assembly, resolutions: resolutions, coolerCloadParams: coolerCloadParams, coolerZoomifyParams: coolerZoomifyParams]]
+    logMap = [task: "MCOOL_MATRIX", output: output, input: [id: id, pairs: pairs, chromsizes: chromsizes, assembly: assembly, matrix: matrix, coolerCloadParams: coolerCloadParams, coolerZoomifyParams: coolerZoomifyParams]]
     
 
     return [cmd, logMap, output]

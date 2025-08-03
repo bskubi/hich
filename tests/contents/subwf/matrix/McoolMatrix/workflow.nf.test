@@ -4,24 +4,38 @@ nextflow_workflow {
     script "contents/subwf/matrix/McoolMatrix/workflow.nf"
     workflow "McoolMatrix"
 
-    test("Should run without failures") {
-
+    test("SmokeTest_McoolMatrix") {
+        options """-profile localPC""""
         when {
             params {
-                // define parameters here. Example:
-                // outdir = "tests/results"
             }
             workflow {
                 """
-                // define inputs of the workflow here. Example:
-                // input[0] = file("test-file.txt")
+                pairs = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.drop.pairs.gz")
+                chromsizes = file("$projectDir/resources/hich/chromsizes/hg38.sizes")
+                common = [
+                    latestPairs: pairs, 
+                    matrixPlanName: "plan1",
+                    matrix: [resolutions: [1000000, 2000000, 5000000]],
+                    coolerCloadParams: ["-c1 2", "-p1 3", "-c2 4", "-p2 5"],
+                    chromsizes: chromsizes
+                ]
+
+                samples = [
+                    [id: "1", makeMcoolFileFormat: true] + common,
+                    [id: "2", makeMcoolFileFormat: false] + common
+                ]
+                input[0] = channel.fromList(samples)
                 """
             }
         }
 
         then {
             assert workflow.success
-            assert snapshot(workflow.out).match()
+            with (workflow.out) {
+                assert samples.size() == 2
+                assert samples.findAll{it.mcool}.size() == 1
+            }
         }
 
     }
