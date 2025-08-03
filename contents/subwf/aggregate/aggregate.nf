@@ -1,9 +1,9 @@
 
-include {Merge as MergeTechrepToBiorep; Merge as MergeBiorepToCondition} from './merge.nf'
-include {LabelAggregationPlans} from './labelAggregationPlans.nf'
-include {PairtoolsDedup} from './pairtoolsDedup.nf'
-include {Split} from './split.nf'
-include {QCPairs as DedupQCPairs; QCPairs as AggregateQCPairs} from '../reads/qcPairs.nf'
+include {MergePairs as MergeTechrepToBiorep; MergePairs as MergeBiorepToCondition} from './MergePairs/workflow.nf'
+include {LabelAggregationPlans} from './LabelAggregationPlans/workflow.nf'
+include {DEDUP_PAIRS} from './DedupPairs/process.nf'
+include {SPLIT_PAIRS} from './SplitPairs/process.nf'
+include {QCPairs as DedupQCPairs; QCPairs as AggregateQCPairs} from '../reads/QCPairs/workflow.nf'
 include {emptyOnLastStep; skip} from '../util/cli.nf'
 include {columnsToRows} from '../util/reshape.nf'
 include {keyUpdate} from '../util/keyUpdate.nf'
@@ -16,12 +16,12 @@ workflow Aggregate {
 
     main:
 
-    if (!skip("aggregate")) {
+    if (!skip("Aggregate")) {
         samples
             | LabelAggregationPlans
             | set{samples}
 
-        if (!skip("mergeTechreps") && !skip("merge")) {
+        if (!skip("MergeTechreps") && !skip("merge")) {
             samples
                 | branch {
                     yes: it.aggregateLevel == "techrep" && !it.skipMerge && !it.skipTechrepMerge && it.mergeTechrepToBiorep
@@ -45,7 +45,7 @@ workflow Aggregate {
         samples = emptyOnLastStep("mergeTechrepToBiorep", samples)
 
         // Deduplicate techreps, bioreps, and input conditions
-        if (!skip("dedup")) {
+        if (!skip("DedupPairs")) {
             samples
             | branch {
                 yes: (
@@ -63,7 +63,7 @@ workflow Aggregate {
 
             dedup.yes
             | map{tuple(it.id, it.latestPairs, it.dedupSingleCell, it.dedupMaxMismatch, it.dedupMethod, it.pairtoolsDedupParams)}
-            | PairtoolsDedup
+            | DEDUP_PAIRS
             | map{[id:it[0], dedupPairs:it[1], latest:it[1], latestPairs:it[1]]}
             | set {deduplicated}
 
@@ -71,8 +71,8 @@ workflow Aggregate {
             | concat(dedup.no)
             | set {samples}
 
-            if ("dedup" in params.general.get("qcAfter")) {
-                DedupQCPairs(samples, ["dedupPairs"], "dedup")
+            if ("DedupPairs" in params.general.get("qcAfter")) {
+                DedupQCPairs(samples, ["dedupPairs"], "DedupPairs")
             }
         }
 
@@ -80,7 +80,7 @@ workflow Aggregate {
 
         // Merge bioreps to conditions
 
-        if (!skip("mergeBiorepToCondition") && !skip("merge")) {
+        if (!skip("MergeBiorepToCondition") && !skip("merge")) {
             samples
                 | branch {
                     yes: it.aggregateLevel == "biorep" && !it.skipMerge && !it.skipBiorepMerge && it.mergeBiorepToCondition
@@ -99,11 +99,11 @@ workflow Aggregate {
 
         }
 
-        samples = emptyOnLastStep("mergeBiorepToCondition", samples)
+        samples = emptyOnLastStep("MergeBiorepToCondition", samples)
 
         // Split into multiple samples (i.e. on cell ID)
 
-        if (!skip("split")) {
+        if (!skip("SplitPairs")) {
             samples
                 | branch {
                     yes: (
@@ -120,7 +120,7 @@ workflow Aggregate {
 
             split.yes
                 | map{tuple(it.id, it.latestPairs, it.splitColumns, it.splitSQL)}
-                | Split
+                | SPLIT_PAIRS
                 | map{[id: [it[0]]*it[1].size(), splitPairs: it[1], latestPairs: it[1]]}
                 | columnsToRows
                 | set{splitSamples}
@@ -138,13 +138,13 @@ workflow Aggregate {
                 | set{samples}
         }
 
-        if ("aggregate" in params.general.get("qcAfter")) {
-            AggregateQCPairs(samples, ["latestPairs"], "aggregate")
+        if ("Aggregate" in params.general.get("qcAfter")) {
+            AggregateQCPairs(samples, ["latestPairs"], "Aggregate")
         }
 
     }
 
-    samples = emptyOnLastStep("aggregate", samples)
+    samples = emptyOnLastStep("Aggregate", samples)
 
     emit:
     samples
