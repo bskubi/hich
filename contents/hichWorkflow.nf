@@ -8,7 +8,7 @@ include {IngestPairs} from './subwf/reads/IngestPairs/workflow.nf'
 include {SelectPairs} from './subwf/reads/SelectPairs/workflow.nf'
 
 include {LabelAggregationPlans} from './subwf/aggregate/labelAggregationPlans.nf'
-include {Aggregate} from './subwf/aggregate/aggregate.nf'
+include {Aggregate} from './subwf/aggregate/workflow.nf'
 
 include {LabelMatrixPlans} from './subwf/matrix/labelMatrixPlans.nf'
 include {HicMatrix} from './subwf/matrix/hicMatrix.nf'
