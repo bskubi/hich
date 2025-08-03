@@ -11,21 +11,29 @@ nextflow_workflow {
             workflow {
                 """
                 pairs = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.drop.pairs.gz")
-                techreps = [aggregateLevel: "techrep", mergeTechrepToBiorep: true, latestPairs: pairs]
-                b1c1 = [biorep: 1, condition: 1] + techreps
-                b1c2 = [biorep: 1, condition: 2] + techreps
-                b2c1 = [biorep: 2, condition: 1] + techreps
-                b2c2 = [biorep: 2, condition: 2] + techreps
+                techreps = [aggregateLevel: "techrep", mergeTechrepToBiorep: true, pairs: pairs, latestPairs: pairs]
+                b1c1 = [biorep: 1, condition: 1]
+                b1c2 = [biorep: 1, condition: 2]
+                b2c1 = [biorep: 2, condition: 1]
+                b2c2 = [biorep: 2, condition: 2]
+                b1c3 = [biorep: 1, condition: 3]
+
                 
                 samples = [
-                    [id: "1"] + b1c1,
-                    [id: "2"] + b1c1,
-                    [id: "3"] + b2c1,
-                    [id: "4"] + b2c1,
-                    [id: "5"] + b1c2,
-                    [id: "6"] + b1c2,
-                    [id: "7"] + b2c2,
-                    [id: "8"] + b2c2,
+                    [id: "1"] + b1c1 + techreps,
+                    [id: "2"] + b1c1 + techreps,
+                    [id: "3"] + b2c1 + techreps,
+                    [id: "4"] + b2c1 + techreps,
+                    [id: "5"] + b1c2 + techreps,
+                    [id: "6"] + b1c2 + techreps,
+                    [id: "7"] + b2c2 + techreps,
+                    [id: "8"] + b2c2 + techreps,
+                    [id: "9"] + b1c3 + techreps,
+                    [id: "4_1"] + [biorep: 1, condition: 4, aggregateLevel: "biorep", pairs: pairs, latestPairs: pairs],
+                    [id: "11"] + [condition: 3, aggregateLevel: "condition", pairs: pairs, latestPairs: pairs],
+                    [id: "12"] + b2c2 + techreps + [skipMerge: true],
+                    [id: "13"] + b2c2 + techreps + [mergeTechrepToBiorep: false],
+                    [id: "14"] + b2c2 + techreps + [skipTechrepMerge: true],
                 ]
                 input[0] = channel.fromList(samples)
                 """
@@ -35,18 +43,18 @@ nextflow_workflow {
         then {
             assert workflow.success
             with (workflow.out) {
-                assert samples.size() == 12
+                assert samples.size() == 19
                 def techreps = samples.findAll{it.aggregateLevel == "techrep"}
                 def bioreps = samples.findAll{it.aggregateLevel == "biorep"}
-                assert techreps.size() == 8
-                assert bioreps.size() == 4
+                def conditions = samples.findAll{it.aggregateLevel == "condition"}
+                assert techreps.size() == 12
+                assert bioreps.size() == 6
+                assert conditions.size() == 1
                 def id = bioreps.collect{it.id}
-                assertContainsInAnyOrder(id, ["1_1", "1_2", "2_1", "2_2"])
+                assertContainsInAnyOrder(id, ["1_1", "1_2", "2_1", "2_2", "3_1", "4_1"])
                 def pairs = bioreps.collect{[id: it.id, file: it.pairs.split("/")[-1]]}
-                assert pairs.size() == 4
-                pairs.each{
-                    assert it.file.toString() == "${it.id}.merged.pairs.gz".toString()
-                }
+                assert pairs.size() == 6
+                assert pairs.findAll{it.file.toString() == "${it.id}.merged.pairs.gz".toString()}.size() == 5
             }
         }
 
