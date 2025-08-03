@@ -1,0 +1,45 @@
+nextflow_workflow {
+
+    name "Test Workflow LabelAggregationPlans"
+    script "contents/subwf/aggregate/LabelAggregationPlans/workflow.nf"
+    workflow "LabelAggregationPlans"
+
+    test("SmokeTest_LabelAggregationPlans") {
+
+        when {
+            params {
+                aggregate {
+                    agg1 {
+                        dedupTechreps = true
+                        dedupBioreps = true
+                        dedupMaxMismatch = 0
+                    }
+                    agg2 {
+                        splitTechreps = true
+                        splitBioreps = true
+                    }
+                }
+                keepUnaggregated=true
+            }
+            workflow {
+                """
+                samples = [
+                    [id: "1", aggregationPlanName: "agg1"],
+                    [id: "2"]
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out) {
+                assert samples.size() == 4
+                assert samples.findAll{it.aggregationPlanName == "agg1"}.size() == 2
+                assert samples.findAll{it.aggregationPlanName == "agg2"}.size() == 1
+            }
+        }
+    }
+
+}
