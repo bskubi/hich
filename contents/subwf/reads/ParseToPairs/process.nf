@@ -1,7 +1,7 @@
 include {withLog; stubLog} from '../../util/logs.nf'
-include {buildCmdPairtoolsParse2} from './parseHelpers.nf'
+include {buildCmd} from './functions.nf'
 
-process PairtoolsParse2 {
+process PARSE_TO_PAIRS {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",
                saveAs: {params.general.publish.parse ? it : null},
                mode: params.general.publish.mode
@@ -15,14 +15,15 @@ process PairtoolsParse2 {
     tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseParams), val(sql), val(minMapq)
 
     output:
-    tuple val(id), path("${id}.pairs.gz")
+    tuple val(id), path(output)
 
     shell:
-    (cmd, logMap) = buildCmdPairtoolsParse2(id, sambam, chromsizes, assembly, parseParams, sql, minMapq, task.memory, task.cpus)
+    (cmd, logMap, output) = buildCmd(id, sambam, chromsizes, assembly, parseParams, sql, minMapq, task.memory, task.cpus)
     withLog(cmd, logMap)
 
     stub:
-    stub = "touch '${id}.pairs.gz'"
-    (cmd, logMap) = buildCmdPairtoolsParse2(id, sambam, chromsizes, assembly, parseParams, sql, minMapq, task.memory, task.cpus)
+    
+    (cmd, logMap, output) = buildCmd(id, sambam, chromsizes, assembly, parseParams, sql, minMapq, task.memory, task.cpus)
+    stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 }

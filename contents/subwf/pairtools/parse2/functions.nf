@@ -15,19 +15,20 @@ def validateMemory(memory) {
     memory ? Math.max(memory.toGiga() - 2, 2) : 2
 }
 
-def buildCmdPairtoolsParse2(id, sambam, chromsizes, assembly, parseParams, sql, minMapq, memory, cpus) {
+def buildCmd(id, sambam, chromsizes, assembly, parseParams, sql, minMapq, memory, cpus) {
     def parseParamsV = validateParseParams(parseParams, minMapq)
     def memoryV = validateMemory(memory)
+    def output = "${id}.pairs.gz"
    
     def viewCmd = "samtools view -b '${sambam}'"
     def parse2Cmd = "pairtools parse2 --flip --assembly '${assembly}' --chroms-path '${chromsizes}' ${parseParamsV}"
     def sqlCmd = sql ? "hich pairs sql --memory-limit '${memoryV}' --threads '${cpus}' '${sql}' /dev/stdin" : null
-    def pairsSortCmd = "pairtools sort --output '${id}.pairs.gz' --memory ${memoryV}G --nproc-in ${cpus} --nproc-out ${cpus}"
+    def pairsSortCmd = "pairtools sort --output '${output}' --memory ${memoryV}G --nproc-in ${cpus} --nproc-out ${cpus}"
     
     def cmd = [viewCmd, parse2Cmd, sqlCmd, pairsSortCmd].findAll{it}.join(" | ")
 
     def logMap = [
-        task: "PairtoolsParse2",
+        task: "PARSE",
         input: [
             id: id,
             sambam: sambam,
@@ -40,7 +41,7 @@ def buildCmdPairtoolsParse2(id, sambam, chromsizes, assembly, parseParams, sql, 
             cpus: cpus
         ],
         output: [
-            pairs: "${id}.pairs.gz"
+            pairs: output
         ]
     ]
     return [cmd, logMap]

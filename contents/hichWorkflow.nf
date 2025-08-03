@@ -2,7 +2,7 @@ include {ParseParams} from './subwf/setup/parseParams.nf'
 include {Setup} from './subwf/setup/setup.nf'
 
 include {Align} from './subwf/reads/align.nf'
-include {Parse} from './subwf/reads/parse.nf'
+include {ParseToPairs} from './subwf/reads/ParseToPairs/workflow.nf'
 include {TagRestrictionFragments} from './subwf/reads/TagRestrictionFragments/workflow.nf'
 include {IngestPairs} from './subwf/reads/ingestPairs.nf'
 include {Select} from './subwf/reads/Select/workflow.nf'
@@ -29,7 +29,7 @@ workflow HichWorkflow {
         | Setup
 
         | Align
-        | Parse
+        | SambamToPairs
         | IngestPairs
         | TagRestrictionFragments
         | Select

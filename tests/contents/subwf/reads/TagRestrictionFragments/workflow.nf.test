@@ -4,7 +4,7 @@ nextflow_workflow {
     script "contents/subwf/reads/TagRestrictionFragments/workflow.nf"
     workflow "TagRestrictionFragments"
 
-    test("SmokeTestTagRestrictionFragments") {
+    test("SmokeTest_TagRestrictionFragments") {
 
         when {
             params {

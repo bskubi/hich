@@ -2,12 +2,12 @@
 nextflow_function {
 
     name "Test Functions"
-    script "contents/subwf/reads/select/selectHelpers.nf"
+    script "contents/subwf/reads/Select/functions.nf"
 
 	
-    test("buildCmdPairtoolsSelect") {
+    test("SmokeTest_Select_buildCmd") {
 
-        function "buildCmdPairtoolsSelect"
+        function "buildCmd"
 
         when {
             function {
@@ -59,9 +59,9 @@ nextflow_function {
         }
     }
 
-    test("buildCmdPairtoolsSelectEmpty") {
+    test("SmokeTest_Select_buildCmdEmpty") {
 
-        function "buildCmdPairtoolsSelect"
+        function "buildCmd"
         when {
             function {
                 """

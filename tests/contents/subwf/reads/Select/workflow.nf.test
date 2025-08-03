@@ -4,7 +4,7 @@ nextflow_workflow {
     script "contents/subwf/reads/Select/workflow.nf"
     workflow "Select"
 
-    test("SmokeTestSelect") {
+    test("SmokeTest_Select") {
         options """-profile localPC"""
         tag "priority3"
 

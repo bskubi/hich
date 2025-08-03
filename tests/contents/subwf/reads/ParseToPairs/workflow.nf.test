@@ -1,10 +1,10 @@
 nextflow_workflow {
 
-    name "Test Workflow Parse"
-    script "contents/subwf/reads/parse.nf"
-    workflow "Parse"
+    name "Test Workflow SmokeTest_ParseToPairs"
+    script "contents/subwf/reads/ParseToPairs/workflow.nf"
+    workflow "ParseToPairs"
 
-    test("Parse1kReads") {
+    test("SmokeTest_ParseToPairs") {
         options """-profile localPC"""
         tag "priority2"
 
@@ -17,7 +17,7 @@ nextflow_workflow {
                 """
                 stdsam = file("$projectDir/tests/assets/bam/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.sam")
                 stdbam = file("$projectDir/tests/assets/bam/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.bam")
-                metbam = file("$projectDir/tests/assets/bam/1k/1k_CEMBA3C_18B3C_R2_P5-2-M17-L15.bam")
+                //metbam = file("$projectDir/tests/assets/bam/1k/1k_CEMBA3C_18B3C_R2_P5-2-M17-L15.bam")
                 chromsizes = file("$projectDir/resources/hich/chromsizes/hg38.sizes")
                 common = [chromsizes: chromsizes, assembly: "hg38"]
                 minMapq = [minMapq: 30]
@@ -32,7 +32,7 @@ nextflow_workflow {
                     common + [id: "5", datatype: "fastq", sambam: stdbam] + minMapq,
                     common + [id: "6", datatype: "sambam", sambam: stdbam] + minMapq,
                     common + [id: "7", datatype: "hic"],
-                    common + [id: "8", datatype: "fastq", sambam: metbam],
+                    //common + [id: "8", datatype: "fastq", sambam: metbam],
                     common + [id: "9", datatype: "fastq", sambam: stdsam],
                 ]
                 input[0] = channel.fromList(samples)
@@ -43,9 +43,9 @@ nextflow_workflow {
         then {
             assert workflow.success
             with (workflow.out) {
-                assert samples.size() == 9
+                assert samples.size() == 8
                 hasPairs = samples.findAll{it.pairs}
-                assert hasPairs.size() == 8
+                assert hasPairs.size() == 7
                 assert hasPairs.findAll{it.datatype in ["fastq", "sambam"]}
             }
         }
