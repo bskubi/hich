@@ -4,7 +4,7 @@ include {Setup} from './subwf/setup/setup.nf'
 include {Align} from './subwf/reads/Align/workflow.nf'
 include {ParseToPairs} from './subwf/reads/ParseToPairs/workflow.nf'
 include {TagRestrictionFragments} from './subwf/reads/TagRestrictionFragments/workflow.nf'
-include {IngestPairs} from './subwf/reads/ingestPairs.nf'
+include {IngestPairs} from './subwf/reads/IngestPairs/workflow.nf'
 include {SelectPairs} from './subwf/reads/SelectPairs/workflow.nf'
 
 include {LabelAggregationPlans} from './subwf/aggregate/labelAggregationPlans.nf'
