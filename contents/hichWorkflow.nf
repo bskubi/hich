@@ -11,10 +11,10 @@ include {AggregatePairs} from './subwf/aggregate/workflow.nf'
 
 include {CreateMatrix} from './subwf/matrix/workflow.nf'
 include {Hicrep} from './subwf/features/hicrep.nf'
-include {CompartmentScores} from './subwf/features/compartmentScores.nf'
+include {CompartmentScores} from './subwf/features/CompartmentScores/workflow.nf'
 include {InsulationScores} from './subwf/features/insulationScores.nf'
 include {TADs} from './subwf/features/tads.nf'
-include {Loops} from './subwf/features/loops.nf'
+include {Loops} from './subwf/features/Loops/workflow.nf'
 include {DifferentialLoops} from './subwf/features/differentialLoops.nf'
 
 include {emptyOnLastStep; skip} from './subwf/util/cli.nf'

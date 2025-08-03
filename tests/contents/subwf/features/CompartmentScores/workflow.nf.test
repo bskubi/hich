@@ -1,0 +1,41 @@
+nextflow_workflow {
+
+    name "Test Workflow CompartmentScores"
+    script "contents/subwf/features/CompartmentScores/workflow.nf"
+    workflow "CompartmentScores"
+
+    test("SmokeTest_CompartmentScores") {
+
+        when {
+            params {
+                sampleSelectionStrategies = [
+                    strategy1: [:]
+                ]
+                compartments = [
+                    plan1: [
+                        sampleSelectionStrategy: ["strategy1"],
+                        resolution: 1000000,
+                        nEigs: 3,
+                        eigsCisParams: []
+                    ]
+                ]
+            }
+            workflow {
+                """
+                genomeReference = file("$projectDir/tests/assets/downloads/genomeReference/hg38.fa.gz")
+                matrix = file("$projectDir/tests/assets/downloads/mcool/full/GSM4604274_629.iced.mcool")
+                samples = [
+                    [id: "1", genomeReference: genomeReference, mcool: matrix]
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+
+    }
+
+}
