@@ -1,3 +1,4 @@
+include {LabelAggregationPlans} from '../LabelAggregationPlans/workflow.nf'
 include {SPLIT_PAIRS} from './process.nf'
 include {emptyOnLastStep; skip} from '../../util/cli.nf'
 include {columnsToRows} from '../../util/reshape.nf'

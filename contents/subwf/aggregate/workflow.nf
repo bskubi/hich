@@ -4,7 +4,7 @@ include {MergeTechrepsToBioreps} from './MergeTechrepsToBioreps/workflow.nf'
 include {DedupPairs} from './DedupPairs/workflow.nf'
 include {MergeBiorepsToConditions} from './MergeBiorepsToConditions/workflow.nf'
 include {SplitPairs} from './SplitPairs/workflow.nf'
-include {QCPairs} from '../../reads/QCPairs/workflow.nf'
+include {QCPairs} from '../reads/QCPairs/workflow.nf'
 include {emptyOnLastStep; skip} from '../util/cli.nf'
 
 

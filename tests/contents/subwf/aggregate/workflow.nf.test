@@ -1,0 +1,77 @@
+nextflow_workflow {
+
+    name "Test Workflow Aggregate"
+    script "contents/subwf/aggregate/workflow.nf"
+    workflow "Aggregate"
+
+    test("SmokeTest_Aggregate") {
+
+        when {
+            params {
+                aggregate {
+                    agg {
+                        dedupTechreps = true
+                        dedupBioreps = true
+                        dedupConditions = false
+                        mergeTechrepToBiorep = true
+                        mergeBiorepToCondition = true
+                    }
+                }
+            }
+            workflow {
+                """
+                pairs = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.drop.pairs.gz")
+                common = [pairs: pairs, latestPairs: pairs, aggregateLevel: "techrep"]
+                t1 = [techrep: "1"]
+                t2 = [techrep: "2"]
+                b1 = [biorep: "1"]
+                b2 = [biorep: "2"]
+                c1 = [condition: "1"]
+                c2 = [condition: "2"]
+
+                samples = [
+                    [id: "1_1_1"] + c1 + b1 + t1 + common,
+                    [id: "1_1_2"] + c1 + b1 + t2 + common,
+                    [id: "1_2_1"] + c1 + b2 + t1 + common,
+                    [id: "1_2_2"] + c1 + b2 + t2 + common,
+                    [id: "2_1_1"] + c2 + b1 + t1 + common,
+                    [id: "2_1_2"] + c2 + b1 + t2 + common,
+                    [id: "2_2_1"] + c2 + b2 + t1 + common,
+                    [id: "2_2_2"] + c2 + b2 + t2 + common,
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out) {
+                assert samples.size() == 14
+                techreps = samples.findAll{it.aggregateLevel == "techrep"}
+                bioreps = samples.findAll{it.aggregateLevel == "biorep"}
+                conditions = samples.findAll{it.aggregateLevel == "condition"}
+                assert techreps.size() == 8
+                assert bioreps.size() == 4
+                assert conditions.size() == 2
+                assert samples.each{
+                    assert it.pairs != null
+                    assert it.latestPairs != null
+                    assert it.aggregationPlanName == "agg"
+                    assert it.dedupTechreps
+                }
+                techreps.each{
+                    assert it.id.toString() == "${it.condition}_${it.biorep}_${it.techrep}".toString()
+                }
+                bioreps.each{
+                    assert it.id.toString() == "${it.condition}_${it.biorep}".toString()
+                }
+                conditions.each{
+                    assert it.id.toString() == "${it.condition}".toString()
+                }
+            }
+        }
+
+    }
+
+}
