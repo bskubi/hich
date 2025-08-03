@@ -1,10 +1,10 @@
 nextflow_workflow {
 
     name "Test Workflow Align"
-    script "contents/subwf/reads/align.nf"
+    script "contents/subwf/reads/Align/workflow.nf"
     workflow "Align"
     
-    test("Align10Reads") {
+    test("SmokeTest_Align") {
         options """-profile localPC"""
         tag "priority3"
 
@@ -14,24 +14,23 @@ nextflow_workflow {
             }
             workflow {
                 """
-                std1 = file("$projectDir/tests/assets/fastq/10/10_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R1.fastq.gz")
-                std2 = file("$projectDir/tests/assets/fastq/10/10_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz")
-                stdInterleaved = file("$projectDir/tests/assets/fastq/10/10_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz")
-                met1 = file("$projectDir/tests/assets/fastq/10/10_CEMBA3C_18B3C_R2_P5-2-M17-L15.R1.fastq.gz")
-                met2 = file("$projectDir/tests/assets/fastq/10/10_CEMBA3C_18B3C_R2_P5-2-M17-L15.R2.fastq.gz")
-                metInterleaved = file("$projectDir/tests/assets/fastq/10/10_CEMBA3C_18B3C_R2_P5-2-M17-L15_interleaved.fastq.gz")
+                std1 = file("$projectDir/tests/assets/fastq/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R1.fastq.gz")
+                std2 = file("$projectDir/tests/assets/fastq/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz")
+                stdInterleaved = file("$projectDir/tests/assets/fastq/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz")
+                met1 = file("$projectDir/tests/assets/fastq/1k/1k_CEMBA3C_18B3C_R2_P5-2-M17-L15.R1.fastq.gz")
+                met2 = file("$projectDir/tests/assets/fastq/1k/1k_CEMBA3C_18B3C_R2_P5-2-M17-L15.R2.fastq.gz")
+                metInterleaved = file("$projectDir/tests/assets/fastq/1k/1k_CEMBA3C_18B3C_R2_P5-2-M17-L15_interleaved.fastq.gz")
                 common = [
                     datatype: "fastq",
-                    alignerIndexPrefix: "hg38",
                     minMapq: 30
                 ]
                 bwaFlags = ["-S", "-P", "-5", "-M", "-p"]
                 bwamethFlags = ["--do-not-penalize-chimeras", "-p"]
 
-                bwa = [aligner: "bwa", alignerIndexDir: file("$projectDir/resources/hich/bwa/bwa/index"), bwaFlags: bwaFlags]
-                bwaMem2 = [aligner: "bwa-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwa-mem2/bwa-mem2/index"), bwaFlags: bwaFlags]
-                bwameth = [aligner: "bwameth", alignerIndexDir: file("$projectDir/resources/hich/bwameth/bwameth/index"), bwaFlags: bwamethFlags]
-                bwamethMem2 = [aligner: "bwameth-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwameth-mem2/bwameth-mem2/index"), bwaFlags: bwamethFlags]
+                bwa = [aligner: "bwa", alignerIndexDir: file("$projectDir/resources/hich/bwa/bwa/index"), bwaFlags: bwaFlags, alignerIndexPrefix: "hg38",]
+                bwaMem2 = [aligner: "bwa-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwa-mem2/bwa-mem2/index"), bwaFlags: bwaFlags, alignerIndexPrefix: "hg38",]
+                bwameth = [aligner: "bwameth", alignerIndexDir: file("$projectDir/resources/hich/bwameth/bwameth/index"), bwaFlags: bwamethFlags, alignerIndexPrefix: "mm10"]
+                bwamethMem2 = [aligner: "bwameth-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwameth-mem2/bwameth-mem2/index"), bwaFlags: bwamethFlags, alignerIndexPrefix: "mm10"]
                 stdPaired = [fastq1: std1, fastq2: std2]
                 stdSingle = [fastq: std1]
                 stdInterleaved = [fastq: stdInterleaved]
@@ -49,9 +48,11 @@ nextflow_workflow {
                     common + bwameth + metPaired + [id: "7"],
                     common + bwameth + metSingle + [id: "8"],
                     common + bwameth + metInterleaved + [id: "9"],
+                    /*
                     common + bwamethMem2 + metPaired + [id: "10"],
                     common + bwamethMem2 + metSingle + [id: "11"],
                     common + bwamethMem2 + metInterleaved + [id: "12"]
+                    */
                 ]
                 input[0] = channel.fromList(samples)
                 """

@@ -1,7 +1,7 @@
-include {buildCmdAlignBwa} from './alignHelpers.nf'
+include {buildCmd} from './functions.nf'
 include {withLog; stubLog} from '../../util/logs.nf'
 
-process Align {
+process ALIGN {
     publishDir params.general.publish.align ? params.general.publish.align : "results",
                saveAs: {params.general.publish.align ? it : null},
                mode: params.general.publish.mode
@@ -19,11 +19,11 @@ process Align {
     tuple val(id), path("${id}.bam")
 
     shell:
-    (cmd, logMap) = buildCmdAlignBwa(aligner, id, indexDir, indexPrefix, fastq, bwaFlags, minMapq, task.cpus)
+    (cmd, logMap) = buildCmd(aligner, id, indexDir, indexPrefix, fastq, bwaFlags, minMapq, task.cpus)
     withLog(cmd, logMap)
 
     stub:
     stub = "touch '${id}.bam'"
-    (cmd, logMap) = buildCmdAlignBwa(aligner, id, indexDir, indexPrefix, fastq, bwaFlags, minMapq, task.cpus)
+    (cmd, logMap) = buildCmd(aligner, id, indexDir, indexPrefix, fastq, bwaFlags, minMapq, task.cpus)
     stubLog(stub, cmd, logMap)
 }

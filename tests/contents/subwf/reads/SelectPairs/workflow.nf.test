@@ -1,18 +1,15 @@
 nextflow_workflow {
 
-    name "Test Workflow Select"
-    script "contents/subwf/reads/Select/workflow.nf"
-    workflow "Select"
+    name "Test Workflow SelectPairs"
+    script "contents/subwf/reads/SelectPairs/workflow.nf"
+    workflow "SelectPairs"
 
-    test("SmokeTest_Select") {
+    test("SmokeTest_SelectPairs") {
         options """-profile localPC"""
         tag "priority3"
 
         when {
-            params {
-                // define parameters here. Example:
-                // outdir = "tests/results"
-            }
+            params {}
             workflow {
                 """
                 pairTypes = [pairTypes: ["UU", "UR", "RU"]]

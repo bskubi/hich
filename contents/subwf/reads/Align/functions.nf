@@ -1,5 +1,3 @@
-include {withLog; stubLog} from '../../util/logs.nf'
-
 def formatFlags(bwaFlags, minMapq) {
     // Convert bwaFlags to list if it's not already (i.e. if user uses "-SP5M" instead of ["-S", "-P", "-5", "-M"])   
     def allFlags = bwaFlags instanceof List ? bwaFlags : [bwaFlags]
@@ -14,7 +12,7 @@ def formatFlags(bwaFlags, minMapq) {
     return flagsArgs
 }
 
-def buildCmdAlignBwa(aligner, id, indexDir, indexPrefix, fastq, bwaFlags, minMapq, cpus) {
+def buildCmd(aligner, id, indexDir, indexPrefix, fastq, bwaFlags, minMapq, cpus) {
     def alignerCmds = [
         "bwa": "bwa mem",
         "bwa-mem2": "bwa-mem2 mem",

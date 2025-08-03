@@ -1,7 +1,7 @@
 include {withLog; stubLog} from '../../util/logs.nf'
 include {buildCmd} from './functions.nf'
 
-process SELECT {
+process SELECT_PAIRS {
     publishDir params.general.publish.select ? params.general.publish.select : "results",
                saveAs: {params.general.publish.select ? it : null},
                mode: params.general.publish.mode

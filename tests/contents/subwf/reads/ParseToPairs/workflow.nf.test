@@ -1,6 +1,6 @@
 nextflow_workflow {
 
-    name "Test Workflow SmokeTest_ParseToPairs"
+    name "Test Workflow ParseToPairs"
     script "contents/subwf/reads/ParseToPairs/workflow.nf"
     workflow "ParseToPairs"
 

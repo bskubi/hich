@@ -1,8 +1,8 @@
-include {emptyOnLastStep; skip} from '../util/cli.nf'
-include {keyUpdate} from '../util/keyUpdate.nf'
-include {withLog; stubLog} from '../util/logs.nf'
-include {Align} from './align/align.nf'
-include {getFastq} from './helpers/alignHelpers.nf'
+include {emptyOnLastStep; skip} from '../../util/cli.nf'
+include {keyUpdate} from '../../util/keyUpdate.nf'
+include {withLog; stubLog} from '../../util/logs.nf'
+include {ALIGN} from './process.nf'
+include {getFastq} from './functions.nf'
 
 workflow Align {
     take:
@@ -10,12 +10,12 @@ workflow Align {
 
     main:
 
-    if (!skip("align")) {
+    if (!skip("Align")) {
 
         samples
             | filter {it.datatype == "fastq"}
             | map{tuple(it.id, it.aligner, it.alignerIndexDir, it.alignerIndexPrefix, getFastq(it), it.bwaFlags, it.minMapq)}
-            | Align
+            | ALIGN
             | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
             | set{results}
     
@@ -24,7 +24,7 @@ workflow Align {
     }
 
 
-    samples = emptyOnLastStep("align", samples)
+    samples = emptyOnLastStep("Align", samples)
 
     emit:
     samples
