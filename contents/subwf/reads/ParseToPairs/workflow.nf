@@ -1,4 +1,4 @@
-include {QCPairs} from '../qcPairs.nf'
+include {QCPairs} from '../QCPairs/workflow.nf'
 include {emptyOnLastStep; skip} from '../../util/cli.nf'
 include {keyUpdate} from '../../util/keyUpdate.nf'
 include {PARSE_TO_PAIRS} from './process.nf'

@@ -1,8 +1,6 @@
-include {skip} from '../util/cli.nf'
-include {withLog; stubLog} from '../util/logs.nf'
-include {keyUpdate} from '../util/keyUpdate.nf'
+include {withLog; stubLog} from '../../util/logs.nf'
 
-process PairtoolsStats {
+process PAIRTOOLS_STATS {
     publishDir params.general.publish.pairStats ? params.general.publish.pairStats : "results",
                saveAs: {params.general.publish.pairStats ? it : null},
                mode: params.general.publish.mode
@@ -55,7 +53,7 @@ process PairtoolsStats {
     stubLog(stub, cmd, logMap)
 }
 
-process MultiQC {
+process MULTIQC_PAIRTOOLS {
     publishDir params.general.publish.qc ? params.general.publish.qc : "results",
                saveAs: {params.general.publish.qc ? it : null},
                mode: params.general.publish.mode
@@ -101,44 +99,4 @@ process MultiQC {
     ]
 
     stubLog(stub, cmd, logMap)
-}
-
-workflow QCPairs {
-    take:
-    samples
-    pairs
-    reportName
-    
-    main:
-
-    if (!skip("qcpairs")) {
-        samples
-            | map{
-                sample ->
-                
-                pairs.collect{
-                    pairfile ->
-                    hasPairFile = sample.containsKey(pairfile)
-                    pairFileIsPath = sample.get(pairfile).getClass() == sun.nio.fs.UnixPath
-                    statsKey = pairfile + "Stats"
-                    noStatsFile = !sample.containsKey(statsKey)
-                    computeStats = hasPairFile && pairFileIsPath && noStatsFile
-                    statsInput = [sample.id, pairfile, statsKey, sample[pairfile]]
-                    computeStats ? statsInput : null
-                }.findAll{it != null}
-            }
-            | collect
-            | flatMap
-            | PairtoolsStats
-            | map{it[3]}
-            | collect
-            | map{paths -> [reportName, paths]}
-            | MultiQC
-    }
-
-
-
-    emit:
-    samples
-
 }
