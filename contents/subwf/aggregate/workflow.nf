@@ -8,12 +8,12 @@ include {QCPairs} from '../reads/QCPairs/workflow.nf'
 include {emptyOnLastStep; skip} from '../util/cli.nf'
 
 
-workflow Aggregate {
+workflow AggregatePairs {
     take:
     samples
 
     main:
-    myName = "Aggregate"
+    myName = "AggregatePairs"
 
     if (!skip(myName)) {
         samples

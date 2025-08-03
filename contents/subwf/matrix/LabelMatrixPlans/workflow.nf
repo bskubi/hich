@@ -1,7 +1,7 @@
-include {createCompositeStrategy; filterSamplesByStrategy} from '../util/analysisPlans.nf'
-include {columnsToRows} from '../util/reshape.nf'
-include {emptyOnLastStep} from '../util/cli.nf'
-include {Setup} from '../setup/setup.nf'
+include {createCompositeStrategy; filterSamplesByStrategy} from '../../util/analysisPlans.nf'
+include {columnsToRows} from '../../util/reshape.nf'
+include {emptyOnLastStep} from '../../util/cli.nf'
+include {Setup} from '../../setup/setup.nf'
 
 workflow LabelMatrixPlans {
     take:
@@ -14,6 +14,8 @@ workflow LabelMatrixPlans {
         planName, analysisPlan ->
 
         strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
+
+        print(strategy)
 
         filterSamplesByStrategy(samples, strategy)
             | map{it + [matrixPlanName: planName] + analysisPlan + [id: it.id + "_${planName}"]}

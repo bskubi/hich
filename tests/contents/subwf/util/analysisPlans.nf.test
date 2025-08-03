@@ -1,0 +1,37 @@
+
+nextflow_function {
+
+    name "Test Functions"
+    script "contents/subwf/util/analysisPlans.nf"
+
+	
+
+    test("SmokeTest_createCompositeStrategy") {
+
+        function "createCompositeStrategy"
+
+        when {
+            function {
+                """
+                strategyNames = ["s1", "s2"]
+                sampleSelectionStrategies = [
+                    s1: [a1: 1, a2: 2],
+                    s2: [a2: 3, a3: 4],
+                    s3: [a4: 5]
+                ]
+                input[0] = strategyNames
+                input[1] = sampleSelectionStrategies
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            with (function) {
+                assert result == [a1: [1], a2: [3], a3: [4]]
+            }
+        }
+
+    }
+
+}

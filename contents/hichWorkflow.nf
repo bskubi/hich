@@ -7,13 +7,9 @@ include {TagRestrictionFragments} from './subwf/reads/TagRestrictionFragments/wo
 include {IngestPairs} from './subwf/reads/IngestPairs/workflow.nf'
 include {SelectPairs} from './subwf/reads/SelectPairs/workflow.nf'
 
-include {LabelAggregationPlans} from './subwf/aggregate/labelAggregationPlans.nf'
-include {Aggregate} from './subwf/aggregate/workflow.nf'
+include {AggregatePairs} from './subwf/aggregate/workflow.nf'
 
-include {LabelMatrixPlans} from './subwf/matrix/labelMatrixPlans.nf'
-include {HicMatrix} from './subwf/matrix/hicMatrix.nf'
-include {McoolMatrix} from './subwf/matrix/mcoolMatrix.nf'
-include {IngestMatrix} from './subwf/matrix/ingestMatrix.nf'
+include {CreateMatrix} from './subwf/matrix/workflow.nf'
 include {Hicrep} from './subwf/features/hicrep.nf'
 include {CompartmentScores} from './subwf/features/compartmentScores.nf'
 include {InsulationScores} from './subwf/features/insulationScores.nf'
@@ -33,13 +29,9 @@ workflow HichWorkflow {
         | IngestPairs
         | TagRestrictionFragments
         | SelectPairs
+        | AggregatePairs
 
-        | Aggregate
-
-        | LabelMatrixPlans
-        | IngestMatrix
-        | HicMatrix
-        | McoolMatrix
+        | CreateMatrix
 
         | Hicrep
         | CompartmentScores

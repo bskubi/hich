@@ -1,0 +1,29 @@
+nextflow_workflow {
+
+    name "Test Workflow HicMatrix"
+    script "contents/subwf/matrix/HicMatrix/workflow.nf"
+    workflow "HicMatrix"
+
+    test("SmokeTest_HicMatrix") {
+
+        when {
+            params {
+                // define parameters here. Example:
+                // outdir = "tests/results"
+            }
+            workflow {
+                """
+                // define inputs of the workflow here. Example:
+                // input[0] = file("test-file.txt")
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out).match()
+        }
+
+    }
+
+}

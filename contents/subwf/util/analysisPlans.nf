@@ -1,42 +1,30 @@
 include {asHashSet} from "./dataStructures.nf"
 
-def createCompositeStrategy(strategyKeys, strategyMap, combineHow = [:]) {
-    /* A composite strategy is a hashmap in which keys are sample attributes and values are lists of permitted sample attribute values. It is created by combining one or more individual strategies specified in params.sampleSelectionStrategies.
+def createCompositeStrategy(strategyNames, sampleSelectionStrategies, combineHow = [:]) {
+    /* 
+        Example:
 
-        strategyKeys -- keys in strategyMap for the sub-strategies to combine (i.e. analysisPlan)
-        strategyMap -- [strategyKey: selectionStrategy] map-of-maps, typically params.sampleSelectionStrategies
-        combineHow -- not currently used, but permits defining how to combine strategies when
-            there are conflicts by passing a [key: closure] map where
-            closure(oldVals, newVals) outputs the updated value for the key. By
-            default, the later-specified strategy has precedence.
+        strategyNames = ["strategy1", "strategy2"]
+        sampleSelectionStrategies = [
+            strategy1: [attribute1: [1, 2], attribute2: [3]]
+            strategy2: [attribute2: [4], attribute3: [5, 6]]
+        ]
 
-        Returns empty map if no keys or strategies are supplied.
+        returns:
+        [attribute1: [1, 2], attribute2: [4], attribute3: [5, 6]]
     */
-
+    def strategiesToCombine = sampleSelectionStrategies.subMap(strategyNames).values() ?: []
     def compositeStrategy = [:]
+    strategiesToCombine.each {
+        strategy ->
 
-    // Extract the values associated with individual selected strategies to form the composite strategy
-    def subStrategies = strategyKeys ? strategyMap.subMap(strategyKeys).values() : []
+        strategy.each {
+            attribute, values ->
 
-    subStrategies.each {
-        subStrategy ->
-
-        subStrategy.each {
-            key, val ->
-
-            // Converts val from a single element or ArrayList into a HashSet of elements
-            def newVals = asHashSet(val)
-
-            // Handle situations where the same key is defined in more than one composite strategy
-            // combineHow may contain a per-key method to define how to do the replacement.
-            // The default behavior is to replace values from earlier-specified keys with
-            // newly-specified keys. For example, if the keys are ["strategy1", "strategy2"]
-            // and both strategies have a value "v1", then v1 will take the value for strategy2 by default.
-            def oldVals = compositeStrategy.get(key, new HashSet())
-            def updated = combineHow.get(key, {a, b -> b})(oldVals, newVals)
-
-            // Add the value to the composite strategy
-            compositeStrategy += [(key): updated]
+            def oldVals = compositeStrategy.get(attribute, new HashSet())
+            def newVals = asHashSet(values)
+            def updatedVals = combineHow.get(attribute, {a, b -> b})(oldVals, newVals)
+            compositeStrategy += [(attribute): updatedVals]
         }
     }
 
@@ -44,31 +32,17 @@ def createCompositeStrategy(strategyKeys, strategyMap, combineHow = [:]) {
 }
 
 def filterSamplesByStrategy(samples, strategy) {
-    /*  After a composite strategy is built, filter for samples for which all sample attributes are present and are in the list of permitted values specified by the composite strategy.
-
-        samples - a channel of sample hashmaps
-        strategy - a hashmap as [attributeName: [permittedValues]]
-    */
-
-    // Return all samples if no strategy is specified
     if (!strategy) return samples
-
-    // Remove reserved keywords from the set of sample-specific strategies
-    def reservedKeywords = ["same", "different"]
-    def sampleAttributeFilter = strategy.findAll {key, value -> !(key in reservedKeywords)}
 
     def filtered = samples | filter {
         sample ->
 
-        def passesFilter = sampleAttributeFilter.every {key, select ->
-            // Check that the sample attribute value is in the whitelisted values specified in the composite strategy
-            sample.get(key) in select
+        strategy.every {
+            attribute, acceptableValues ->
+            sample.get(attribute) in acceptableValues
         }
-
-        passesFilter
     }
 
-    // For each sample, collect into a single list and ensure that at least one sample was selected
     filtered
         | collect
         | {

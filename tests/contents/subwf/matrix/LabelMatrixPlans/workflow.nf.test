@@ -1,0 +1,69 @@
+nextflow_workflow {
+
+    name "Test Workflow LabelMatrixPlans"
+    script "contents/subwf/matrix/LabelMatrixPlans/workflow.nf"
+    workflow "LabelMatrixPlans"
+
+    test("SmokeTest_LabelMatrixPlans") {
+
+        when {
+            params {
+                sampleSelectionStrategies = [
+                    strategy1: [
+                        aggregateLevel: ["techrep"]
+                    ],
+                    strategy2: [
+                        aggregateLevel: ["biorep"]
+                    ],
+                    strategy3: [
+                        aggregateLevel: ["condition"]
+                    ]
+                ]
+
+                matrices = [
+                    plan1: [
+                        sampleSelectionStrategy: ["strategy1"],
+                        resolutions: [10, 20, 50]
+                    ],
+                    plan2: [
+                        sampleSelectionStrategy: ["strategy2"],
+                        resolutions: [1, 2, 5]
+                    ]
+                ]
+
+                keepNoMatrixPlan = true
+            }
+            workflow {
+                """
+                pairs = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.drop.pairs.gz")
+                samples = [
+                    [id: "1", latestPairs: pairs, aggregateLevel: "techrep"],
+                    [id: "2", latestPairs: pairs, aggregateLevel: "biorep"],
+                    [id: "3", latestPairs: pairs, aggregateLevel: "condition"]
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out) {
+                assert samples.size() == 5
+                
+                assertContainsInAnyOrder(
+                    samples.collect{it.subMap("id", "aggregateLevel", "resolutions")},
+                    [
+                        [id: "1_plan1", aggregateLevel: "techrep", resolutions: [10, 20, 50]],
+                        [id: "2_plan2", aggregateLevel: "biorep", resolutions: [1, 2, 5]],
+                        [id: "1", aggregateLevel: "techrep"],
+                        [id: "2", aggregateLevel: "biorep"],
+                        [id: "3", aggregateLevel: "condition"]
+                    ]
+                )
+            }
+        }
+
+    }
+
+}
