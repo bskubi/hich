@@ -11,3 +11,4 @@
 *.pyc
 .nf-test
 /tests/assets/ignore
+/tests/assets/downloads

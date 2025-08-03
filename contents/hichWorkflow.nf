@@ -29,8 +29,8 @@ workflow HichWorkflow {
         | IngestPairs
         | TagRestrictionFragments
         | SelectPairs
-        | AggregatePairs
 
+        | AggregatePairs
         | CreateMatrix
 
         | Hicrep

@@ -15,8 +15,6 @@ workflow LabelMatrixPlans {
 
         strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
 
-        print(strategy)
-
         filterSamplesByStrategy(samples, strategy)
             | map{it + [matrixPlanName: planName] + analysisPlan + [id: it.id + "_${planName}"]}
             | concat(newSamples)
