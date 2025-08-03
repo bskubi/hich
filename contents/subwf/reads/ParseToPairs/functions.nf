@@ -1,3 +1,5 @@
+include {validateMemory} from '../../util/memory.nf'
+
 def validatePairtoolsParse2Params(parseParams, minMapq) {
     def parseParamsV = parseParams ?: []
 
@@ -7,12 +9,6 @@ def validatePairtoolsParse2Params(parseParams, minMapq) {
     } 
 
     parseParamsV = parseParamsV.join(" ")
-}
-
-def validateMemory(memory, buffer, minimum) {
-    // Use 2G less than the total memory allocated for the job
-    // to a minimum of 2G
-    memory ? Math.max(memory.toGiga() - buffer, minimum) : minimum
 }
 
 def buildCmd(id, sambam, chromsizes, assembly, parseParams, sql, minMapq, memory, cpus) {

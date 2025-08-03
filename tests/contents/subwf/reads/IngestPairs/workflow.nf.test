@@ -1,0 +1,35 @@
+nextflow_workflow {
+
+    name "Test Workflow IngestPairs"
+    script "contents/subwf/reads/IngestPairs/workflow.nf"
+    workflow "IngestPairs"
+
+    test("SmokeTest_IngestPairs") {
+        options """-profile localPC"""
+
+        when {
+            params {}
+            workflow {
+                """
+                stdPairs = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.drop.pairs.gz")
+                stdChromsizes = file("$projectDir/resources/hich/chromsizes/hg38.sizes")
+                stdCommon = [pairs: stdPairs, chromsizes: stdChromsizes, datatype: "pairs"]
+                samples = [
+                    [id: "1"] + stdCommon
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out) {
+                assert samples.size() == 1
+                assert samples.findAll{it.latestPairs}.size() == 1
+            }
+        }
+
+    }
+
+}

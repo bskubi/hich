@@ -1,10 +1,10 @@
 nextflow_workflow {
 
     name "Test Workflow QCPairs"
-    script "contents/subwf/reads/qcPairs.nf"
+    script "contents/subwf/reads/QCPairs/workflow.nf"
     workflow "QCPairs"
 
-    test("qcPairs1") {
+    test("SmokeTest_QCPairs") {
         options "-stub-run"
 
         when {

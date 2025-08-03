@@ -2,10 +2,10 @@
 nextflow_function {
 
     name "Test Functions"
-    script "contents/subwf/reads/Select/functions.nf"
+    script "contents/subwf/reads/SelectPairs/functions.nf"
 
 	
-    test("SmokeTest_Select_buildCmd") {
+    test("SmokeTest_SelectPairs_buildCmd") {
 
         function "buildCmd"
 
