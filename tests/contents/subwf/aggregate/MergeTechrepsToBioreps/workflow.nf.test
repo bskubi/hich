@@ -57,7 +57,5 @@ nextflow_workflow {
                 assert pairs.findAll{it.file.toString() == "${it.id}.merged.pairs.gz".toString()}.size() == 5
             }
         }
-
     }
-
 }

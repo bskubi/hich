@@ -1,0 +1,59 @@
+nextflow_workflow {
+
+    name "Test Workflow MergeBiorepsToConditions"
+    script "contents/subwf/aggregate/MergeBiorepsToConditions/workflow.nf"
+    workflow "MergeBiorepsToConditions"
+
+    test("SmokeTest_MergeBiorepsToConditions") {
+
+        when {
+            params {}
+            workflow {
+                """
+                pairs = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.drop.pairs.gz")
+                bioreps = [aggregateLevel: "biorep", mergeBiorepToCondition: true, pairs: pairs, latestPairs: pairs]
+                b1 = [biorep: "1"]
+                b2 = [biorep: "2"]
+                c1 = [condition: "1"]
+                c2 = [condition: "2"]
+                c3 = [condition: "3"]
+                c4 = [condition: "4"]
+
+                
+                samples = [
+                    [id: "1_1"] + b1 + c1 + bioreps,
+                    [id: "1_2"] + b2 + c1 + bioreps,
+                    [id: "2_1"] + b1 + c2 + bioreps,
+                    [id: "2_2"] + b2 + c2 + bioreps,
+                    [id: "3_1"] + b1 + c3 + bioreps,
+                    [id: "4_1_1"] + [condition: "4", biorep: "1", techrep: "1", aggregateLevel: "techrep", pairs: pairs, latestPairs: pairs],
+                    [id: "4"] + c4 + [aggregateLevel: "condition", pairs: pairs, latestPairs: pairs],
+                    [id: "4_1_nomerge"] + b1 + c4 + bioreps + [mergeBiorepToCondition: false],
+                    [id: "4_1_skipmerge"] + b1 + c4 + bioreps + [skipMerge: true],
+                    [id: "4_1_skipbiorepmerge"] + b1 + c4 + bioreps + [mergeBiorepToCondition: false]
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out) {
+                assert samples.size() == 13
+                def techreps = samples.findAll{it.aggregateLevel == "techrep"}
+                assert techreps.size() == 1
+                def bioreps = samples.findAll{it.aggregateLevel == "biorep"}
+                assert bioreps.size() == 8
+                def conditions = samples.findAll{it.aggregateLevel == "condition"}
+                assert conditions.size() == 4
+                def id = conditions.collect{it.id}
+                assertContainsInAnyOrder(id, ["1", "2", "3", "4"])
+                def pairs = conditions.collect{[id: it.id, file: it.pairs.split("/")[-1]]}
+                assert pairs.findAll{it.file.toString() == "${it.id}.merged.pairs.gz".toString()}.size() == 3
+            }
+        }
+
+    }
+
+}
