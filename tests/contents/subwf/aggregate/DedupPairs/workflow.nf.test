@@ -1,0 +1,48 @@
+nextflow_workflow {
+
+    name "Test Workflow DedupPairs"
+    script "contents/subwf/aggregate/DedupPairs/workflow.nf"
+    workflow "DedupPairs"
+
+    test("SmokeTest_DedupPairs") {
+
+        when {
+            params {}
+            workflow {
+                """
+                pairs = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.drop.pairs.gz")
+
+                dedupSamples = [
+                    [id: "1", latestPairs: pairs, aggregateLevel: "techrep", dedupTechreps: true],
+                    [id: "2", latestPairs: pairs, aggregateLevel: "biorep", dedupBioreps: true],
+                    [id: "3", latestPairs: pairs, aggregateLevel: "condition", dedupConditions: true],
+                    [id: "4", latestPairs: pairs, dedup: true],
+                    [id: "5", latestPairs: pairs, dedupMaxMismatch: 0],
+                    [id: "6", latestPairs: pairs, dedupMethod: "sum"]
+                ]
+                ignoreSamples = [
+                    [id: "7", latestPairs: pairs],
+                    [id: "8", latestPairs: pairs, aggregateLevel: "techrep", dedupTechreps: false],
+                    [id: "9", latestPairs: pairs, aggregateLevel: "biorep", dedupTechreps: true],
+                    [id: "10", latestPairs: pairs, aggregateLevel: "biorep", dedupTechreps: true]
+                ]
+
+                samples = dedupSamples + ignoreSamples
+
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with (workflow.out) {
+                assert samples.size() == 10
+                def dedupPairs = samples.collect{it.dedupPairs}.findAll{it}
+                assert dedupPairs.size() == 6
+            }
+        }
+
+    }
+
+}

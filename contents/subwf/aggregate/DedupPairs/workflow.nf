@@ -16,7 +16,7 @@ workflow DedupPairs {
         | branch {
             yes: (
                 it.dedupMethod 
-                || it.dedupMaxMismatch 
+                || it.dedupMaxMismatch != null
                 || it.dedupSingleCell 
                 || it.dedup
                 || (it.aggregateLevel == "techrep" && it.dedupTechreps)
