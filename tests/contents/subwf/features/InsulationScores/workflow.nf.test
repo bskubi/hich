@@ -1,0 +1,39 @@
+nextflow_workflow {
+
+    name "Test Workflow InsulationScores"
+    script "contents/subwf/features/InsulationScores/workflow.nf"
+    workflow "InsulationScores"
+
+    test("SmokeTest_InsulationScores") {
+
+        when {
+            params {
+                sampleSelectionStrategies = [
+                    strategy1: [:]
+                ]
+                insulation = [
+                    plan1: [
+                        sampleSelectionStrategy: ["strategy1"],
+                        resolution: 100000,
+                        window: 1000000
+                    ]
+                ]
+            }
+            workflow {
+                """
+                matrix = file("$projectDir/tests/assets/downloads/mcool/full/GSM4604274_629.iced.mcool")
+                samples = [
+                    [id: "1", mcool: matrix]
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+
+    }
+
+}
