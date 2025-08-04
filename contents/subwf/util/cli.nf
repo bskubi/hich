@@ -41,7 +41,7 @@ def parsePattern(String str, String parsePattern) {
     return result ?: null
 }
 
-def buildFlags(flagsMap) {
+def buildCLIOpts(flagsMap, updateFlags) {
     /* Format CLI tool flags passed as hashmap
         
         flagsMap: map of [argName: argVal] pairs
@@ -50,15 +50,16 @@ def buildFlags(flagsMap) {
         Ignores null and false values for flags.
         Converts flags whose value is true to boolean flags.
     */
-    flagsMap = flagsMap ?: [:]
-    flagsMap = flagsMap.findAll{
+    def flags = (flagsMap ?: [:]) + (updateFlags ?: [:])
+
+    flags = flags.findAll{
         argName, argVal -> 
         def nullVal = argVal == null
         def falseVal = (argVal instanceof Boolean && !argVal)
         def keepVal = (!nullVal) && (!falseVal)
         keepVal
     }
-    flagsMap = flagsMap.collect{
+    flags = flags.collect{
         argName, argVal ->
         if (argVal.getClass() == Boolean) {
             argName
@@ -66,13 +67,8 @@ def buildFlags(flagsMap) {
             "${argName} '${argVal}'"
         }
     }
-    flagsMap = flagsMap.join(" ")
-    return flagsMap
-}
-
-def formatCLIArgs(defaultFlags, updateFlags) {
-    def flags = defaultFlags.clone() + (updateFlags ?: [:])
-    buildFlags(flags)
+    flags = flags.join(" ")
+    return flags
 }
 
 

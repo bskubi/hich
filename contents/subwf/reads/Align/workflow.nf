@@ -14,7 +14,7 @@ workflow Align {
 
         samples
             | filter {it.datatype == "fastq"}
-            | map{tuple(it.id, it.aligner, it.alignerIndexDir, it.alignerIndexPrefix, getFastq(it), it.bwaFlags, it.minMapq)}
+            | map{tuple(it.id, it.aligner, it.alignerIndexDir, it.alignerIndexPrefix, getFastq(it), it.aligner_opts, it.minMapq)}
             | ALIGN
             | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
             | set{results}

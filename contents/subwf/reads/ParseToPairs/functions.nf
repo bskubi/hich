@@ -1,6 +1,5 @@
 include {validateMemory} from '../../util/memory.nf'
-include {formatCLIArgs} from '../../util/cli.nf'
-import java.lang.reflect.InvocationTargetException
+include {buildCLIOpts} from '../../util/cli.nf'
 
 
 def buildCmd(id, sambam, chromsizes, assembly, parseToPairs_opts, minMapq, memory, cpus) {
@@ -9,23 +8,19 @@ def buildCmd(id, sambam, chromsizes, assembly, parseToPairs_opts, minMapq, memor
     def samtoolsViewCmd = "samtools view -b '${sambam}'"
 
     def pairtoolsParse2_opts = ["--assembly": assembly, "--chroms-path": chromsizes, "--min-mapq": minMapq, "--flip": true]
-    try{
-        pairtoolsParse2_opts = formatCLIArgs(pairtoolsParse2_opts, parseToPairs_opts?.pairtools_parse2)
-    } catch(InvocationTargetException e) {
-        print(e.getTargetException())
-    }
+    pairtoolsParse2_opts = buildCLIOpts(pairtoolsParse2_opts, parseToPairs_opts?.pairtools_parse2)
     def pairtoolsParse2Cmd = "pairtools parse2 ${pairtoolsParse2_opts}"
     
     def hichPairsSQLCmd = null
     if (parseToPairs_opts?.hichPairsSql?.sql) {
         def hichPairsSql_opts = ["--memory-limit": memoryV, "--threads": cpus]
-        hichPairsSql_opts = formatCLIArgs(hichPairsSql_opts, parseToPairs_opts?.hich_pairs_sql)
+        hichPairsSql_opts = buildCLIOpts(hichPairsSql_opts, parseToPairs_opts?.hich_pairs_sql)
         def sql = hichPairsSql_opts.sql
         hichPairsSQLCmd = sql ? "hich pairs sql ${hichPairsSql_opts} '${sql}' /dev/stdin" : null
     }
     
     def pairtoolsSort_opts = ["--output": output, "--memory": "${memoryV}G", "--nproc-in": cpus, "--nproc-out": cpus]
-    pairtoolsSort_opts = formatCLIArgs(pairtoolsSort_opts, parseToPairs_opts?.pairtools_sort)
+    pairtoolsSort_opts = buildCLIOpts(pairtoolsSort_opts, parseToPairs_opts?.pairtools_sort)
 
     def pairtoolsSortCmd = "pairtools sort ${pairtoolsSort_opts}"   
     def cmd = [samtoolsViewCmd, pairtoolsParse2Cmd, hichPairsSQLCmd, pairtoolsSortCmd].findAll{it}.join(" | ")

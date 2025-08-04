@@ -24,13 +24,11 @@ nextflow_workflow {
                     datatype: "fastq",
                     minMapq: 30
                 ]
-                bwaFlags = ["-S": true, "-P": true, "-5": true, "-M": true, "-p": true]
-                bwamethFlags = ["--do-not-penalize-chimeras": true, "-p": true]
 
-                bwa = [aligner: "bwa", alignerIndexDir: file("$projectDir/resources/hich/bwa/bwa/index"), bwaFlags: bwaFlags, alignerIndexPrefix: "hg38",]
-                bwaMem2 = [aligner: "bwa-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwa-mem2/bwa-mem2/index"), bwaFlags: bwaFlags, alignerIndexPrefix: "hg38",]
-                bwameth = [aligner: "bwameth", alignerIndexDir: file("$projectDir/resources/hich/bwameth/bwameth/index"), bwaFlags: bwamethFlags, alignerIndexPrefix: "mm10"]
-                bwamethMem2 = [aligner: "bwameth-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwameth-mem2/bwameth-mem2/index"), bwaFlags: bwamethFlags, alignerIndexPrefix: "mm10"]
+                bwa = [aligner: "bwa", alignerIndexDir: file("$projectDir/resources/hich/bwa/bwa/index"), alignerIndexPrefix: "hg38",]
+                bwaMem2 = [aligner: "bwa-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwa-mem2/bwa-mem2/index"), alignerIndexPrefix: "hg38",]
+                bwameth = [aligner: "bwameth", alignerIndexDir: file("$projectDir/resources/hich/bwameth/bwameth/index"), alignerIndexPrefix: "mm10"]
+                bwamethMem2 = [aligner: "bwameth-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwameth-mem2/bwameth-mem2/index"), alignerIndexPrefix: "mm10"]
                 stdPaired = [fastq1: std1, fastq2: std2]
                 stdSingle = [fastq: std1]
                 stdInterleaved = [fastq: stdInterleaved]
