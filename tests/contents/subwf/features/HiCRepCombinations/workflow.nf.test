@@ -1,0 +1,48 @@
+nextflow_workflow {
+
+    name "Test Workflow HiCRepCombinations"
+    script "contents/subwf/features/HiCRepCombinations/workflow.nf"
+    workflow "HiCRepCombinations"
+
+    test("SmokeTest_HiCRepCombinations") {
+
+        when {
+            params {
+                sampleSelectionStrategies = [
+                    strategy1: [:]
+                ]
+                hicrep = [
+                    plan1: [
+                        sampleSelectionStrategy: ["strategy1"],
+                        resolutions: [100000, 1000000],
+                        chroms: ["chr18", "chr19"],
+                        exclude: [],
+                        chromFilter: "",
+                        h: 1,
+                        dBPMax: null,
+                        bDownSample: false
+                    ]
+                ]
+            }
+            workflow {
+                """
+                matrix1 = file("$projectDir/tests/assets/downloads/mcool/full/GSM4604271_576.iced.mcool")
+                matrix2 = file("$projectDir/tests/assets/downloads/mcool/full/GSM4604272_103.iced.mcool")
+                matrix3 = file("$projectDir/tests/assets/downloads/mcool/full/GSM4604274_629.iced.mcool")
+                samples = [
+                    [id: "1", mcool: matrix1],
+                    [id: "2", mcool: matrix2],
+                    [id: "3", mcool: matrix3]
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+
+    }
+
+}

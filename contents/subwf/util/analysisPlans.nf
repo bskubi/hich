@@ -37,8 +37,11 @@ def filterSamplesByStrategy(samples, strategy) {
     def filtered = samples | filter {
         sample ->
         strategy.every {
-            attribute, acceptableValues ->
-            sample.get(attribute) in acceptableValues
+            attribute, keepValues ->
+            def ignoreAttribute = (attribute in ["same", "different"])
+            def keep = (sample.attribute in keepValues)
+            print([attribute, ignoreAttribute, keep])
+            ignoreAttribute || keep
         }
     }
 
@@ -52,10 +55,11 @@ def filterSamplesByStrategy(samples, strategy) {
 }
 
 def groupSamplesByStrategy(samples, strategy) {
-    /* Get all samples having matching values of strategy.same
-    */
+    def groupBy = strategy.groupBy ?: []
     return samples
-        | map{tuple(it.subMap(strategy.get("same", [])), it)}
+        | map{
+            tuple( it.subMap(groupBy), it )
+        }
         | groupTuple
         | map{it[1]}
 }
@@ -64,11 +68,10 @@ def pairSamplesByStrategy(samples, strategy) {
 
     def same = strategy.same ?: []
     def different = strategy.different ?: []
-    strategy = strategy.findAll{key, value -> !(key in ["same", "different"])}
+    strategy = strategy.findAll{key, value -> !(key in ["same", "different", "groupBy"])}
     def sameAndDifferent = same.intersect(different)
     if (!sameAndDifferent.isEmpty()) {
-        System.err.println("Warning: In pairSamplesByStrategy, comparisons on ${sameAndDifferent} are required to be same and different, so no result is obtained")
-        return channel.empty()
+        error("Conflict in pairSamplesbyStrategy: 'same' and 'different' include same values ${sameAndDifferent}.")
     }
 
     def filtered = filterSamplesByStrategy(samples, strategy)
