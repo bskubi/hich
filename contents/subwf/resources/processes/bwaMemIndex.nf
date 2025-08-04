@@ -1,6 +1,6 @@
 process BwaMemIndex {
-    publishDir params.general.publish.bwaIndex ? params.general.publish.bwaIndex : "results",
-               saveAs: {params.general.publish.bwaIndex ? it : null},
+    publishDir params.general.publish.alignerIndex ?: "results",
+               saveAs: {params.general.publish.alignerIndex ? it : null},
                mode: params.general.publish.mode
     label 'whenLocal_allConsuming'
     label 'index'
@@ -8,22 +8,38 @@ process BwaMemIndex {
     conda "$projectDir/env/dev_env.yml"
     container params.general.alignmentContainer
 
-
     input:
     tuple val(genomeReferenceString), path(genomeReference), val(prefix)
 
     output:
     tuple val(genomeReferenceString), path(alignerIndexDir), val(prefix), 
-          path("${alignerIndexDir}/${prefix}.ann"), path("${alignerIndexDir}/${prefix}.amb"),
-          path("${alignerIndexDir}/${prefix}.pac"), path("${alignerIndexDir}/${prefix}.bwt"), 
-          path("${alignerIndexDir}/${prefix}.sa")
+          path("${alignerIndexDir}/${iAnn}"), path("${alignerIndexDir}/${iAmb}"),
+          path("${alignerIndexDir}/${iPac}"), path("${alignerIndexDir}/${iBwt}"), 
+          path("${alignerIndexDir}/${iSa}")
 
     shell:
-    // TODO: Add withLog/stubLog pattern
-    alignerIndexDir = "bwa/index"
-    "bwa index -p '${prefix}' ${genomeReference} && mkdir -p '${alignerIndexDir}' && mv '${prefix}.amb' '${prefix}.ann' '${prefix}.pac' '${prefix}.bwt' '${prefix}.sa' '${alignerIndexDir}'"
+    alignerIndexDir = "bwa"
+    iAnn = "${prefix}.ann"
+    iAmb = "${prefix}.amb"
+    iPac = "${prefix}.pac"
+    iBwt = "${prefix}.bwt"
+    iSa = "${prefix}.sa"
+    """
+    mkdir -p '${alignerIndexDir}'
+    bwa index -p '${prefix}' '${genomeReference}'
+    mv '${iAnn}' '${iAmb}' '${iPac}' '${iBwt}' '${iSa}' '${alignerIndexDir}'
+    """
 
     stub:
-    alignerIndexDir = "bwa/index"
-    "mkdir -p '${alignerIndexDir}' && cd '${alignerIndexDir}' && touch '${prefix}.amb' '${prefix}.ann' '${prefix}.pac' '${prefix}.bwt' '${prefix}.sa'"
+    alignerIndexDir = "bwa"
+    iAnn = "${prefix}.ann"
+    iAmb = "${prefix}.amb"
+    iPac = "${prefix}.pac"
+    iBwt = "${prefix}.bwt"
+    iSa = "${prefix}.sa"
+    """
+    mkdir -p '${alignerIndexDir}'
+    cd '${alignerIndexDir}'
+    touch '${iAnn}' '${iAmb}' '${iPac}' '${iBwt}' '${iSa}'
+    """
 }

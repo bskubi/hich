@@ -5,7 +5,7 @@ nextflow_workflow {
     workflow "MergeBiorepsToConditions"
 
     test("SmokeTest_MergeBiorepsToConditions") {
-
+        tag "priority1"
         when {
             params {}
             workflow {

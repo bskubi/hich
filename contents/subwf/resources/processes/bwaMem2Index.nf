@@ -1,6 +1,6 @@
 process BwaMem2Index {
-    publishDir params.general.publish.bwaMem2Index ? params.general.publish.bwaMem2Index : "results",
-               saveAs: {params.general.publish.bwaMem2Index ? it : null},
+    publishDir params.general.publish.alignerIndex ?: "results",
+               saveAs: {params.general.publish.alignerIndex ? it : null},
                mode: params.general.publish.mode
     label 'whenLocal_allConsuming'
     label 'index'
@@ -11,17 +11,34 @@ process BwaMem2Index {
     tuple val(genomeReferenceString), path(genomeReference), val(prefix)
 
     output:
-    tuple val(genomeReferenceString), path("bwa-mem2/index"), val(prefix), 
-          path("bwa-mem2/index/${prefix}.0123"), path("bwa-mem2/index/${prefix}.amb"),
-          path("bwa-mem2/index/${prefix}.ann"), path("bwa-mem2/index/${prefix}.bwt.2bit.64"),
-          path("bwa-mem2/index/${prefix}.pac")
+    tuple val(genomeReferenceString), path(alignerIndexDir), val(prefix), 
+          path("${alignerIndexDir}/${i0123}"), path("${alignerIndexDir}/${iAmb}"),
+          path("${alignerIndexDir}/${iAnn}"), path("${alignerIndexDir}/${iBwt2Bit64}"),
+          path("${alignerIndexDir}/${iPac}")
 
     shell:
-    // TODO: Add withLog/stubLog pattern
-    alignerIndexDir = "bwa-mem2/index"
-    "bwa-mem2 index -p '${prefix}' '${genomeReference}' && mkdir -p '${alignerIndexDir}' && mv '${prefix}.0123' '${prefix}.amb' '${prefix}.ann' '${prefix}.bwt.2bit.64' '${prefix}.pac' '${alignerIndexDir}'"
+    alignerIndexDir = "bwa-mem2"
+    i0123 = "${prefix}.0123"
+    iAmb = "${prefix}.amb"
+    iAnn = "${prefix}.ann"
+    iBwt2Bit64 = "${prefix}.bwt.2bit.64"
+    iPac = "${prefix}.pac"
+    """
+    mkdir -p '${alignerIndexDir}'
+    bwa-mem2 index -p '${prefix}' '${genomeReference}'
+    mv '${i0123}' '${iAmb}' '${iAnn}' '${iBwt2Bit64}' '${iPac}' '${alignerIndexDir}'
+    """
 
     stub:
-    alignerIndexDir = "bwa-mem2/index"
-    "mkdir -p '${alignerIndexDir}' && cd '${alignerIndexDir}' && touch '${prefix}.0123' '${prefix}.amb' '${prefix}.ann' '${prefix}.bwt.2bit.64' '${prefix}.pac'"
+    alignerIndexDir = "bwa-mem2"
+    i0123 = "${prefix}.0123"
+    iAmb = "${prefix}.amb"
+    iAnn = "${prefix}.ann"
+    iBwt2Bit64 = "${prefix}.bwt.2bit.64"
+    iPac = "${prefix}.pac"
+    """
+    mkdir -p '${alignerIndexDir}'
+    cd '${alignerIndexDir}'
+    touch '${i0123}' '${iAmb}' '${iAnn}' '${iBwt2Bit64}' '${iPac}'
+    """
 }

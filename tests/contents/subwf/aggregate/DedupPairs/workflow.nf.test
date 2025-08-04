@@ -5,6 +5,7 @@ nextflow_workflow {
     workflow "DedupPairs"
 
     test("SmokeTest_DedupPairs") {
+        tag "priority1"
 
         when {
             params {}

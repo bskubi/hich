@@ -1,5 +1,5 @@
 process BwamethMem2Index {
-    publishDir params.general.publish.bwamethIndex ? params.general.publish.bwamethIndex : "results",
+    publishDir params.general.publish.bwamethIndex ?: "results",
                saveAs: {params.general.publish.bwamethIndex ? it : null},
                mode: params.general.publish.mode
     label 'whenLocal_allConsuming'
@@ -13,31 +13,42 @@ process BwamethMem2Index {
 
     output:
     tuple val(genomeReferenceString), path(alignerIndexDir), val(prefix), 
-          path("${D}"), path("${D}.amb"), path("${D}.ann"), path("${D}.bwt.2bit.64"),
-          path("${D}.pac"), path("${D}.0123")
+          path(iC2t), path(iAmb), path(iAnn), path(iBwt2Bit64),
+          path(iPac), path(i0123)
 
     shell:
-    // TODO: Add withLog/stubLog pattern
-    alignerIndexDir = "bwameth-mem2/index"
+    alignerIndexDir = "bwameth-mem2"
     S = "${genomeReference}.bwameth.c2t"
     D = "${alignerIndexDir}/${prefix}.c2t"
-
-"""
-mkdir -p ${alignerIndexDir}
-bwameth.py index-mem2 ${genomeReference}
-mv ${S} ${D}
-mv ${S}.amb ${D}.amb
-mv ${S}.ann ${D}.ann
-mv ${S}.bwt.2bit.64 ${D}.bwt.2bit.64
-mv ${S}.pac ${D}.pac
-mv ${S}.0123 ${D}.0123
-"""
+    iC2t = D
+    iAmb = "${D}.amb"
+    iAnn = "${D}.ann"
+    iBwt2Bit64 = "${D}.bwt.2bit.64"
+    iPac = "${D}.pac"
+    i0123 = "${D}.0123"
+    """
+    mkdir -p '${alignerIndexDir}'
+    bwameth.py index-mem2 '${genomeReference}'
+    mv '${S}' '${iC2t}'
+    mv '${S}.amb' '${iAmb}'
+    mv '${S}.ann' '${iAnn}'
+    mv '${S}.bwt.2bit.64' '${iBwt2Bit64}'
+    mv '${S}.pac' '${iPac}'
+    mv '${S}.0123' '${i0123}'
+    """
 
     stub:
-    alignerIndexDir = "bwameth-mem2/index"
+    alignerIndexDir = "bwameth-mem2"
+    S = "${genomeReference}.bwameth.c2t"
     D = "${alignerIndexDir}/${prefix}.c2t"
-"""
-mkdir -p ${alignerIndexDir}
-touch ${D} ${D}.amb ${D}.ann ${D}.bwt.2bit.64 ${D}.pac ${D}.0123
-"""
+    iC2t = D
+    iAmb = "${D}.amb"
+    iAnn = "${D}.ann"
+    iBwt2Bit64 = "${D}.bwt.2bit.64"
+    iPac = "${D}.pac"
+    i0123 = "${D}.0123"
+    """
+    mkdir -p '${alignerIndexDir}'
+    touch '${iC2t}' '${iAmb}' '${iAnn}' '${iBwt2Bit64}' '${iPac}' '${i0123}'
+    """
 }

@@ -1,5 +1,5 @@
 process BwamethIndex {
-    publishDir params.general.publish.bwamethIndex ? params.general.publish.bwamethIndex : "results",
+    publishDir params.general.publish.bwamethIndex ?: "results",
                saveAs: {params.general.publish.bwamethIndex ? it : null},
                mode: params.general.publish.mode
     label 'whenLocal_allConsuming'
@@ -13,31 +13,43 @@ process BwamethIndex {
 
     output:
     tuple val(genomeReferenceString), path(alignerIndexDir), val(prefix), 
-          path("${D}"), path("${D}.amb"), path("${D}.ann"), path("${D}.bwt"),
-          path("${D}.pac"), path("${D}.sa")
+          path(iC2t), path(iAmb), path(iAnn), path(iBwt),
+          path(iPac), path(iSa)
 
     shell:
-    // TODO: Add withLog/stubLog pattern
-    alignerIndexDir = "bwameth/index"
+    alignerIndexDir = "bwameth"
     S = "${genomeReference}.bwameth.c2t"
     D = "${alignerIndexDir}/${prefix}.c2t"
+    iC2t = D
+    iAmb = "${D}.amb"
+    iAnn = "${D}.ann"
+    iBwt = "${D}.bwt"
+    iPac = "${D}.pac"
+    iSa = "${D}.sa"
 
-"""
-mkdir -p ${alignerIndexDir}
-bwameth.py index ${genomeReference}
-mv ${S} ${D}
-mv ${S}.amb ${D}.amb
-mv ${S}.ann ${D}.ann
-mv ${S}.bwt ${D}.bwt
-mv ${S}.pac ${D}.pac
-mv ${S}.sa ${D}.sa
-"""
+    """
+    mkdir -p '${alignerIndexDir}'
+    bwameth.py index '${genomeReference}'
+    mv ${S} ${iC2t}
+    mv ${S}.amb ${iAmb}
+    mv ${S}.ann ${iAnn}
+    mv ${S}.bwt ${iBwt}
+    mv ${S}.pac ${iPac}
+    mv ${S}.sa ${iSa}
+    """
 
     stub:
-    alignerIndexDir = "bwameth/index"
+    alignerIndexDir = "bwameth"
+    S = "${genomeReference}.bwameth.c2t"
     D = "${alignerIndexDir}/${prefix}.c2t"
-"""
-mkdir -p ${alignerIndexDir}
-touch ${D} ${D}.amb ${D}.ann ${D}.bwt ${D}.pac ${D}.sa
-"""
+    iC2t = D
+    iAmb = "${D}.amb"
+    iAnn = "${D}.ann"
+    iBwt = "${D}.bwt"
+    iPac = "${D}.pac"
+    iSa = "${D}.sa"
+    """
+    mkdir -p '${alignerIndexDir}'
+    touch '${iC2t}' '${iAmb}' '${iAnn}' '${iBwt}' '${iPac}' '${iSa}'
+    """
 }
