@@ -36,7 +36,6 @@ def filterSamplesByStrategy(samples, strategy) {
 
     def filtered = samples | filter {
         sample ->
-
         strategy.every {
             attribute, acceptableValues ->
             sample.get(attribute) in acceptableValues
@@ -62,42 +61,29 @@ def groupSamplesByStrategy(samples, strategy) {
 }
 
 def pairSamplesByStrategy(samples, strategy) {
-    /*
-        The diffloops workflow has to define a way to pair up samples, especially
-        by enforcing that certain attributes are the same or different.
 
-        samples -- channel of sample hashmaps
-        strategy -- a composite sample selection strategy [attribute: permittedValues]
-            two possible attributes are
-                same: a list of attributes which must be the same to pair two samples
-                different: a list of attributes which must differ to pair two samples
-            other attributes are used for filtering individual samples
-    */
-
-    // Ensure there's no conflict between "same" and "different"
-    def same = strategy.get("same", [])
-    def different = strategy.get("different", [])
+    def same = strategy.same ?: []
+    def different = strategy.different ?: []
+    strategy = strategy.findAll{key, value -> !(key in ["same", "different"])}
     def sameAndDifferent = same.intersect(different)
     if (!sameAndDifferent.isEmpty()) {
-        System.err.println("Warning: In filterSamplesByStrategy, comparisons on ${sameAndDifferent} are required to be same and different, so no result is obtained")
+        System.err.println("Warning: In pairSamplesByStrategy, comparisons on ${sameAndDifferent} are required to be same and different, so no result is obtained")
         return channel.empty()
     }
 
-    // Filter individual samples before forming pairs of samples
     def filtered = filterSamplesByStrategy(samples, strategy)
 
-    // Obtain pairs of samples matching the "same" and "different" criteria
     def combined = filtered
-    | combine(filtered)
-    | filter{it[0].id <= it[1].id}
-    | unique
-    | filter {
-        s1, s2 ->
+        | combine(filtered)
+        | filter{it[0].id <= it[1].id}
+        | unique
+        | filter {
+            s1, s2 ->
 
-        def sameOK = same.every {key -> s1.get(key) == s2.get(key)}
-        def differentOK = different.every {key -> s1.get(key) != s2.get(key)}
-        sameOK && differentOK
-    }
+            def sameOK = same.every {key -> s1.get(key) == s2.get(key)}
+            def differentOK = different.every {key -> s1.get(key) != s2.get(key)}
+            sameOK && differentOK
+        }
 
     combined
     | collect

@@ -1,0 +1,43 @@
+nextflow_workflow {
+
+    name "Test Workflow DifferentialLoops"
+    script "contents/subwf/features/DifferentialLoops/workflow.nf"
+    workflow "DifferentialLoops"
+
+    test("SmokeTest_DifferentialLoops") {
+        options """-c $projectDir/tests/assets/config/docker.config"""
+        when {
+            params {
+                general {
+                    mustacheContainer = "hich_mustache"
+                }
+                sampleSelectionStrategies = [
+                    strategy1: [:]
+                ]
+                diffloops = [
+                    plan1: [
+                        sampleSelectionStrategy: ["strategy1"],
+                        mustacheParams: ["-r 100000 -ch chr19"]
+                    ]
+                ]
+            }
+            workflow {
+                """
+                mcool1 = file("$projectDir/tests/assets/downloads/mcool/full/GSM4604271_576.iced.mcool")
+                mcool2 = file("$projectDir/tests/assets/downloads/mcool/full/GSM4604274_629.iced.mcool")
+                samples = [
+                    [id: "1", latestMatrix: mcool1],
+                    [id: "2", latestMatrix: mcool2]
+                ]
+                input[0] = channel.fromList(samples)
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+
+    }
+
+}
