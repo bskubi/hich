@@ -24,8 +24,8 @@ nextflow_workflow {
                     datatype: "fastq",
                     minMapq: 30
                 ]
-                bwaFlags = ["-S", "-P", "-5", "-M", "-p"]
-                bwamethFlags = ["--do-not-penalize-chimeras", "-p"]
+                bwaFlags = ["-S": true, "-P": true, "-5": true, "-M": true, "-p": true]
+                bwamethFlags = ["--do-not-penalize-chimeras": true, "-p": true]
 
                 bwa = [aligner: "bwa", alignerIndexDir: file("$projectDir/resources/hich/bwa/bwa/index"), bwaFlags: bwaFlags, alignerIndexPrefix: "hg38",]
                 bwaMem2 = [aligner: "bwa-mem2", alignerIndexDir: file("$projectDir/resources/hich/bwa-mem2/bwa-mem2/index"), bwaFlags: bwaFlags, alignerIndexPrefix: "hg38",]

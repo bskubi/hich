@@ -1,16 +1,4 @@
-def formatFlags(bwaFlags, minMapq) {
-    // Convert bwaFlags to list if it's not already (i.e. if user uses "-SP5M" instead of ["-S", "-P", "-5", "-M"])   
-    def allFlags = bwaFlags instanceof List ? bwaFlags : [bwaFlags]
-
-    // Add minMapq argument if supplied
-    if (minMapq instanceof Integer) {
-        allFlags += ["-T ${minMapq}"]
-    }
-
-    // Convert non-null arguments to a string and put into single quotes for safety
-    def flagsArgs = allFlags.findAll{it}.collect{"'${it}'"}.join(" ")
-    return flagsArgs
-}
+include {buildFlags} from '../../util/cli.nf'
 
 def buildCmd(aligner, id, indexDir, indexPrefix, fastq, bwaFlags, minMapq, cpus) {
     def alignerCmds = [
@@ -19,20 +7,22 @@ def buildCmd(aligner, id, indexDir, indexPrefix, fastq, bwaFlags, minMapq, cpus)
         "bwameth": "bwameth.py",
         "bwameth-mem2": "bwameth.py"
     ]
-    def flagsArgs = null 
     def alignerCmd = alignerCmds.get(aligner, aligner)
     def fastqArgs = fastq.findAll{it}.collect{"'${it}'"}.join(" ")
     def index = "${indexDir}/${indexPrefix}"
+    bwaFlags += ["-t": cpus]
     if (aligner in ["bwameth", "bwameth-mem2"]) {
-        flagsArgs = flagsArgs = formatFlags(bwaFlags, null)
         index = "--reference '${index}'"
     } else {
-        flagsArgs = formatFlags(bwaFlags, minMapq)
+        bwaFlags += ["-t": minMapq]
+        index = "'${index}'"
     }
-    def cmd = "${alignerCmd} -t ${cpus} ${flagsArgs} ${index} ${fastqArgs} | samtools view -b -o '${id}.bam'"
+    def flagsArgs = buildFlags(bwaFlags)
+    def output = "${id}.bam"
+    def cmd = "${alignerCmd} ${flagsArgs} ${index} ${fastqArgs} | samtools view -b -o '${output}'"
     def inputMap = [id: id, fastq: fastq, aligner: aligner, index: index, bwaFlags: bwaFlags, minMapq: minMapq]
-    def logMap = [task: "Align", output: "${id}.bam", input: inputMap]
-    return [cmd, logMap]
+    def logMap = [task: "ALIGN", output: "${id}.bam", input: inputMap]
+    return [cmd, logMap, output]
 }
 
 def getFastq(fastq) {

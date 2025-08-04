@@ -21,9 +21,9 @@ nextflow_workflow {
                 chromsizes = file("$projectDir/resources/hich/chromsizes/hg38.sizes")
                 common = [chromsizes: chromsizes, assembly: "hg38"]
                 minMapq = [minMapq: 30]
-                emptyParams = [pairtoolsParse2Params: []]
-                nullParams = [pairtoolsParse2Params: null]
-                dropParams = [pairtoolsParse2Params: ["--drop-readid", "--drop-seq", "--drop-sam"]]
+                emptyParams = [parseToPairs_opts: [:]]
+                nullParams = [parseToPairs_opts: null]
+                dropParams = [parseToPairs_opts: [pairtools_parse2: ["--drop-readid": true, "--drop-seq": true, "--drop-sam": true]]]
                 samples = [
                     common + [id: "1", datatype: "fastq", sambam: stdbam],
                     common + [id: "2", datatype: "fastq", sambam: stdbam] + emptyParams,

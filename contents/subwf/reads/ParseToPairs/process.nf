@@ -10,20 +10,21 @@ process PARSE_TO_PAIRS {
     tag "$id"
     conda "$projectDir/env/dev_env.yml"
     container params.general.hichContainer
+    debug true
 
     input:
-    tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseParams), val(sql), val(minMapq)
+    tuple val(id), path(sambam), path(chromsizes), val(assembly), val(parseToPairs_opts), val(minMapq)
 
     output:
     tuple val(id), path(output)
 
     shell:
-    (cmd, logMap, output) = buildCmd(id, sambam, chromsizes, assembly, parseParams, sql, minMapq, task.memory, task.cpus)
+    (cmd, logMap, output) = buildCmd(id, sambam, chromsizes, assembly, parseToPairs_opts, minMapq, task.memory, task.cpus)
     withLog(cmd, logMap)
 
     stub:
     
-    (cmd, logMap, output) = buildCmd(id, sambam, chromsizes, assembly, parseParams, sql, minMapq, task.memory, task.cpus)
+    (cmd, logMap, output) = buildCmd(id, sambam, chromsizes, assembly, parseToPairs_opts, minMapq, task.memory, task.cpus)
     stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 }

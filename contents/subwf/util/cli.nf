@@ -41,6 +41,41 @@ def parsePattern(String str, String parsePattern) {
     return result ?: null
 }
 
+def buildFlags(flagsMap) {
+    /* Format CLI tool flags passed as hashmap
+        
+        flagsMap: map of [argName: argVal] pairs
+        returns: sing string of combined, single-quoted, space-separated flags.
+
+        Ignores null and false values for flags.
+        Converts flags whose value is true to boolean flags.
+    */
+    flagsMap = flagsMap ?: [:]
+    flagsMap = flagsMap.findAll{
+        argName, argVal -> 
+        def nullVal = argVal == null
+        def falseVal = (argVal instanceof Boolean && !argVal)
+        def keepVal = (!nullVal) && (!falseVal)
+        keepVal
+    }
+    flagsMap = flagsMap.collect{
+        argName, argVal ->
+        if (argVal.getClass() == Boolean) {
+            argName
+        } else {
+            "${argName} '${argVal}'"
+        }
+    }
+    flagsMap = flagsMap.join(" ")
+    return flagsMap
+}
+
+def formatCLIArgs(defaultFlags, updateFlags) {
+    def flags = defaultFlags.clone() + (updateFlags ?: [:])
+    buildFlags(flags)
+}
+
+
 def formatArg(pattern, object, sep) {
     /*
         Some processes receive either a list of values or a single non-list element

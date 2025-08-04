@@ -11,19 +11,21 @@ process ALIGN {
     tag "$id"
     conda "$projectDir/env/dev_env.yml"
     container params.general.alignmentContainer
+    debug true
     
     input:
     tuple val(id), val(aligner), path(indexDir), val(indexPrefix), path(fastq, arity: 1..2), val(bwaFlags), val(minMapq)
 
     output:
-    tuple val(id), path("${id}.bam")
+    tuple val(id), path(output)
 
     shell:
-    (cmd, logMap) = buildCmd(aligner, id, indexDir, indexPrefix, fastq, bwaFlags, minMapq, task.cpus)
+    (cmd, logMap, output) = buildCmd(aligner, id, indexDir, indexPrefix, fastq, bwaFlags, minMapq, task.cpus)
     withLog(cmd, logMap)
 
     stub:
-    stub = "touch '${id}.bam'"
-    (cmd, logMap) = buildCmd(aligner, id, indexDir, indexPrefix, fastq, bwaFlags, minMapq, task.cpus)
+    
+    (cmd, logMap, output) = buildCmd(aligner, id, indexDir, indexPrefix, fastq, bwaFlags, minMapq, task.cpus)
+    stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 }
