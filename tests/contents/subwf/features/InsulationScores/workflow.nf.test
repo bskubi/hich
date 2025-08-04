@@ -5,7 +5,7 @@ nextflow_workflow {
     workflow "InsulationScores"
 
     test("SmokeTest_InsulationScores") {
-
+        tag "priority1"
         when {
             params {
                 sampleSelectionStrategies = [

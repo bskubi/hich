@@ -5,7 +5,7 @@ nextflow_workflow {
     workflow "Loops"
 
     test("SmokeTest_Loops") {
-
+        tag "priority1"
         when {
             params {
                 sampleSelectionStrategies = [

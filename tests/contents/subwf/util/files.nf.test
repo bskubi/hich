@@ -3,7 +3,8 @@ nextflow_function {
 
     name "Test Functions"
     script "contents/subwf/util/files.nf"
-
+    tag "priority1"
+    
     test("smartFileFinder_missing") {
 
         function "smartFileFinder"

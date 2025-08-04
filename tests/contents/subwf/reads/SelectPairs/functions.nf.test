@@ -6,7 +6,7 @@ nextflow_function {
 
 	
     test("SmokeTest_SelectPairs_buildCmd") {
-
+        tag "priority1"
         function "buildCmd"
 
         when {
@@ -60,7 +60,7 @@ nextflow_function {
     }
 
     test("SmokeTest_Select_buildCmdEmpty") {
-
+        tag "priority1"
         function "buildCmd"
         when {
             function {

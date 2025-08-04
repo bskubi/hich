@@ -6,6 +6,8 @@ nextflow_workflow {
 
     test("SmokeTest_McoolMatrix") {
         options """-profile localPC""""
+        tag "priority1"
+        
         when {
             params {
             }

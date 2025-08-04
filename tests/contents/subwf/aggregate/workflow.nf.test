@@ -1,11 +1,11 @@
 nextflow_workflow {
 
-    name "Test Workflow Aggregate"
+    name "Test Workflow AggregatePairs"
     script "contents/subwf/aggregate/workflow.nf"
-    workflow "Aggregate"
+    workflow "AggregatePairs"
 
-    test("SmokeTest_Aggregate") {
-
+    test("SmokeTest_AggregatePairs") {
+        tag "priority1"
         when {
             params {
                 aggregate {

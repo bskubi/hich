@@ -5,7 +5,7 @@ nextflow_workflow {
     workflow "LabelMatrixPlans"
 
     test("SmokeTest_LabelMatrixPlans") {
-
+        tag "priority1"
         when {
             params {
                 sampleSelectionStrategies = [
@@ -49,8 +49,6 @@ nextflow_workflow {
         then {
             assert workflow.success
             with (workflow.out) {
-                assert samples.size() == 5
-                
                 assertContainsInAnyOrder(
                     samples.collect{it.subMap("id", "aggregateLevel", "resolutions")},
                     [
@@ -61,6 +59,7 @@ nextflow_workflow {
                         [id: "3", aggregateLevel: "condition"]
                     ]
                 )
+                assert samples.size() == 5
             }
         }
 

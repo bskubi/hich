@@ -5,12 +5,11 @@ nextflow_workflow {
     workflow "DifferentialLoops"
 
     test("SmokeTest_DifferentialLoops") {
+        tag "priority1"
         options """-c $projectDir/tests/assets/config/docker.config"""
+
         when {
             params {
-                general {
-                    mustacheContainer = "hich_mustache"
-                }
                 sampleSelectionStrategies = [
                     strategy1: [:]
                 ]

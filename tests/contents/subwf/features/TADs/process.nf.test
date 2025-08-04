@@ -5,7 +5,7 @@ nextflow_process {
     process "TADS"
 
     test("SmokeTest_Process_TADS") {
-
+        tag "priority1"
         when {
             process {
                 """

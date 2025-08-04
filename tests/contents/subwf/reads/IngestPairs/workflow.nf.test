@@ -6,7 +6,8 @@ nextflow_workflow {
 
     test("SmokeTest_IngestPairs") {
         options """-profile localPC"""
-
+        tag "priority1"
+        
         when {
             params {}
             workflow {

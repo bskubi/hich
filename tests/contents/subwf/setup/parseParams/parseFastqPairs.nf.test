@@ -9,7 +9,7 @@ nextflow_workflow {
 
         when {
             params {
-                fastqPairs = "$baseDir/vignettes/akgol2021/downsampled/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R{1,2}.fastq.gz"
+                fastqPairs = "$baseDir/tests/assets/fastq/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R{1,2}.fastq.gz"
             }
             workflow {
                 """
@@ -24,9 +24,9 @@ nextflow_workflow {
                 f1 = file(fastq1)
                 f2 = file(fastq2)
 
-                assert f1.getName() == "Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R1.fastq.gz"
+                assert f1.getName() == "1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R1.fastq.gz"
                 assert f1.exists()
-                assert f2.getName() == "Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz"
+                assert f2.getName() == "1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz"
                 assert f2.exists()
             }
         }
@@ -36,7 +36,7 @@ nextflow_workflow {
 
         when {
             params {
-                fastqPairs = "$baseDir/vignettes/akgol2021/downsampled/Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R{3,4}.fastq.gz"
+                fastqPairs = "$baseDir/tests/null"
             }
             workflow {
                 """

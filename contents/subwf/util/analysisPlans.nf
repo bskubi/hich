@@ -39,8 +39,7 @@ def filterSamplesByStrategy(samples, strategy) {
         strategy.every {
             attribute, keepValues ->
             def ignoreAttribute = (attribute in ["same", "different"])
-            def keep = (sample.attribute in keepValues)
-            print([attribute, ignoreAttribute, keep])
+            def keep = (sample[attribute] in keepValues)
             ignoreAttribute || keep
         }
     }

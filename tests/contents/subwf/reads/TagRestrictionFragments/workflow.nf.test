@@ -5,7 +5,7 @@ nextflow_workflow {
     workflow "TagRestrictionFragments"
 
     test("SmokeTest_TagRestrictionFragments") {
-
+        tag "priority1"
         when {
             params {
                 // define parameters here. Example:
