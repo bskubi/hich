@@ -15,17 +15,17 @@ process JUICER_TOOLS_PRE {
     container params.general.juicerContainer
 
     input:
-    tuple val(id), val(matrixPlanName), path(pairs), path(chromsizes), val(matrix), val(juicerToolsPreParams), val(minMapq)
+    tuple val(id), val(matrixPlanName), path(pairs), path(chromsizes), val(matrix_opts), val(minMapq)
 
     output:
     tuple val(id), val(matrixPlanName), path(output)
 
     shell:
-    (cmd, logMap, output) = buildCmd(id, matrixPlanName, pairs, chromsizes, matrix, juicerToolsPreParams, minMapq, task.memory, task.cpus)
+    (cmd, logMap, output) = buildCmd(id, matrixPlanName, pairs, chromsizes, matrix_opts, minMapq, task.memory, task.cpus)
     withLog(cmd, logMap)
 
     stub:
-    (cmd, logMap, output) = buildCmd(id, matrixPlanName, pairs, chromsizes, matrix, juicerToolsPreParams, minMapq, task.memory, task.cpus)
+    (cmd, logMap, output) = buildCmd(id, matrixPlanName, pairs, chromsizes, matrix_opts, minMapq, task.memory, task.cpus)
     stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 }

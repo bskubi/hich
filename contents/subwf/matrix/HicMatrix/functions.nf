@@ -1,30 +1,39 @@
 include {validateMemory} from '../../util/memory.nf'
+include {buildCLIOpts} from '../../util/cli.nf'
 
-def buildCmd(id, matrixPlanName, pairs, chromsizes, matrix, juicerToolsPreParams, minMapq, memory, cpus) {
-    juicerToolsPreParams = juicerToolsPreParams ?: []
-    matrix = matrix ?: [:]
+def buildCmd(id, matrixPlanName, pairs, chromsizes, matrix_opts, minMapq, memory, cpus) {
+    def juicer_tools_pre_opts = matrix_opts?.juicer_tools_pre ?: [:]
 
-    // The user can manually set -q in juicerToolsPreParams.
-    // Otherwise, use minMapq if specified.
-    // Otherwise, no mapq filter is applied.
-    if (minMapq instanceof Integer && !juicerToolsPreParams.any{it.contains("-q")}) {
-        juicerToolsPreParams += ["-q ${minMapq}"]
+    if (minMapq instanceof Integer && !juicer_tools_pre_opts.contains("-q")) {
+        juicer_tools_pre_opts += ["-q":minMapq]
     }
 
-    // The user can manually set -r in juicerToolsPreParams.
-    // Otherwise, use matrix.resolutions if specified.
-    // If neither resolutions nor -r is set, Juicer Tools Pre defaults to producing
-    // 2.5M, 1M, 500K, 250K, 100K, 50K, 25K, 10K, and 5K
-    if (matrix.resolutions instanceof List && matrix.resolutions && !juicerToolsPreParams.any{it.contains('-r')} ) {
-        juicerToolsPreParams += ["-r ${matrix.resolutions.join(',')}"]
+    def resolutions = matrix_opts?.resolutions
+    if (resolutions != null && !juicer_tools_pre_opts["-r"]) {
+        resolutions = resolutions instanceof List ? resolutions : [resolutions]
+        juicer_tools_pre_opts += ["-r": resolutions.join(',')]
     }
 
     def output = "${id}.hic"
     memory = validateMemory(memory, 2, 8)
 
-    def cmd = ["juicer_tools pre -Xms${memory - 2}g -Xmx${memory}g --threads ${cpus}" ] + juicerToolsPreParams + ["'${pairs}' '${output}' '${chromsizes}'"]
-    cmd = cmd.findAll{it}
-    cmd = cmd.join(" ")
-    def logMap = [task: "JUICER_TOOLS_PRE", output: output, input: [id: id, pairs: pairs, chromsizes: chromsizes, matrix: matrix, juicerToolsPreParams: juicerToolsPreParams, minMapq: minMapq]]
+    def juicer_tools_pre_defaults = [
+        "-Xms${memory-2}g": true, 
+        "-Xmx${memory}g": true, 
+        "--threads": cpus
+    ]
+    juicer_tools_pre_opts = buildCLIOpts(juicer_tools_pre_defaults, juicer_tools_pre_opts)
+    def cmd = "juicer_tools pre ${juicer_tools_pre_opts} '${pairs}' '${output}' '${chromsizes}'"
+    def logMap = [
+        task: "JUICER_TOOLS_PRE", 
+        output: [hic: output], 
+        input: [
+            id: id, 
+            pairs: pairs, 
+            chromsizes: chromsizes, 
+            matrix_opts: matrix_opts,
+            minMapq: minMapq
+        ]
+    ]
     return [cmd, logMap, output]
 }
