@@ -1,3 +1,5 @@
+include {buildCLIOpts} from '../../util/cli.nf'
+
 def dq(it) {
     "\"${it}\""
 }
@@ -60,14 +62,13 @@ def formatFilters(filters) {
     return filters
 }
 
-def formatPairtoolsSelectParams(id, pairtoolsSelectParams) {
-    def rest = sq("${id}_select.rest.pairs.gz")
-    pairtoolsSelectParams = pairtoolsSelectParams ? pairtoolsSelectParams.collect {
-            item ->
-            
-            ["--output-rest": "--output-rest ${rest}"].get(item, item)
-        }.join(" ") : ""
-    return pairtoolsSelectParams
+def updateOutputPaths(id, pairtoolsSelect_opts) {
+    if ("--output-rest" in pairtoolsSelect_opts) {
+        def rest = pairtoolsSelect_opts["--output-rest"]
+        rest = "${id}_${rest}"
+        pairtoolsSelect_opts += ["--output-rest": rest]
+    }
+    return pairtoolsSelect_opts
 }
 
 def formatWriteChroms(chroms) {
@@ -80,43 +81,46 @@ def formatWriteChroms(chroms) {
     return [chroms, chromsFile]
 }
 
-def buildCmd(id, pairs, pairtoolsSelectParams, pairtoolsSelectFilters, cpus) {
-    def pairTypes = formatKeepPairTypes(pairtoolsSelectFilters.keepPairTypes)
-    def cisTrans = formatCisTrans(pairtoolsSelectFilters.onlyCis, pairtoolsSelectFilters.onlyTrans)
-    def strandDist = formatStrandDistFilters(pairtoolsSelectFilters.minDistFR, pairtoolsSelectFilters.minDistRF, pairtoolsSelectFilters.minDistFF, pairtoolsSelectFilters.minDistRR)
-    def discardSingleFrag = formatDiscardSingleFrag(pairtoolsSelectFilters.discardSingleFrag)
-    def filters = formatFilters([pairTypes, cisTrans, strandDist, discardSingleFrag])
-    pairtoolsSelectParams = formatPairtoolsSelectParams(id, pairtoolsSelectParams)
+def buildFilters(filters) {
+    filters = filters ?: [:]
+    def pairTypes = formatKeepPairTypes(filters.keepPairTypes)
+    def cisTrans = formatCisTrans(filters.onlyCis, filters.onlyTrans)
+    def strandDist = formatStrandDistFilters(filters.minDistFR, filters.minDistRF, filters.minDistFF, filters.minDistRR)
+    def discardSingleFrag = formatDiscardSingleFrag(filters.discardSingleFrag)
+    filters = formatFilters([pairTypes, cisTrans, strandDist, discardSingleFrag])
+
+    return filters
+}
+
+def buildCmd(id, pairs, selectPairs_opts, cpus) {
+    def pairtoolsSelectFilters = selectPairs_opts?.filters ?: [:]
+    def pairtoolsSelect_opts = selectPairs_opts?.findAll{argName, argVal -> argName != "filters"}
+    pairtoolsSelect_opts = updateOutputPaths(id, pairtoolsSelect_opts)
+    def filters = buildFilters(pairtoolsSelectFilters)
     def (writeChroms, chromsFile) = formatWriteChroms(pairtoolsSelectFilters.chroms)
+
     def output = "${id}_select.pairs.gz"
-    def pairsOutput = "--output ${sq(output)}"
-    def nprocIn = "--nproc-in ${cpus}"
-    def nprocOut = "--nproc-out ${cpus}"
+    def defaultPairtoolsSelect_opts = ["--output": output, "--nproc-in": cpus, "--nproc-out": cpus]
+    pairtoolsSelect_opts = buildCLIOpts(defaultPairtoolsSelect_opts, pairtoolsSelect_opts)
     def pairsInput = sq(pairs)
-
-
 
     def cmd = [
         writeChroms,
         "pairtools select",
-        pairsOutput,
         chromsFile,
-        pairtoolsSelectParams,
-        nprocIn,
-        nprocOut,
+        pairtoolsSelect_opts,
         filters,
         pairsInput
     ]
     cmd = cmd.findAll{it}
     cmd = cmd.join(" ")
-    
+
     logMap = [
-        task: "PairtoolsSelect",
+        task: "SELECT_PAIRS",
         input: [
             id: id,
             pairs: pairs,
-            pairtoolsSelectParams: pairtoolsSelectParams,
-            pairtoolsSelectFilters: pairtoolsSelectFilters
+            selectPairs_opts: selectPairs_opts
         ],
         output: [
             pairs: output

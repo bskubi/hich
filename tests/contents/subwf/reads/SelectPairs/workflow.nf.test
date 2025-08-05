@@ -17,14 +17,14 @@ nextflow_workflow {
                 onlyTrans = [onlyTrans: true]
                 strandDist = [minDistFR: 1, minDistRF: 2, minDistFF: 3, minDistRR: 4]
                 discardSingleFrag = [discardSingleFrag: true]
-                outputRest = ["--output-rest"]
                 pairsDrop = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.drop.pairs.gz")
                 pairsNoDrop = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.noDrop.pairs.gz")
+
                 samples = [
-                    [id: 1, latestPairs: pairsDrop] + [pairtoolsSelectFilters: pairTypes + onlyCis + strandDist],
-                    [id: 2, latestPairs: pairsNoDrop] + [pairtoolsSelectFilters: onlyTrans],
+                    [id: 1, latestPairs: pairsDrop, selectPairs_opts: [filters: pairTypes + onlyCis + strandDist]],
+                    [id: 2, latestPairs: pairsNoDrop, selectPairs_opts: [filters: onlyTrans]],
                     [id: 3, latestPairs: pairsDrop],
-                    [id: 4, latestPairs: pairsDrop] + [pairtoolsSelectFilters: null],
+                    [id: 4, latestPairs: pairsDrop, selectPairs_opts: [filters: null]],
                 ]
                 input[0] = channel.fromList(samples)
                 """
