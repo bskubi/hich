@@ -13,17 +13,17 @@ process INGEST_PAIRS {
 
 
     input:
-    tuple val(id), path(pairs), path(chromsizes), val(sql)
+    tuple val(id), path(pairs), path(chromsizes), val(ingestPairs_opts)
 
     output:
     tuple val(id), path(output)
 
     shell:
-    (cmd, logMap, output) = buildCmd(id, pairs, chromsizes, sql, task.cpus, task.memory)
+    (cmd, logMap, output) = buildCmd(id, pairs, chromsizes, ingestPairs_opts, task.cpus, task.memory)
     withLog(cmd, logMap)
 
     stub:
-    (cmd, logMap, output) = buildCmd(id, pairs, chromsizes, sql, task.cpus, task.memory)
+    (cmd, logMap, output) = buildCmd(id, pairs, chromsizes, ingestPairs_opts, task.cpus, task.memory)
     stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 }
