@@ -13,7 +13,7 @@ workflow McoolMatrix {
 
         samples
             | filter{it.makeMcoolFileFormat && it.latestPairs && !it.mcool}
-            | map{tuple(it.id, it.matrixPlanName, it.latestPairs, it.chromsizes, it.assembly, it.matrix, it.coolerCloadParams, it.coolerZoomifyParams)}
+            | map{tuple(it.id, it.matrixPlanName, it.latestPairs, it.chromsizes, it.assembly, it.matrix)}
             | MCOOL_MATRIX
             | map{
                 id, matrixPlanName, mcool -> 

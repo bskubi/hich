@@ -41,7 +41,18 @@ def parsePattern(String str, String parsePattern) {
     return result ?: null
 }
 
-def buildCLIOpts(flagsMap, updateFlags) {
+def remapKeys(map, keysToRemap) {
+    keysToRemap.each{
+        sourceKey, destKey ->
+        if (sourceKey in map) {
+            assert !(destKey in map) || map[sourceKey] == map[destKey], "In removeRedundantKeys for map: ${map}, '${sourceKey}' and '${destKey}' were both in map but had different values."
+        }
+        map += [(destKey): map[sourceKey]]
+    }
+    map.findAll{key, value -> !(key in keysToRemap)}
+}
+
+def buildCLIOpts(flagsMap, updateFlags, keysToRemap, quotes) {
     /* Format CLI tool flags passed as hashmap
         
         flagsMap: map of [argName: argVal] pairs
@@ -50,6 +61,12 @@ def buildCLIOpts(flagsMap, updateFlags) {
         Ignores null and false values for flags.
         Converts flags whose value is true to boolean flags.
     */
+    keysToRemap = keysToRemap ?: [:]
+    quotes = quotes ?: [:]
+
+    flagsMap = remapKeys(flagsMap, keysToRemap)
+    updateflags = remapKeys(updateFlags, keysToRemap)
+
     def flags = (flagsMap ?: [:]) + (updateFlags ?: [:])
 
     flags = flags.findAll{
@@ -64,7 +81,8 @@ def buildCLIOpts(flagsMap, updateFlags) {
         if (argVal.getClass() == Boolean) {
             argName
         } else {
-            "${argName} '${argVal}'"
+            def q = quotes[argName] ?: "'"
+            "${argName} ${q}${argVal}${q}"
         }
     }
     flags = flags.join(" ")
