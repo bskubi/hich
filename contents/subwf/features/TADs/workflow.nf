@@ -13,7 +13,7 @@ workflow TADs {
         processInputs = channel.empty()
         params.tads.each {
             planName, analysisPlan ->
-
+            analysisPlan["plan_name"] = planName
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
 
             filterSamplesByStrategy(samples, strategy)
