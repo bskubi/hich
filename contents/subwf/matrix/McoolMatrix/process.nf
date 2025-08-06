@@ -11,17 +11,17 @@ process MCOOL_MATRIX {
     tag "$id"
 
     input:
-    tuple val(id), val(matrixPlanName), path(pairs), path(chromsizes), val(assembly), val(matrix)
+    tuple val(id), path(pairs), path(chromsizes), val(assembly), val(matrix_opts)
 
     output:
-    tuple val(id), val(matrixPlanName), path(output)
+    tuple val(id), path(output), val(matrix_opts)
 
     shell:
-    (cmd, logMap, output) = buildCmd(id, matrixPlanName, pairs, chromsizes, assembly, matrix, task.cpus)
+    (cmd, logMap, output) = buildCmd(id, pairs, chromsizes, assembly, matrix_opts, task.cpus)
     withLog(cmd, logMap)
 
     stub:
-    (cmd, logMap, output) = buildCmd(id, matrixPlanName, pairs, chromsizes, assembly, matrix, task.cpus)
+    (cmd, logMap, output) = buildCmd(id, pairs, chromsizes, assembly, matrix_opts, task.cpus)
     stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 }

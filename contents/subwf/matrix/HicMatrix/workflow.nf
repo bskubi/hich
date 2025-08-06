@@ -11,15 +11,15 @@ workflow HicMatrix {
     if (!skip(myName)) {
         samples
             | filter{it.makeHicFileFormat && it.latestPairs && !it.hic}
-            | map{tuple(it.id, it.matrixPlanName, it.latestPairs, it.chromsizes, it.matrix_opts, it.minMapq)}
+            | map{tuple(it.id, it.latestPairs, it.chromsizes, it.matrix_opts, it.minMapq)}
             | JUICER_TOOLS_PRE
             | map{
-                id, matrixPlanName, hic -> 
-                [id: id, matrixPlanName: matrixPlanName, hic: hic, latestMatrix: hic]
+                id, matrix_opts, hic -> 
+                [id: id, matrix_opts: matrix_opts, hic: hic, latestMatrix: hic]
             }
             | set{result}
             
-            keyUpdate(samples, result, ["id", "matrixPlanName"])
+            keyUpdate(samples, result, ["id", "matrix_opts"])
                 | set{samples}
     }
 

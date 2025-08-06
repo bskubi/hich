@@ -17,8 +17,7 @@ nextflow_workflow {
                 chromsizes = file("$projectDir/tests/assets/chromsizes/hg38.sizes")
                 common = [
                     latestPairs: pairs, 
-                    matrixPlanName: "plan1",
-                    matrix_opts: [resolutions: [1000000, 2000000, 5000000], juicer_tools_pre: ["-n":true]], 
+                    matrix_opts: [plan_name: "plan1", resolutions: [1000000, 2000000, 5000000], juicer_tools_pre: ["-n":true]], 
                     chromsizes: chromsizes
                 ]
 

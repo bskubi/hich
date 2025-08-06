@@ -1,7 +1,7 @@
 include {validateMemory} from '../../util/memory.nf'
 include {buildCLIOpts} from '../../util/cli.nf'
 
-def buildCmd(id, matrixPlanName, pairs, chromsizes, matrix_opts, minMapq, memory, cpus) {
+def buildCmd(id, pairs, chromsizes, matrix_opts, minMapq, memory, cpus) {
     def logMap = [
         task: "JUICER_TOOLS_PRE", 
         input: [

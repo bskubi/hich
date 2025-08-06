@@ -12,11 +12,11 @@ workflow LabelMatrixPlans {
 
     params.matrices.each {
         planName, analysisPlan ->
-
+        analysisPlan["plan_name"] = planName
         strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
 
         filterSamplesByStrategy(samples, strategy)
-            | map{it + [matrixPlanName: planName] + analysisPlan + [id: it.id + "_${planName}"]}
+            | map{it + [matrix_opts: analysisPlan, id: it.id + "_${planName}"]}
             | concat(newSamples)
             | set{newSamples}
         
