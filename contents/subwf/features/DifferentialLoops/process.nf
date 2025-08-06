@@ -7,17 +7,17 @@ process DIFFERENTIAL_LOOPS {
     tag "$id1 $id2"
 
     input:
-    tuple val(id1), val(id2), val(prefix), path(matrix1, stageAs: '__matrix1__/*'), path(matrix2, stageAs: '__matrix1__/*'), val(analysisPlan)
+    tuple val(id1), val(id2), val(prefix), path(matrix1, stageAs: '__matrix1__/*'), path(matrix2, stageAs: '__matrix1__/*'), val(diff_mustache_opts)
 
     output:
     tuple path(loop1), path(loop2), path(diffloop1), path(diffloop2)
 
     shell:
-    (cmd, logMap, loop1, loop2, diffloop1, diffloop2) = buildCmd(id1, id2, prefix, matrix1, matrix2, analysisPlan)
+    (cmd, logMap, loop1, loop2, diffloop1, diffloop2) = buildCmd(id1, id2, prefix, matrix1, matrix2, diff_mustache_opts)
     withLog(cmd, logMap)
 
     stub:
-    (cmd, logMap, loop1, loop2, diffloop1, diffloop2) = buildCmd(id1, id2, prefix, matrix1, matrix2, analysisPlan)
+    (cmd, logMap, loop1, loop2, diffloop1, diffloop2) = buildCmd(id1, id2, prefix, matrix1, matrix2, diff_mustache_opts)
     stub = "touch '${loop1}' '${loop2}' '${diffloop1}' '${diffloop2}'"
     stubLog(stub, cmd, logMap)
 }

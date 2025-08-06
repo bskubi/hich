@@ -13,7 +13,7 @@ workflow DifferentialLoops {
 
         params.diffloops.each {
             planName, analysisPlan ->
-
+            analysisPlan["plan_name"] = planName
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
             pairSamplesByStrategy(samples, strategy)
                 | filter{s1, s2 -> s1 != s2 && s1.matrixPlanName == s2.matrixPlanName}

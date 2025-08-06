@@ -4,7 +4,7 @@ def buildCmdError(params, message) {
     "Error during buildCmd with parameters: ${params}. ${message}"
 }
 
-def buildCmd (id1, id2, prefix, matrix1, matrix2, analysisPlan) {
+def buildCmd (id1, id2, prefix, matrix1, matrix2, differential_loops_opts) {
     def output = [
         loop1: "${prefix}.loop1", 
         loop2: "${prefix}.loop2", 
@@ -13,7 +13,7 @@ def buildCmd (id1, id2, prefix, matrix1, matrix2, analysisPlan) {
     ]
     def logMap = [
         task: "DIFFERENTIAL_LOOPS", 
-        input: [id1: id1, id2: id2, matrix1: matrix1, matrix2: matrix2, analysisPlan: analysisPlan], 
+        input: [id1: id1, id2: id2, matrix1: matrix1, matrix2: matrix2, differential_loops_opts: differential_loops_opts], 
         output: output
     ]
     def default_diff_mustache_opts = [
@@ -21,7 +21,7 @@ def buildCmd (id1, id2, prefix, matrix1, matrix2, analysisPlan) {
         "-f2": matrix2,
         "-o": prefix
     ]
-    def diff_mustache_opts = analysisPlan?.diff_mustache ?: [:]
+    def diff_mustache_opts = differential_loops_opts?.diff_mustache ?: [:]
     def remap = [
         "--file1": "-f1",
         "--file2": "-f2",
