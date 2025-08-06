@@ -19,7 +19,7 @@ workflow TADs {
             filterSamplesByStrategy(samples, strategy)
                 | map{
                     sample ->
-                    tuple(sample.id, sample.mcool, analysisPlan.resolution, analysisPlan.hicExplorerFindTADsParams)
+                    tuple(sample.id, sample.mcool, analysisPlan)
                 }
                 | concat(processInputs)
                 | set{processInputs}

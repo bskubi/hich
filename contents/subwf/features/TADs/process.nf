@@ -9,19 +9,19 @@ process TADS {
     tag "$id"
 
     input:
-    tuple val(id), path(mcool), val(resolution), val(hicExplorerFindTADsParams)
+    tuple val(id), path(mcool), val(analysisPlan)
 
     output:
     tuple val(id), path(boundariesBed), path(boundariesGff), path(domainsBed), path(scoreBedgraph), path(tadScoreBm)
 
     shell:
-    (cmd, logMap, boundariesBed, boundariesGff, domainsBed, scoreBedgraph, tadScoreBm) = buildCmd(id, mcool, resolution, hicExplorerFindTADsParams, task.cpus)
+    (cmd, logMap, boundariesBed, boundariesGff, domainsBed, scoreBedgraph, tadScoreBm) = buildCmd(id, mcool, analysisPlan, task.cpus)
 
     
     withLog(cmd, logMap)
 
     stub:
-    (cmd, logMap, boundariesBed, boundariesGff, domainsBed, scoreBedgraph, tadScoreBm) = buildCmd(id, mcool, resolution, hicExplorerFindTADsParams, task.cpus)
+    (cmd, logMap, boundariesBed, boundariesGff, domainsBed, scoreBedgraph, tadScoreBm) = buildCmd(id, mcool, analysisPlan, task.cpus)
     stub = "touch '${output.boundariesBed}' '${output.boundariesGff}' '${output.domainsBed}' '${output.scoreBedgraph}' '${output.tadScoreBm}'"
     stubLog(stub, cmd, logMap)
 }
