@@ -1,6 +1,17 @@
 include {buildCLIOpts} from '../../util/cli.nf'
 
-def buildCmd(aligner, id, indexDir, indexPrefix, fastq, aligner_opts, minMapq, cpus) {
+def buildCmd(aligner, id, indexDir, indexPrefix, fastq, align_opts, minMapq, cpus) {
+    def output = "${id}.bam"
+    def inputMap = [
+        id: id, 
+        fastq: fastq, 
+        aligner: aligner, 
+        indexDir: indexDir,
+        indexPrefix: indexPrefix, 
+        align_opts: align_opts,
+        minMapq: minMapq
+    ]
+    def logMap = [task: "ALIGN", output: [bam: output], input: inputMap]
     def alignerCmds = [
         "bwa": "bwa mem",
         "bwa-mem2": "bwa-mem2 mem",
@@ -8,23 +19,33 @@ def buildCmd(aligner, id, indexDir, indexPrefix, fastq, aligner_opts, minMapq, c
         "bwameth-mem2": "bwameth.py"
     ]
     def alignerCmd = alignerCmds[aligner] ?: aligner
-    def fastqArgs = fastq.findAll{it}.collect{"'${it}'"}.join(" ")
+    def args = fastq.findAll{it}
     def index = "${indexDir}/${indexPrefix}"
-    def alignerFlags = ["-t": cpus, "-p": true]
+    def default_bwa_opts = ["-t": cpus, "-p": true]
+    def bwa_opts = null
+    def remap = null
     if (aligner in ["bwameth", "bwameth-mem2"]) {
-        index = "--reference '${index}'"
-        alignerFlags += ["--do-not-penalize-chimeras": true]
-        
+        default_bwa_opts += [
+            "--do-not-penalize-chimeras": true,
+            "--reference": index
+        ]
+        bwa_opts = align_opts?.bwameth_opts ?: [:]
+        remap = [
+            "--threads": "-t",
+            "--interleaved": "-p"
+        ]
     } else {
-        index = "'${index}'"
-        alignerFlags += ["-S": true, "-P": true, "-5": true, "-M": true]
+        default_bwa_opts += ["-S": true, "-P": true, "-5": true, "-M": true]
+        bwa_opts = align_opts?.bwa_mem_opts ?: [:]
+        remap = [:]
+        args = [index] + args
     }
-    alignerFlags += (alignerFlags ?: [:])
-    def flagsArgs = buildCLIOpts(alignerFlags, null)
-    def output = "${id}.bam"
-    def cmd = "${alignerCmd} ${flagsArgs} ${index} ${fastqArgs} | samtools view -b -o '${output}'"
-    def inputMap = [id: id, fastq: fastq, aligner: aligner, index: index, aligner_opts: aligner_opts, minMapq: minMapq]
-    def logMap = [task: "ALIGN", output: "${id}.bam", input: inputMap]
+    args = args.collect{"'${it}'"}
+    args = args.join(" ")
+    logMap += [default_bwa_opts: default_bwa_opts, bwa_opts: bwa_opts]
+    def final_bwa_opts = buildCLIOpts(default_bwa_opts, bwa_opts, remap, null)
+    def cmd = "${alignerCmd} ${final_bwa_opts} ${args} | samtools view -b -o '${output}'"
+
     return [cmd, logMap, output]
 }
 
