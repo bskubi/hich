@@ -20,7 +20,7 @@ workflow DifferentialLoops {
                 | map{
                     s1, s2 ->
                     prefix = "${s1.id}_${s2.id}"
-                    tuple(s1.id, s2.id, prefix, s1.latestMatrix, s2.latestMatrix, analysisPlan.mustacheParams)
+                    tuple(s1.id, s2.id, prefix, s1.latestMatrix, s2.latestMatrix, analysisPlan)
                 }
                 | concat(processInputs)
                 | set{processInputs}
