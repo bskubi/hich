@@ -10,17 +10,17 @@ process MCOOL_TO_HIC {
     container params.general.hictkContainer
 
     input:
-    tuple val(id), path(mcoolFile)
+    tuple val(id), path(mcoolFile), val(ingest_matrix_opts)
 
     output:
     tuple val(id), path(output)
 
     shell:
-    (cmd, logMap, output) = buildCmdMcoolToHic(id, mcoolFile, task.cpus)
+    (cmd, logMap, output) = buildCmdMcoolToHic(id, mcoolFile, ingest_matrix_opts, task.cpus)
     withLog(cmd, logMap)
 
     stub:
-    (cmd, logMap, output) = buildCmdMcoolToHic(id, mcoolFile, task.cpus) 
+    (cmd, logMap, output) = buildCmdMcoolToHic(id, mcoolFile, ingest_matrix_opts, task.cpus) 
     stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 
@@ -38,17 +38,17 @@ process HIC_TO_MCOOL {
     container params.general.hictkContainer
 
     input:
-    tuple val(id), path(hicFile)
+    tuple val(id), path(hicFile), val(ingest_matrix_opts)
 
     output:
     tuple val(id), path(output)
 
     shell:
-    (cmd, logMap, output) = buildCmdHicToMcool(id, hicFile)
+    (cmd, logMap, output) = buildCmdHicToMcool(id, hicFile, ingest_matrix_opts)
     withLog(cmd, logMap)
 
     stub:
-    (cmd, logMap, output) = buildCmdHicToMcool(id, hicFile)
+    (cmd, logMap, output) = buildCmdHicToMcool(id, hicFile, ingest_matrix_opts)
     stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 

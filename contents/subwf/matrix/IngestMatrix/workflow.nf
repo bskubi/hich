@@ -12,7 +12,7 @@ workflow IngestMatrix {
     if (!skip("IngestMatrix")) {
         samples
             | filter{it.datatype == "matrix" && it.makeHicFileFormat && it.mcool && !it.hic}
-            | map{tuple(it.id, it.mcool)}
+            | map{tuple(it.id, it.mcool, it.ingest_matrix_opts)}
             | MCOOL_TO_HIC
             | map{
                 id, hicFile ->
@@ -21,7 +21,7 @@ workflow IngestMatrix {
         
         samples
             | filter{it.datatype == "matrix" && it.makeMcoolFileFormat && it.hic && !it.mcool}
-            | map{tuple(it.id, it.hic)}
+            | map{tuple(it.id, it.hic, it.ingest_matrix_opts)}
             | HIC_TO_MCOOL
             | map{
                 id, mcoolFile ->
