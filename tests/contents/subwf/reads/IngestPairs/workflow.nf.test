@@ -13,7 +13,7 @@ nextflow_workflow {
             workflow {
                 """
                 stdPairs = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.drop.pairs.gz")
-                stdChromsizes = file("$projectDir/resources/hich/chromsizes/hg38.sizes")
+                stdChromsizes = file("$projectDir/tests/assets/chromsizes/hg38.sizes")
                 stdCommon = [pairs: stdPairs, chromsizes: stdChromsizes, datatype: "pairs"]
                 samples = [
                     [id: "1"] + stdCommon

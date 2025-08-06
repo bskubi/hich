@@ -12,7 +12,7 @@ workflow IngestPairs {
     if (!skip("IngestPairs")) {
         samples
             | filter{it.datatype == "pairs"}
-            | map{tuple(it.id, it.pairs, it.chromsizes, it.ingestPairs_opts)}
+            | map{tuple(it.id, it.pairs, it.chromsizes, it.ingest_pairs_opts)}
             | INGEST_PAIRS
             | map{[id:it[0], pairs:it[1], latest:it[1], latestPairs:it[1]]}
             | set{result}
