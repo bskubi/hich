@@ -19,7 +19,7 @@ workflow Loops {
             filterSamplesByStrategy(samples, strategy)
                 | map{
                     sample ->
-                    tuple(sample.id, sample.latestMatrix, analysisPlan.mustacheParams)
+                    tuple(sample.id, sample.latestMatrix, analysisPlan)
                 }
                 | concat(processInputs)
                 | set{processInputs}

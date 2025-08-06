@@ -14,7 +14,10 @@ nextflow_workflow {
                 loops = [
                     plan: [
                         sampleSelectionStrategy: ["strategy"],
-                        mustacheParams: ["-r 100000 -ch chr19"]
+                        mustache: [
+                            "-r": 100000,
+                            "-ch": "chr19"
+                        ]
                     ]
                 ]
             }

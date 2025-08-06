@@ -46,8 +46,8 @@ def remapKeys(map, keysToRemap) {
         sourceKey, destKey ->
         if (sourceKey in map) {
             assert !(destKey in map) || map[sourceKey] == map[destKey], "In removeRedundantKeys for map: ${map}, '${sourceKey}' and '${destKey}' were both in map but had different values."
+            map += [(destKey): map[sourceKey]]
         }
-        map += [(destKey): map[sourceKey]]
     }
     map.findAll{key, value -> !(key in keysToRemap)}
 }
