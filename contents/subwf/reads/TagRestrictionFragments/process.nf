@@ -12,17 +12,17 @@ process TAG_RESTRICTION_FRAGMENTS {
     container params.general.hichContainer
 
     input:
-    tuple val(id), path(pairs), path(fragmentIndex)
+    tuple val(id), path(pairs), path(fragmentIndex), val(tag_restriction_fragments_opts)
 
     output:
     tuple val(id), path(output)
 
     shell:
-    (cmd, logMap, output) = buildCmd(id, pairs, fragmentIndex)
+    (cmd, logMap, output) = buildCmd(id, pairs, fragmentIndex, tag_restriction_fragments_opts)
     withLog(cmd, logMap)
 
     stub:
-    (cmd, logMap, output) = buildCmd(id, pairs, fragmentIndex)
+    (cmd, logMap, output) = buildCmd(id, pairs, fragmentIndex, tag_restriction_fragments_opts)
     stub = "touch '${id}_fragtag.pairs.gz'"
     stubLog(stub, cmd, logMap)
 }
