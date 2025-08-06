@@ -11,17 +11,17 @@ process INSULATION_SCORES {
     tag "$id"
 
     input:
-    tuple val(id), path(mcool), val(analysisPlan)
+    tuple val(id), path(mcool), val(insulation_scores_opts)
 
     output:
     tuple val(id), path(tsv), path(bw)
 
     shell:
-    (cmd, logMap, tsv, bw) = buildCmd(id, mcool, analysisPlan)
+    (cmd, logMap, tsv, bw) = buildCmd(id, mcool, insulation_scores_opts)
     withLog(cmd, logMap)
 
     stub:
-    (cmd, logMap, tsv, bw) = buildCmd(id, mcool, analysisPlan)
+    (cmd, logMap, tsv, bw) = buildCmd(id, mcool, insulation_scores_opts)
     stub = "touch '${tsv}' '${bw}'"
     stubLog(stub, cmd, logMap)
 }

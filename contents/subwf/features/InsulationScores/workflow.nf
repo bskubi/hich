@@ -12,7 +12,7 @@ workflow InsulationScores {
         processInputs = channel.empty()
         params.insulation.each {
             planName, analysisPlan ->
-
+            analysisPlan["plan_name"] = planName
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
             
             filterSamplesByStrategy(samples, strategy)

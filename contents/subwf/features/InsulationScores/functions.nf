@@ -1,31 +1,13 @@
 include {buildCLIOpts} from '../../util/cli.nf'
 
-def buildCmdError(id, mcool, analysisPlan, message) {
-    def baseMessage = "In sample with id '${id}', mcool '${mcool}', analysisPlan ${analysisPlan}, ${message}"
+def buildCmdError(id, mcool, insulation_scores_opts, message) {
+    def baseMessage = "In sample with id '${id}', mcool '${mcool}', insulation_scores_opts ${insulation_scores_opts}: ${message}"
     error(baseMessage)
 }
 
-def buildCmd(id, mcool, analysisPlan) {
-    def cooltools_insulation_opts = analysisPlan?.cooltools_insulation ?: [:]
-    def resolution = analysisPlan?.resolution
-    def window = analysisPlan?.window
-    assert resolution, buildCmdError(id, mcool, analysisPlan, "resolution invalid.")
-    assert window, buildCmdError(id, mcool, analysisPlan, "window invalid.")
-    
+def buildCmd(id, mcool, insulation_scores_opts) {
     def tsv = "${id}_insulation.tsv"
-    def default_cooltools_insulation_opts = [
-        "--bigwig": true,
-        "--output": tsv,
-    ]
-    def remap = [
-        "--nproc": "-p",
-        "--output": "-o",
-        "--regions": "--view"
-    ]
-    cooltools_insulation_opts = buildCLIOpts(default_cooltools_insulation_opts, cooltools_insulation_opts, remap, null)
-    def cool = "${mcool}::/resolutions/${resolution}"
-    def cmd = "cooltools insulation ${cooltools_insulation_opts} '${cool}' ${window}"
-
+    def window = insulation_scores_opts?.window
     def bw = "${tsv}.${window}.bw"
     def output = [
         tsv: tsv, 
@@ -36,9 +18,29 @@ def buildCmd(id, mcool, analysisPlan) {
         input: [
             id: id, 
             mcool: mcool, 
-            analysisPlan: analysisPlan
+            insulation_scores_opts: insulation_scores_opts
         ], 
         output: output
     ]
+    def cooltools_insulation_opts = insulation_scores_opts?.cooltools_insulation_opts ?: [:]
+    def resolution = insulation_scores_opts?.resolution
+    
+    assert resolution, buildCmdError(id, mcool, insulation_scores_opts, "resolution invalid.")
+    assert window, buildCmdError(id, mcool, insulation_scores_opts, "window invalid.")
+    def default_cooltools_insulation_opts = [
+        "--bigwig": true,
+        "--output": tsv,
+    ]
+    def remap = [
+        "--nproc": "-p",
+        "--output": "-o",
+        "--regions": "--view"
+    ]
+    logMap += [default_cooltools_insulation_opts:default_cooltools_insulation_opts, cooltools_insulation_opts:cooltools_insulation_opts]
+    cooltools_insulation_opts = buildCLIOpts(default_cooltools_insulation_opts, cooltools_insulation_opts, remap, null)
+    def cool = "${mcool}::/resolutions/${resolution}"
+    def args = [cool, window].collect{"'${it}'"}.join(" ")
+    def cmd = "cooltools insulation ${cooltools_insulation_opts} ${args}"
+
     return [cmd, logMap, tsv, bw]
 }
