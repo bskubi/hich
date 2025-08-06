@@ -37,10 +37,10 @@ def buildCmd(id, mcool, insulation_scores_opts) {
         "--regions": "--view"
     ]
     logMap += [default_cooltools_insulation_opts:default_cooltools_insulation_opts, cooltools_insulation_opts:cooltools_insulation_opts]
-    cooltools_insulation_opts = buildCLIOpts(default_cooltools_insulation_opts, cooltools_insulation_opts, remap, null)
+    def final_cooltools_insulation_opts = buildCLIOpts(default_cooltools_insulation_opts, cooltools_insulation_opts, remap, null)
     def cool = "${mcool}::/resolutions/${resolution}"
     def args = [cool, window].collect{"'${it}'"}.join(" ")
-    def cmd = "cooltools insulation ${cooltools_insulation_opts} ${args}"
+    def cmd = "cooltools insulation ${final_cooltools_insulation_opts} ${args}"
 
     return [cmd, logMap, tsv, bw]
 }

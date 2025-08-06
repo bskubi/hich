@@ -16,7 +16,7 @@ nextflow_workflow {
                 diffloops = [
                     plan1: [
                         sampleSelectionStrategy: ["strategy1"],
-                        diff_mustache: ["-r": 100000, "-ch": "chr19"]
+                        diff_mustache_opts: ["-r": 100000, "-ch": "chr19"]
                     ]
                 ]
             }

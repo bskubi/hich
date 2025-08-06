@@ -9,17 +9,17 @@ process LOOPS{
     tag "$id"
 
     input:
-    tuple val(id), path(matrix), val(analysisPlan)
+    tuple val(id), path(matrix), val(loops_opts)
 
     output:
     path(output)
 
     shell:
-    (cmd, logMap, output) = buildCmd(id, matrix, analysisPlan)
+    (cmd, logMap, output) = buildCmd(id, matrix, loops_opts)
     withLog(cmd, logMap)
 
     stub:
-    (cmd, logMap, output) = buildCmd(id, matrix, analysisPlan)
+    (cmd, logMap, output) = buildCmd(id, matrix, loops_opts)
     stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 }

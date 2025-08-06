@@ -15,7 +15,7 @@ def buildCmd(planName, mcools, hicrep_combinations_opts, cpus) {
     def default_hich_matrix_hicrep_opts = [
         "--n_proc": cpus
     ]
-    def hich_matrix_hicrep_opts = hicrep_combinations_opts?.hich_matrix_hicrep ?: [:]
+    def hich_matrix_hicrep_opts = hicrep_combinations_opts?.hich_matrix_hicrep_opts ?: [:]
     def remap = [
         "--resolution": "-r",
         "--h": "-h",
@@ -30,10 +30,10 @@ def buildCmd(planName, mcools, hicrep_combinations_opts, cpus) {
         "--bed": "-b",
         "--partition": "-p"
     ]
-    hich_matrix_hicrep_opts = buildCLIOpts(default_hich_matrix_hicrep_opts, hich_matrix_hicrep_opts, remap, null)
+    def final_hich_matrix_hicrep_opts = buildCLIOpts(default_hich_matrix_hicrep_opts, hich_matrix_hicrep_opts, remap, null)
     def args = [output] + mcools
     args = args.collect{"'${it}'"}.join(" ")
-    def cmd = "hich matrix hicrep ${hich_matrix_hicrep_opts} ${args}"
+    def cmd = "hich matrix hicrep ${final_hich_matrix_hicrep_opts} ${args}"
 
     return [cmd, logMap, output]
 }

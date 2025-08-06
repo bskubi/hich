@@ -21,7 +21,7 @@ def buildCmd (id1, id2, prefix, matrix1, matrix2, differential_loops_opts) {
         "-f2": matrix2,
         "-o": prefix
     ]
-    def diff_mustache_opts = differential_loops_opts?.diff_mustache ?: [:]
+    def diff_mustache_opts = differential_loops_opts?.diff_mustache_opts ?: [:]
     def remap = [
         "--file1": "-f1",
         "--file2": "-f2",
@@ -47,8 +47,8 @@ def buildCmd (id1, id2, prefix, matrix1, matrix2, differential_loops_opts) {
         "--chromosome2": "-ch2",
         "--verbose": "-v"
     ]
-    diff_mustache_opts = buildCLIOpts(default_diff_mustache_opts, diff_mustache_opts, remap, null)
-    def cmd = "diff_mustache ${diff_mustache_opts}"
+    def final_diff_mustache_opts = buildCLIOpts(default_diff_mustache_opts, diff_mustache_opts, remap, null)
+    def cmd = "diff_mustache ${final_diff_mustache_opts}"
 
 
     return [cmd, logMap, output.loop1, output.loop2, output.diffloop1, output.diffloop2]

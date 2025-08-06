@@ -1,11 +1,19 @@
 include {buildCLIOpts} from '../../util/cli.nf'
 
-def buildCmd(id, matrix, analysisPlan) {
+def buildCmd(id, matrix, loops_opts) {
     def output = "${id}.loop"
+    def logMap = [
+        task: "LOOPS", 
+        input: [id: id, matrix: matrix, loops_opts: loops_opts],
+        output: [loops: output]
+    ]
+
     def default_mustache_opts = [
         "-f": matrix,
         "-o": output
     ]
+    def mustache_opts = loops_opts?.mustache_opts ?: [:]
+    logMap += [default_mustache_opts:default_mustache_opts, mustache_opts:mustache_opts]
     def remap = [
         "--file": "-f",
         "--distance": "-d",
@@ -25,13 +33,9 @@ def buildCmd(id, matrix, analysisPlan) {
         "--chromosome2": "-ch2",
         "--verbose": "-v"
     ]
-    def mustache_opts = analysisPlan?.mustache ?: [:]
-    mustache_opts = buildCLIOpts(default_mustache_opts, mustache_opts, remap, null)
-    def cmd = "mustache ${mustache_opts}"
-    def logMap = [
-        task: "LOOPS", 
-        input: [id: id, matrix: matrix, analysisPlan: analysisPlan],
-        output: [loops: output]
-    ]
+    def final_mustache_opts = buildCLIOpts(default_mustache_opts, mustache_opts, remap, null)
+    def cmd = "mustache ${final_mustache_opts}"
+    logMap.cmd = cmd
+
     return [cmd, logMap, output]
 }
