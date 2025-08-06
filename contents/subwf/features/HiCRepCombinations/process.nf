@@ -10,17 +10,17 @@ process HICREP_COMBINATIONS {
     container params.general.hichContainer
     
     input:
-    tuple val(planName), path(mcools), val(analysisPlan)
+    tuple val(planName), path(mcools), val(hicrep_combinations_opts)
 
     output:
     path(output)
 
     shell:
-    (cmd, logMap, output) = buildCmd(planName, mcools, analysisPlan, task.cpus)
+    (cmd, logMap, output) = buildCmd(planName, mcools, hicrep_combinations_opts, task.cpus)
     withLog(cmd, logMap)
 
     stub:
-    (cmd, logMap, output) = buildCmd(planName, mcools, analysisPlan, task.cpus)
+    (cmd, logMap, output) = buildCmd(planName, mcools, hicrep_combinations_opts, task.cpus)
     stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 }

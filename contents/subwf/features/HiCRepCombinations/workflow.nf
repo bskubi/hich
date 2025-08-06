@@ -14,6 +14,7 @@ workflow HiCRepCombinations {
 
         params.hicrep.each {
             planName, analysisPlan ->
+            analysisPlan["plan_name"] = planName
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
             filtered = filterSamplesByStrategy(samples, strategy)            
             grouped = groupSamplesByStrategy(filtered, strategy)

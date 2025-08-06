@@ -1,13 +1,13 @@
 include {buildCLIOpts} from '../../util/cli.nf'
 
-def buildCmd(planName, mcools, analysisPlan, cpus) {
+def buildCmd(planName, mcools, hicrep_combinations_opts, cpus) {
     def output = "${planName}.tsv"
     def logMap = [
         task: "HICREP_COMBINATIONS", 
         input: [
             planName: planName, 
             mcools: mcools, 
-            analysisPlan: analysisPlan
+            hicrep_combinations_opts: hicrep_combinations_opts
         ],
         output: [hicrep: output]
     ]
@@ -15,7 +15,7 @@ def buildCmd(planName, mcools, analysisPlan, cpus) {
     def default_hich_matrix_hicrep_opts = [
         "--n_proc": cpus
     ]
-    def hich_matrix_hicrep_opts = analysisPlan?.hich_matrix_hicrep ?: [:]
+    def hich_matrix_hicrep_opts = hicrep_combinations_opts?.hich_matrix_hicrep ?: [:]
     def remap = [
         "--resolution": "-r",
         "--h": "-h",
@@ -31,8 +31,9 @@ def buildCmd(planName, mcools, analysisPlan, cpus) {
         "--partition": "-p"
     ]
     hich_matrix_hicrep_opts = buildCLIOpts(default_hich_matrix_hicrep_opts, hich_matrix_hicrep_opts, remap, null)
-    mcools = mcools.collect{"'${it}'"}.join(" ")
-    def cmd = "hich matrix hicrep ${hich_matrix_hicrep_opts} '${output}' ${mcools}"
+    def args = [output] + mcools
+    args = args.collect{"'${it}'"}.join(" ")
+    def cmd = "hich matrix hicrep ${hich_matrix_hicrep_opts} ${args}"
 
     return [cmd, logMap, output]
 }
