@@ -1,36 +1,38 @@
-include {formatArg} from '../../util/cli.nf'
+include {buildCLIOpts} from '../../util/cli.nf'
 
-def buildCmd(planName, mcools, resolutions, chroms, exclude, chromFilter, h, dBPMax, bDownSample) {
+def buildCmd(planName, mcools, analysisPlan, cpus) {
     def output = "${planName}.tsv"
-    def resolution = "-r " + resolutions.join(" -r ")
-
-    def cmd = [
-        "hich matrix hicrep",
-        resolution,
-        formatArg("--chrom %s", chroms, ','),
-        formatArg("--exclude %s", exclude, ','),
-        formatArg("--chrom-filter '%s'", chromFilter, ''),
-        formatArg("--h %s", h, ','),
-        formatArg("--d-bp-max %s", dBPMax, ','),
-        formatArg("--b-downsample %s", bDownSample, ','),
-        "'${output}'",
-        formatArg("%s", mcools, ' ')
-    ]
-    cmd = cmd.findAll{it}
-    cmd = cmd.join(" ")
     def logMap = [
         task: "HICREP_COMBINATIONS", 
         input: [
             planName: planName, 
             mcools: mcools, 
-            resolutions: resolutions, 
-            chroms: chroms, 
-            exclude: exclude, 
-            chromFilter: chromFilter, 
-            dBPMax: dBPMax, 
-            bDownSample: bDownSample
+            analysisPlan: analysisPlan
         ],
         output: [hicrep: output]
     ]
+
+    def default_hich_matrix_hicrep_opts = [
+        "--n_proc": cpus
+    ]
+    def hich_matrix_hicrep_opts = analysisPlan?.hich_matrix_hicrep ?: [:]
+    def remap = [
+        "--resolution": "-r",
+        "--h": "-h",
+        "--dBPMax": "-m",
+        "--d-bp-max": "-m",
+        "--bDownSample": "-d",
+        "--b-downsample": "-d",
+        "--normalization": "-n",
+        "--chrom": "-c",
+        "--skip-chrom": "-s",
+        "--region": "-g",
+        "--bed": "-b",
+        "--partition": "-p"
+    ]
+    hich_matrix_hicrep_opts = buildCLIOpts(default_hich_matrix_hicrep_opts, hich_matrix_hicrep_opts, remap, null)
+    mcools = mcools.collect{"'${it}'"}.join(" ")
+    def cmd = "hich matrix hicrep ${hich_matrix_hicrep_opts} '${output}' ${mcools}"
+
     return [cmd, logMap, output]
 }

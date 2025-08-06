@@ -22,15 +22,7 @@ workflow HiCRepCombinations {
                 | map{columns(it, ["dropAllNull":true])}
                 | map{
                     samples ->
-                    tuple(planName,
-                        samples.mcool,
-                        analysisPlan.resolutions,
-                        analysisPlan.chroms,
-                        analysisPlan.exclude,
-                        analysisPlan.chromFilter,
-                        analysisPlan.h,
-                        analysisPlan.dBPMax,
-                        analysisPlan.bDownSample)
+                    tuple(planName, samples.mcool, analysisPlan)
                 }
                 | concat(processInputs)
                 | set{processInputs}

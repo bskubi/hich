@@ -14,13 +14,12 @@ nextflow_workflow {
                 hicrep = [
                     plan1: [
                         sampleSelectionStrategy: ["strategy1"],
-                        resolutions: [100000, 1000000],
-                        chroms: ["chr18", "chr19"],
-                        exclude: [],
-                        chromFilter: "",
-                        h: 1,
-                        dBPMax: null,
-                        bDownSample: false
+                        hich_matrix_hicrep: [
+                            "--resolution": [100000, 1000000],
+                            "--chrom": ["chr18", "chr19"],
+                            "--skip-chrom": [],
+                            "-h": 1
+                        ]
                     ]
                 ]
             }

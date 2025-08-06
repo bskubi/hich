@@ -82,7 +82,16 @@ def buildCLIOpts(flagsMap, updateFlags, keysToRemap, quotes) {
             argName
         } else {
             def q = quotes[argName] ?: "'"
-            "${argName} ${q}${argVal}${q}"
+            if (argVal instanceof List) {
+                argVal = argVal.collect{
+                    iVal ->
+                    "${argName} ${q}${iVal}${q}"
+                }
+                argVal.join(" ")
+            } else {
+                "${argName} ${q}${argVal}${q}"
+            }
+            
         }
     }
     flags = flags.join(" ")
