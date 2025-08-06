@@ -14,9 +14,8 @@ workflow CompartmentScores {
 
         params.compartments.each {
             planName, analysisPlan ->
-
+            analysisPlan["plan_name"] = planName
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
-            analysisPlan = analysisPlan.findAll{it != "sampleSelectionStrategy"}
             filterSamplesByStrategy(samples, strategy)
                 | map{
                     sample ->
