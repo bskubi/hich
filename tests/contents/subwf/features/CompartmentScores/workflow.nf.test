@@ -15,8 +15,11 @@ nextflow_workflow {
                     plan1: [
                         sampleSelectionStrategy: ["strategy1"],
                         resolution: 1000000,
-                        nEigs: 3,
-                        eigsCisParams: []
+                        cooltools_eigs_cis: [
+                            "--n-eigs": 3,
+                            "--ignore-diags": 3,
+                            "--regions": "$projectDir/tests/assets/views/hg38.chr19.bed"
+                        ]
                     ]
                 ]
             }

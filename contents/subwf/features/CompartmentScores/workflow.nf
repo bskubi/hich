@@ -16,11 +16,11 @@ workflow CompartmentScores {
             planName, analysisPlan ->
 
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
-
+            analysisPlan = analysisPlan.findAll{it != "sampleSelectionStrategy"}
             filterSamplesByStrategy(samples, strategy)
                 | map{
                     sample ->
-                    tuple(sample.id, sample.genomeReference, sample.mcool, analysisPlan.resolution, analysisPlan.eigsCisParams, analysisPlan.nEigs)
+                    tuple(sample.id, sample.genomeReference, sample.mcool, analysisPlan)
                 }
                 | concat(processInputs)
                 | set{processInputs}

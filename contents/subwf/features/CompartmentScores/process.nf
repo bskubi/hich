@@ -12,17 +12,17 @@ process COMPARTMENT_SCORES {
 
 
     input:
-    tuple val(id), path(genomeReference), path(matrix), val(resolution), val(eigsCisParams), val(nEigs)
+    tuple val(id), path(genomeReference), path(matrix), val(compartmentScores_otps)
 
     output:
     tuple val(id), path("*.cis.bw"), path("*.cis.vecs.tsv"), path("*.cis.lam.txt"), path("*.phase.bed")
 
     shell:
-    (cmd, logMap, output) = buildCmd(id, genomeReference, matrix, resolution, eigsCisParams, nEigs)
+    (cmd, logMap, output) = buildCmd(id, genomeReference, matrix, compartmentScores_otps)
     withLog(cmd, logMap)
 
     stub:
-    (cmd, logMap, output) = buildCmd(id, genomeReference, matrix, resolution, eigsCisParams, nEigs)
+    (cmd, logMap, output) = buildCmd(id, genomeReference, matrix, compartmentScores_otps)
     stub = "touch '${id}_compartments.bw' '${id}.cis.bw' '${id}.cis.vecs.tsv' '${id}.cis.lam.txt' '${id}.phase.bed'"
     stubLog(stub, cmd, logMap)
 }
