@@ -15,7 +15,10 @@ nextflow_workflow {
                     plan1: [
                         sampleSelectionStrategy: ["strategy1"],
                         resolution: 100000,
-                        window: 1000000
+                        window: 1000000,
+                        cooltools_insulation: [
+                            "--view": "$projectDir/tests/assets/views/hg38.chr19.bed"
+                        ]
                     ]
                 ]
             }

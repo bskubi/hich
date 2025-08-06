@@ -14,11 +14,11 @@ workflow InsulationScores {
             planName, analysisPlan ->
 
             strategy = createCompositeStrategy(analysisPlan.sampleSelectionStrategy, params.sampleSelectionStrategies)
-
+            
             filterSamplesByStrategy(samples, strategy)
                 | map{
                     sample ->
-                    tuple(sample.id, sample.mcool, analysisPlan.resolution, analysisPlan.cooltoolsInsulationParams, analysisPlan.window)
+                    tuple(sample.id, sample.mcool, analysisPlan)
                 }
                 | concat(processInputs)
                 | set{processInputs}

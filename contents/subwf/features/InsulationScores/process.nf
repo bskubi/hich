@@ -11,17 +11,17 @@ process INSULATION_SCORES {
     tag "$id"
 
     input:
-    tuple val(id), path(mcool), val(resolution), val(cooltoolsInsulationParams), val(window)
+    tuple val(id), path(mcool), val(analysisPlan)
 
     output:
     tuple val(id), path(tsv), path(bw)
 
     shell:
-    (cmd, logMap, tsv, bw) = buildCmd(id, mcool, resolution, cooltoolsInsulationParams, window)
+    (cmd, logMap, tsv, bw) = buildCmd(id, mcool, analysisPlan)
     withLog(cmd, logMap)
 
     stub:
-    (cmd, logMap, tsv, bw) = buildCmd(id, mcool, resolution, cooltoolsInsulationParams, window)
+    (cmd, logMap, tsv, bw) = buildCmd(id, mcool, analysisPlan)
     stub = "touch '${tsv}' '${bw}'"
     stubLog(stub, cmd, logMap)
 }
