@@ -45,6 +45,7 @@ def buildCmd(aligner, id, indexDir, indexPrefix, fastq, align_opts, minMapq, cpu
     logMap += [default_bwa_opts: default_bwa_opts, bwa_opts: bwa_opts]
     def final_bwa_opts = buildCLIOpts(default_bwa_opts, bwa_opts, remap, null)
     def cmd = "${alignerCmd} ${final_bwa_opts} ${args} | samtools view -b -o '${output}'"
+    logMap += [cmd: cmd]
 
     return [cmd, logMap, output]
 }
