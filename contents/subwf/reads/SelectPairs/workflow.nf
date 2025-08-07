@@ -11,8 +11,8 @@ workflow SelectPairs {
 
     if (!skip("Select")) {
         samples
-            | filter{it.latestPairs && it.selectPairs_opts && it.selectPairs_opts?.filters}
-            | map{tuple(it.id, it.latestPairs, it.selectPairs_opts)}
+            | filter{it.latestPairs}
+            | map{tuple(it.id, it.latestPairs, it.fragmentIndex, it.select_pairs_opts)}
             | SELECT_PAIRS
             | map{[id:it[0], selectPairs:it[1], latest:it[1], latestPairs:it[1]]}
             | set{result}

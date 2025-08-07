@@ -87,45 +87,58 @@ def buildFilters(filters) {
     def cisTrans = formatCisTrans(filters.onlyCis, filters.onlyTrans)
     def strandDist = formatStrandDistFilters(filters.minDistFR, filters.minDistRF, filters.minDistFF, filters.minDistRR)
     def discardSingleFrag = formatDiscardSingleFrag(filters.discardSingleFrag)
-    filters = formatFilters([pairTypes, cisTrans, strandDist, discardSingleFrag])
+    def custom = filters.custom
+    filters = formatFilters([pairTypes, cisTrans, strandDist, discardSingleFrag, custom])
 
     return filters
 }
 
-def buildCmd(id, pairs, selectPairs_opts, cpus) {
-    def pairtoolsSelectFilters = selectPairs_opts?.filters ?: [:]
-    def pairtoolsSelect_opts = selectPairs_opts?.findAll{argName, argVal -> argName != "filters"}
-    pairtoolsSelect_opts = updateOutputPaths(id, pairtoolsSelect_opts)
-    def filters = buildFilters(pairtoolsSelectFilters)
-    def (writeChroms, chromsFile) = formatWriteChroms(pairtoolsSelectFilters.chroms)
-
+def buildCmd(id, pairs, fragmentIndex, select_pairs_opts, cpus) {
     def output = "${id}_select.pairs.gz"
-    def defaultPairtoolsSelect_opts = ["--output": output, "--nproc-in": cpus, "--nproc-out": cpus]
-    pairtoolsSelect_opts = buildCLIOpts(defaultPairtoolsSelect_opts, pairtoolsSelect_opts)
-    def pairsInput = sq(pairs)
-
-    def cmd = [
-        writeChroms,
-        "pairtools select",
-        chromsFile,
-        pairtoolsSelect_opts,
-        filters,
-        pairsInput
-    ]
-    cmd = cmd.findAll{it}
-    cmd = cmd.join(" ")
-
-    logMap = [
+    def logMap = [
         task: "SELECT_PAIRS",
         input: [
             id: id,
             pairs: pairs,
-            selectPairs_opts: selectPairs_opts
+            select_pairs_opts: select_pairs_opts
         ],
         output: [
             pairs: output
         ]
     ]
+    def pairtools_select_filters = select_pairs_opts?.filters ?: [:]
+    def pairtools_select_opts = select_pairs_opts?.findAll{argName, argVal -> argName != "filters"}
+    pairtools_select_opts = updateOutputPaths(id, pairtools_select_opts)
+
+    if (fragmentIndex && !("discardSingleFrag" in pairtools_select_filters)) {
+        pairtools_select_filters += [discardSingleFrag: true]
+    }
+    def filters = buildFilters(pairtools_select_filters)
+    def (write_chroms, chroms_file) = formatWriteChroms(pairtools_select_filters.chroms)
+    
+    def default_pairtools_select_opts = ["--output": output, "--nproc-in": cpus, "--nproc-out": cpus]
+
+    def remap = [
+        "--output": "-o",
+        "--type-cast": "-t",
+        "--remove-columns": "-r"
+    ]
+    def final_pairtools_select_opts = buildCLIOpts(default_pairtools_select_opts, pairtools_select_opts, remap, null)
+    def pairsInput = sq(pairs)
+
+    def cmd = [
+        write_chroms,
+        "pairtools select",
+        chroms_file,
+        final_pairtools_select_opts,
+        filters,
+        pairsInput
+    ]
+    cmd = cmd.findAll{it}
+    cmd = cmd.join(" ")
+    logMap.cmd = cmd
+    print(cmd)
+
 
     return [cmd, logMap, output]
 }

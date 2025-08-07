@@ -12,18 +12,18 @@ process SELECT_PAIRS {
     container params.general.hichContainer
 
     input:
-    tuple val(id), path(pairs), val(selectPairs_opts)
+    tuple val(id), path(pairs), val(fragmentIndex), val(select_pairs_opts)
 
     output:
     tuple val(id), path(output)
 
     shell:
-    (cmd, logMap, output) = buildCmd(id, pairs, selectPairs_opts, task.cpus)
+    (cmd, logMap, output) = buildCmd(id, pairs, fragmentIndex, select_pairs_opts, task.cpus)
     withLog(cmd, logMap)
 
     stub:
     
-    (cmd, logMap, output) = buildCmd(id, pairs, selectPairs_opts, task.cpus)
+    (cmd, logMap, output) = buildCmd(id, pairs, fragmentIndex, select_pairs_opts, task.cpus)
     stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 }

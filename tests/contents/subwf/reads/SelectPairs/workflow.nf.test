@@ -17,14 +17,15 @@ nextflow_workflow {
                 onlyTrans = [onlyTrans: true]
                 strandDist = [minDistFR: 1, minDistRF: 2, minDistFF: 3, minDistRR: 4]
                 discardSingleFrag = [discardSingleFrag: true]
-                pairsDrop = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.drop.pairs.gz")
+                pairsDrop = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.fragtag.drop.pairs.gz")
                 pairsNoDrop = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.noDrop.pairs.gz")
 
                 samples = [
-                    [id: 1, latestPairs: pairsDrop, selectPairs_opts: [filters: pairTypes + onlyCis + strandDist]],
-                    [id: 2, latestPairs: pairsNoDrop, selectPairs_opts: [filters: onlyTrans]],
+                    [id: 1, latestPairs: pairsDrop, select_pairs_opts: [filters: pairTypes + onlyCis + strandDist]],
+                    [id: 2, latestPairs: pairsNoDrop, select_pairs_opts: [filters: onlyTrans]],
                     [id: 3, latestPairs: pairsDrop],
-                    [id: 4, latestPairs: pairsDrop, selectPairs_opts: [filters: null]],
+                    [id: 4, latestPairs: pairsDrop, select_pairs_opts: [filters: null]],
+                    [id: 5, latestPairs: pairsDrop, fragmentIndex: "$projectDir/tests/assets/downloads/fragmentIndex/hg38_DdeI,DpnII.bed"],
                 ]
                 input[0] = channel.fromList(samples)
                 """
@@ -34,8 +35,7 @@ nextflow_workflow {
         then {
             assert workflow.success
             with (workflow.out) {
-                assert samples.collect{it.selectPairs}.findAll{it}.size() == 2
-                assert samples.size() == 4
+                assert samples.collect{it.selectPairs}.findAll{it}.size() == 5
             }
         }
 
