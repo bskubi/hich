@@ -18,7 +18,7 @@ workflow Align {
                 if (!it.alignerIndexDir) {
                     error("alignerIndexDir is null for sample ${it}")
                 }
-                if (!it.getFastq(it)) {
+                if (!getFastq(it)) {
                     error("datatype is 'fastq' but no fastq files found for sample ${it}")
                 }
             }
