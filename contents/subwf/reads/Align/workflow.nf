@@ -21,6 +21,7 @@ workflow Align {
                 if (!getFastq(it)) {
                     error("datatype is 'fastq' but no fastq files found for sample ${it}")
                 }
+                it
             }
             | map{tuple(it.id, it.aligner, it.alignerIndexDir, it.alignerIndexPrefix, getFastq(it), it.align_opts, it.minMapq)}
             | ALIGN
