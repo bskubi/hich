@@ -14,6 +14,14 @@ workflow Align {
 
         samples
             | filter {it.datatype == "fastq"}
+            | map{
+                if (!it.alignerIndexDir) {
+                    error("alignerIndexDir is null for sample ${it}")
+                }
+                if (!it.getFastq(it)) {
+                    error("datatype is 'fastq' but no fastq files found for sample ${it}")
+                }
+            }
             | map{tuple(it.id, it.aligner, it.alignerIndexDir, it.alignerIndexPrefix, getFastq(it), it.align_opts, it.minMapq)}
             | ALIGN
             | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
