@@ -1,3 +1,6 @@
 FROM mambaorg/micromamba:ubuntu22.04
 RUN micromamba install -y -c conda-forge -c bioconda -c cpfarrell samtools bwa bwa-mem2 bsbolt bwameth
+ARG MAMBA_DOCKERFILE_ACTIVATE=1
+ENV PATH="/opt/conda/bin:${PATH}"
 CMD ["bash"]
+

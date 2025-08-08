@@ -2,4 +2,5 @@ FROM mambaorg/micromamba:ubuntu22.04
 COPY hich_tools.yml .
 RUN micromamba install -y -f hich_tools.yml
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
+ENV PATH="/opt/conda/bin:${PATH}"
 CMD ["bash"]

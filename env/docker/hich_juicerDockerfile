@@ -1,4 +1,5 @@
 FROM mambaorg/micromamba:ubuntu22.04
 RUN micromamba install -y -c conda-forge -c bioconda hcc::juicer
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
+ENV PATH="/opt/conda/bin:${PATH}"
 CMD ["juicer_tools"]
