@@ -125,79 +125,27 @@ workflow UpdateSamples
     samples
     | map {
         sample ->
-        
-        ////////////////////////////////////////////////////
-        // Input validation for the sample.
-        // 1. Set up a humid run if specified
-        // 2. Add default params
-        // 3. Set sample datatype
-        // 4. Set sample id
-        // 5. If the sample id matches any ConfigMap "ids" lists under
-        //    params, update the sample
-        // 6. Convert string paths to data files to file objects
 
-        ///////////////////////////////
-        // Humid run
-        // Set the n_reads parameter to take only the first n_reads of the input file
-        // Currently only works on fastq
-        if (params.get("humid")) {
-            useDefaultHumidReadCount     = params.humid instanceof Boolean
-            defaultHumidReadCount        = params.general.humidDefault
-            sampleSpecificHumidReadCount = params.get("humid")
-
-            n_reads = useDefaultHumidReadCount ? defaultHumidReadCount : sampleSpecificHumidReadCount
-            
-            if (n_reads > 0 && n_reads instanceof Integer) {
-                sample += ["n_reads": n_reads]
-            }
-            else {
-                error("On humid run, n_reads was ${n_reads}, but must be a positive integer.")
-            }
-        }
-
-        ///////////////////////////////////////////////////////
-        // Default params
-        // In params.defaults, we can set default values to be associated
-        // with sample HashMap keys if the key is not specified by the user.
-        // This checks each of the keys listed in params.defaults.
-        // If the key is not in the sample HashMap (i.e. not specified by the user)
-        // then set it to the default value.
         params.defaults.each {
             key, defaultVal ->
 
             key in sample ? null : (sample += [(key):defaultVal])
         }
         
-
-        ////////////////////////////////////
-        // Ensure that sample has a 'datatype' entry (fastq, sambam, or pairs)
-        // This refers to the original input datatype.
         sample += ["datatype": getDatatype(sample)]
 
 
-        /*
-            Ensure that the condition, biorep, and techrep are either null
-            or that they have at least one non-whitespace character.
-        */
         if (sample.condition) sample += ["condition": sample.get("condition").toString().trim()]
         if (sample.biorep) sample += ["biorep": sample.get("biorep").toString().trim()]
         if (sample.techrep) sample += ["techrep": sample.get("techrep").toString().trim()]
 
-        // Set a marker for the aggregationLevel
         sample += ["aggregateLevel" : aggregateLevelLabel(sample)]
         
-        /////////////////////////////////
-        // If an id is not explicitly given by the user for the sample,
-        // Or is just whitespace, create one based on its condition, biorep, and techrep
         if (!truthyString(sample.id)) {
-            // Potential identifiers to build the id string
-            // trim them to ensure the user doesn't accidentally leave whitespace in the cell
-            // and have this create weird problems down the line.
             condition = sample.get('condition') ? sample.condition : null
             biorep = sample.get('biorep') ? sample.biorep : null
             techrep = sample.get('techrep') ? sample.techrep : null
 
-            // Ensure that at least one identifier is present
             if (!condition && !biorep && !techrep) {
                 error (
                     "Samples with no explicit 'id' must be given at least a condition, biorep, or techrep " +
@@ -209,18 +157,9 @@ workflow UpdateSamples
             sample += ["id":makeID(sample, false)]
         }
 
-        //////////////////////////////////////////////////////////////
-        // ConfigMaps
-        // It's possible to define sub-ConfigMaps within params that are
-        // sample id-specific, which offsets another way to define settings
-        // for particular sample subsets. This can be useful for defining
-        // sample settings that are arrays or non-flat structures like HashMaps.
-        // These will replace any default values or values in the sample file.
         params.each {
             k, bundle ->
 
-            // Overwrite previous params with id-specific params
-            // Priority is to later-specified params in nextflow.config
             bundleExists = bundle
             bundleIsConfigMap = bundle.getClass() == nextflow.config.ConfigMap
             sampleID = sample.id.toString()
@@ -230,24 +169,16 @@ workflow UpdateSamples
                 bundleIDStrings = bundle.ids.collect{it.toString()}
                 bundleAppliesToSample = sampleID in bundleIDStrings
 
-                // Apply the update to samples whose id matches the "ids"
-                // list for the params bundle.
                 bundleAppliesToSample ? (sample += bundleParams) : null
             }
         }
         
-        ///////////////////////////////////////////////////////////////
-        // Convert string paths to data files into file objects
         ingest = ["genomeReference", "chromsizes", "alignerIndexDir", "fragmentIndex", "fastq1", "fastq2", "sambam", "pairs", "hic", "mcool"]
         ingest.each {
             key ->
-            // This should give an error if the file does not exist
-            // or if there is no data file specified for the sample.
             if (truthyString(sample[key])) {
-                // Convert to a file
                 fileObj = smartFileFinder(sample[key].toString())
                 
-                // Check that the file exists
                 if (!fileObj.exists()) {
                     error "In sample with id ${sample.id}, ${key} is specified as ${value} but does not exist."
                 }
@@ -258,10 +189,8 @@ workflow UpdateSamples
             }
         }
 
-        // Put sample first in the HashMap just for convenience
         sample = ["id":sample.id] + sample
         
-        // Emit the updated sample
         sample
     }
     | set{samples}
@@ -275,30 +204,17 @@ workflow CheckIDs {
     samples
 
     main:
-    // Validate that all samples have distinct truthyString values of 'id'.
-    // Collect them into a single list of HashMaps.
-    // Extract the list of id values
-    // Ensure that every id is a truthyString and that the size of the set
-    // equals the size of the list to confirm they are all unique.
+
     samples
-        | toList   // Collect all samples in the channel to a list
+        | toList
         | map {
             sampleHashMaps ->
 
-            //sampleHashMaps is a list of all the sample HashMaps in the channel.
-            // Extract all the raw ids from the sample HashMaps
             ids = sampleHashMaps.collect{sample -> sample.id}
-
-            // Get the set of unique truthyString ids from the extracted ids
             allTruthy = ids.every{id -> truthyString(id)}
-
-            // Ensure that there's an equal number of unique truthyString ids
-            // as in the original id list, ensuring that all ids are unique
-            // and are truthyStrings.
             allUniqueIDs = ids.size() == ids.toSet().size()
             
             if (!allUniqueIDs || !allTruthy) {
-                // If there are any non-truthyString ids or duplicates, raise an error.
                 idCounts = ids.countBy{it}
                 error ("Not all samples have unique ids or some ids are blank. The count of each id is: ${idCounts}.\n\n" +
                     
