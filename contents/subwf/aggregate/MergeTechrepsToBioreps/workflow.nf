@@ -12,7 +12,7 @@ workflow MergeTechrepsToBioreps {
     if (!skip(myName) && !skip("MergePairs")) {
         samples
             | branch {
-                yes: it.aggregateLevel == "techrep" && it.mergeTechrepToBiorep && !it.skipMerge && !it.skipTechrepMerge
+                yes: it.aggregateLevel == "techrep" && !it.skipMerge && !it.skipTechrepMerge
                 no: true
             }
             | set {mergeTechreps}

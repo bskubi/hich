@@ -11,7 +11,7 @@ workflow MergeBiorepsToConditions {
     if (!skip(myName) && !skip("MergePairs")) {
         samples
             | branch {
-                yes: it.aggregateLevel == "biorep" && !it.skipMerge && !it.skipBiorepMerge && it.mergeBiorepToCondition
+                yes: it.aggregateLevel == "biorep" && !it.skipMerge && !it.skipBiorepMerge
                 no: true
             }
             | set {mergeBioreps}

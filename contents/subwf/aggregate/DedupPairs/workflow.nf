@@ -15,13 +15,10 @@ workflow DedupPairs {
         samples
         | branch {
             yes: (
-                it.dedupMethod 
-                || it.dedupMaxMismatch != null
-                || it.dedupSingleCell 
-                || it.dedup
-                || (it.aggregateLevel == "techrep" && it.dedupTechreps)
-                || (it.aggregateLevel == "biorep" && it.dedupBioreps)
-                || (it.aggregateLevel == "condition" && it.dedupConditions)
+                (it.aggregateLevel in ["techrep", "biorep"])
+                && !(it.aggregateLevel == "techrep" && it.skipDedupTechreps)
+                && !(it.aggregateLevel == "biorep" && it.skipDedupBioreps)
+                && !(it.aggregateLevel in ["techrep", "biorep"] && it.skipDedup)
             )
             no: true
         }

@@ -81,8 +81,8 @@ def formatWriteChroms(chroms) {
     return [chroms, chromsFile]
 }
 
-def buildFilters(filters) {
-    filters = filters ?: [:]
+def buildPairtoolsSelectFilters(default_filters, user_filters) {
+    def filters = (default_filters ?: [:]) + (user_filters ?: [:])
     def pairTypes = formatKeepPairTypes(filters.keepPairTypes)
     def cisTrans = formatCisTrans(filters.onlyCis, filters.onlyTrans)
     def strandDist = formatStrandDistFilters(filters.minDistFR, filters.minDistRF, filters.minDistFF, filters.minDistRR)
@@ -110,10 +110,11 @@ def buildCmd(id, pairs, fragmentIndex, select_pairs_opts, cpus) {
     def pairtools_select_opts = select_pairs_opts?.findAll{argName, argVal -> argName != "filters"}
     pairtools_select_opts = updateOutputPaths(id, pairtools_select_opts)
 
-    if (fragmentIndex && !("discardSingleFrag" in pairtools_select_filters)) {
-        pairtools_select_filters += [discardSingleFrag: true]
-    }
-    def filters = buildFilters(pairtools_select_filters)
+    def default_pairtools_select_filters = [
+        discardSingleFrag: fragmentIndex as Boolean,
+        keepPairTypes: ["UU", "UR", "RU"]
+    ]
+    def filters = buildPairtoolsSelectFilters(default_pairtools_select_filetrs, pairtools_select_filters)
     def (write_chroms, chroms_file) = formatWriteChroms(pairtools_select_filters.chroms)
     
     def default_pairtools_select_opts = ["--output": output, "--nproc-in": cpus, "--nproc-out": cpus]

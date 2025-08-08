@@ -14,18 +14,18 @@ nextflow_workflow {
                 pairs = file("$projectDir/tests/assets/pairs/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1.drop.pairs.gz")
 
                 dedupSamples = [
-                    [id: "1", latestPairs: pairs, aggregateLevel: "techrep", dedupTechreps: true],
-                    [id: "2", latestPairs: pairs, aggregateLevel: "biorep", dedupBioreps: true],
-                    [id: "3", latestPairs: pairs, aggregateLevel: "condition", dedupConditions: true],
-                    [id: "4", latestPairs: pairs, dedup: true],
-                    [id: "5", latestPairs: pairs, dedupMaxMismatch: 0],
-                    [id: "6", latestPairs: pairs, dedupMethod: "sum"]
+                    [id: "1", latestPairs: pairs, aggregateLevel: "techrep"],
+                    [id: "2", latestPairs: pairs, aggregateLevel: "biorep"],
+                    [id: "3", latestPairs: pairs, aggregateLevel: "techrep"],
+                    [id: "4", latestPairs: pairs, aggregateLevel: "techrep", dedupMaxMismatch: 0],
+                    [id: "5", latestPairs: pairs, aggregateLevel: "techrep", dedupMethod: "sum"]
                 ]
                 ignoreSamples = [
-                    [id: "7", latestPairs: pairs],
-                    [id: "8", latestPairs: pairs, aggregateLevel: "techrep", dedupTechreps: false],
-                    [id: "9", latestPairs: pairs, aggregateLevel: "biorep", dedupTechreps: true],
-                    [id: "10", latestPairs: pairs, aggregateLevel: "biorep", dedupTechreps: true]
+                    [id: "6", latestPairs: pairs, aggregateLevel: "condition"],
+                    [id: "7", latestPairs: pairs, skipDedup: true],
+                    [id: "8", latestPairs: pairs, aggregateLevel: "techrep", skipDedupTechreps: true],
+                    [id: "9", latestPairs: pairs, aggregateLevel: "biorep", skipDedupBioreps: true],
+                    [id: "10", latestPairs: pairs, aggregateLevel: "biorep", skipDedup: true]
                 ]
 
                 samples = dedupSamples + ignoreSamples
@@ -40,7 +40,7 @@ nextflow_workflow {
             with (workflow.out) {
                 assert samples.size() == 10
                 def dedupPairs = samples.collect{it.dedupPairs}.findAll{it}
-                assert dedupPairs.size() == 6
+                assert dedupPairs.size() == 5
             }
         }
 
