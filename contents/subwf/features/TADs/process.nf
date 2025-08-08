@@ -22,6 +22,6 @@ process TADS {
 
     stub:
     (cmd, logMap, boundariesBed, boundariesGff, domainsBed, scoreBedgraph, tadScoreBm) = buildCmd(id, mcool, tads_opts, task.cpus)
-    stub = "touch '${output.boundariesBed}' '${output.boundariesGff}' '${output.domainsBed}' '${output.scoreBedgraph}' '${output.tadScoreBm}'"
+    stub = "touch '${boundariesBed}' '${boundariesGff}' '${domainsBed}' '${scoreBedgraph}' '${tadScoreBm}'"
     stubLog(stub, cmd, logMap)
 }

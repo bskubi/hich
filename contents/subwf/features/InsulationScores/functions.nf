@@ -7,7 +7,8 @@ def buildCmdError(id, mcool, insulation_scores_opts, message) {
 
 def buildCmd(id, mcool, insulation_scores_opts) {
     def tsv = "${id}_insulation.tsv"
-    def window = insulation_scores_opts?.window
+    def resolution = insulation_scores_opts?.resolution ?: 10000
+    def window = insulation_scores_opts?.window ?: resolution * 10
     def bw = "${tsv}.${window}.bw"
     def output = [
         tsv: tsv, 
@@ -23,7 +24,7 @@ def buildCmd(id, mcool, insulation_scores_opts) {
         output: output
     ]
     def cooltools_insulation_opts = insulation_scores_opts?.cooltools_insulation_opts ?: [:]
-    def resolution = insulation_scores_opts?.resolution ?: 10000
+    
     
     assert resolution, buildCmdError(id, mcool, insulation_scores_opts, "resolution invalid.")
     assert window, buildCmdError(id, mcool, insulation_scores_opts, "window invalid.")

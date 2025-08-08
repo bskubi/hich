@@ -15,7 +15,7 @@ include {CompartmentScores} from './subwf/features/CompartmentScores/workflow.nf
 include {InsulationScores} from './subwf/features/InsulationScores/workflow.nf'
 include {TADs} from './subwf/features/TADs/workflow.nf'
 include {Loops} from './subwf/features/Loops/workflow.nf'
-include {DifferentialLoops} from './subwf/features/features/DifferentialLoops/workflow.nf'
+include {DifferentialLoops} from './subwf/features/DifferentialLoops/workflow.nf'
 
 include {emptyOnLastStep; skip} from './subwf/util/cli.nf'
 
@@ -25,7 +25,7 @@ workflow HichWorkflow {
         | Setup
 
         | Align
-        | SambamToPairs
+        | ParseToPairs
         | IngestPairs
         | TagRestrictionFragments
         | SelectPairs

@@ -114,7 +114,7 @@ def buildCmd(id, pairs, fragmentIndex, select_pairs_opts, cpus) {
         discardSingleFrag: fragmentIndex as Boolean,
         keepPairTypes: ["UU", "UR", "RU"]
     ]
-    def filters = buildPairtoolsSelectFilters(default_pairtools_select_filetrs, pairtools_select_filters)
+    def filters = buildPairtoolsSelectFilters(default_pairtools_select_filters, pairtools_select_filters)
     def (write_chroms, chroms_file) = formatWriteChroms(pairtools_select_filters.chroms)
     
     def default_pairtools_select_opts = ["--output": output, "--nproc-in": cpus, "--nproc-out": cpus]
@@ -138,8 +138,6 @@ def buildCmd(id, pairs, fragmentIndex, select_pairs_opts, cpus) {
     cmd = cmd.findAll{it}
     cmd = cmd.join(" ")
     logMap.cmd = cmd
-    print(cmd)
-
 
     return [cmd, logMap, output]
 }

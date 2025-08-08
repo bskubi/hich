@@ -19,7 +19,7 @@ def buildCmd(id, pairs, chromsizes, matrix_opts, minMapq, memory, cpus) {
     memory = validateMemory(memory, 2, 8)
 
     def juicer_tools_pre_opts = matrix_opts?.juicer_tools_pre ?: [:]
-    if (minMapq instanceof Integer && !juicer_tools_pre_opts.contains("-q")) {
+    if (minMapq instanceof Integer && !juicer_tools_pre_opts.containsKey("-q")) {
         juicer_tools_pre_opts += ["-q":minMapq]
     }
     def resolutions = matrix_opts?.resolutions

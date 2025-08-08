@@ -19,6 +19,12 @@ workflow CompartmentScores {
             filterSamplesByStrategy(samples, strategy)
                 | map{
                     sample ->
+                    if (!sample.genomeReference) {
+                        error("No value for sample id '${sample.id}' genomeReference")
+                    }
+                    if (!sample.mcool) {
+                        error("No value for sample id '${sample.id}' mcool")
+                    }
                     tuple(sample.id, sample.genomeReference, sample.mcool, analysisPlan)
                 }
                 | concat(processInputs)

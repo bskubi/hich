@@ -10,7 +10,7 @@ workflow HicMatrix {
     myName = "HicMatrix"
     if (!skip(myName)) {
         samples
-            | filter{it.makeHicFileFormat && it.latestPairs && !it.hic}
+            | filter{!it.skipHicFileFormat && it.latestPairs && !it.hic}
             | map{tuple(it.id, it.latestPairs, it.chromsizes, it.matrix_opts, it.minMapq)}
             | JUICER_TOOLS_PRE
             | map{

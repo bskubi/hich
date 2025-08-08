@@ -12,7 +12,7 @@ workflow McoolMatrix {
     if (!skip(myName)) {
 
         samples
-            | filter{it.makeMcoolFileFormat && it.latestPairs && !it.mcool}
+            | filter{!it.skipMcoolFileFormat && it.latestPairs && !it.mcool}
             | map{tuple(it.id, it.latestPairs, it.chromsizes, it.assembly, it.matrix_opts)}
             | MCOOL_MATRIX
             | map{
