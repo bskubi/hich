@@ -23,7 +23,7 @@ def buildCmd(id, mcool, insulation_scores_opts) {
         output: output
     ]
     def cooltools_insulation_opts = insulation_scores_opts?.cooltools_insulation_opts ?: [:]
-    def resolution = insulation_scores_opts?.resolution
+    def resolution = insulation_scores_opts?.resolution ?: 10000
     
     assert resolution, buildCmdError(id, mcool, insulation_scores_opts, "resolution invalid.")
     assert window, buildCmdError(id, mcool, insulation_scores_opts, "window invalid.")

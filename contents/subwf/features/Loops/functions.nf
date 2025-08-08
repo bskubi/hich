@@ -10,7 +10,8 @@ def buildCmd(id, matrix, loops_opts) {
 
     def default_mustache_opts = [
         "-f": matrix,
-        "-o": output
+        "-o": output,
+        "-r": 10000
     ]
     def mustache_opts = loops_opts?.mustache_opts ?: [:]
     logMap += [default_mustache_opts:default_mustache_opts, mustache_opts:mustache_opts]

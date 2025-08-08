@@ -13,7 +13,8 @@ def buildCmd(planName, mcools, hicrep_combinations_opts, cpus) {
     ]
 
     def default_hich_matrix_hicrep_opts = [
-        "--n_proc": cpus
+        "--n_proc": cpus,
+        "-r": [10000]
     ]
     def hich_matrix_hicrep_opts = hicrep_combinations_opts?.hich_matrix_hicrep_opts ?: [:]
     def remap = [

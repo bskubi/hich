@@ -20,16 +20,19 @@ def buildCmd(id, mcool, tads_opts, cpus) {
         output: output
     ]
 
-    def resolution = tads_opts?.resolution ?: null
+    def resolution = tads_opts?.resolution ?: 10000
     assert resolution, buildCmdError(id, mcool, tads_opts, "tads_opts.resolution required but was '${resolution}'.")
 
     def default_hicfindtads_opts = [
         "--outPrefix": id,
         "--matrix": "${mcool}::/resolutions/${resolution}",
         "-p": cpus,
-        "--correctForMultipleTesting": "bonferroni"
+        "--correctForMultipleTesting": "bonferroni",
+        "--minDepth": resolution * 4,
+        "--maxDepth": resolution * 8,
+        "--step": resolution
     ]
-    def hicfindtads_opts = tads_opts?.hicFindTADs ?: [:]
+    def hicfindtads_opts = tads_opts?.hicfindtads_opts ?: [:]
     def remap = ["--matrix": "-m"]
     def final_hicfindtads_opts = buildCLIOpts(default_hicfindtads_opts, hicfindtads_opts, remap, null)
     def cmd = "hicFindTADs ${final_hicfindtads_opts}"

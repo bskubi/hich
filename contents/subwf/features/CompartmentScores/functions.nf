@@ -15,14 +15,14 @@ def buildCmd(id, genomeReference, matrix, compartment_scores_opts) {
     ]
 
     def out_prefix = "${id}_compartments"
-    def resolution = compartment_scores_opts?.resolution ?: null
+    def resolution = compartment_scores_opts?.resolution ?: 10000
     assert resolution, "Received '${resolution}' for required compartment_scores_opts.resolution parameter at which compartment scores are called."
 
     def default_cooltools_eigs_cis_opts = [
         "--n-eigs": 3,
         "--phasing-track": phasing_track,
         "--out-prefix": out_prefix,
-        "--bigwig": "${matrix}::/resolutions/${resolution}"
+        "--bigwig": true
     ]
     def cooltools_eigs_cis_opts = compartment_scores_opts?.cooltools_eigs_cis_opts ?: [:]
     logMap += [default_cooltools_eigs_cis_opts: default_cooltools_eigs_cis_opts, cooltools_eigs_cis_opts: cooltools_eigs_cis_opts]
@@ -32,7 +32,8 @@ def buildCmd(id, genomeReference, matrix, compartment_scores_opts) {
         "--out-prefix": "-o"
     ]
     def final_cooltools_eigs_cis_opts = buildCLIOpts(default_cooltools_eigs_cis_opts, cooltools_eigs_cis_opts, remap, null)
-    def cmd = "hich fasta gc ${genomeReference} ${resolution} > ${phasing_track} && cooltools eigs-cis ${final_cooltools_eigs_cis_opts}"
+
+    def cmd = "hich fasta gc ${genomeReference} ${resolution} > ${phasing_track} && cooltools eigs-cis ${final_cooltools_eigs_cis_opts} ${matrix}::/resolutions/${resolution}"
     logMap.cmd = cmd
 
     return [cmd, logMap, output]
