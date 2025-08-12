@@ -8,6 +8,7 @@ process HICREP_COMBINATIONS {
 
     conda "$projectDir/env/dev_env.yml"
     container params.general.hichContainer
+    label 'fullNode'
     
     input:
     tuple val(planName), path(mcools), val(hicrep_combinations_opts)
