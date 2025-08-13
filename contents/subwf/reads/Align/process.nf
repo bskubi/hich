@@ -6,7 +6,7 @@ process ALIGN {
                saveAs: {params.general.publish.align ? it : null},
                mode: params.general.publish.mode
     
-    label 'whenLocal_allConsuming'
+    label 'fullNodeLongTime'
     label 'align'
     tag "$id"
     conda "$projectDir/env/dev_env.yml"

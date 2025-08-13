@@ -43,10 +43,11 @@ nextflow_workflow {
                     common + bwaMem2 + stdPaired + [id: "4"],
                     common + bwaMem2 + stdSingle + [id: "5"],
                     common + bwaMem2 + stdInterleaved + [id: "6"],
+                    /*
                     common + bwameth + metPaired + [id: "7"],
                     common + bwameth + metSingle + [id: "8"],
                     common + bwameth + metInterleaved + [id: "9"],
-                    /*
+                    
                     common + bwamethMem2 + metPaired + [id: "10"],
                     common + bwamethMem2 + metSingle + [id: "11"],
                     common + bwamethMem2 + metInterleaved + [id: "12"]

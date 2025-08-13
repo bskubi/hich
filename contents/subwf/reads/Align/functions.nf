@@ -21,7 +21,11 @@ def buildCmd(aligner, id, indexDir, indexPrefix, fastq, align_opts, minMapq, cpu
     def alignerCmd = alignerCmds[aligner] ?: aligner
     def args = fastq.findAll{it}
     def index = "${indexDir}/${indexPrefix}"
-    def default_bwa_opts = ["-t": cpus, "-p": true]
+    def default_bwa_opts = ["-t": cpus]
+    align_opts = align_opts ?: [:]
+    if (fastq.size() == 1) {
+        default_bwa_opts += ["-p": true]
+    }
     def bwa_opts = null
     def remap = null
     if (aligner in ["bwameth", "bwameth-mem2"]) {
@@ -35,8 +39,11 @@ def buildCmd(aligner, id, indexDir, indexPrefix, fastq, align_opts, minMapq, cpu
             "--interleaved": "-p"
         ]
     } else {
-        default_bwa_opts += ["-S": true, "-P": true, "-5": true, "-M": true]
+        default_bwa_opts += ["-S": true, "-P": true, "-5": true, "-M": true, "-T": 0]
         bwa_opts = align_opts?.bwa_mem_opts ?: [:]
+        if (minMapq instanceof Integer && align_opts["filterMAPQ"]) {
+            bwa_opts += ["-T": minMapq]
+        }
         remap = [:]
         args = [index] + args
     }

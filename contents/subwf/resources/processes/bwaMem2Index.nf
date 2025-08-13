@@ -2,7 +2,7 @@ process BwaMem2Index {
     publishDir params.general.publish.alignerIndex ?: "results",
                saveAs: {params.general.publish.alignerIndex ? it : null},
                mode: params.general.publish.mode
-    label 'whenLocal_allConsuming'
+    label 'alignment'
     label 'index'
     conda "$projectDir/env/dev_env.yml"
     container params.general.alignmentContainer

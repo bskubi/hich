@@ -2,7 +2,7 @@ process BwaMemIndex {
     publishDir params.general.publish.alignerIndex ?: "results",
                saveAs: {params.general.publish.alignerIndex ? it : null},
                mode: params.general.publish.mode
-    label 'whenLocal_allConsuming'
+    label 'fullNodeLongTime'
     label 'index'
     memory {15.GB + 10.GB * (task.attempt - 1)}
     conda "$projectDir/env/dev_env.yml"
