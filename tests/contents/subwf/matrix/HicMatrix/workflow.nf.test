@@ -22,8 +22,8 @@ nextflow_workflow {
                 ]
 
                 samples = [
-                    [id: "1", makeHicFileFormat: true] + common,
-                    [id: "2", makeHicFileFormat: false] + common
+                    [id: "1", skipHicFileFormat: false] + common,
+                    [id: "2", skipHicFileFormat: true] + common
                 ]
                 input[0] = channel.fromList(samples)
                 """
