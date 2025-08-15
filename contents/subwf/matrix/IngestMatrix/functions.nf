@@ -17,7 +17,8 @@ def buildCmdMcoolToHic(id, mcoolFile, ingest_matrix_opts, cpus) {
     cpus = cpus >= 2 ? cpus : 2
 
     def default_hictk_convert_mcool_to_hic_opts = [
-        "-t": cpus
+        "-t": cpus,
+        "--tmpdir":"."
     ]
     def hictk_convert_mcool_to_hic_opts = ingest_matrix_opts?.hictk_convert_mcool_to_hic_opts ?: [:]
     def remap = [
@@ -49,7 +50,9 @@ def buildCmdHicToMcool(id, hicFile, ingest_matrix_opts) {
             ingest_matrix_opts: ingest_matrix_opts
         ]
     ]
-    def default_hictk_convert_hic_to_mcool_opts = [:]
+    def default_hictk_convert_hic_to_mcool_opts = [
+        "--tmpdir":"."
+    ]
     def hictk_convert_hic_to_mcool_opts = ingest_matrix_opts?.hictk_convert_hic_to_mcool_opts ?: [:]
     def remap = [
         "--resolutions": "-r",

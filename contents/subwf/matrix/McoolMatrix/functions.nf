@@ -40,7 +40,8 @@ def buildCmd(id, pairs, chromsizes, assembly, matrix_opts, cpus) {
         "-c1": 2,
         "-p1": 3,
         "-c2": 4,
-        "-p2": 5
+        "-p2": 5,
+        "--temp-dir": "."
     ]
     def cooler_cload_pairs_opts = matrix_opts?.cooler_cload_pairs ?: [:]
     def bestResolution = resolutions.min()

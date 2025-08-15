@@ -31,7 +31,8 @@ def buildCmd(id, pairs, chromsizes, matrix_opts, minMapq, memory, cpus) {
     def default_juicer_tools_pre_opts = [
         "-Xms${memory-2}g": true, 
         "-Xmx${memory}g": true, 
-        "--threads": cpus
+        "--threads": cpus,
+        "-t":"."
     ]
     def final_juicer_tools_pre_opts = buildCLIOpts(default_juicer_tools_pre_opts, juicer_tools_pre_opts, [:], null)
     def args = [pairs, output, chromsizes].collect{"'${it}'"}.join(" ")

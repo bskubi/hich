@@ -34,7 +34,13 @@ def buildCmd(id, pairs, chromsizes, ingest_pairs_opts, cpus, memory) {
 
     def output = "${id}.pairs.gz"
     logMap += [output: [pairs: output]]
-    def default_pairtools_sort_opts = ["--output":output, "--memory":"${memoryV}G", "--nproc-in":cpus, "--nproc-out":cpus]
+    def default_pairtools_sort_opts = [
+        "--output":output, 
+        "--memory":"${memoryV}G", 
+        "--nproc-in":cpus, 
+        "--nproc-out":cpus,
+        "--tmpdir":"."
+    ]
     def pairtools_sort_opts = ingest_pairs_opts?.pairtools_sort_opts ?: [:]
     final_pairtools_sort_opts = buildCLIOpts(default_pairtools_sort_opts, pairtools_sort_opts, [:], null)
     def pairtools_sort_cmd = "pairtools sort ${final_pairtools_sort_opts}"
