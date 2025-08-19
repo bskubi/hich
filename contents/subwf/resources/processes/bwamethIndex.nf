@@ -3,7 +3,6 @@ process BwamethIndex {
                saveAs: {params.general.publish.alignerIndex ? it : null},
                mode: params.general.publish.mode
     label 'fullNodeLongTime'
-    label 'index'
     memory {15.GB + 10.GB * (task.attempt - 1)}
     conda "$projectDir/env/dev_env.yml"
     container params.general.alignmentContainer
