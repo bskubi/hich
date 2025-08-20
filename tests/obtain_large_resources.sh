@@ -13,21 +13,30 @@ wget --no-clobber -O "assets/downloads/genomeReference/mm10.fa.gz" "https://www.
 
 mkdir -p assets/index/bwa
 cd assets/index/bwa
-bwa index ../../downloads/genomeReference/hg38.fa.gz
-bwa index ../../downloads/genomeReference/mm10.fa.gz
+ln -s ../../downloads/genomeReference/hg38.fa.gz hg38
+ln -s ../../downloads/genomeReference/mm10.fa.gz mm10
+bwa index hg38
+bwa index mm10
 cd ../../..
+
 mkdir -p assets/index/bwa-mem2
 cd assets/index/bwa-mem2
-bwa-mem2 index ../../downloads/genomeReference/hg38.fa.gz
-bwa-mem2 index ../../downloads/genomeReference/mm10.fa.gz
+ln -s ../../downloads/genomeReference/hg38.fa.gz hg38
+ln -s ../../downloads/genomeReference/mm10.fa.gz mm10
+bwa-mem2 index hg38
+bwa-mem2 index mm10
 cd ../../..
+
 mkdir -p assets/index/bwameth
 cd assets/index/bwameth
-bwameth.py index ../../downloads/genomeReference/mm10.fa.gz
+ln -s ../../downloads/genomeReference/mm10.fa.gz mm10
+bwameth.py index mm10
 cd ../../..
+
 mkdir -p assets/index/bwameth-mem2
 cd assets/index/bwameth-mem2
-bwameth.py index-mem2 ../../downloads/genomeReference/mm10.fa.gz
+ln -s ../../downloads/genomeReference/mm10.fa.gz mm10
+bwameth.py index-mem2 mm10
 cd ../../..
 
 mkdir -p assets/fragmentIndex
