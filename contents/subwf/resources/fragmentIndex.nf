@@ -4,7 +4,7 @@ include {isExistingFile} from '../util/files.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 include {asList; cmdList} from '../util/dataStructures.nf'
 
-process HichDigest {
+process HICH_FASTA_RE_FRAGMENTS {
     publishDir params.general.publish.fragmentIndex ? params.general.publish.fragmentIndex : "results",
                saveAs: {params.general.publish.fragmentIndex ? it : null},
                mode: params.general.publish.mode
@@ -48,7 +48,7 @@ workflow FragmentIndex {
             | map{it.fragmentIndex = it.fragmentIndex ?: "${it.assembly}_${it.restrictionEnzymes.replace(" ", "_")}.bed"; it}
             | map{tuple(it.genomeReference, it.genomeReference, it.restrictionEnzymes, it.fragmentIndex, it.assembly)}
             | unique
-            | HichDigest
+            | HICH_FASTA_RE_FRAGMENTS
             | map{genomeReference, restrictionEnzymes, fragmentIndex, assembly -> 
                 [genomeReference: file(genomeReference), restrictionEnzymes: restrictionEnzymes, fragmentIndex: fragmentIndex, assembly: assembly]}
             | set{result}

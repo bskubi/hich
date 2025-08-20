@@ -20,9 +20,7 @@ def buildCmd(id, pairs, chromsizes, assembly, matrix_opts, cpus) {
     ]
 
     def cooler_zoomify_opts = matrix_opts?.cooler_zoomify_opts ?: [:]
-    if (!matrix_opts?.resolutions && !cooler_zoomify_opts["-r"] && !cooler_zoomify_opts["--resolutions"]) {
-        buildCmdError(id, matrix_opts, "No matrix_opts.resolutions specified -- declare as list of resolutions, e.g. matrix_opts = [resolutions : [1000, 2000, 5000]].")
-    }
+
     def resolutions = matrix_opts?.resolutions ?: [100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000, 5000000]
     if ("--resolutions" in cooler_zoomify_opts) {
         resolutions = cooler_zoomify_opts["--resolutions"]

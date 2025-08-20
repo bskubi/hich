@@ -3,7 +3,7 @@ include {keyUpdate} from '../util/keyUpdate.nf'
 include {isExistingFile} from '../util/files.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
-process FaSize {
+process FASIZE {
     publishDir params.general.publish.chromsizes ? params.general.publish.chromsizes : "results",
                saveAs: {params.general.publish.chromsizes ? it : null},
                mode: params.general.publish.mode
@@ -41,7 +41,7 @@ workflow Chromsizes {
             | filter {!isExistingFile(it.chromsizes)}
             | map{tuple(it.genomeReference, it.genomeReference, it.assembly, "${it.assembly}.sizes")}
             | unique
-            | FaSize
+            | FASIZE
             | map{genomeReference, assembly, chromsizes -> [genomeReference: file(genomeReference), assembly: assembly, chromsizes: chromsizes]}
             | set{result}
         keyUpdate(samples, result, ["genomeReference", "assembly"]) | set{samples}

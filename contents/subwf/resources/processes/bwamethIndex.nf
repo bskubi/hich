@@ -1,4 +1,4 @@
-process BwamethIndex {
+process BWAMETH_INDEX {
     publishDir params.general.publish.alignerIndex ?: "results",
                saveAs: {params.general.publish.alignerIndex ? it : null},
                mode: params.general.publish.mode

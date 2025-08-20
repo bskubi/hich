@@ -3,7 +3,7 @@ include {keyUpdate} from '../util/keyUpdate.nf'
 include {isExistingFile} from '../util/files.nf'
 include {withLog; stubLog} from '../util/logs.nf'
 
-process StageGenomeReference {
+process STAGE {
     /*  When a URL is passed to a Nextflow function, the resource will be
         automatically downloaded and staged by Nextflow. This is a dummy
         function used to download a unique reference and intentionally has
@@ -97,7 +97,7 @@ workflow GenomeReference {
             }
             | map{tuple(it.assembly, it.genomeReference)}
             | unique
-            | StageGenomeReference
+            | STAGE
             | map{assembly, genomeReference -> [assembly: assembly, genomeReference: genomeReference]}
             | set{result}
 
