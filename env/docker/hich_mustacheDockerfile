@@ -2,11 +2,22 @@ FROM mambaorg/micromamba:ubuntu22.04
 RUN micromamba install -y -c conda-forge git
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 ENV PATH="/opt/conda/bin:${PATH}"
-RUN git clone https://github.com/ay-lab/mustache
 USER root
 RUN apt update
 RUN apt-get install -y libz-dev build-essential
-RUN micromamba env update -n base -f ./mustache/environment.yml
-RUN ln -s /tmp/mustache/mustache/mustache.py /usr/local/bin/mustache
-RUN ln -s /tmp/mustache/mustache/diff_mustache.py /usr/local/bin/diff_mustache                                                                                                                                    
+
+# Install to /src, not /tmp (default workdir), as
+# /tmp is wiped on conversion to apptainer
+WORKDIR /src
+RUN git clone https://github.com/ay-lab/mustache
+RUN micromamba env update -n base -f ./mustache/environment.yml                                         
+
+# We have to make mustache.py and diff_mustache.py runnable from
+# anywhere via i.e. python -m mustache.py. Given that containerization
+# managers have different approaches to dealing with environment
+# variables and working directories, the most universal solution
+# is to put /src/mustache/mustache into a .pth file.
+RUN micromamba run -n base python -c \
+    "import site; open(site.getsitepackages()[0] + '/mustache.pth', 'w').write('/src/mustache/mustache')"
+
 CMD ["bash"]
