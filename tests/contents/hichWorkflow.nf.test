@@ -6,15 +6,14 @@ nextflow_workflow {
     tag "priority3"
     tag "e2e"
 
-    test("stubMultiRepAkgolToMatrix") {
-        config "$baseDir/tests/assets/multirep_bulk.config"
-        options """-profile localPC -stub-run"""
+    test("SmokeTest_Stub_EndToEnd_LocalPC_MultiRep_Bulk") {
+        config "$baseDir/tests/assets/config/nextflow.config"
+        options """-profile localPC -stub-run -c $baseDir/tests/assets/params/default.config"""
         
 
         when {
             params {
-                sampleFile = "$baseDir/tests/assets/multirep_nocreate.tsv"
-                skip = "hicrep compartments insulation tads loops differentialLoops"
+                sampleFile = "$baseDir/tests/assets/sampleFile/akgol2021_hic3.0_2br_18tr.tsv"
             }
         }
 
