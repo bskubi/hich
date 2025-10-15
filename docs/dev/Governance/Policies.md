@@ -4,6 +4,8 @@
 3. Explicitly define
 	1. Scope
 	2. Definition of done
+4. Merge in branch
+5. Remove branch
 # Questions
 * Should we have separate "dev" and "main" branches?
 * What if highly related work outside pre-defined scope is discovered while working on an issue?
