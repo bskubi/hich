@@ -4,8 +4,8 @@ nextflow_process {
     script "contents/subwf/features/TADs/process.nf"
     process "TADS"
 
-    test("SmokeTest_Process_TADS") {
-        tag "priority1"
+    test("SmokeTest_ProcessTADS") {
+        tag "10to60s"
         when {
             process {
                 """

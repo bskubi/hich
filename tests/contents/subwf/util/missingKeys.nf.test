@@ -3,7 +3,7 @@ nextflow_workflow {
     name "Test Workflow missingKeys"
     script "contents/subwf/util/missingKeys.nf"
     workflow "missingKeys"
-    tag "priority1"
+    tag "1to3s"
 
     test("noMissingKeys") {
 

@@ -3,7 +3,7 @@ nextflow_workflow {
     name "end to end"
     script "contents/hichWorkflow.nf"
     workflow "HichWorkflow"
-    tag "priority3"
+    tag "10to60s"
     tag "e2e"
 
     test("SmokeTest_Stub_EndToEnd_LocalPC_MultiRep_Bulk") {

@@ -2,7 +2,7 @@ nextflow_workflow {
 
     name "Test Workflow groupToColumnar.nf"
     script "contents/subwf/util/groupToColumnar.nf"
-    tag "priority1"
+    tag "1to3s"
     
 
     test("groupToColumnar") {

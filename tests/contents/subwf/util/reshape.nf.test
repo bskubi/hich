@@ -3,7 +3,7 @@ nextflow_function {
 
     name "reshape"
     script "contents/subwf/util/reshape.nf"
-    tag "priority1"
+    tag "1to3s"
 
     test("columnsNullOK") {
 

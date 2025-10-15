@@ -5,7 +5,7 @@ nextflow_workflow {
     workflow "HicMatrix"
 
     test("SmokeTest_HicMatrix") {
-        tag "priority1"
+        tag "10to60s"
         options """-profile localPC""""
         
         when {

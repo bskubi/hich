@@ -6,7 +6,7 @@ nextflow_workflow {
 
     test("SmokeTest_QCPairs") {
         options "-stub-run"
-        tag "priority1"
+        tag "10to60s"
         
         when {
             workflow {

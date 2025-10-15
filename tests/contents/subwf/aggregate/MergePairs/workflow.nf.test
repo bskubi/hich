@@ -6,7 +6,7 @@ nextflow_workflow {
 
     test("SmokeTest_MergePairs") {
         options "-stub-run"
-        tag "priority1"
+        tag "3to10s"
 
         when {
             params {

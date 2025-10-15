@@ -3,7 +3,7 @@ nextflow_function {
 
     name "Test Functions"
     script "contents/subwf/util/analysisPlans.nf"
-    tag "priority1"
+    tag "1to3s"
 	
 
     test("SmokeTest_createCompositeStrategy") {

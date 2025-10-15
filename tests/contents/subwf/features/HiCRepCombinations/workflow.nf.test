@@ -5,7 +5,7 @@ nextflow_workflow {
     workflow "HiCRepCombinations"
 
     test("SmokeTest_HiCRepCombinations") {
-        tag "priority1"
+        tag "10to60s"
         when {
             params {
                 sampleSelectionStrategies = [

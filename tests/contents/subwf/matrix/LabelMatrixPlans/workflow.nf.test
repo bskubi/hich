@@ -5,7 +5,7 @@ nextflow_workflow {
     workflow "LabelMatrixPlans"
 
     test("SmokeTest_LabelMatrixPlans") {
-        tag "priority1"
+        tag "3to10s"
         when {
             params {
                 sampleSelectionStrategies = [

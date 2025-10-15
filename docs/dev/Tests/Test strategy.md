@@ -1,12 +1,18 @@
 [**nf-test documentation**](https://www.nf-test.com/docs/getting-started/)
 
-# Test types
-## Smoke tests
-
-## End-to-end tests
-
+![](Data/nf-test-results/nf-test-fastest.csv)
 ## Tests of tests (metatests)
 * Scripts to download the large test datasets
+## Scalability
+* Time and memory cost of evaluating the pipeline vs. order of magnitude of samples.
+
+
+# Tags
+
+## priority
+0to3s (<3s) -> 3to10s (3-10s) -> 10to60s (10-60s) -> 1to3m (1-3m)
+
+0to3s: 114s, 40 tests
 
 # Factoring Hich into testable units
 
@@ -36,7 +42,7 @@ Runtime
 
 <iframe width=500,  src="https://raw.githubusercontent.com/bskubi/hich/refs/heads/main/nf-test.config"></iframe>
 ### Test workflow automation
-
+bash script to run tests with the right priority order, sharding, logging
 #### Why not use [GitHub Actions](https://docs.github.com/en/actions/get-started/understand-github-actions) to run Hich tests?
 * I looked into this on 2025-10-14. **GitHub actions is only free if using standard, free runners. The ones they offer only have 4 CPUs, 16GB RAM, and 14GB storage, which is too little for some of the tests we'll need to run.** [source](https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job#standard-github-hosted-runners-for-public-repositories)
 * I'm not clear on whether it would be possible or helpful to use self-hosted runners on ARC, but this seems like a can of worms. I'd rather develop 1+ SLURM scripts that test Hich on ARC.
@@ -49,6 +55,10 @@ Runtime
 * Test documentation
 * Release governance
 
+# Test performance
+427s for 57 tests in `nf-test test --tag fastest`
++ Most tests take 2s, but longest test takes 50s
++ 
 # Strategy
 
 * Identify integration points (places where components interact)
@@ -59,8 +69,8 @@ Runtime
 	* Test environment
 	* Approach for test data management
 
-- [ ] Explore github actions to set up and run tests
-- [ ] Ankify nf-test as we've made significant progress and it's clear we'll use it.
+- [x] Explore github actions to set up and run tests
+- [x] Ankify nf-test as we've made significant progress and it's clear we'll use it.
 - [ ] Set up dedicated test environment
 - [ ] Determine how to do test data management more systematically
 - [ ] Inventory existing tests
@@ -70,6 +80,10 @@ Runtime
 - [ ] Get entire existing test suite functional
 - [ ] Get simple Github actions set up to run automated tests of pipeline
 
+# nf-test issues
+* nf-test shards by skipping tests, which could interact oddly with obsolete snapshot detection, but I don't know if this is the case.
+* 5xing the shards for the fastest runs only decreased runtime by a factor of 2, possibly due to outlier slow tests.
+* Is there a way to rerun only tests that failed on the last run?
 # Basics
 
 [**nf-test**](https://www.nf-test.com/) is the automated test suite for Hich.

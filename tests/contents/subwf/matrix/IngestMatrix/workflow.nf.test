@@ -5,7 +5,7 @@ nextflow_workflow {
     workflow "IngestMatrix"
 
     test("SmokeTest_IngestMatrix") {
-        tag "priority1"
+        tag "3to10s"
         
         when {
             params {

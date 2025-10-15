@@ -5,7 +5,7 @@ nextflow_workflow {
     workflow "DifferentialLoops"
 
     test("SmokeTest_DifferentialLoops") {
-        tag "priority1"
+        tag "1to3s"
         options """-c $projectDir/tests/assets/config/docker.config"""
 
         when {

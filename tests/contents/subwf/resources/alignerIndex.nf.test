@@ -6,7 +6,7 @@ nextflow_workflow {
 
     test("SmokeTest_AlignerIndex_Stub") {
         options "-stub-run"
-        tag "priority1"
+        tag "10to60s"
         tag "stubAlignerIndex"
 
         when {
@@ -69,7 +69,7 @@ nextflow_workflow {
     }
 
     test("SmokeTest_AlignerIndex_Full") {
-        tag "priority3"
+        tag "1to3m"
 
         when {
             params {

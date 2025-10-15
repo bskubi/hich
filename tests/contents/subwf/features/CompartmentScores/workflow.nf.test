@@ -5,7 +5,7 @@ nextflow_workflow {
     workflow "CompartmentScores"
 
     test("SmokeTest_CompartmentScores") {
-        tag "priority3"
+        tag "1to3m"
         when {
             params {
                 sampleSelectionStrategies = [

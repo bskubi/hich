@@ -3,7 +3,7 @@ nextflow_workflow {
     name "Test Workflow keyJoin"
     script "contents/subwf/util/keyJoin.nf"
     workflow "keyJoin"
-    tag "priority1"
+    tag "1to3s"
 
     test("keyJoinLeftNoRight") {
         when {
@@ -44,6 +44,7 @@ nextflow_workflow {
     }
 
     test("keyJoinLeft") {
+        tag "3to10s"
         when {
             workflow {
                 """
@@ -68,6 +69,7 @@ nextflow_workflow {
     }
 
     test("keyJoinRight") {
+        tag "3to10s"
         when {
             workflow {
                 """

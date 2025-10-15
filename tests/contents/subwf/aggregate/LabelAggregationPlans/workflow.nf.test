@@ -5,7 +5,7 @@ nextflow_workflow {
     workflow "LabelAggregationPlans"
 
     test("SmokeTest_LabelAggregationPlans") {
-        tag "priority1"
+        tag "1to3s"
         when {
             params {
                 aggregate {
