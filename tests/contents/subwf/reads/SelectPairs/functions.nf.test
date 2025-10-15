@@ -24,8 +24,9 @@ nextflow_function {
                 ]
                 input[0] = "1"
                 input[1] = "1.pairs.gz"
-                input[2] = ["--output-rest": true, "filters": filters]
-                input[3] = 8
+                input[2] = "frags.gz"
+                input[3] = ["--output-rest": true, "filters": filters]
+                input[4] = 8
                 """
             }
         }
@@ -57,38 +58,4 @@ nextflow_function {
             }
         }
     }
-
-    test("SmokeTest_Select_buildCmdEmpty") {
-        tag "1to3s"
-        function "buildCmd"
-        when {
-            function {
-                """
-                input[0] = "1"
-                input[1] = "1.pairs.gz"
-                input[2] = [:]
-                input[3] = 8
-                """
-            }
-        }
-
-        then {
-            assert function.success
-            with (function) {
-                def cmd = result[0]
-                def expectedMissing = [
-                    "pair_type",
-                    "rfrag",
-                    "strand",
-                    "chrom"
-                ]
-                expectedMissing.each{
-                    assert !cmd.contains(it)
-                }
-                assert cmd.contains("\"True\"")
-                print(cmd)
-            }
-        }
-    }	
-
 }

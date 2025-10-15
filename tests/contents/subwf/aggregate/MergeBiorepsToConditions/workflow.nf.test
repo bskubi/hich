@@ -28,9 +28,9 @@ nextflow_workflow {
                     [id: "3_1"] + b1 + c3 + bioreps,
                     [id: "4_1_1"] + [condition: "4", biorep: "1", techrep: "1", aggregateLevel: "techrep", pairs: pairs, latestPairs: pairs],
                     [id: "4"] + c4 + [aggregateLevel: "condition", pairs: pairs, latestPairs: pairs],
-                    [id: "4_1_nomerge"] + b1 + c4 + bioreps + [mergeBiorepToCondition: false],
+                    [id: "4_1_nomerge"] + b1 + c4 + bioreps + [skipMerge: true],
                     [id: "4_1_skipmerge"] + b1 + c4 + bioreps + [skipMerge: true],
-                    [id: "4_1_skipbiorepmerge"] + b1 + c4 + bioreps + [mergeBiorepToCondition: false]
+                    [id: "4_1_skipbiorepmerge"] + b1 + c4 + bioreps + [skipBiorepMerge: true]
                 ]
                 input[0] = channel.fromList(samples)
                 """
@@ -40,13 +40,14 @@ nextflow_workflow {
         then {
             assert workflow.success
             with (workflow.out) {
-                assert samples.size() == 13
+                
                 def techreps = samples.findAll{it.aggregateLevel == "techrep"}
                 assert techreps.size() == 1
                 def bioreps = samples.findAll{it.aggregateLevel == "biorep"}
                 assert bioreps.size() == 8
                 def conditions = samples.findAll{it.aggregateLevel == "condition"}
                 assert conditions.size() == 4
+                assert samples.size() == 13
                 def id = conditions.collect{it.id}
                 assertContainsInAnyOrder(id, ["1", "2", "3", "4"])
                 def pairs = conditions.collect{[id: it.id, file: it.pairs.split("/")[-1]]}

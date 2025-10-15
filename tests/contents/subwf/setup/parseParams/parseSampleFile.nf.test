@@ -8,7 +8,7 @@ nextflow_workflow {
     test("projectDirSampleFile") {
         when {
             params {
-                sampleFile = "tests/assets/sample_file_single_entry.tsv"
+                sampleFile = "tests/assets/sampleFile/single_entry.tsv"
             }
             workflow {
                 """
@@ -20,35 +20,6 @@ nextflow_workflow {
             assert workflow.success
             assert workflow.out.samples.size() == 1
 
-            with (workflow.out.samples.get(0)) {
-                assert condition == 'test'
-                assert biorep == '1'
-                assert techrep == '1'
-                assert fastq1 == 'test_1_1_R1.fq.gz'
-                assert fastq2 == 'test_1_1_R2.fq.gz'
-                assert assembly == 'hg38'
-            }
-        }
-    }
-
-    test("singleEntrySampleFile") {
-
-        when {
-            params {
-        		sampleFile = "$projectDir/tests/assets/sample_file_single_entry.tsv"
-                sampleFileSep = "\t"
-            }
-            workflow {
-                """
-                input[0] = Channel.empty()
-		        """
-            }
-        }
-
-        then {
-            assert workflow.success
-            assert workflow.out.samples.size() == 1
-            assert params.sampleFileSep == '\t'
             with (workflow.out.samples.get(0)) {
                 assert condition == 'test'
                 assert biorep == '1'

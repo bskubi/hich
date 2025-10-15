@@ -48,7 +48,7 @@ def buildCmd (id1, id2, prefix, matrix1, matrix2, differential_loops_opts) {
         "--verbose": "-v"
     ]
     def final_diff_mustache_opts = buildCLIOpts(default_diff_mustache_opts, diff_mustache_opts, remap, null)
-    def cmd = "diff_mustache ${final_diff_mustache_opts}"
+    def cmd = "python -m diff_mustache ${final_diff_mustache_opts}"
 
 
     return [cmd, logMap, output.loop1, output.loop2, output.diffloop1, output.diffloop2]
