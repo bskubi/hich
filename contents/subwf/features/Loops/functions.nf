@@ -35,7 +35,7 @@ def buildCmd(id, matrix, loops_opts) {
         "--verbose": "-v"
     ]
     def final_mustache_opts = buildCLIOpts(default_mustache_opts, mustache_opts, remap, null)
-    def cmd = "mustache ${final_mustache_opts}"
+    def cmd = "python -m mustache ${final_mustache_opts}"
     logMap.cmd = cmd
 
     return [cmd, logMap, output]
