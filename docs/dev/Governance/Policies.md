@@ -1,11 +1,12 @@
 # Code changes
-1. Create a GitHub issue using the "code change" template.
-2. Create a git branch named `I[num]-[abbr_desc]`
-3. Explicitly define
+1. Do preliminary investigation to identify root cause
+2. Create a GitHub issue using the "code change" template.
+3. Create a git branch named `I[num]-[abbr_desc]`
+4. Explicitly define
 	1. Scope
 	2. Definition of done
-4. Merge in branch
-5. Remove branch
+5. Merge in branch
+6. Remove branch
 # Questions
 * Should we have separate "dev" and "main" branches?
 * What if highly related work outside pre-defined scope is discovered while working on an issue?

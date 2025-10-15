@@ -49,17 +49,18 @@ nextflow_workflow {
         then {
             assert workflow.success
             with (workflow.out) {
+                assert samples.size() == 5
                 assertContainsInAnyOrder(
-                    samples.collect{it.subMap("id", "aggregateLevel", "resolutions")},
+                    samples.collect{it.subMap("id", "aggregateLevel", "matrix_opts")},
                     [
-                        [id: "1_plan1", aggregateLevel: "techrep", resolutions: [10, 20, 50]],
-                        [id: "2_plan2", aggregateLevel: "biorep", resolutions: [1, 2, 5]],
+                        [id: "1_plan1", aggregateLevel: "techrep", matrix_opts: [plan_name: "plan1", sampleSelectionStrategy: ["strategy1"], resolutions: [10, 20, 50]]],
+                        [id: "2_plan2", aggregateLevel: "biorep", matrix_opts: [plan_name: "plan2", sampleSelectionStrategy: ["strategy2"], resolutions: [1, 2, 5]]],
                         [id: "1", aggregateLevel: "techrep"],
                         [id: "2", aggregateLevel: "biorep"],
                         [id: "3", aggregateLevel: "condition"]
                     ]
                 )
-                assert samples.size() == 5
+                
             }
         }
 

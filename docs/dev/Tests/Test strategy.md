@@ -1,6 +1,5 @@
 [**nf-test documentation**](https://www.nf-test.com/docs/getting-started/)
 
-![](Data/nf-test-results/nf-test-fastest.csv)
 ## Tests of tests (metatests)
 * Scripts to download the large test datasets
 ## Scalability
