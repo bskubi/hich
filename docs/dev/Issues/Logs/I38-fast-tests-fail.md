@@ -60,7 +60,7 @@ Test: SmokeTest_MergeBiorepsToConditions
 ```
 # Final Status:
 + Passes all --tag 1to3s tests
-# Changes
+# Changes for solution
 + Process DIFFERENTIAL_LOOPS now calls `python -m diff_mustache` instead of `diff_mustache`
 + Removed `SmokeTest_Select_buildCmdEmpty`
 * Added `assets/sampleFile/single_entry.tsv` and used this for test `projectDirSampleFile`
