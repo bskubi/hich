@@ -38,7 +38,7 @@ nextflow_function {
                 def expected = [
                     "echo 'chr1\nchr2' > '__chroms__.bed'",
                     "pairtools select",
-                    "--output '1_select.pairs.gz'",
+                    "-o '1_select.pairs.gz'",
                     "--chrom-subset '__chroms__.bed'",
                     "--nproc-in",
                     "--nproc-out",

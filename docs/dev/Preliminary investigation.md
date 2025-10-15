@@ -4,6 +4,3 @@ filter: result == "FAILED"
 columns:
  - test
 ```
-
-SmokeTest_SelectPairs_buildCmd
-+ doesn't find expected output
