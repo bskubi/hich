@@ -1,1 +1,2 @@
-Feature/component,Behavior Tested,Test,File,Level,Coverage
+Attribute,Component,Behavior,Scenario,Test size
+Powerful,Orchestration,Orchestrator handles massive number of samples,"A user provides a sample sheet with 1,000,000 samples and runs a stub run of the pipeline on an HPC. A `nextflow run ... -stub-run` command should successfully completely in 8 hours using no more than 128G of memory and 24 cpus.",Large

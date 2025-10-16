@@ -9,24 +9,13 @@
 + **Preprocessing** (alignment, filtering and contact matrix generation)
 + **Analysis** (feature calling and QC)
 # Hich Capabilities
-**Interface**
-- Reliable: Input validation with informative errors.
-- Versatile: All tools used during processing fully configurable.
-- Powerful: Run the exact analysis you want with analysis plans and sample selection strategies
-- Clear: Zero-install. Dictate output with declarative sample attributes.
-
-**Orchestration**
-- Reliable: Built on industry-standard workflow management system.
-- Versatile: Compatible with wide variety of computing environments.
-- Powerful: Take full advantage of cluster computing.
-- Powerful: Scale to hundreds of thousands of samples, hundreds of terabyte datasets.
-- Clear: Standardized execution control via Nextflow profiles.
-
-**Preprocessing**
-+ Reliable: Based on standard bioinformatics tools or well-tested new tools.
-+ Versatile: Accepts wide variety of assay types (multi-enzyme digest, single-cell, methyl-Hi-C, capture) and intermediate data formats.
-+ Powerful: Handle replicates, cell types with merge and split.
-+ Clear: 
+| **Component**     | **Reliable (Expected Behavior)**                                    | **Versatile (Diverse Cases)**                                | **Powerful (Handles Scale)**                                     | **Clear (Easy to Understand)**                                        |
+| ----------------- | ------------------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------- | --------------------------------------------------------------------- |
+| **Interface**     | Provides input validation with informative errors.                  | Allows all internal tools to be fully configured.            | Enables precision control with analysis plans.                   | Offers a zero-install experience with declarative sample attributes.  |
+| **Orchestration** | Uses a containerized, industry-standard workflow manager.           | Is compatible with a wide variety of computing environments. | Scales efficiently to handle massive datasets and sample counts. | Makes pipeline steps, inputs, and outputs predictable and observable. |
+| **Preprocessing** | Is built on standard bioinformatics tools or well-tested new tools. | Accepts a wide variety of assays and data formats.           | Can merge and split replicates and cell types.                   | Auto-generates resource files to minimize user setup work.            |
+| **Analysis**      | Employs validated, Hi-C-specific analysis methods.                  | Facilitates sensitivity analysis and data subsampling.       | Performs comprehensive Hi-C analysis and QC.                     | Generates interactive, detailed, GUI-based QC reports.                |
+|                   |                                                                     |                                                              |                                                                  |                                                                       |
 
 # Test productivity
 #### Why not use [GitHub Actions](https://docs.github.com/en/actions/get-started/understand-github-actions) to run Hich tests?
