@@ -16,5 +16,5 @@
 .obsidian
 dev-run-tests.sh
 .~lock*
-*(gitignore)*
+*__gitignore__*
 docs/dev/Data/nf-test-results/*
