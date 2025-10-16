@@ -6,6 +6,7 @@ import polars as pl
 cd = 10
 br = 2
 tr = 500
+count = cd * br * tr
 filename = f"{count}_stub_samples.tsv"
 path = Path(filename).absolute()
 samples = it.product(range(cd), range(br), range(tr))
