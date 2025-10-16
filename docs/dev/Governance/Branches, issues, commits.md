@@ -5,9 +5,3 @@ Minor refactorings and fixes (individually < 1 day):
 Major, time-consuming, complex features and restructuring (> 1 day):
 + Branch from dev for each major feature.
 Merge `dev` into `main` with a batch commit message once per week. Optionally, tag it as a new release.
-
-# Data
-
-Create provenance.yaml file with "cite" and "data" fields under sample ID prefix.
-Note where data was introduced.
-Note data source in Paper/Citations
