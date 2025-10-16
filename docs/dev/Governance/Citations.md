@@ -1,5 +1,5 @@
 # Data
 
 Create provenance.yaml file with "cite" and "data" fields under sample ID prefix.
-Note where data was introduced.
-Note data source in Paper/Citations
+Annotate paper in Zotero under My Publications/Hich with the dev log where the data was introduced and a rationale for including it.
+
