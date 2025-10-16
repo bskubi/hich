@@ -15,3 +15,6 @@
 /tests/assets/index
 .obsidian
 dev-run-tests.sh
+.~lock*
+*(gitignore)*
+docs/dev/Data/nf-test-results/*

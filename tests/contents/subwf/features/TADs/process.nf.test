@@ -12,7 +12,7 @@ nextflow_process {
                 input[0] = tuple(
                     "test", 
                     "$projectDir/tests/assets/downloads/mcool/full/GSM4604274_629.iced.mcool", 
-                    "100000",
+                    [resolution: 100000],
                     "--minDepth 400000 --maxDepth 1000000 --step 100000 --chromosomes chr19 --correctForMultipleTesting bonferroni"
                 )
                 """
