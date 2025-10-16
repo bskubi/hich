@@ -6,7 +6,7 @@ nextflow_workflow {
     
     test("SmokeTest_Align") {
         options """-profile localPC"""
-        tag "1to3m"
+        tag "3to10s"
 
         when {
             params {
@@ -14,21 +14,21 @@ nextflow_workflow {
             }
             workflow {
                 """
-                std1 = file("$projectDir/tests/assets/fastq/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R1.fastq.gz")
-                std2 = file("$projectDir/tests/assets/fastq/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz")
-                stdInterleaved = file("$projectDir/tests/assets/fastq/1k/1k_Formaldehyde+DSG_DdeI_and_DpnII_HFFc6_BR1_TR1_R2.fastq.gz")
-                met1 = file("$projectDir/tests/assets/fastq/1k/1k_CEMBA3C_18B3C_R2_P5-2-M17-L15.R1.fastq.gz")
-                met2 = file("$projectDir/tests/assets/fastq/1k/1k_CEMBA3C_18B3C_R2_P5-2-M17-L15.R2.fastq.gz")
-                metInterleaved = file("$projectDir/tests/assets/fastq/1k/1k_CEMBA3C_18B3C_R2_P5-2-M17-L15_interleaved.fastq.gz")
+                std1 = file("$projectDir/tests/assets/fastq/1k/1k_ERR1413593_1.fq.gz")
+                std2 = file("$projectDir/tests/assets/fastq/1k/1k_ERR1413593_2.fq.gz")
+                stdInterleaved = file("$projectDir/tests/assets/fastq/1k/1k_ERR1413593_interleaved.fq.gz")
+                met1 = file("$projectDir/tests/assets/fastq/1k/1k_ERR1413593_1.fq.gz")
+                met2 = file("$projectDir/tests/assets/fastq/1k/1k_ERR1413593_2.fq.gz")
+                metInterleaved = file("$projectDir/tests/assets/fastq/1k/1k_ERR1413593_interleaved.fq.gz")
                 common = [
                     datatype: "fastq",
                     minMapq: 30
                 ]
 
-                bwa = [aligner: "bwa", alignerIndexDir: file("$projectDir/tests/assets/index/bwa"), alignerIndexPrefix: "hg38"]
-                bwaMem2 = [aligner: "bwa-mem2", alignerIndexDir: file("$projectDir/tests/assets/index/bwa-mem2"), alignerIndexPrefix: "hg38"]
-                bwameth = [aligner: "bwameth", alignerIndexDir: file("$projectDir/tests/assets/index/bwameth"), alignerIndexPrefix: "mm10"]
-                bwamethMem2 = [aligner: "bwameth-mem2", alignerIndexDir: file("$projectDir/tests/assets/index/bwameth-mem2"), alignerIndexPrefix: "mm10"]
+                bwa = [aligner: "bwa", alignerIndexDir: file("$projectDir/tests/assets/index/bwa"), alignerIndexPrefix: "M129"]
+                bwaMem2 = [aligner: "bwa-mem2", alignerIndexDir: file("$projectDir/tests/assets/index/bwa-mem2"), alignerIndexPrefix: "M129"]
+                bwameth = [aligner: "bwameth", alignerIndexDir: file("$projectDir/tests/assets/index/bwameth"), alignerIndexPrefix: "M129"]
+                bwamethMem2 = [aligner: "bwameth-mem2", alignerIndexDir: file("$projectDir/tests/assets/index/bwameth-mem2"), alignerIndexPrefix: "M129"]
                 stdPaired = [fastq1: std1, fastq2: std2]
                 stdSingle = [fastq: std1]
                 stdInterleaved = [fastq: stdInterleaved]
