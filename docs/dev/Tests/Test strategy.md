@@ -1,84 +1,37 @@
-[**nf-test documentation**](https://www.nf-test.com/docs/getting-started/)
+# Hich Attributes
+**Reliable:** Ensures the user gets the behavior they expect.
+**Versatile:** Adapts to diverse use cases.
+**Powerful:** Handles large, complex analysis tasks.
+**Clear:** Easy to figure out how to get it working.
+# Hich Components
++ **Interface** (config, params, profiles, sampleFile)
++ **Orchestration** (Nextflow, containers)
++ **Preprocessing** (alignment, filtering and contact matrix generation)
++ **Analysis** (feature calling and QC)
+# Hich Capabilities
+**Interface**
+- Reliable: Input validation with informative errors.
+- Versatile: All tools used during processing fully configurable.
+- Powerful: Run the exact analysis you want with analysis plans and sample selection strategies
+- Clear: Zero-install. Dictate output with declarative sample attributes.
 
-## Tests of tests (metatests)
-* Scripts to download the large test datasets
-## Scalability
-* Time and memory cost of evaluating the pipeline vs. order of magnitude of samples.
+**Orchestration**
+- Reliable: Built on industry-standard workflow management system.
+- Versatile: Compatible with wide variety of computing environments.
+- Powerful: Take full advantage of cluster computing.
+- Powerful: Scale to hundreds of thousands of samples, hundreds of terabyte datasets.
+- Clear: Standardized execution control via Nextflow profiles.
 
+**Preprocessing**
++ Reliable: Based on standard bioinformatics tools or well-tested new tools.
++ Versatile: Accepts wide variety of assay types (multi-enzyme digest, single-cell, methyl-Hi-C, capture) and intermediate data formats.
++ Powerful: Handle replicates, cell types with merge and split.
++ Clear: 
 
-# Tags
-
-## priority
-0to3s (<3s) -> 3to10s (3-10s) -> 10to60s (10-60s) -> 1to3m (1-3m)
-
-0to3s: 114s, 40 tests
-
-# Factoring Hich into testable units
-
-Components of Nextflow workflow
-* Processes
-* Workflow
-* Utils
-* Containers
-* Command line parameters
-* Profiles
-* Scalability
-* Workflow control
-
-Components of Python tool
-
-Runtime
-* Run fast tests first, slower tests later
-
-# Infrastructure
-
-## Small test data objects
-## Large test data objects
-### Downloaders
-
-### nf-test plugins
-* None currently, but can be created by putting groovy files in tests/lib, causing them to be added to the classpath.
-
-<iframe width=500,  src="https://raw.githubusercontent.com/bskubi/hich/refs/heads/main/nf-test.config"></iframe>
-### Test workflow automation
-bash script to run tests with the right priority order, sharding, logging
+# Test productivity
 #### Why not use [GitHub Actions](https://docs.github.com/en/actions/get-started/understand-github-actions) to run Hich tests?
 * I looked into this on 2025-10-14. **GitHub actions is only free if using standard, free runners. The ones they offer only have 4 CPUs, 16GB RAM, and 14GB storage, which is too little for some of the tests we'll need to run.** [source](https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job#standard-github-hosted-runners-for-public-repositories)
 * I'm not clear on whether it would be possible or helpful to use self-hosted runners on ARC, but this seems like a can of worms. I'd rather develop 1+ SLURM scripts that test Hich on ARC.
-
-# Key decisions
-* Test suite composition
-* Automated testing tools
-* Workflow to run automated tests
-* Test resource management
-* Test documentation
-* Release governance
-
-# Test performance
-427s for 57 tests in `nf-test test --tag fastest`
-+ Most tests take 2s, but longest test takes 50s
-+ 
-# Strategy
-
-* Identify integration points (places where components interact)
-* Define scope and boundaries
-* Risk assessment to set priorities
-* Tooling and environment strategy
-	* Test framework (nf-test)
-	* Test environment
-	* Approach for test data management
-
-- [x] Explore github actions to set up and run tests
-- [x] Ankify nf-test as we've made significant progress and it's clear we'll use it.
-- [ ] Set up dedicated test environment
-- [ ] Determine how to do test data management more systematically
-- [ ] Inventory existing tests
-- [ ] Identify tests that currently fail
-- [ ] Identify highest-priority new tests
-- [ ] Create build and test script suite for individual containers in the repo
-- [ ] Get entire existing test suite functional
-- [ ] Get simple Github actions set up to run automated tests of pipeline
-
 # nf-test issues
 * nf-test shards by skipping tests, which could interact oddly with obsolete snapshot detection, but I don't know if this is the case.
 * 5xing the shards for the fastest runs only decreased runtime by a factor of 2, possibly due to outlier slow tests.
@@ -86,10 +39,3 @@ bash script to run tests with the right priority order, sharding, logging
 # Basics
 
 [**nf-test**](https://www.nf-test.com/) is the automated test suite for Hich.
-### tests/assets
-
-* Small test files are stored in folders based on file type (bam, cool, hic, index, etc) and are backed up on the github repo
-	* What is the limit on test file size?
-* Large test files must be downloaded to `tests/assets/downloads` (in #gitignore) after cloning the repo using `obtain_large_resources.sh` or `obtain_large_resources_slurm.sh` (a simple SLURM runner for `obtain_large_resources.sh)
-### tests/contents
-* Contains tests with templates autogenerated by `nf-test create`
