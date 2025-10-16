@@ -15,7 +15,7 @@
 | **Orchestration** | Uses a containerized, industry-standard workflow manager.           | Is compatible with a wide variety of computing environments. | Scales efficiently to handle massive datasets and sample counts. | Makes pipeline steps, inputs, and outputs predictable and observable. |
 | **Preprocessing** | Is built on standard bioinformatics tools or well-tested new tools. | Accepts a wide variety of assays and data formats.           | Can merge and split replicates and cell types.                   | Auto-generates resource files to minimize user setup work.            |
 | **Analysis**      | Employs validated, Hi-C-specific analysis methods.                  | Facilitates sensitivity analysis and data subsampling.       | Performs comprehensive Hi-C analysis and QC.                     | Generates interactive, detailed, GUI-based QC reports.                |
-|                   |                                                                     |                                                              |                                                                  |                                                                       |
+![tests](Tests/TEST_MATRIX.csv)
 
 # Test productivity
 #### Why not use [GitHub Actions](https://docs.github.com/en/actions/get-started/understand-github-actions) to run Hich tests?

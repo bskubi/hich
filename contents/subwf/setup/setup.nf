@@ -176,8 +176,9 @@ workflow UpdateSamples
         ingest = ["genomeReference", "chromsizes", "alignerIndexDir", "fragmentIndex", "fastq1", "fastq2", "sambam", "pairs", "hic", "mcool"]
         ingest.each {
             key ->
-            if (truthyString(sample[key])) {
-                fileObj = smartFileFinder(sample[key].toString())
+            value = sample.get(key)
+            if (truthyString(value)) {
+                fileObj = smartFileFinder(value.toString())
                 
                 if (!fileObj.exists()) {
                     error "In sample with id ${sample.id}, ${key} is specified as ${value} but does not exist."
