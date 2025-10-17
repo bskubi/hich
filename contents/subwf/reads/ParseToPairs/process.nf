@@ -1,5 +1,6 @@
 include {withLog; stubLog} from '../../util/logs.nf'
 include {buildCmd} from './functions.nf'
+include {validateMemory} from '../../util/memory.nf'
 
 process PARSE_TO_PAIRS {
     publishDir params.general.publish.parse ? params.general.publish.parse : "results",
@@ -19,12 +20,13 @@ process PARSE_TO_PAIRS {
     tuple val(id), path(output)
 
     shell:
-    (cmd, logMap, output) = buildCmd(id, sambam, chromsizes, assembly, parse_to_pairs_opts, minMapq, task.memory, task.cpus)
+    memoryV = validateMemory(memory, 2, 2)
+    (cmd, logMap, output) = buildCmd(id, sambam, chromsizes, assembly, parse_to_pairs_opts, minMapq, memoryV, task.cpus)
     withLog(cmd, logMap)
 
     stub:
-    
-    (cmd, logMap, output) = buildCmd(id, sambam, chromsizes, assembly, parse_to_pairs_opts, minMapq, task.memory, task.cpus)
+    memoryV = validateMemory(memory, 2, 2)
+    (cmd, logMap, output) = buildCmd(id, sambam, chromsizes, assembly, parse_to_pairs_opts, minMapq, memoryV, task.cpus)
     stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 }
