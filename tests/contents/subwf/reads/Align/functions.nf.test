@@ -1,0 +1,78 @@
+
+nextflow_function {
+
+    name "Align_buildCmd"
+    script "contents/subwf/reads/Align/functions.nf"
+
+	test("Align_buildCmd_bwa") {
+        function "buildCmd"
+        when {
+            function {
+                """
+                input = ["bwa", "test", "bwa", "hg38", [fastq1: "r1.fq", fastq2: "r2.fq"], [:], 30, 24]
+                """
+            }
+        }
+        then {
+            assert function.success
+            def cmd = function.result[0]
+            def pipe_parts = CommandChecker.getPipeParts(cmd)
+            CommandChecker.checkCmd(pipe_parts[0], "bwa mem", ["-S", "-P", "-5", "-M", ["-T": "'0'", "-t": "'24'"], "'bwa/hg38'", "'r1.fq'", "'r2.fq'"])
+            CommandChecker.checkCmd(pipe_parts[1], "samtools view", ["-b", ["-o": "'test.bam'"]])
+        }
+    }
+    test("Align_buildCmd_bwameth")  {
+        function "buildCmd"
+        when {
+            function {
+                """
+                input = ["bwameth", "test", "bwameth", "hg38", [fastq1: "r1.fq", fastq2: "r2.fq"], [:], 30, 24]
+                """
+            }
+        }
+        then {
+            assert function.success
+            def cmd = function.result[0]
+            def pipe_parts = CommandChecker.getPipeParts(cmd)
+            CommandChecker.checkCmd(pipe_parts[0], "python -m bwameth", ["--do-not-penalize-chimeras", ["--reference": "'bwameth/hg38'", "-t": "'24'"], "'r1.fq'", "'r2.fq'"])
+            CommandChecker.checkCmd(pipe_parts[1], "samtools view", ["-b", ["-o": "'test.bam'"]])
+        }
+    }
+
+    test("Align_buildCmd_bwameth-mem2_interleaved") {
+        function "buildCmd"
+        when {
+            function {
+                """
+                input = ["bwameth-mem2", "test", "bwameth-mem2", "hg38", [fastq: "interleaved.fq"], [:], 30, 24]
+                """
+            }
+        }
+        then {
+            assert function.success
+            def cmd = function.result[0]
+            def pipe_parts = CommandChecker.getPipeParts(cmd)
+            CommandChecker.checkCmd(pipe_parts[0], "python -m bwameth", ["--do-not-penalize-chimeras", "-p", ["--reference": "'bwameth-mem2/hg38'", "-t": "'24'"], "'interleaved.fq'"])
+            CommandChecker.checkCmd(pipe_parts[1], "samtools view", ["-b", ["-o": "'test.bam'"]])
+        }
+    }
+
+    test("Align_buildCmd_bwa-mem2_interleaved") {
+        function "buildCmd"
+        when {
+            function {
+                """
+                input = ["bwa-mem2", "test", "bwa-mem2", "hg38", [fastq: "interleaved.fq"], [:], 30, 24]
+                """
+            }
+        }
+        then {
+            assert function.success
+            def cmd = function.result[0]
+            def pipe_parts = CommandChecker.getPipeParts(cmd)
+            CommandChecker.checkCmd(pipe_parts[0], "bwa-mem2 mem", ["-S", "-P", "-5", "-M", ["-T": "'0'", "-t": "'24'"], "'bwa-mem2/hg38'", "'interleaved.fq'"])
+            CommandChecker.checkCmd(pipe_parts[1], "samtools view", ["-b", ["-o": "'test.bam'"]])
+        }
+    }
+
+}
