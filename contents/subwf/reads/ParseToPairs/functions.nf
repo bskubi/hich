@@ -21,7 +21,7 @@ def buildCmd(id, sambam, chromsizes, assembly, parse_to_pairs_opts, minMapq, mem
     def output = "${id}.pairs.gz" 
     logMap += [output: [pairs: output]]
 
-    def samtoolsViewCmd = "samtools view -b '${sambam}'"
+    def samtools_view_cmd = "samtools view -b '${sambam}'"
 
     def default_pairtools_parse2_opts = [
         "--assembly": assembly, 
@@ -36,7 +36,7 @@ def buildCmd(id, sambam, chromsizes, assembly, parse_to_pairs_opts, minMapq, mem
     def pairtools_parse2_cmd = "pairtools parse2 ${final_pairtools_parse2_opts}"
     
     def hich_pairs_sql_cmd = null
-    if (parse_to_pairs_opts?.hichPairsSql?.sql) {
+    if (parse_to_pairs_opts?.hich_pairs_sql?.sql) {
         def default_hich_pairs_sql_opts = [
             "--memory-limit": memoryV, 
             "--threads": cpus
@@ -60,7 +60,7 @@ def buildCmd(id, sambam, chromsizes, assembly, parse_to_pairs_opts, minMapq, mem
     def final_pairtools_sort_opts = buildCLIOpts(default_pairtools_sort_opts, pairtools_sort_opts, [:], null)
 
     def pairtools_sort_cmd = "pairtools sort ${final_pairtools_sort_opts}"   
-    def cmd = [samtoolsViewCmd, pairtools_parse2_cmd, hich_pairs_sql_cmd, pairtools_sort_cmd].findAll{it}.join(" | ")
+    def cmd = [samtools_view_cmd, pairtools_parse2_cmd, hich_pairs_sql_cmd, pairtools_sort_cmd].findAll{it}.join(" | ")
     logMap += [cmd: cmd]
 
     return [cmd, logMap, output]
