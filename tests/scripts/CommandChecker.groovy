@@ -12,6 +12,10 @@ class CommandChecker {
         return pipeCmd.split("\\|").collect { it.strip() }
     }
 
+    static List<String> getSequentialParts(String pipeCmd) {
+        return pipeCmd.split("&&").collect { it.strip() }
+    }
+
     /**
      * Asserts that a command string starts with an expected name and contains the expected options.
      * @param fullCmdStr The actual command string to check.
