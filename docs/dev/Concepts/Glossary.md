@@ -5,7 +5,6 @@
 **Active sample:** The set of *input* and *constructed samples* that have not been filtered out by Hich.
 **Active sample set:** The complete collection of *active samples*.
 **Option:** A *sample attribute* that tells Hich how to configure one of more *processing steps*
-
 **Power option:** A high-level *sample attribute* that Hich converts to one or more *direct options.*
 **Direct option:** A low-level *sample attribute* that Hich directly passes to a specific CLI tool on a single *processing step*.
 **Hardcoded option:** A low-priority default option that is overridden by any supplied *user options* that supply a value to the same *direct option.*
