@@ -13,17 +13,6 @@ class CommandChecker {
     }
 
     /**
-     * Extracts options/arguments from a command string by removing the command name.
-     * @param fullCmd The command string (e.g., "bwa mem -t 8 file.fq").
-     * @param cmdName The command name to remove (e.g., "bwa mem").
-     * @return A list of options and arguments.
-     */
-    static List<String> getCmdOpts(String fullCmd, String cmdName) {
-        // Use replaceFirst and trim for robustness
-        return fullCmd.replaceFirst(cmdName, "").trim().split(/\s+/).findAll { it }
-    }
-
-    /**
      * Asserts that a command string starts with an expected name and contains the expected options.
      * @param fullCmdStr The actual command string to check.
      * @param expectedName The expected command name (e.g., "samtools view").
@@ -37,6 +26,17 @@ class CommandChecker {
     }
 
     /**
+     * Extracts options/arguments from a command string by removing the command name.
+     * @param fullCmd The command string (e.g., "bwa mem -t 8 file.fq").
+     * @param cmdName The command name to remove (e.g., "bwa mem").
+     * @return A list of options and arguments.
+     */
+    static List<String> getCmdOpts(String fullCmd, String cmdName) {
+        // Use replaceFirst and trim for robustness
+        return fullCmd.replaceFirst(cmdName, "").trim().split(/\s+/).findAll { it }
+    }
+
+    /**
      * Internal helper to check for expected options in a list of actual options.
      */
     @Internal // Hides this method from documentation
@@ -45,7 +45,7 @@ class CommandChecker {
             if (expected instanceof Map) {
                 expected.each { key, value ->
                     def actualValue = _getOptVal(actualOpts, key)
-                    assert actualValue == value, "For option '${key}', expected value '${value}' but got '${actualValue}'"
+                    assert actualValue == value, "For option '${key}', expected value '${value}' but got '${actualValue}'."
                 }
             } else { // It's a simple flag
                 assert actualOpts.contains(expected), "Expected flag '${expected}' was not found in actual options: ${actualOpts}"
