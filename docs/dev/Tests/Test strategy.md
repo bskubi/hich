@@ -17,6 +17,8 @@
 | **Analysis**      | Employs validated, Hi-C-specific analysis methods.                  | Facilitates sensitivity analysis and data subsampling.       | Performs comprehensive Hi-C analysis and QC.                     | Generates interactive, detailed, GUI-based QC reports.                |
 ![tests](Tests/TEST_MATRIX.csv)
 
+
+
 # Test productivity
 #### Why not use [GitHub Actions](https://docs.github.com/en/actions/get-started/understand-github-actions) to run Hich tests?
 * I looked into this on 2025-10-14. **GitHub actions is only free if using standard, free runners. The ones they offer only have 4 CPUs, 16GB RAM, and 14GB storage, which is too little for some of the tests we'll need to run.** [source](https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job#standard-github-hosted-runners-for-public-repositories)
