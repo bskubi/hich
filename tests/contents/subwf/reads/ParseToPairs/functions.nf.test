@@ -14,7 +14,7 @@ nextflow_function {
                 input = [
                     "test", "test.bam", "hg38.sizes", "hg38", 
                     [
-                        pairtools_parse2_opts: ["--max-insert-size": 1000], 
+                        pairtools_parse2: ["--max-insert-size": 1000], 
                         pairtools_sort: ["--tmpdir":"./temp"],
                         
                     ],

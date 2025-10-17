@@ -45,7 +45,7 @@ private Map _buildPairtoolsParseCmd(String assembly, String chromsizes, int minM
         "--min-mapq": minMapq,
         "--flip": true
     ]
-    def userOpts = opts?.pairtools_parse2_opts ?: [:]
+    def userOpts = opts?.pairtools_parse2 ?: [:]
     def remap = ["--chroms-path": "-c"]
     def finalOpts = buildCLIOpts(defaultOpts, userOpts, remap, null)
 
