@@ -1,52 +1,52 @@
-Attribute,Purpose,"How often user must customize (1 = rare, 5 = almost always)",Set in config if,Hich constructs if,Constraints/format,Tags
-fastq1,R1 fastq file,4,Ingesting .fastq data,Never,,data
-fastq2,R2 fastq file,4,Ingesting .fastq data,Never,,data
-condition,Condition for sample,4,Multi-condition experiment,Sample made by merge,,id aggregate
-biorep,Biological replicate for sample,4,Multi-replicate experiment,Sample made by merge,,id aggregate
-techrep,Technical replicate for sample,4,Multi-replicate experiment,Sample made by merge,,id aggregate
-fastq,Interleaved fastq file,4,Ingesting .fastq data,Never,,data
-aligner,Set which aligner to use to align fastq file(s) for the sample,4,Ingesting .fastq data,Never,"bwa, bwa-mem2, bwameth, bwameth-mem2",align
-alignerIndexDir,Directory containing index files that are appropriate to the sample’s reference genome and aligner,4,"Ingesting .fastq data, index already exists","If not declared (based on genomeReference, aligner)",existing path,align resource
-alignerIndexPrefix,Prefix of aligner index files to use within alignerIndexDir for the sample,4,"Ingesting .fastq data, index already exists",If not declared (based on assembly),aligner index files referred to all exist in alignerIndexDir,align resource
-restrictionEnzymes,Determine cut sites for creating fragmentIndex to label fragments (i.e. to filter out fragments with both ends mapping to same restriction fragment),4,Reads from restriction enzyme digest Hi-C,Never,"Comma-separated list of enzyme names or commercial kits (i.e. DpnII,DdeI). Blank indicates digest was not RE-based (i.e. nuclease, MNase, DNase, etc).",resource restrictionDigest
-fragmentIndex,Position of cut sites in genome,4,"Reads from restriction enzyme digest Hi-C, fragment index .bed file already exists",If not provided and sample has restrictionEnzymes attribute,,resource restrictionDigest
-sambam,"SAM, BAM, CRAM file",3,Ingesting .sam/.bam/.cram data,Sample input data is fastq,,data
-pairs,4DN .pairs file,3,Ingesting .pairs data,Sample input data is fastq or sambam,,data
-genomeReference,Path to FASTA genome reference file,3,Hich does not have URL linking assembly to reference genome,"If not declared (downloaded from hardcoded URL, based on assembly)","existing path, may be gzipped",resource
-chromsizes,Path to chromsizes file (tab-delimited list of chromosomes and chromosome sizes),3,Ignore some chroms during processing,If not declared (created from genomeReference),existing path,resource
-hic,Path to .hic contact matrix,3,Public/pre-binned .hic data,"Sample input data is fastq, sambam, pairs, or mcool AND appropriate matrix plan specified",existing path,data
-mcool,Path to .mcool contact matrix,3,Public/pre-binned .mcool data,"Sample input data is fastq, sambam, pairs, or hic AND appropriate matrix plan specified",existing path,data
-minMapq,Filter out reads with mapping quality (mapq) below threshold,3,"Ingesting .pairs, .sam/.bam/.cram, .pairs data",Never,Integer from 0-60,opts
-align_opts,Set alignment options,3,Aligning,Applying defaults during alignment,,opts
-ingest_pairs_opts,Set pairs ingestion options,3,Ingesting .pairs data,Applying defaults during pairs ingestion,,opts
-parse_to_pairs_opts,Set pairtools parse2 options,3,Parsing alignments to pairs,Applying defaults during pairtools parse2 step,,opts
-select_pairs_opts,Set pairtools select options,3,Selecting filter-passing pairs,Applying defaults during pairtools select step,,opts
-tag_restriction_fragments_opts,Set hich fasta re-fragments options,3,Tagging restriction fragments for pairs,Applying defaults during hich pairs map-ends step,,opts
-skipHicFileFormat,Do not create .hic files,3,Customizing contact matrix build,Never,,matrix workflow
-matrix_opts,Common options for creating .hic or .mcool contact matrix,3,Customizing contact matrix build,"Always (based on params.matrices, params.sampleSelectionStrategies)",,opts
-skipMcoolFileFormat,Do not create .mcool files,3,Customizing contact matrix build,Never,,matrix workflow
-skipDedupTechreps,"Do not deduplicate technical replicates (even after merging to biological replicates, if relevant)",3,Customizing deduplication,Never,,dedup workflow
-skipDedupBioreps,Do not deduplicate biological replicates,3,Customizing deduplication,Never,,dedup workflow
-skipDedup,Do not deduplicate,3,Customizing deduplication,Never,,dedup workflow
-pairtoolsDedupParams,Options for pairtools dedup,3,Customizing deduplication,,,opts
-aggregationPlanName,Name of aggregation plan specifying how samples will be merged or split,3,Customizing aggregation (sample merge or split),,,merge
-skipMerge,Do not merge file,3,Customizing aggregation (sample merge or split),Never,,merge workflow
-skipBiorepMerge,Do not merge biological replicate to condition,3,Customizing aggregation (sample merge or split),Never,,merge workflow
-skipTechrepMerge,Do not merge technical replicate to biological replicate,3,Customizing aggregation (sample merge or split),Never,,merge workflow
-dedupSingleCell,Treat reads as duplicates only if .pairs file has matching cellID column value (may be automatically extracted from read name),2,Customizing deduplication,,,opts
-dedupMethod,Method to use for pairtools dedup,2,Customizing deduplication,,,opts
-splitColumns,,2,Customizing aggregation (sample merge or split),,,aggregate
-splitSQL,,2,Customizing aggregation (sample merge or split),,,aggregate
-splitTechreps,,2,Customizing aggregation (sample merge or split),,,aggregate
-splitBioreps,,2,Customizing aggregation (sample merge or split),,,aggregate
-splitConditions,,2,Customizing aggregation (sample merge or split),,,aggregate
-id,Unique sample identifier,1,You have a good reason,"Unspecified (based on condition, biorep, techrep, matrix_plan, aggregation_plan)",,id
-datatype,Specify input data type,1,You have a good reason,Always,"fastq, sambam, pairs, matrix, unknown",data
-aggregateLevel,"Determine if sample is a techrep, biorep, or condition merge",1,,Sample made by merge,"techrep, biorep, condition",merge
-latestSambam,Store most recently created bam file,1,You have a good reason,After steps that output .bam,,data latest
-latest,Store most recently created data file,1,You have a good reason,After each step,,data latest
-latestPairs,Store most recently created pairs file,1,You have a good reason,After steps that output .pairs,,data latest
-selectPairs,"Store pairs file after filtering out pairs based on flexible criteria (pair type, mapping to same restriction fragment, etc)",1,You have a good reason,After pairtools select step,,data
-fragPairs,Store pairs file after tagging restriction fragments,1,You have a good reason,After hich pairs map-ends step,,data
-latestMatrix,"Most recently created contact matrix (may be .hic, .mcool)",1,You have a good reason,After steps that output contact matrices,,data latest
-dedupPairs,Pairs file created after deduplication,1,You have a good reason,After .pairs deduplication step,,data
+Attribute,Purpose,"How often user must customize (1 = rare, 5 = almost always)",Set in config if,Hich constructs if,Constraints/format,Tags,Problems
+fastq1,R1 fastq file,4,Ingesting .fastq data,Never,,data,
+fastq2,R2 fastq file,4,Ingesting .fastq data,Never,,data,
+condition,Condition for sample,4,Multi-condition experiment,Sample made by merge,,id aggregate,
+biorep,Biological replicate for sample,4,Multi-replicate experiment,Sample made by merge,,id aggregate,
+techrep,Technical replicate for sample,4,Multi-replicate experiment,Sample made by merge,,id aggregate,
+fastq,Interleaved fastq file,4,Ingesting .fastq data,Never,,data,
+aligner,Set which aligner to use to align fastq file(s) for the sample,4,Ingesting .fastq data,Never,"bwa, bwa-mem2, bwameth, bwameth-mem2",align,
+alignerIndexDir,Directory containing index files that are appropriate to the sample’s reference genome and aligner,4,"Ingesting .fastq data, index already exists","If not declared (based on genomeReference, aligner)",existing path,align resource,
+alignerIndexPrefix,Prefix of aligner index files to use within alignerIndexDir for the sample,4,"Ingesting .fastq data, index already exists",If not declared (based on assembly),aligner index files referred to all exist in alignerIndexDir,align resource,
+restrictionEnzymes,Determine cut sites for creating fragmentIndex to label fragments (i.e. to filter out fragments with both ends mapping to same restriction fragment),4,Reads from restriction enzyme digest Hi-C,Never,"Comma-separated list of enzyme names or commercial kits (i.e. DpnII,DdeI). Blank indicates digest was not RE-based (i.e. nuclease, MNase, DNase, etc).",resource restrictionDigest,
+fragmentIndex,Position of cut sites in genome,4,"Reads from restriction enzyme digest Hi-C, fragment index .bed file already exists",If not provided and sample has restrictionEnzymes attribute,,resource restrictionDigest,
+sambam,"SAM, BAM, CRAM file",3,Ingesting .sam/.bam/.cram data,Sample input data is fastq,,data,
+pairs,4DN .pairs file,3,Ingesting .pairs data,Sample input data is fastq or sambam,,data,
+genomeReference,Path to FASTA genome reference file,3,Hich does not have URL linking assembly to reference genome,"If not declared (downloaded from hardcoded URL, based on assembly)","existing path, may be gzipped",resource,
+chromsizes,Path to chromsizes file (tab-delimited list of chromosomes and chromosome sizes),3,Ignore some chroms during processing,If not declared (created from genomeReference),existing path,resource,
+hic,Path to .hic contact matrix,3,Public/pre-binned .hic data,"Sample input data is fastq, sambam, pairs, or mcool AND appropriate matrix plan specified",existing path,data,
+mcool,Path to .mcool contact matrix,3,Public/pre-binned .mcool data,"Sample input data is fastq, sambam, pairs, or hic AND appropriate matrix plan specified",existing path,data,
+minMapq,Filter out reads with mapping quality (mapq) below threshold,3,"Ingesting .pairs, .sam/.bam/.cram, .pairs data",Never,Integer from 0-60,opts,
+align_opts,Set alignment options,3,Aligning,Applying defaults during alignment,,opts,
+ingest_pairs_opts,Set pairs ingestion options,3,Ingesting .pairs data,Applying defaults during pairs ingestion,,opts,
+parse_to_pairs_opts,Set pairtools parse2 options,3,Parsing alignments to pairs,Applying defaults during pairtools parse2 step,,opts,
+select_pairs_opts,Set pairtools select options,3,Selecting filter-passing pairs,Applying defaults during pairtools select step,,opts,
+tag_restriction_fragments_opts,Set hich fasta re-fragments options,3,Tagging restriction fragments for pairs,Applying defaults during hich pairs map-ends step,,opts,
+skipHicFileFormat,Do not create .hic files,3,Customizing contact matrix build,Never,,matrix workflow,nonconforming
+matrix_opts,Common options for creating .hic or .mcool contact matrix,3,Customizing contact matrix build,"Always (based on params.matrices, params.sampleSelectionStrategies)",,opts,
+skipMcoolFileFormat,Do not create .mcool files,3,Customizing contact matrix build,Never,,matrix workflow,
+skipDedupTechreps,"Do not deduplicate technical replicates (even after merging to biological replicates, if relevant)",3,Customizing deduplication,Never,,dedup workflow,
+skipDedupBioreps,Do not deduplicate biological replicates,3,Customizing deduplication,Never,,dedup workflow,
+skipDedup,Do not deduplicate,3,Customizing deduplication,Never,,dedup workflow,
+pairtoolsDedupParams,Options for pairtools dedup,3,Customizing deduplication,,,opts,nonconforming
+aggregationPlanName,Name of aggregation plan specifying how samples will be merged or split,3,Customizing aggregation (sample merge or split),,,merge,
+skipMerge,Do not merge file,3,Customizing aggregation (sample merge or split),Never,,merge workflow,
+skipBiorepMerge,Do not merge biological replicate to condition,3,Customizing aggregation (sample merge or split),Never,,merge workflow,
+skipTechrepMerge,Do not merge technical replicate to biological replicate,3,Customizing aggregation (sample merge or split),Never,,merge workflow,
+dedupSingleCell,Treat reads as duplicates only if .pairs file has matching cellID column value (may be automatically extracted from read name),2,Customizing deduplication,,,opts,nonconforming
+dedupMethod,Method to use for pairtools dedup,2,Customizing deduplication,,,opts,nonconforming
+splitColumns,,2,Customizing aggregation (sample merge or split),,,aggregate,
+splitSQL,,2,Customizing aggregation (sample merge or split),,,aggregate,
+splitTechreps,,2,Customizing aggregation (sample merge or split),,,aggregate,
+splitBioreps,,2,Customizing aggregation (sample merge or split),,,aggregate,
+splitConditions,,2,Customizing aggregation (sample merge or split),,,aggregate,
+id,Unique sample identifier,1,You have a good reason,"Unspecified (based on condition, biorep, techrep, matrix_plan, aggregation_plan)",,id,
+datatype,Specify input data type,1,You have a good reason,Always,"fastq, sambam, pairs, matrix, unknown",data,
+aggregateLevel,"Determine if sample is a techrep, biorep, or condition merge",1,,Sample made by merge,"techrep, biorep, condition",merge,
+latestSambam,Store most recently created bam file,1,You have a good reason,After steps that output .bam,,data latest,
+latest,Store most recently created data file,1,You have a good reason,After each step,,data latest,
+latestPairs,Store most recently created pairs file,1,You have a good reason,After steps that output .pairs,,data latest,
+selectPairs,"Store pairs file after filtering out pairs based on flexible criteria (pair type, mapping to same restriction fragment, etc)",1,You have a good reason,After pairtools select step,,data,
+fragPairs,Store pairs file after tagging restriction fragments,1,You have a good reason,After hich pairs map-ends step,,data,
+latestMatrix,"Most recently created contact matrix (may be .hic, .mcool)",1,You have a good reason,After steps that output contact matrices,,data latest,
+dedupPairs,Pairs file created after deduplication,1,You have a good reason,After .pairs deduplication step,,data,
