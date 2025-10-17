@@ -25,6 +25,7 @@
 * nf-test shards by skipping tests, which could interact oddly with obsolete snapshot detection, but I don't know if this is the case.
 * 5xing the shards for the fastest runs only decreased runtime by a factor of 2, possibly due to outlier slow tests.
 * Is there a way to rerun only tests that failed on the last run?
+* nf-test does not let you view the input variables to the function (AFAIK), so it's not possible to use it to test functions meant to modify variables passed by reference -- only functions that return values.
 # Basics
 
 [**nf-test**](https://www.nf-test.com/) is the automated test suite for Hich.
