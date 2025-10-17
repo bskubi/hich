@@ -3,13 +3,13 @@ include {buildCLIOpts} from '../../util/cli.nf'
 def _getAlignerConfig(String aligner, String index) {
     def alignerConfigs = [
         "bwa_family": [
-            userOptsKey: "bwa_mem_opts",
+            userOptsKey: "bwa_mem",
             defaultOpts: ["-S": true, "-P": true, "-5": true, "-M": true, "-T": 0],
             remap: [:],
             family: "bwa_family"
         ],
         "bwameth_family": [
-            userOptsKey: "bwameth_opts",
+            userOptsKey: "bwameth",
             defaultOpts: [
                 "--do-not-penalize-chimeras": true,
                 "--reference": index

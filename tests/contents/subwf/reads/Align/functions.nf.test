@@ -21,6 +21,26 @@ nextflow_function {
             CommandChecker.checkCmd(pipe_parts[1], "samtools view", ["-b", ["-o": "'test.bam'"]])
         }
     }
+
+	test("Align_buildCmd_bwa_single-end") {
+        function "buildCmd"
+        when {
+            function {
+                """
+                input = ["bwa", "test", "bwa", "hg38", [fastq: "r1.fq"], [bwa_mem: ["-p":false]], 30, 24]
+                """
+            }
+        }
+        then {
+            assert function.success
+            def cmd = function.result[0]
+            def pipe_parts = CommandChecker.getPipeParts(cmd)
+            CommandChecker.checkCmd(pipe_parts[0], "bwa mem", ["-S", "-P", "-5", "-M", ["-T": "'0'", "-t": "'24'"], "'bwa/hg38'", "'r1.fq'"])
+            CommandChecker.checkCmd(pipe_parts[1], "samtools view", ["-b", ["-o": "'test.bam'"]])
+            assert !CommandChecker.getCmdOpts(pipe_parts[0], "bwa mem").contains("-p")
+        }
+    }
+
     test("Align_buildCmd_bwameth")  {
         function "buildCmd"
         when {
