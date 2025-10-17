@@ -1,0 +1,59 @@
+
+nextflow_function {
+
+    name "ParseToPairs_buildCmd"
+    script "contents/subwf/reads/ParseToPairs/functions.nf"
+
+    test("ParseToPairs_buildCmd_userCmds") {
+
+        function "buildCmd"
+
+        when {
+            function {
+                """
+                input = [
+                    "test", "test.bam", "hg38.sizes", "hg38", 
+                    [
+                        pairtools_parse2_opts: ["--max-insert-size": 1000], 
+                        pairtools_sort: ["--tmpdir":"./temp"],
+                        
+                    ],
+                    30, 16, 24
+                ]
+                """
+            }
+        }
+
+        then {
+            assert function.success
+            def (samtoolsCmd, parseCmd, sortCmd) = CommandChecker.getPipeParts(function.result[0])
+            CommandChecker.checkCmd(samtoolsCmd, "samtools view", ["-b", "'test.bam'"])
+            CommandChecker.checkCmd(
+                parseCmd, 
+                "pairtools parse2", 
+                [
+                    "--flip",
+                    [
+                        "--assembly": "'hg38'", 
+                        "--min-mapq": "'30'",
+                        "-c": "'hg38.sizes'",
+                        "--max-insert-size": "'1000'"
+                    ]
+                ]
+            )
+            CommandChecker.checkCmd(
+                sortCmd,
+                "pairtools sort",
+                [
+                    [
+                        "--output": "'test.pairs.gz'",
+                        "--memory": "'16G'",
+                        "--nproc-in": "'24'",
+                        "--nproc-out": "'24'",
+                        "--tmpdir": "'./temp'"
+                    ]
+                ]
+            )
+        }
+    }
+}
