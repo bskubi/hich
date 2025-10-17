@@ -5,7 +5,7 @@ nextflow_function {
     script "contents/subwf/reads/SelectPairs/functions.nf"
 
 	
-    test("SmokeTest_SelectPairs_buildCmd") {
+    test("SelectPairs_buildCmd") {
         tag "3to10s"
         function "buildCmd"
 
@@ -25,7 +25,7 @@ nextflow_function {
                 input[0] = "1"
                 input[1] = "1.pairs.gz"
                 input[2] = "frags.gz"
-                input[3] = ["--output-rest": true, "filters": filters]
+                input[3] = ["--output-rest": "_rest.pairs.gz", "filters": filters]
                 input[4] = 8
                 """
             }
@@ -33,29 +33,43 @@ nextflow_function {
 
         then {
             assert function.success
-            with (function) {
-                def cmd = result[0]
-                def expected = [
-                    "echo 'chr1\nchr2' > '__chroms__.bed'",
-                    "pairtools select",
-                    "-o '1_select.pairs.gz'",
-                    "--chrom-subset '__chroms__.bed'",
-                    "--nproc-in",
-                    "--nproc-out",
-                    "(pair_type in ['UU', 'UR', 'RU'])",
-                    "(chrom1 == chrom2)",
-                    "(strand1 + strand2 == '+-' and abs(pos2 - pos1) >= 1)",
-                    "(strand1 + strand2 == '-+' and abs(pos2 - pos1) >= 2)",
-                    "(strand1 + strand2 == '++' and abs(pos2 - pos1) >= 3)",
-                    "(strand1 + strand2 == '--' and abs(pos2 - pos1) >= 4)",
-                    "(rfrag1 != rfrag2)",
-                    "'1.pairs.gz'"
-
+            def cmd = function.result[0]
+            def parts = CommandChecker.getSequentialParts(cmd)
+            def create_chroms_bed_cmd = parts[0]
+            def select_cmd = parts[1]
+            CommandChecker.checkCmd(
+                create_chroms_bed_cmd,
+                "echo",
+                [
+                    /'chr1\nchr2'/, 
+                    ">", 
+                    "'__chroms__.bed'"
                 ]
-                expected.each{
-                    assert cmd.contains(it)
-                }
-            }
+            )
+            CommandChecker.checkCmd(
+                select_cmd,
+                "pairtools select",
+                [
+                    [
+                        "--chrom-subset": "'__chroms__.bed'",
+                        "--nproc-in": "'8'",
+                        "--nproc-out": "'8'",
+                        "-o": "'1_select.pairs.gz'",
+                        "--output-rest": "'1_rest.pairs.gz'"
+                    ],
+                    "'1.pairs.gz'"
+                ]
+            )
+            def select_str = (
+                "\"(pair_type in ['UU', 'UR', 'RU']) and (chrom1 == chrom2) and (" +
+                    "(strand1 + strand2 == '+-' and abs(pos2 - pos1) >= 1) " +
+                    "or (strand1 + strand2 == '-+' and abs(pos2 - pos1) >= 2) " +
+                    "or (strand1 + strand2 == '++' and abs(pos2 - pos1) >= 3) " +
+                    "or (strand1 + strand2 == '--' and abs(pos2 - pos1) >= 4)" +
+                ") and (rfrag1 != rfrag2)\""
+            )
+            assert select_cmd.contains(select_str)
+            assert cmd.contains("&&")
         }
     }
 }
