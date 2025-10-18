@@ -4,6 +4,7 @@ import groovy.json.JsonOutput
 def validation_error(sample, name, message, schema) {
     
     def error_message = [
+        "IMPORTANT": "Copy this ENTIRE error message when raising a GitHub Issue",
         "Attribute": name,
         "Error": name + message,
         "Schema": schema,
@@ -71,10 +72,11 @@ def validate(schemas, sample) {
             if (schema.type.contains("Path")) {
                 def absPath = value == null ? null : file(value).toAbsolutePath()
                 def message = " is type ${value.getClass()}, but should be one of: ${schema.type}. As a path, resolves to ${absPath}, which does not exist."
+                validation_error(sample, name, message, schema)
             } else {
                 def message = " is type ${value.getClass()}, but should be one of: ${schema.type}"
+                validation_error(sample, name, message, schema)
             }
-            validation_error(sample, name, message, schema)
         }
         if (schema.ignoreNull && sample.containsKey(name) && sample[name] == null) {
             return
