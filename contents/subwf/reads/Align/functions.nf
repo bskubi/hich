@@ -19,7 +19,7 @@ def _getAlignerConfig(String aligner, String index) {
         ]
     ]
     def aligner_families = [
-        "bwa": "bwa_family",
+        "bwa mem": "bwa_family",
         "bwa-mem2": "bwa_family",
         "bwameth": "bwameth_family",
         "bwameth-mem2": "bwameth_family"
@@ -58,7 +58,7 @@ def getFastq(fastq) {
 def buildCmd(aligner, id, indexDir, indexPrefix, fastq, align_opts, minMapq, cpus) {
     def output = "${id}.bam"
     def index = "${indexDir}/${indexPrefix}"
-    def cleanFastq = fastq.values().findAll { it }
+    def cleanFastq = fastq.findAll { it }
 
     def alignerCmds = [
         "bwa": "bwa mem",

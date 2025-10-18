@@ -9,7 +9,7 @@ nextflow_function {
         when {
             function {
                 """
-                input = ["bwa", "test", "bwa", "hg38", [fastq1: "r1.fq", fastq2: "r2.fq"], [:], 30, 24]
+                input = ["bwa mem", "test", "bwa", "hg38", ["r1.fq", "r2.fq"], [:], 30, 24]
                 """
             }
         }
@@ -27,7 +27,7 @@ nextflow_function {
         when {
             function {
                 """
-                input = ["bwa", "test", "bwa", "hg38", [fastq: "r1.fq"], [bwa_mem: ["-p":false]], 30, 24]
+                input = ["bwa mem", "test", "bwa", "hg38", ["r1.fq"], [bwa_mem: ["-p":false]], 30, 24]
                 """
             }
         }
@@ -46,7 +46,7 @@ nextflow_function {
         when {
             function {
                 """
-                input = ["bwameth", "test", "bwameth", "hg38", [fastq1: "r1.fq", fastq2: "r2.fq"], [:], 30, 24]
+                input = ["bwameth", "test", "bwameth", "hg38", ["r1.fq", "r2.fq"], [:], 30, 24]
                 """
             }
         }
@@ -64,7 +64,7 @@ nextflow_function {
         when {
             function {
                 """
-                input = ["bwameth-mem2", "test", "bwameth-mem2", "hg38", [fastq: "interleaved.fq"], [:], 30, 24]
+                input = ["bwameth-mem2", "test", "bwameth-mem2", "hg38", ["interleaved.fq"], [:], 30, 24]
                 """
             }
         }
@@ -82,7 +82,7 @@ nextflow_function {
         when {
             function {
                 """
-                input = ["bwa-mem2", "test", "bwa-mem2", "hg38", [fastq: "interleaved.fq"], [:], 30, 24]
+                input = ["bwa-mem2", "test", "bwa-mem2", "hg38", ["interleaved.fq"], [:], 30, 24]
                 """
             }
         }

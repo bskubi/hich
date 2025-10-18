@@ -3,32 +3,28 @@ include {keyUpdate} from '../../util/keyUpdate.nf'
 include {withLog; stubLog} from '../../util/logs.nf'
 include {ALIGN} from './process.nf'
 include {getFastq} from './functions.nf'
+include {extract_inputs; load_sample_attrib_schema} from '../../util/schema.nf'
 
 workflow Align {
     take:
     samples
 
     main:
+    schema = load_sample_attrib_schema()
 
     if (!skip("Align")) {
 
         samples
             | filter {it.datatype == "fastq"}
             | map{
-                if (!it.alignerIndexDir) {
-                    error("alignerIndexDir is null for sample ${it}")
-                }
-                if (!getFastq(it)) {
-                    error("datatype is 'fastq' but no fastq files found for sample ${it}")
-                }
-                it
+                sample ->
+                inputs = extract_inputs("ALIGN", schema, sample)
+                inputs += ["fastq": inputs.subMap("fastq1", "fastq2", "fastq").values()]
+                inputs.subMap("id", "aligner", "aligner_index_dir", "aligner_index_prefix", "fastq", "align_opts", "min_mapq").values().toList()
             }
-            | map{tuple(it.id, it.aligner, it.alignerIndexDir, it.alignerIndexPrefix, getFastq(it), it.align_opts, it.minMapq)}
             | ALIGN
             | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
             | set{results}
-    
-
         keyUpdate(samples, results, "id") | set{samples}
     }
 

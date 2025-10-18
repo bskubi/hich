@@ -3,15 +3,15 @@ GENOME:
     type: "String"
 
 RESOURCE:
-  alignerIndexDir:
+  aligner_index_dir:
     type: "Path"
-  alignerIndexPrefix:
+  aligner_index_prefix:
     type: "String"
   chromsizes:
     type: "Path"
 
 FILTERS:
-  minMapq:
+  min_mapq:
     missingOK: true
     type: "Integer"
     default: 30
@@ -61,14 +61,14 @@ ALIGN:
     aligner:
       type: "String"
       choices: ["bwa mem", "bwa-mem2", "bwameth", "bwameth-mem2"]
-    alignerIndexDir:
+    aligner_index_dir:
       source: "RESOURCE"
-    alignerIndexPrefix:
+    aligner_index_prefix:
       source: "RESOURCE"
     align_opts:
       default: {}
       type: "Map"
-    minMapq:
+    min_mapq:
       source: "FILTERS"
 
 PARSE_TO_PAIRS:

@@ -2,19 +2,19 @@ import groovy.yaml.YamlSlurper
 import groovy.json.JsonOutput
 
 def validation_error(sample, name, message, schema) {
+    
     def error_message = [
         "Attribute": name,
         "Error": name + message,
         "Schema": schema,
         "Sample:": sample
     ].findAll{k, v -> v}
-
     def jsonError = JsonOutput.toJson(error_message)
     jsonError = JsonOutput.prettyPrint(jsonError)
     error(jsonError)
 }
 
-def validateType(value, okTypes) {
+def validate_type(value, okTypes) {
     def types = [
         "String": String,
         "List": List,
@@ -52,7 +52,6 @@ def validate(schemas, sample) {
     schemas.each {
         name, schema ->
         def value = sample[name]
-        
         if (!schema.missingOK && !sample.containsKey(name) && !schema.containsKey("default")) {
             validation_error(sample, name, " is missing (required, no default)", schema)
         }
@@ -62,7 +61,7 @@ def validate(schemas, sample) {
         if (!sample.containsKey(name) && schema.missingOK) {
             return
         }
-        if (schema.type && !validateType(value, schema.type)) {
+        if (schema.type && !validate_type(value, schema.type)) {
             if (schema.type.contains("Path")) {
                 def absPath = value == null ? null : file(value).toAbsolutePath()
                 def message = " is type ${value.getClass()}, but should be one of: ${schema.type}. As a path, resolves to ${absPath}, which does not exist."
@@ -101,7 +100,6 @@ def validate(schemas, sample) {
                 }
             }
         }
-
         validated += [(name): value]
     }
     return validated
@@ -121,7 +119,7 @@ def extract_inputs(process, config, sample) {
 }
 
 def load_sample_attrib_schema() {
-    def sample_attrib_schema_file = File(params.get("sampleAttribSchema", "sample-attrib-schema.yaml"))
+    def sample_attrib_schema_file = file(params.get("sampleAttribSchema", "$projectDir/sample-attrib-schema.yaml"))
     def sample_attrib_schema = new YamlSlurper().parseText(sample_attrib_schema_file.text)
     return sample_attrib_schema
 }
