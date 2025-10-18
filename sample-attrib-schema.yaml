@@ -17,19 +17,22 @@ FILTERS:
     default: 30
     min: 0
     max: 60
-    explain: "The bwa aligner mapq range."
     purpose: "Minimum mapping quality for filtering."
+    schema: "Restricted to the bwa aligner mapq range."
 
 DATA:
   fastq:
     missingOK: true
-    type: "Path"
+    type: ["Path"]
+    purpose: "For interleaved or single-end reads."
   fastq1:
     missingOK: true
-    type: "Path"
+    type: ["Path"]
+    purpose: "R1 of paired-end reads."
   fastq2:
     missingOK: true
-    type: "Path"
+    type: ["Path"]
+    purpose: "R2 of paired-end reads."
   sambam:
     required: true
     type: "Path"
@@ -50,14 +53,29 @@ ALIGN:
     fastq1:
       source: "DATA"
       require_attribs: ["fastq2"]
-      forbid_attribs: ["fastq"]
+      type: ["Path", "List"]
+      default: []
+      missingOK: false
+      note: >
+        To pass optional paths in a Nextflow process input tuple, we can pass
+        an empty list. See https://github.com/nextflow-io/nextflow/issues/1694#issuecomment-789334369
     fastq2:
       source: "DATA"
       require_attribs: ["fastq1"]
-      forbid_attribs: ["fastq"]
+      type: ["Path", "List"]
+      default: []
+      missingOK: false
+      note: >
+        To pass optional paths in a Nextflow process input tuple, we can pass
+        an empty list. See https://github.com/nextflow-io/nextflow/issues/1694#issuecomment-789334369
     fastq:
       source: "DATA"
-      forbid_attribs: ["fastq1", "fastq2"]
+      type: ["Path", "List"]
+      default: []
+      missingOK: false
+      note: >
+        To pass optional paths in a Nextflow process input tuple, we can pass
+        an empty list. See https://github.com/nextflow-io/nextflow/issues/1694#issuecomment-789334369
     aligner:
       type: "String"
       choices: ["bwa mem", "bwa-mem2", "bwameth", "bwameth-mem2"]

@@ -55,10 +55,10 @@ def getFastq(fastq) {
     return fastq.subMap("fastq", "fastq1", "fastq2").values()
 }
 
-def buildCmd(aligner, id, indexDir, indexPrefix, fastq, align_opts, minMapq, cpus) {
+def buildCmd(aligner, id, indexDir, indexPrefix, fastq, fastq1, fastq2, align_opts, minMapq, cpus) {
     def output = "${id}.bam"
     def index = "${indexDir}/${indexPrefix}"
-    def cleanFastq = fastq.findAll { it }
+    def cleanFastq = [fastq1, fastq1, fastq2].findAll { it }
 
     def alignerCmds = [
         "bwa": "bwa mem",

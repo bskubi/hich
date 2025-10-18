@@ -16,12 +16,7 @@ workflow Align {
 
         samples
             | filter {it.datatype == "fastq"}
-            | map{
-                sample ->
-                inputs = extract_inputs("ALIGN", schema, sample)
-                inputs += ["fastq": inputs.subMap("fastq1", "fastq2", "fastq").values()]
-                inputs.subMap("id", "aligner", "aligner_index_dir", "aligner_index_prefix", "fastq", "align_opts", "min_mapq").values().toList()
-            }
+            | map{extract_inputs("ALIGN", schema, it).values()}
             | ALIGN
             | map{[id:it[0], sambam:it[1], latest:it[1], latestSambam:it[1]]}
             | set{results}

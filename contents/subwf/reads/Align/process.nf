@@ -14,18 +14,18 @@ process ALIGN {
     debug true
     
     input:
-    tuple val(id), val(aligner), path(aligner_index_dir), val(aligner_index_prefix), path(fastq, arity: 1..2), val(align_opts), val(min_mapq)
+    tuple val(id), path(fastq), path(fastq1), path(fastq2), val(aligner), path(aligner_index_dir), val(aligner_index_prefix), val(align_opts), val(min_mapq)
 
     output:
     tuple val(id), path(output)
 
     shell:
-    (cmd, logMap, output) = buildCmd(aligner, id, aligner_index_dir, aligner_index_prefix, fastq, align_opts, min_mapq, task.cpus)
+    (cmd, logMap, output) = buildCmd(aligner, id, aligner_index_dir, aligner_index_prefix, fastq, fastq1, fastq2, align_opts, min_mapq, task.cpus)
     withLog(cmd, logMap)
 
     stub:
     
-    (cmd, logMap, output) = buildCmd(aligner, id, aligner_index_dir, aligner_index_prefix, fastq, align_opts, min_mapq, task.cpus)
+    (cmd, logMap, output) = buildCmd(aligner, id, aligner_index_dir, aligner_index_prefix, fastq, fastq1, fastq2, align_opts, min_mapq, task.cpus)
     stub = "touch '${output}'"
     stubLog(stub, cmd, logMap)
 }

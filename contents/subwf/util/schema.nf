@@ -40,7 +40,13 @@ def validate_type(value, okTypes) {
                 if (value instanceof Path) {
                     return value.exists()
                 } else {
-                    return file(value).exists()
+                    try {
+                        return file(value).exists()
+                    }
+                    catch (Exception e) {
+                        return false
+                    }
+                    
                 }
             } 
             return expectedClass.isInstance(value)
