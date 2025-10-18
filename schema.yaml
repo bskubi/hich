@@ -1,0 +1,93 @@
+GENOME:
+  assembly:
+    type: "String"
+
+RESOURCE:
+  alignerIndexDir:
+    type: "Path"
+  alignerIndexPrefix:
+    type: "String"
+  chromsizes:
+    type: "Path"
+
+FILTERS:
+  minMapq:
+    missingOK: true
+    type: "Integer"
+    default: 30
+    min: 0
+    max: 60
+    explain: "The bwa aligner mapq range."
+    purpose: "Minimum mapping quality for filtering."
+
+DATA:
+  fastq:
+    missingOK: true
+    type: "Path"
+  fastq1:
+    missingOK: true
+    type: "Path"
+  fastq2:
+    missingOK: true
+    type: "Path"
+  sambam:
+    required: true
+    type: "Path"
+  pairs:
+    required: true
+    type: "Path"
+  hic:
+    required: true
+    type: "Path"
+  mcool:
+    required: true
+    type: "Path"
+
+ALIGN:
+  input:
+    id:
+      source: "INTRINSIC"
+    fastq1:
+      source: "DATA"
+      require_attribs: ["fastq2"]
+      forbid_attribs: ["fastq"]
+    fastq2:
+      source: "DATA"
+      require_attribs: ["fastq1"]
+      forbid_attribs: ["fastq"]
+    fastq:
+      source: "DATA"
+      forbid_attribs: ["fastq1", "fastq2"]
+    aligner:
+      type: "String"
+      choices: ["bwa mem", "bwa-mem2", "bwameth", "bwameth-mem2"]
+    alignerIndexDir:
+      source: "RESOURCE"
+    alignerIndexPrefix:
+      source: "RESOURCE"
+    align_opts:
+      default: {}
+      type: "Map"
+    minMapq:
+      source: "FILTERS"
+
+PARSE_TO_PAIRS:
+  input:
+    id:
+      source: "INTRINSIC"
+    sambam:
+      source: "DATA"
+    chromsizes:
+      source: "RESOURCE"
+    assembly:
+      source: "GENOME"
+    parse_to_pairs_opts:
+      default: {}
+      type: "Map"
+    minMapq:
+      source: "FILTERS"
+
+INTRINSIC:
+  id:
+    type: "String"
+    purpose: "Unique sample identifier, typically auto-constructed by Hich from condition_biorep_techrep."
