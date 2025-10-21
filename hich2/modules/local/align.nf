@@ -1,6 +1,8 @@
 import java.nio.file.Paths
 import hich.util.HichUtil
 import hich.Engine
+import hich.specs.HichSpec.SpecKey
+import hich.plans.Plan
 
 process ALIGN {
     input:
@@ -15,34 +17,32 @@ process ALIGN {
 
     output:
     tuple val(id), path(bam), emit: result
-    val(execution_context), emit: execution_context
+    val(plan), emit: plan
 
     script:
-    context = get_context(
+    plan = get_plan(
         id, 
         fastq, fastq1, fastq2, 
         aligner, aligner_index_dir, aligner_index_prefix, aligner_opts, 
         task.cpus
     )
-    bam = context.output.bam
-    execution_context = context
-    context.command
+    bam = plan.output.bam
+    plan.command
 
     stub:
-    context = get_context(
+    plan = get_plan(
         id, 
         fastq, fastq1, fastq2, 
         aligner, aligner_index_dir, aligner_index_prefix, aligner_opts, 
         task.cpus
     )
     bam = context.output.bam
-    execution_context = context
     context.stub
 }
 
-def get_context(id, fastq, fastq1, fastq2, aligner, aligner_index_dir, aligner_index_prefix, aligner_opts, cpus) {
-    return Engine.getContext(
-        hich.specs.HichSpec.ALIGN,
+Plan get_plan(id, fastq, fastq1, fastq2, aligner, aligner_index_dir, aligner_index_prefix, aligner_opts, cpus) {
+    return Engine.getPlan(
+        SpecKey.ALIGN,
         [
             id, 
             HichUtil.toPath(fastq),

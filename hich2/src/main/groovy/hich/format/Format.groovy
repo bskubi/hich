@@ -2,15 +2,15 @@ package hich.format
 import groovy.text.SimpleTemplateEngine
 /* Format raw pattern String containing GString, i.e. '${aligner}'
 */
-class Formatter {
-    String format(String pattern, Map bind) {
+class Format {
+    static String format(String pattern, Map bind) {
         def engine = new SimpleTemplateEngine()
         return engine.createTemplate(pattern).make(bind).toString()
     }
 
     /* Return 'patterns' after formatting 'key' with 'bind'.
     */
-    Map updateFormat(Map patterns, String key, Map bind) {
+    static Map updateFormat(Map patterns, String key, Map bind) {
         try {
             Boolean hasPattern = (
                 patterns.containsKey(key) &&

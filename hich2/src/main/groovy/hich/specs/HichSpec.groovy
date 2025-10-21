@@ -24,7 +24,7 @@ class HichSpec {
     }
 
     private static final Map SPECS = [
-        (SpecKey.ADD_SAMPLE): Align.spec,
-        (SpecKey.ALIGN): AddSample.spec
+        (SpecKey.ADD_SAMPLE): AddSample.spec,
+        (SpecKey.ALIGN): Align.spec
     ]
 }

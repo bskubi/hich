@@ -5,6 +5,8 @@ import hich.specs.plans.keys.PlanKey
 import hich.util.HichUtil
 import hich.rules.ValidationRules
 import hich.rules.TransformationRules
+import hich.plans.Plan
+import hich.plans.Planner
 
 class Engine {
     /* Fast-fail in case HichSpec doesn't have every member of HichSpec.SpecKey
@@ -47,7 +49,7 @@ class Engine {
                 throw new Exception("Post-validation failed on process '${key}': ${errors.join('\n')}")
             }
         } catch(Exception e) {
-            def errors = "Failed to process interface '${key}' on sample ${sample}.\n${e}"
+            def errors = "Failed to process spec '${key}' on sample ${sample}.\n${e}"
             throw new Exception(errors)
         }
         return sample
@@ -87,7 +89,7 @@ class Engine {
         def INPUTS = PlanKey.INPUTS
 
         if (!spec.containsKey(INPUTS)) {
-            throw new Exception("No INPUTS defined in HichContract for process '${key}'.")
+            throw new Exception("No INPUTS defined in HichSpec for process '${key}': ${spec}.")
         }
         else {
             def inputs = spec[INPUTS]

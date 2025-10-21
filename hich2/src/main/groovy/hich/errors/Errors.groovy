@@ -1,5 +1,5 @@
 package hich.errors
-import hich.format.Formatter
+import hich.format.Format
 
 class Errors {
     String error_pattern = '${error}'
@@ -7,7 +7,7 @@ class Errors {
     Boolean numbered = true
 
     def AddError(String error) {
-        String error_message = Formatter.format(error_pattern, [error: error])
+        String error_message = Format.format(error_pattern, [error: error])
         if (numbered) {
             String N = (errors.size() + 1).toString()
             error_message = "${N}. ${error_message}"

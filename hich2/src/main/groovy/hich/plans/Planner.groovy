@@ -1,3 +1,4 @@
+package hich.plans
 import java.nio.file.Path
 import hich.plans.Command
 
@@ -47,7 +48,6 @@ class Planner {
         else {
             all_errors.add("Unsupported aligner string '${aligner}'")
         }
-        
         context.builder.align = (
             context.builder.align
             .setBaseCommand(align_CB.base_command)

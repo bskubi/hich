@@ -28,7 +28,7 @@ class Align {
             [key: "cpus", type: Integer, fromProcess: true]
         ],
         (PlanKey.COMMANDS): [
-            method: "alignContext",
+            method: "planAlign",
             commands: [
                 bwa_mem_command: [
                     base_command: '${aligner}',

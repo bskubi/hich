@@ -33,7 +33,7 @@ class HichUtil {
     /* Convert object to Path type
     */
     static Path toPath(Object path) {
-        return Paths.get(path.toString())
+        return path ? Paths.get(path.toString()) : null
     }
 
     /* Check if Path, String, etc. is existing path

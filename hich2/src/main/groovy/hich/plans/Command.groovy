@@ -1,4 +1,5 @@
 package hich.plans
+import hich.format.Format
 
 class Command {
     String base_command = null
@@ -29,17 +30,17 @@ class Command {
     }
 
     Command formatBaseCommand(Map bind) {
-        base_command = HichUtil.format(base_command, bind)
+        base_command = Format.format(base_command, bind)
         return this
     }
 
     Command formatOpt(String opt, Map bind) {
-        opts = HichUtil.formatIfPresent(opts, opt, bind)
+        opts = Format.updateFormat(opts, opt, bind)
         return this
     }
 
     Command formatArg(String arg, Map bind) {
-        args = HichUtil.formatIfPresent(args, arg, bind)
+        args = Format.updateFormat(args, arg, bind)
         return this
     }
 

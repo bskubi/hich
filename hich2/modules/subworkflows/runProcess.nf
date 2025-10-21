@@ -27,10 +27,10 @@ workflow runProcess {
     update(samples, outputs)
         | set{samples}
 
-    output_channels.execution_context
-        | set{execution_context}
+    output_channels.plan
+        | set{plan}
 
     emit:
     samples
-    execution_context
+    plan
 }
