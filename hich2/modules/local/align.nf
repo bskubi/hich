@@ -12,7 +12,9 @@ process ALIGN {
           val (aligner_opts)
 
     output:
-    tuple val(id), path(bam)
+    tuple val(id), path(bam), emit: result
+    val(execution_context), emit: execution_context
+
 
     shell:
     HichExecutionContext context = HichEngine.getContext(
@@ -25,9 +27,11 @@ process ALIGN {
             aligner,
             HichWorkflowAdapter.toPath(aligner_index_dir),
             aligner_index_prefix,
-            aligner_opts
+            aligner_opts,
+            5
         ]
     )
     bam = context.output.bam
+    execution_context = context
     context.command
 }

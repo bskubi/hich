@@ -80,8 +80,9 @@ class HichEngine {
         }
         else {
             def inputs = processMap[INPUTS]
-            return inputs.collect {
-                input -> 
+            def fromSample = inputs.findAll{!it.containsKey("fromProcess") || !it.fromProcess}
+            return fromSample.collect {
+                input ->
                 HichWorkflowAdapter.extractNextflowProcessInput(sample, input)
             }
         }

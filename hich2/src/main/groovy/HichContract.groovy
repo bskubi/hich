@@ -78,9 +78,9 @@ class HichContract {
                 [key: "aligner", type: String],
                 [key: "aligner_index_dir", type: Path],
                 [key: "aligner_index_prefix", type: String],
-                [key: "aligner_opts", type: Map, whenMissing: null]
+                [key: "aligner_opts", type: Map, whenMissing: null],
+                [key: "cpus", type: Integer, fromProcess: true]
             ],
-
             (Schema.COMMANDS): [
                 method: "alignContext",
                 commands: [
@@ -91,14 +91,14 @@ class HichContract {
                             "-P": true,
                             "-5": true,
                             "-M": true,
-                            "-p": '${fastq != null}',
+                            "-p": 'fastq != null',
                             "-t": '${cpus}'
                         ],
                         arguments: [
                             "aligner_index": '${aligner_index_dir}/${aligner_index_prefix}',
-                            "fastq": '${fastq}',
-                            "fastq1": '${fastq1}',
-                            "fastq2": '${fastq2}'
+                            "fastq": 'fastq ?: null',
+                            "fastq1": 'fastq1 ?: null',
+                            "fastq2": 'fastq2 ?: null'
                         ]
                     ],
                     bwameth_command: [
@@ -106,13 +106,13 @@ class HichContract {
                         default_options: [
                             "--do-not-penalize-chimeras": true,
                             "--reference": '${aligner_index_dir}/${aligner_index_prefix}',
-                            "-p": '${fastq != null}',
+                            "-p": 'fastq != null',
                             "-t": '${cpus}'
                         ],
                         arguments: [
-                            "fastq": '${fastq}',
-                            "fastq1": '${fastq1}',
-                            "fastq2": '${fastq2}'
+                            "fastq": 'fastq ?: null',
+                            "fastq1": 'fastq1 ?: null',
+                            "fastq2": 'fastq2 ?: null'
                         ]
                     ],
                     samtools_view_command: [

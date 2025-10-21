@@ -17,5 +17,6 @@ workflow {
         | map{HichEngine.prepareSample("ADD_SAMPLE", it)}
         | set{samples}
 
-    runProcess("ALIGN", ALIGN, samples)
+    align = runProcess("ALIGN", ALIGN, samples)
+    align.execution_context | map{it.command} | view
 }

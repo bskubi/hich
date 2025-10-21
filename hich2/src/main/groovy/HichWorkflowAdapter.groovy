@@ -30,7 +30,6 @@ class HichWorkflowAdapter {
 
         def key = input.key
         def sampleContainsKey = sample.containsKey(key)
-
         if (!sampleContainsKey && !input.containsKey("whenMissing")) {
             throw new Exception("Sample did not contain required key '${key}'.")
         }

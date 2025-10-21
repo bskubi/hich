@@ -10,6 +10,9 @@ workflow runProcess {
     samples
         | map{HichEngine.prepareProcessInputs(process_name, it)}
         | PROCESS
+        | set{output_channels}
+    
+    output_channels.result
         | map{
             output ->
             sample = HichEngine.formatProcessOutputs(process_name, output)
@@ -23,6 +26,10 @@ workflow runProcess {
     update(samples, outputs)
         | set{samples}
 
+    output_channels.execution_context
+        | set{execution_context}
+
     emit:
     samples
+    execution_context
 }
