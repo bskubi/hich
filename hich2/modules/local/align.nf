@@ -1,4 +1,6 @@
 import java.nio.file.Paths
+import hich.util.HichUtil
+import hich.Engine
 
 process ALIGN {
     input:
@@ -15,23 +17,42 @@ process ALIGN {
     tuple val(id), path(bam), emit: result
     val(execution_context), emit: execution_context
 
-
     script:
-    HichExecutionContext context = HichEngine.getContext(
-        "ALIGN",
-        [
-            id, 
-            HichWorkflowAdapter.toPath(fastq),
-            HichWorkflowAdapter.toPath(fastq1),
-            HichWorkflowAdapter.toPath(fastq2),
-            aligner,
-            HichWorkflowAdapter.toPath(aligner_index_dir),
-            aligner_index_prefix,
-            aligner_opts,
-            task.cpus
-        ]
+    context = get_context(
+        id, 
+        fastq, fastq1, fastq2, 
+        aligner, aligner_index_dir, aligner_index_prefix, aligner_opts, 
+        task.cpus
     )
     bam = context.output.bam
     execution_context = context
     context.command
+
+    stub:
+    context = get_context(
+        id, 
+        fastq, fastq1, fastq2, 
+        aligner, aligner_index_dir, aligner_index_prefix, aligner_opts, 
+        task.cpus
+    )
+    bam = context.output.bam
+    execution_context = context
+    context.stub
+}
+
+def get_context(id, fastq, fastq1, fastq2, aligner, aligner_index_dir, aligner_index_prefix, aligner_opts, cpus) {
+    return Engine.getContext(
+        hich.specs.HichSpec.ALIGN,
+        [
+            id, 
+            HichUtil.toPath(fastq),
+            HichUtil.toPath(fastq1),
+            HichUtil.toPath(fastq2),
+            aligner,
+            HichUtil.toPath(aligner_index_dir),
+            aligner_index_prefix,
+            aligner_opts,
+            cpus
+        ]
+    )
 }
