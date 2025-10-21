@@ -84,7 +84,9 @@ class HichExecutionContextBuilder {
 
         def final_command = "${align_command} | ${samtools_view_command}"
         context.command = final_command
+        context.stub = "touch '${bam}'"
         context.output.bam = bam
+        
 
         if (all_errors) {
             all_errors.add("FATAL: Errors when building align command.")

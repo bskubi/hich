@@ -16,7 +16,7 @@ process ALIGN {
     val(execution_context), emit: execution_context
 
 
-    shell:
+    script:
     HichExecutionContext context = HichEngine.getContext(
         "ALIGN",
         [
@@ -28,7 +28,7 @@ process ALIGN {
             HichWorkflowAdapter.toPath(aligner_index_dir),
             aligner_index_prefix,
             aligner_opts,
-            5
+            task.cpus
         ]
     )
     bam = context.output.bam
