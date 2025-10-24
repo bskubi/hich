@@ -1,6 +1,5 @@
 import groovy.yaml.YamlSlurper
 import groovy.json.JsonBuilder
-import hich.Hich
 import java.nio.file.Path
 
 include { FASTQ_ALIGN } from './modules/local/fastq/fastq_align/main.nf'

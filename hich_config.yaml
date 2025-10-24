@@ -47,27 +47,34 @@ M129:
 
 standard_alignment:
   config_fastq_align:
-    align_command:
+    cmd_align:
       base_command: ${aligner} mem
       flags: ["-S", "-P", "-5", "-M", "-p"]
       opts:
         '-t': '${cpus}'
-        '-o': '${bam}'
       args: [
         "${aligner_index_dir}/${aligner_index_prefix}",
         "${fastq1}",
         "${fastq2}"
       ]
+    cmd_samtools_view:
+      base_command: "samtools view"
+      flags: ["-b"]
+      opts:
+        '-o': '${bam}'
 
 methyl_alignment:
   config_fastq_align:
-    align_command:
+    cmd_align:
       base_command: python -m ${aligner}
       flags: ["--do-not-penalize-chimeras", "-p"]
       opts:
         '--reference': '${aligner_index_dir}/${aligner_index_prefix}'
         '-t': '${cpus}'
       args: ["${fastq1}", "${fastq2}"]
-
+    base_command: "samtools view"
+    flags: ["-b"]
+    opts:
+      '-o': '${bam}'
 
 
