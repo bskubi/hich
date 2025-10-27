@@ -3,179 +3,240 @@ import groovy.json.JsonBuilder
 import java.nio.file.Path
 
 include { FASTQ_ALIGN } from './modules/local/fastq/fastq_align/main.nf'
-include { BAM_PARSE_CONTACTS } from './modules/local/bam/bam_parse_contacts/main.nf'
-include { PAIRS_PREP } from './modules/local/pairs/pairs_prep/main.nf'
+include { BAM_PARSE_PAIRS } from './modules/local/bam/bam_parse_pairs/main.nf'
 include { PAIRS_LABEL } from './modules/local/pairs/pairs_label/main.nf'
 include { PAIRS_SELECT } from './modules/local/pairs/pairs_select/main.nf'
 include { PAIRS_MERGE as PAIRS_MERGE_BEFORE_DEDUP;
           PAIRS_MERGE as PAIRS_MERGE_AFTER_DEDUP  
         } from './modules/local/pairs/pairs_merge/main.nf'
 include { PAIRS_DEDUP } from './modules/local/pairs/pairs_dedup/main.nf'
-include { PAIRS_HIC_BIN_COARSEN_ADDNORM } from './modules/local/pairs/pairs_hic_bin_coarsen_addnorm/main.nf'
 include { PAIRS_COOL_BIN } from './modules/local/pairs/pairs_cool_bin/main.nf'
 include { COOL_COARSEN_ADDNORM } from './modules/local/matrix/cool_coarsen_addnorm/main.nf'
-
-
-List<Path> toPathList(List<String> path_str) {
-    return path_str.findAll().collect{file(it)}
-}
-
-List<Path> toPathList(String path_str) {
-    return [file(it)]
-}
+include { PAIRS_HIC_BIN_COARSEN_ADDNORM } from './modules/local/pairs/pairs_hic_bin_coarsen_addnorm/main.nf'
+include { groupSourcesByTarget } from './modules/subworkflows/groupSourcesByTarget.nf'
+include { getPairsMerge } from './modules/subworkflows/getPairsMerge.nf'
 
 /** Respect nf-core naming conventions.
     https://nf-co.re/docs/guidelines/components/subworkflows
 */
 workflow {
-    hich_config_path = params.containsKey("hichConfig") ? params.configFile : "hich_config.yaml"
-    hich_config_file = file(hich_config_path)
-    hich_config = new YamlSlurper().parse(hich_config_file)
-    
-    channel.fromList(
-        hich_config
-        .input_records
-        .collect { id, record -> record + [id: id] + hich_config.standard_alignment + hich_config.M129 }
-    )
-        | set {ch_record_input}
-    
-    channel.fromList(
-        hich_config
-        .merge_before_dedup_records
-        .collect { id, record -> record + [id: id] + hich_config.standard_alignment + hich_config.M129 }
-    )
-        | set {ch_record_merge_before_dedup}
+    manifest_path = params.containsKey("manifest") ? params.manifest : "manifest.yaml"
+    manifest_file = file(manifest_path)
+    manifest = new YamlSlurper().parse(manifest_file)
 
-    channel.fromList(
-        hich_config
-        .merge_after_dedup_records
-        .collect { id, record -> record + [id: id] + hich_config.standard_alignment + hich_config.M129 }
-    )
-        | set {ch_record_merge_after_dedup }
 
-    
-    ch_record_input
+    /** Validate hich_version
+        Enables us to warn/error if user's running a potentially buggy
+        config from earlier versions of Hich.
+    */
+    accept_versions = ["unstable"]
+    if (!manifest.containsKey("hich_version")) {
+        error("Manifest ${manifest_file.getAbsolutePath()} has no hich_version field.")
+    } else if (!(manifest.hich_version in accept_versions)) {
+        error("Unknown version: '${manifest.hich_version}'. Valid choices: ${accept_versions}")
+    }
+
+
+    /** Build all records.
+    */
+    REMOVE_KEYS = ["hich_version"]
+    records = manifest
+                .findAll{ k, v -> !(k in REMOVE_KEYS) }
+                .collect{ id, config -> [id: id, *: config] }
+
+    channel.fromList(records) | set { ch_all_records }
+
+    /** Split into subchannels based on where the record enters the pipeline.
+    */
+    VALID_ENTRYPOINTS = [
+        "FASTQ_ALIGN", 
+        "BAM_PARSE_PAIRS", 
+        "PAIRS_LABEL",
+        "PAIRS_SELECT",
+        "PAIRS_MERGE_BEFORE_DEDUP",
+        "PAIRS_DEDUP",
+        "PAIRS_MERGE_AFTER_DEDUP",
+        "PAIRS_BIN_COARSEN_ADDNORM",
+        "COOL_COARSEN_ADDNORM"
+    ]
+    ch_all_records
         | branch {
-            fastq_input:  it.fastq && !it.sambam && !it.pairs && !it.cool && !it.mcool && !it.hic
-            bam_input: (it.sam || it.bam || it.cram) && !it.pairs && !it.cool && !it.mcool && !it.hic
-            pairs_input:  it.pairs && !it.cool && !it.mcool && !it.hic
-            matrix_input: it.cool || it.mcool || it.hic
+            FASTQ_ALIGN: it.entrypoint == "FASTQ_ALIGN"
+            BAM_PARSE_PAIRS: it.entrypoint == "BAM_PARSE_PAIRS"
+            PAIRS_LABEL: it.entrypoint == "PAIRS_LABEL"
+            PAIRS_SELECT: it.entrypoint == "PAIRS_SELECT"
+            PAIRS_MERGE_BEFORE_DEDUP: it.entrypoint == "PAIRS_MERGE_BEFORE_DEDUP"
+            PAIRS_DEDUP: it.entrypoint == "PAIRS_DEDUP"
+            PAIRS_MERGE_AFTER_DEDUP: it.entrypoint == "PAIRS_MERGE_AFTER_DEDUP"
+            PAIRS_BIN_COARSEN_ADDNORM: it.entrypoint == "PAIRS_BIN_COARSEN_ADDNORM"
+            COOL_COARSEN_ADDNORM: it.entrypoint == "COOL_COARSEN_ADDNORM"
             error: true
         }
-        | set{ ch_record_input_source }
-    
-    ch_record_input_source.fastq_input
-        | map { [it.id, toPathList(it.fastq)] }
-        | set { ch_fastq_input }
+        | set { ch_entrypoints }
 
-    ch_record_input
-        | map { [it.id, it.aligner, file(it.aligner_index_dir), it.aligner_index_prefix, it.config_fastq_align] }
-        | set { ch_config_fastq_align }
+    ch_entrypoints.error
+        | map{ 
+            error("No or invalid entrypoint defined for record. Entrypoint: ${it.entrypoint}. Valid entrypoints: ${VALID_ENTRYPOINTS}.\n${it}") 
+        }
     
-    ch_fastq_input
-        | join( ch_config_fastq_align )
+    /** Align FASTQ files
+    */
+    ch_entrypoints.FASTQ_ALIGN
+        | map { [it.id, [file(it.fastq1)], it.fastq2 ? file(it.fastq2) : [], file(it.aligner_index_dir), it.config_fastq_align] }
         | FASTQ_ALIGN
 
-    ch_record_input_source.bam_input
-        | map { [it.id, toPathList([it.sam, it.bam, it.cram])] }
-        | set { ch_bam_input }
-
-    ch_record_input
-        | map { [it.id, it.config_bam_parse_contacts] }
-        | set { ch_config_bam_parse_contacts }
-
-    FASTQ_ALIGN.out.bam
-        | concat( ch_bam_input )
-        | join( ch_config_bam_parse_contacts )
-        | BAM_PARSE_CONTACTS
-
-    ch_record_input_source.pairs_input
-        | map { [it.id, toPathList(it.pairs)] }
-        | set { ch_pairs_input }
+    /** Ingest BAM files
+    */
     
-    ch_record_input
-        | map { [it.id, it.config_pairs_prep] }
-        | set { ch_config_pairs_prep }
+    ch_entrypoints.BAM_PARSE_PAIRS
+        | map { [it.id, it.bam] }
+        | concat( FASTQ_ALIGN.out.bam )
+        | set { ch_data_bam_parse_pairs }
 
-    ch_pairs_input
-        | join( ch_config_pairs_prep )
-        | PAIRS_PREP
+    ch_all_records
+        | map { [it.id, it.chromsizes, it.config_bam_parse_pairs] }
+        | set { ch_config_bam_parse_pairs }
+    
+    ch_data_bam_parse_pairs
+        | join( ch_config_bam_parse_pairs )
+        | map{ id, bam, chromsizes, config -> [id, file(bam), file(chromsizes), config]}
+        | BAM_PARSE_PAIRS
 
-    ch_record_input
-        | map { [it.id, it.config_pairs_label] }
+    /** Label pairs as criteria for selection by PAIRS_SELECT, PAIRS_DEDUP
+    */
+    
+    ch_entrypoints.PAIRS_LABEL
+        | map { [it.id, file(it.pairs)]}
+        | concat( BAM_PARSE_PAIRS.out.pairs )
+        | set { ch_data_pairs_label }
+    
+    ch_all_records
+        | map { [it.id, it.fragment_index, it.config_pairs_label] }
         | set { ch_config_pairs_label }
     
-    BAM_PARSE_CONTACTS.out.pairs
-        | concat(PAIRS_PREP.out.pairs)
+    ch_data_pairs_label
         | join( ch_config_pairs_label )
+        | map { id, input_pairs, fragment_index, config_pairs_label ->
+            [id, file(input_pairs), file(fragment_index), config_pairs_label]
+        }
         | PAIRS_LABEL
 
-    ch_record_input
-        | map { [it.id, it.config_select] }
+    // /** Select reads based on traits of individual reads in isolation
+    // */
+
+    ch_entrypoints.PAIRS_SELECT
+        | map { [it.id, file(it.pairs)] }
+        | concat ( PAIRS_LABEL.out.pairs )
+        | set { ch_data_pairs_select }
+    
+    ch_all_records
+        | map { [it.id, it.config_pairs_select] }
         | set { ch_config_pairs_select }
     
-    PAIRS_LABEL.out.pairs
-        | join( ch_config_pairs_select)
+    ch_data_pairs_select
+        | join ( ch_config_pairs_select )
         | PAIRS_SELECT
 
-    ch_record_input
-        | map { [it.id, it.config_pairs_merge_before_dedup] }
-        | set { ch_config_pairs_merge_before_dedup }
+    /** Merge reads before dedup
+        Need to collect all reads in the list of read IDs to join.
+    */
 
-    PAIRS_SELECT.out.pairs
-        | join ( ch_config_pairs_merge_before_dedup )
-        | map{ [*it, "_before_dedup"] }
+    getPairsMerge(
+        ch_entrypoints.PAIRS_MERGE_BEFORE_DEDUP,
+        PAIRS_SELECT.out.pairs
+    )
+        | set { ch_data_pairs_merge_before_dedup}
+
+    /** Get merge config channel
+    */
+    ch_all_records
+        | map { [it.id, it.config_pairs_merge] }
+        | set { ch_config_pairs_merge_before_dedup }
+    
+    /** Join in config and merge
+    */
+    ch_data_pairs_merge_before_dedup
+        | join( ch_config_pairs_merge_before_dedup )
+        | map { id, pairs, config_pairs_merge -> [id, pairs.collect{file(it)}, config_pairs_merge]}
         | PAIRS_MERGE_BEFORE_DEDUP
 
-    ch_record_input
+    /** Deduplicate
+    */
+
+    ch_entrypoints.PAIRS_DEDUP
+        | map{ [it.id, it.pairs] }
+        | concat(PAIRS_SELECT.out.pairs)
+        | concat(PAIRS_MERGE_BEFORE_DEDUP.out.pairs)
+        | set { ch_data_dedup }
+    
+    ch_all_records
         | map { [it.id, it.config_pairs_dedup] }
         | set { ch_config_pairs_dedup }
     
-    PAIRS_SELECT.out.pairs
-        | concat(PAIRS_MERGE_BEFORE_DEDUP.out.pairs)
+    ch_data_dedup
         | join ( ch_config_pairs_dedup )
         | PAIRS_DEDUP
-    
-    ch_record_input
-        | map { [it.id, it.config_pairs_merge_after_dedup] }
-        | set { ch_config_pairs_merge_after_dedup }
 
-    PAIRS_DEDUP.out.pairs
-        | join ( ch_config_pairs_merge_after_dedup )
-        | map{ [*it, "_after_dedup"] }
+    /** Merge reads after dedup
+    */
+    
+    getPairsMerge(
+        ch_entrypoints.PAIRS_MERGE_AFTER_DEDUP,
+        PAIRS_DEDUP.out.pairs
+    )
+        | set { ch_data_pairs_merge_after_dedup}
+
+    /** Get merge config channel
+    */
+    ch_all_records
+        | map { [it.id, it.config_pairs_merge] }
+        | set { ch_config_pairs_merge_after_dedup }
+    
+    /** Join in config and merge
+    */
+    ch_data_pairs_merge_after_dedup
+        | join( ch_config_pairs_merge_after_dedup )
+        | map { id, pairs, config_pairs_merge -> [id, pairs.collect{file(it)}, config_pairs_merge]}
         | PAIRS_MERGE_AFTER_DEDUP
     
-    ch_record_input
-        | map { [it.id, it.config_pairs_cool_bin] }
-        | set { ch_config_pairs_cool_bin }
-
-    PAIRS_DEDUP.out.pairs
+    ch_entrypoints.PAIRS_BIN_COARSEN_ADDNORM
+        | map { [it.id, it.pairs] }
+        | concat( PAIRS_DEDUP.out.pairs )
         | concat( PAIRS_MERGE_AFTER_DEDUP.out.pairs )
-        | set { ch_output_pairs }
+        | set { ch_data_pairs_bin_coarsen_addnorm }
     
-    ch_output_pairs
+    ch_all_records
+        | map { [it.id, it.chromsizes, it.config_pairs_cool_bin] }
+        | set { ch_config_pairs_cool_bin }
+    
+    ch_data_pairs_bin_coarsen_addnorm
         | join ( ch_config_pairs_cool_bin )
+        | map { id, pairs, chromsizes, config_pairs_cool_bin ->
+            [id, file(pairs), file(chromsizes), config_pairs_cool_bin]
+        }
         | PAIRS_COOL_BIN
+    
+    ch_entrypoints.COOL_COARSEN_ADDNORM
+        | map { [it.id, it.cool] }
+        | concat( PAIRS_COOL_BIN.out.cool )
+        | set { ch_data_cool_coarsen_addnorm }
 
-    ch_record_input_source.matrix_input
-        | filter{ it.cool && !it.mcool }
-        | map { [it.id, toPathList(it.cool)] }
-        | set { ch_cool_input }
-
-    ch_record_input
+    ch_all_records
         | map { [it.id, it.config_cool_coarsen_addnorm] }
-        | set { ch_config_cool_coarsen_addnorm }
+        | set { ch_config_coarsen_addnorm }
     
-    PAIRS_COOL_BIN.out.cool
-        | concat( ch_cool_input )
-        | join( ch_config_cool_coarsen_addnorm ) 
+    ch_data_cool_coarsen_addnorm
+        | join( ch_config_coarsen_addnorm )
         | COOL_COARSEN_ADDNORM
+
+    ch_all_records
+        | map { [it.id, it.chromsizes, it.config_pairs_hic_bin_coarsen_addnorm] }
+        | set { ch_config_pairs_hic_bin_coarsen_addnorm }
     
-    ch_record_input
-        | map { [it.id, it.config_hic_bin_coarsen_addnorm] }
-        | set { ch_config_hic_bin_coarsen_addnorm }
-    
-    ch_output_pairs
-        | join ( ch_config_hic_bin_coarsen_addnorm )
+    ch_data_pairs_bin_coarsen_addnorm
+        | join( ch_config_pairs_hic_bin_coarsen_addnorm )
+        | map { id, pairs, chromsizes, config_pairs_hic_bin_coarsen_addnorm ->
+            [id, file(pairs), file(chromsizes), config_pairs_hic_bin_coarsen_addnorm]
+        }
         | PAIRS_HIC_BIN_COARSEN_ADDNORM
 }

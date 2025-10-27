@@ -7,3 +7,7 @@ build
 .nextflow*
 work/
 tests/assets/downloads/
+.nf-test/
+*.pyc
+ignore/
+__pycache__/

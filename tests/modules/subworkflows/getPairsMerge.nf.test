@@ -1,0 +1,106 @@
+nextflow_workflow {
+
+    name "Test Workflow getPairsMerge"
+    script "modules/subworkflows/getPairsMerge.nf"
+    workflow "getPairsMerge"
+
+    test("Test getPairsMerge on complex") {
+
+        when {
+            workflow {
+                """
+                input[0] = channel.fromList([
+                    [id: '11', merge: ['111', '112']],
+                    [id: '12', merge: ['121', '122']],
+                    [id: 'target_has_no_source', merge: []],
+                    [id: 'target_missing_source', merge: ['missing_source']],
+                    [id: 'target_has_duplicate_source', merge: ['111', '111', '112']],
+                    [id: 'single_source_merge', merge: ['111']],
+                    [id: '1', merge: ['111', '112', '121', '122']],
+                    [id: '111', pairs: '111.pairs']
+                ])
+                input[1] = channel.fromList([
+                    ['112', '112.pairs'],
+                    ['121', '121.pairs'],
+                    ['122', '122.pairs']
+                ])
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            def expected = [
+                ['11', ['111.pairs', '112.pairs']],
+                ['12', ['121.pairs', '122.pairs']],
+                ['1', ['111.pairs', '112.pairs', '121.pairs', '122.pairs']],
+                ['target_has_duplicate_source', ['111.pairs', '111.pairs', '112.pairs']],
+                ['single_source_merge', ['111.pairs']]
+            ].collect{ [it[0], it[1].sort()] }
+
+            assertContainsInAnyOrder(
+                workflow.out.ch_pairs_merge,
+                expected
+            )
+            assert workflow.out.ch_pairs_merge.size() == 5
+
+            def ids = workflow.out.ch_pairs_merge.collect{it[0]}
+            assert !ids.contains('target_has_no_source')
+            assert !ids.contains('target_missing_source')
+        }
+    }
+
+    test("Test getPairsMerge on empty entrypoint channel") {
+        when {
+            workflow {
+                """
+                input[0] = channel.of()
+                input[1] = channel.fromList([
+                    ['1', '1.pairs'],
+                    ['2', '2.pairs'],
+                ])
+                """
+            }
+        }
+        then {
+            assert workflow.success
+            assert workflow.out.ch_pairs_merge.isEmpty()
+        }
+    }
+
+    test("Test getPairsMerge on empty process output channel") {
+        when {
+            workflow {
+                """
+                input[0] = channel.fromList([
+                    [id: '11', pairs: '11.pairs'],
+                    [id: '12', pairs: '12.pairs'],
+                    [id: '1', merge: ['11', '12']]
+                ])
+                input[1] = channel.of()
+                """
+            }
+        }
+        then {
+            assert workflow.success
+            assert workflow.out.ch_pairs_merge.contains(['1', ['11.pairs', '12.pairs']])
+            assert workflow.out.ch_pairs_merge.size() == 1
+        }
+    }
+
+    test("Test getPairsMerge on empty channels") {
+        when {
+            workflow {
+                """
+                input[0] = channel.of()
+                input[1] = channel.of()
+                """
+            }
+        }
+        then {
+            assert workflow.success
+            assert workflow.out.ch_pairs_merge.isEmpty()
+        }
+    }
+
+}

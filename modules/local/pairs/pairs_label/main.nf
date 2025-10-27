@@ -1,15 +1,21 @@
+import hich.Hub
+
 process PAIRS_LABEL {
     container 'bskubi/hich_tools:latest'
     
     input:
-    tuple val(id), path(pairs), val(config)
+    tuple val(id), path(pairs), path(fragment_index), val(config_pairs_label)
 
     output:
-    tuple val(id), path(pairs), emit: pairs
+    tuple val(id), path(pairs_labeled), emit: pairs
+
+    script:
+    def task_plan = Hub.PairsLabel(id, pairs, fragment_index, config_pairs_label)
+    pairs_labeled = task_plan.pairs_labeled
+    task_plan.getScript()
 
     stub:
-    pairs = "${id}.pairs_label.gz"
-    """
-    touch '${pairs}'
-    """
+    def task_plan = Hub.PairsLabel(id, pairs, fragment_index, config_pairs_label)
+    pairs_labeled = task_plan.pairs_labeled
+    task_plan.getStub()
 }

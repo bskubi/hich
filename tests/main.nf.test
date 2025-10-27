@@ -1,0 +1,21 @@
+nextflow_pipeline {
+
+    name "Test Workflow main.nf"
+    script "main.nf"
+
+    test("Very simple fastq to endpoint pipeline run") {
+
+
+        when {
+            params {
+                manifest = "$projectDir/tests/assets/manifests/basic_manifest.yaml"
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+
+    }
+
+}

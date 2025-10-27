@@ -1,0 +1,312 @@
+hich_version: unstable
+
+sample1:
+  label: "c1.b1.t1"
+  entrypoint: FASTQ_ALIGN
+  aligner_index_dir: "../../../tests/assets/index/bwa/"
+  fastq1: "../../../tests/assets/fastq/1k/1k_ERR1413593_1.fastq.gz"
+  fastq2: "../../../tests/assets/fastq/1k/1k_ERR1413593_2.fastq.gz"
+  chromsizes: "../../../tests/assets/chromsizes/M129.sizes"
+  fragment_index: "../../../tests/assets/fragmentIndex/M129_HindIII.bed"
+  config_fastq_align:
+    command_align:
+      base_command: "bwa mem"
+      opts:
+        "-t": "${cpus}"
+      flags: ["-S", "-P", "-5", "-M"]
+      args: [
+        "${aligner_index_dir}/M129",
+        "${fastq1}",
+        "${fastq2}"
+      ]
+    command_samtools_view:
+      base_command: "samtools view"
+      opts:
+        "-o": "${bam}"
+      flags: ["-b"]
+  config_bam_parse_pairs:
+    command_samtools_view:
+      base_command: "samtools view"
+      flags: ["-b"]
+      args: ["${bam}"]
+    command_pairtools_parse2:
+      base_command: "pairtools parse2"
+      opts: 
+        "--assembly": "M129"
+        "--chroms-path": "${chromsizes}"
+        "--min-mapq": "30"
+      flags: ["--flip"]
+    command_pairtools_sort:
+      base_command: "pairtools sort"
+      opts: 
+        "--tmpdir": "."
+        "--nproc-in": "${cpus}"
+        "--nproc-out": "${cpus}"
+        "--memory": "${memory}G"
+        "--output": "${pairs}"
+  config_pairs_label:
+    command_hich_pairs_map_ends:
+      base_command: "hich pairs map-ends"
+      opts:
+        "--idx1": "rfrag1"
+        "--start1": "rfrag_start1"
+        "--end1": "rfrag_end1"
+        "--idx2": "rfrag2"
+        "--start2": "rfrag_start2"
+        "--end2": "rfrag_end2"
+      args: ["${fragment_index}", "${pairs}", "${pairs_labeled}"]
+  config_pairs_select:
+    command_pairtools_select:
+      base_command: "pairtools select"
+      opts:
+        "--output": "${pairs_selected}"
+        "--nproc-in": "${cpus}"
+        "--nproc-out": "${cpus}"
+      args: [
+        "\"pair_type in ['UU', 'UR', 'RU'] and rfrag1 != rfrag2\"",
+        "${pairs}"
+      ]
+  config_pairs_dedup:
+    command_pairtools_dedup:
+      base_command: "pairtools dedup"
+      opts:
+        "--output": "${pairs_deduped}"
+        "--nproc-in": "${cpus}"
+        "--nproc-out": "${cpus}"
+      args: ["${pairs}"]
+  config_pairs_cool_bin:
+    command_cooler_cload_pairs:
+      base_command: "cooler cload pairs"
+      opts:
+        "--assembly": "M129"
+        "-c1": "2"
+        "-p1": "3"
+        "-c2": "4"
+        "-p2": "5"
+        "--temp-dir": "."
+      args: ["${chromsizes}:1000", "${pairs}", "${cool}"]
+  config_cool_coarsen_addnorm:
+    command_cooler_zoomify:
+      base_command: "cooler zoomify"
+      opts:
+        "--nproc": "${cpus}"
+        "--balance-args": "--nproc ${cpus} --max-iters 2000"
+        "--resolutions": "1000,2000,5000,10000,20000,50000,100000"
+        "--out": "${mcool}"
+      flags: ["--balance"]
+      args: ["${cool}"]
+  config_pairs_hic_bin_coarsen_addnorm:
+    command_juicer_tools_pre:
+      base_command: "juicer_tools pre"
+      opts:
+        "-r": "1000,2000,5000,10000,20000,50000,100000"
+        "--threads": "${cpus}"
+        "-t": "."
+      flags: ["-Xms${xms}g", "-Xmx${xmx}g"]
+      args: ["${pairs}", "${hic}", "${chromsizes}"]
+
+sample2:
+  label: "c1.b1.t2"
+  entrypoint: FASTQ_ALIGN
+  assembly: M129
+  aligner_index_dir: "../../../tests/assets/index/bwa/"
+  fastq1: "../../../tests/assets/fastq/1k/1k_ERR1413593_1.fastq.gz"
+  fastq2: "../../../tests/assets/fastq/1k/1k_ERR1413593_2.fastq.gz"
+  chromsizes: "../../../tests/assets/chromsizes/M129.sizes"
+  fragment_index: "../../../tests/assets/fragmentIndex/M129_HindIII.bed"
+  config_fastq_align:
+    command_align:
+      base_command: bwa mem
+      flags: ["-S", "-P", "-5", "-M"]
+      opts:
+        '-t': '${cpus}'
+      args: [
+        "${aligner_index_dir}/M129",
+        "${fastq1}",
+        "${fastq2}"
+      ]
+    command_samtools_view:
+      base_command: "samtools view"
+      flags: ["-b"]
+      opts:
+        '-o': '${bam}'
+  config_bam_parse_pairs:
+    command_samtools_view:
+      base_command: "samtools view"
+      flags: ["-b"]
+      args: ["${bam}"]
+    command_pairtools_parse2:
+      base_command: "pairtools parse2"
+      opts: 
+        "--assembly": "M129"
+        "--chroms-path": "${chromsizes}"
+        "--min-mapq": "30"
+      flags: ["--flip"]
+    command_pairtools_sort:
+      base_command: "pairtools sort"
+      opts: 
+        "--tmpdir": "."
+        "--nproc-in": "${cpus}"
+        "--nproc-out": "${cpus}"
+        "--memory": "${memory}G"
+        "--output": "${pairs}"
+  config_pairs_label:
+    command_hich_pairs_map_ends:
+      base_command: "hich pairs map-ends"
+      opts:
+        "--idx1": "rfrag1"
+        "--start1": "rfrag_start1"
+        "--end1": "rfrag_end1"
+        "--idx2": "rfrag2"
+        "--start2": "rfrag_start2"
+        "--end2": "rfrag_end2"
+      args: ["${fragment_index}", "${pairs}", "${pairs_labeled}"]
+  config_pairs_select:
+    command_pairtools_select:
+      base_command: "pairtools select"
+      opts:
+        "--output": "${pairs_selected}"
+        "--nproc-in": "${cpus}"
+        "--nproc-out": "${cpus}"
+      args: [
+        "\"pair_type in ['UU', 'UR', 'RU'] and rfrag1 != rfrag2\"",
+        "${pairs}"
+      ]
+  config_pairs_dedup:
+    command_pairtools_dedup:
+      base_command: "pairtools dedup"
+      opts:
+        "--output": "${pairs_deduped}"
+        "--nproc-in": "${cpus}"
+        "--nproc-out": "${cpus}"
+      args: ["${pairs}"]
+  config_pairs_cool_bin:
+    command_cooler_cload_pairs:
+      base_command: "cooler cload pairs"
+      opts:
+        "--assembly": "M129"
+        "-c1": "2"
+        "-p1": "3"
+        "-c2": "4"
+        "-p2": "5"
+        "--temp-dir": "."
+      args: ["${chromsizes}:1000", "${pairs}", "${cool}"]
+  config_cool_coarsen_addnorm:
+    command_cooler_zoomify:
+      base_command: "cooler zoomify"
+      opts:
+        "--nproc": "${cpus}"
+        "--balance-args": "--nproc ${cpus} --max-iters 2000"
+        "--resolutions": "1000,2000,5000,10000,20000,50000,100000"
+        "--out": "${mcool}"
+      flags: ["--balance"]
+      args: ["${cool}"]
+  config_pairs_hic_bin_coarsen_addnorm:
+    command_juicer_tools_pre:
+      base_command: "juicer_tools pre"
+      opts:
+        "-r": "1000,2000,5000,10000,20000,50000,100000"
+        "--threads": "${cpus}"
+        "-t": "."
+      flags: ["-Xms${xms}g", "-Xmx${xmx}g"]
+      args: ["${pairs}", "${hic}", "${chromsizes}"]
+
+sample3:
+  label: "c1.b1"
+  entrypoint: PAIRS_MERGE_BEFORE_DEDUP
+  merge: [sample1, sample2]
+  assembly: M129
+  chromsizes: "../../../tests/assets/chromsizes/M129.sizes"
+  config_pairs_merge:
+    command_pairtools_merge:
+      base_command: "pairtools merge"
+      opts:
+        "--output": "${pairs_merged}"
+        "--nproc-in": "${cpus}"
+        "--nproc-out": "${cpus}"
+        "--tmpdir": "."
+      args: ["${pairs}"]
+  config_pairs_dedup:
+    command_pairtools_dedup:
+      base_command: "pairtools dedup"
+      opts:
+        "--output": "${pairs_deduped}"
+        "--nproc-in": "${cpus}"
+        "--nproc-out": "${cpus}"
+      args: ["${pairs}"]
+  config_pairs_cool_bin:
+    command_cooler_cload_pairs:
+      base_command: "cooler cload pairs"
+      opts:
+        "--assembly": "M129"
+        "-c1": "2"
+        "-p1": "3"
+        "-c2": "4"
+        "-p2": "5"
+        "--temp-dir": "."
+      args: ["${chromsizes}:1000", "${pairs}", "${cool}"]
+  config_cool_coarsen_addnorm:
+    command_cooler_zoomify:
+      base_command: "cooler zoomify"
+      opts:
+        "--nproc": "${cpus}"
+        "--balance-args": "--nproc ${cpus} --max-iters 2000"
+        "--resolutions": "1000,2000,5000,10000,20000,50000,100000"
+        "--out": "${mcool}"
+      flags: ["--balance"]
+      args: ["${cool}"]
+  config_pairs_hic_bin_coarsen_addnorm:
+    command_juicer_tools_pre:
+      base_command: "juicer_tools pre"
+      opts:
+        "-r": "1000,2000,5000,10000,20000,50000,100000"
+        "--threads": "${cpus}"
+        "-t": "."
+      flags: ["-Xms${xms}g", "-Xmx${xmx}g"]
+      args: ["${pairs}", "${hic}", "${chromsizes}"]
+
+sample4:
+  label: "c1"
+  entrypoint: PAIRS_MERGE_AFTER_DEDUP
+  merge: [sample3]
+  assembly: M129
+  chromsizes: "../../../tests/assets/chromsizes/M129.sizes"
+  config_pairs_merge:
+    command_pairtools_merge:
+      base_command: "pairtools merge"
+      opts:
+        "--output": "${pairs_merged}"
+        "--nproc-in": "${cpus}"
+        "--nproc-out": "${cpus}"
+        "--tmpdir": "."
+      args: ["${pairs}"]
+  config_pairs_cool_bin:
+    command_cooler_cload_pairs:
+      base_command: "cooler cload pairs"
+      opts:
+        "--assembly": "M129"
+        "-c1": "2"
+        "-p1": "3"
+        "-c2": "4"
+        "-p2": "5"
+        "--temp-dir": "."
+      args: ["${chromsizes}:1000", "${pairs}", "${cool}"]
+  config_cool_coarsen_addnorm:
+    command_cooler_zoomify:
+      base_command: "cooler zoomify"
+      opts:
+        "--nproc": "${cpus}"
+        "--balance-args": "--nproc ${cpus} --max-iters 2000"
+        "--resolutions": "1000,2000,5000,10000,20000,50000,100000"
+        "--out": "${mcool}"
+      flags: ["--balance"]
+      args: ["${cool}"]
+  config_pairs_hic_bin_coarsen_addnorm:
+    command_juicer_tools_pre:
+      base_command: "juicer_tools pre"
+      opts:
+        "-r": "1000,2000,5000,10000,20000,50000,100000"
+        "--threads": "${cpus}"
+        "-t": "."
+      flags: ["-Xms${xms}g", "-Xmx${xmx}g"]
+      args: ["${pairs}", "${hic}", "${chromsizes}"]
