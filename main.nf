@@ -116,17 +116,27 @@ workflow {
     
     ch_data_pairs_label
         | join( ch_config_pairs_label )
+        | set { ch_pairs_label_input }
+    
+    ch_pairs_label_input
+        | filter { !it[-1].skip }
         | map { id, input_pairs, fragment_index, config_pairs_label ->
             [id, file(input_pairs), file(fragment_index), config_pairs_label]
         }
         | PAIRS_LABEL
+
+    ch_pairs_label_input
+        | filter{  it[-1].skip }
+        | map { id, pairs, fragment_index, config -> [id, file(pairs)] }
+        | concat(PAIRS_LABEL.out.pairs)
+        | set { ch_pairs_label }
 
     // /** Select reads based on traits of individual reads in isolation
     // */
 
     ch_entrypoints.PAIRS_SELECT
         | map { [it.id, file(it.pairs)] }
-        | concat ( PAIRS_LABEL.out.pairs )
+        | concat ( ch_pairs_label )
         | set { ch_data_pairs_select }
     
     ch_all_records
@@ -135,7 +145,17 @@ workflow {
     
     ch_data_pairs_select
         | join ( ch_config_pairs_select )
+        | set { ch_pairs_select_input }
+    
+    ch_pairs_select_input
+        | filter { !it[-1].skip }
         | PAIRS_SELECT
+    
+    ch_pairs_select_input
+        | filter { it[-1].skip }
+        | map { id, pairs, config -> [id, file(pairs)]}
+        | concat(PAIRS_SELECT.out.pairs)
+        | set{ ch_pairs_select }
 
     /** Merge reads before dedup
         Need to collect all reads in the list of read IDs to join.
@@ -143,7 +163,7 @@ workflow {
 
     getPairsMerge(
         ch_entrypoints.PAIRS_MERGE_BEFORE_DEDUP,
-        PAIRS_SELECT.out.pairs
+        ch_pairs_select
     )
         | set { ch_data_pairs_merge_before_dedup}
 
@@ -175,14 +195,25 @@ workflow {
     
     ch_data_dedup
         | join ( ch_config_pairs_dedup )
+        | set { ch_pairs_dedup_input }
+    
+    ch_pairs_dedup_input
+        | filter { !it[-1].skip }
+        | map{ id, pairs, config_pairs_dedup -> [id, file(pairs), config_pairs_dedup] }
         | PAIRS_DEDUP
+    
+    ch_pairs_dedup_input
+        | filter { it[-1].skip }
+        | map{ id, pairs, config -> [id, file(pairs)]}
+        | concat(PAIRS_DEDUP.out.pairs)
+        | set{ ch_pairs_dedup }
 
     /** Merge reads after dedup
     */
     
     getPairsMerge(
         ch_entrypoints.PAIRS_MERGE_AFTER_DEDUP,
-        PAIRS_DEDUP.out.pairs
+        ch_pairs_dedup
     )
         | set { ch_data_pairs_merge_after_dedup}
 
@@ -199,6 +230,9 @@ workflow {
         | map { id, pairs, config_pairs_merge -> [id, pairs.collect{file(it)}, config_pairs_merge]}
         | PAIRS_MERGE_AFTER_DEDUP
     
+    /** Create .cool and .mcool contact matrices
+    */
+
     ch_entrypoints.PAIRS_BIN_COARSEN_ADDNORM
         | map { [it.id, it.pairs] }
         | concat( PAIRS_DEDUP.out.pairs )
@@ -211,6 +245,7 @@ workflow {
     
     ch_data_pairs_bin_coarsen_addnorm
         | join ( ch_config_pairs_cool_bin )
+        | filter { !it[-1].skip }
         | map { id, pairs, chromsizes, config_pairs_cool_bin ->
             [id, file(pairs), file(chromsizes), config_pairs_cool_bin]
         }
@@ -227,7 +262,11 @@ workflow {
     
     ch_data_cool_coarsen_addnorm
         | join( ch_config_coarsen_addnorm )
+        | filter { !it[-1].skip }
         | COOL_COARSEN_ADDNORM
+
+    /** Create .hic contact matrices
+    */
 
     ch_all_records
         | map { [it.id, it.chromsizes, it.config_pairs_hic_bin_coarsen_addnorm] }
@@ -235,6 +274,7 @@ workflow {
     
     ch_data_pairs_bin_coarsen_addnorm
         | join( ch_config_pairs_hic_bin_coarsen_addnorm )
+        | filter { !it[-1].skip }
         | map { id, pairs, chromsizes, config_pairs_hic_bin_coarsen_addnorm ->
             [id, file(pairs), file(chromsizes), config_pairs_hic_bin_coarsen_addnorm]
         }
