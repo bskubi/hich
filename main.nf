@@ -14,7 +14,7 @@ include { PAIRS_COOL_BIN } from './modules/local/pairs/pairs_cool_bin/main.nf'
 include { COOL_COARSEN_ADDNORM } from './modules/local/matrix/cool_coarsen_addnorm/main.nf'
 include { PAIRS_HIC_BIN_COARSEN_ADDNORM } from './modules/local/pairs/pairs_hic_bin_coarsen_addnorm/main.nf'
 include { groupSourcesByTarget } from './modules/subworkflows/groupSourcesByTarget.nf'
-include { getPairsMerge } from './modules/subworkflows/getPairsMerge.nf'
+include { getSources } from './modules/subworkflows/getSources.nf'
 
 /** Respect nf-core naming conventions.
     https://nf-co.re/docs/guidelines/components/subworkflows
@@ -41,7 +41,7 @@ workflow {
     */
     REMOVE_KEYS = ["hich_version"]
     records = manifest
-                .findAll{ k, v -> !(k in REMOVE_KEYS) }
+                .records
                 .collect{ id, config -> [id: id, *: config] }
 
     channel.fromList(records) | set { ch_all_records }
@@ -129,14 +129,14 @@ workflow {
         | filter{  it[-1].skip }
         | map { id, pairs, fragment_index, config -> [id, file(pairs)] }
         | concat(PAIRS_LABEL.out.pairs)
-        | set { ch_pairs_label }
+        | set { ch_all_pairs_after_label }
 
     // /** Select reads based on traits of individual reads in isolation
     // */
 
     ch_entrypoints.PAIRS_SELECT
         | map { [it.id, file(it.pairs)] }
-        | concat ( ch_pairs_label )
+        | concat ( ch_all_pairs_after_label )
         | set { ch_data_pairs_select }
     
     ch_all_records
@@ -155,15 +155,16 @@ workflow {
         | filter { it[-1].skip }
         | map { id, pairs, config -> [id, file(pairs)]}
         | concat(PAIRS_SELECT.out.pairs)
-        | set{ ch_pairs_select }
+        | set{ ch_all_pairs_after_select }
 
     /** Merge reads before dedup
         Need to collect all reads in the list of read IDs to join.
     */
 
-    getPairsMerge(
+    getSources(
         ch_entrypoints.PAIRS_MERGE_BEFORE_DEDUP,
-        ch_pairs_select
+        ch_all_pairs_after_select,
+        "pairs"
     )
         | set { ch_data_pairs_merge_before_dedup}
 
@@ -185,7 +186,7 @@ workflow {
 
     ch_entrypoints.PAIRS_DEDUP
         | map{ [it.id, it.pairs] }
-        | concat(PAIRS_SELECT.out.pairs)
+        | concat(ch_all_pairs_after_select)
         | concat(PAIRS_MERGE_BEFORE_DEDUP.out.pairs)
         | set { ch_data_dedup }
     
@@ -206,14 +207,15 @@ workflow {
         | filter { it[-1].skip }
         | map{ id, pairs, config -> [id, file(pairs)]}
         | concat(PAIRS_DEDUP.out.pairs)
-        | set{ ch_pairs_dedup }
+        | set{ ch_all_pairs_after_dedup }
 
     /** Merge reads after dedup
     */
     
-    getPairsMerge(
+    getSources(
         ch_entrypoints.PAIRS_MERGE_AFTER_DEDUP,
-        ch_pairs_dedup
+        ch_all_pairs_after_dedup,
+        "pairs"
     )
         | set { ch_data_pairs_merge_after_dedup}
 
@@ -235,7 +237,7 @@ workflow {
 
     ch_entrypoints.PAIRS_BIN_COARSEN_ADDNORM
         | map { [it.id, it.pairs] }
-        | concat( PAIRS_DEDUP.out.pairs )
+        | concat( ch_all_pairs_after_dedup )
         | concat( PAIRS_MERGE_AFTER_DEDUP.out.pairs )
         | set { ch_data_pairs_bin_coarsen_addnorm }
     
@@ -279,4 +281,9 @@ workflow {
             [id, file(pairs), file(chromsizes), config_pairs_hic_bin_coarsen_addnorm]
         }
         | PAIRS_HIC_BIN_COARSEN_ADDNORM
+    
+    /** ANALYSIS
+    */
+
+    hicrep = manifest.analysis.hicrep
 }

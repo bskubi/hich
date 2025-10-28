@@ -1,21 +1,21 @@
 nextflow_workflow {
 
-    name "Test Workflow getPairsMerge"
-    script "modules/subworkflows/getPairsMerge.nf"
-    workflow "getPairsMerge"
+    name "Test Workflow getSources"
+    script "modules/subworkflows/getSources.nf"
+    workflow "getSources"
 
-    test("Test getPairsMerge on complex") {
+    test("Test getSources on complex") {
 
         when {
             workflow {
                 """
                 input[0] = channel.fromList([
-                    [id: '11', merge: ['111', '112']],
-                    [id: '12', merge: ['121', '122']],
-                    [id: 'target_has_no_source', merge: []],
-                    [id: 'target_has_duplicate_source', merge: ['111', '111', '112']],
-                    [id: 'single_source_merge', merge: ['111']],
-                    [id: '1', merge: ['111', '112', '121', '122']],
+                    [id: '11', sources: ['111', '112']],
+                    [id: '12', sources: ['121', '122']],
+                    [id: 'target_has_no_source', sources: []],
+                    [id: 'target_has_duplicate_source', sources: ['111', '111', '112']],
+                    [id: 'single_source_merge', sources: ['111']],
+                    [id: '1', sources: ['111', '112', '121', '122']],
                     [id: '111', pairs: '111.pairs']
                 ])
                 input[1] = channel.fromList([
@@ -23,6 +23,7 @@ nextflow_workflow {
                     ['121', '121.pairs'],
                     ['122', '122.pairs']
                 ])
+                input[2] = "pairs"
                 """
             }
         }
@@ -53,11 +54,12 @@ nextflow_workflow {
             workflow {
                 """
                 input[0] = channel.fromList([
-                    [id: '11', merge: ['111', '112']]
+                    [id: '11', sources: ['111', '112']]
                 ])
                 input[1] = channel.fromList([
                     ['111', '111.pairs']
                 ])
+                input[2] = "pairs"
                 """
             }
         }
@@ -76,6 +78,7 @@ nextflow_workflow {
                     ['1', '1.pairs'],
                     ['2', '2.pairs'],
                 ])
+                input[2] = "pairs"
                 """
             }
         }
@@ -92,9 +95,10 @@ nextflow_workflow {
                 input[0] = channel.fromList([
                     [id: '11', pairs: '11.pairs'],
                     [id: '12', pairs: '12.pairs'],
-                    [id: '1', merge: ['11', '12']]
+                    [id: '1', sources: ['11', '12']]
                 ])
                 input[1] = channel.of()
+                input[2] = "pairs"
                 """
             }
         }
@@ -111,6 +115,7 @@ nextflow_workflow {
                 """
                 input[0] = channel.of()
                 input[1] = channel.of()
+                input[2] = "pairs"
                 """
             }
         }

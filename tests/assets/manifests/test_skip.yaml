@@ -45,6 +45,7 @@ records:
           "--memory": "${memory}G"
           "--output": "${pairs}"
     config_pairs_label:
+      skip: true
       command_hich_pairs_map_ends:
         base_command: "hich pairs map-ends"
         opts:
@@ -56,6 +57,7 @@ records:
           "--end2": "rfrag_end2"
         args: ["${fragment_index}", "${pairs}", "${pairs_labeled}"]
     config_pairs_select:
+      skip: true
       command_pairtools_select:
         base_command: "pairtools select"
         opts:
@@ -67,6 +69,7 @@ records:
           "${pairs}"
         ]
     config_pairs_dedup:
+      skip: true
       command_pairtools_dedup:
         base_command: "pairtools dedup"
         opts:
@@ -75,6 +78,7 @@ records:
           "--nproc-out": "${cpus}"
         args: ["${pairs}"]
     config_pairs_cool_bin:
+      skip: true
       command_cooler_cload_pairs:
         base_command: "cooler cload pairs"
         opts:
@@ -96,6 +100,7 @@ records:
         flags: ["--balance"]
         args: ["${cool}"]
     config_pairs_hic_bin_coarsen_addnorm:
+      skip: true
       command_juicer_tools_pre:
         base_command: "juicer_tools pre"
         opts:
@@ -192,6 +197,7 @@ records:
           "--temp-dir": "."
         args: ["${chromsizes}:1000", "${pairs}", "${cool}"]
     config_cool_coarsen_addnorm:
+      skip: true
       command_cooler_zoomify:
         base_command: "cooler zoomify"
         opts:

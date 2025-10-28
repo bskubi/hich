@@ -18,4 +18,18 @@ nextflow_pipeline {
 
     }
 
+    test ("Pipeline end to end stub run") {
+        options "-stub-run"
+        when {
+            params {
+                manifest = "$projectDir/tests/assets/manifests/test_skip.yaml"
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert workflow.trace.tasks().size() == 18
+        }
+    }
+
 }
