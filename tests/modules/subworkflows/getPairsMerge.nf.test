@@ -13,7 +13,6 @@ nextflow_workflow {
                     [id: '11', merge: ['111', '112']],
                     [id: '12', merge: ['121', '122']],
                     [id: 'target_has_no_source', merge: []],
-                    [id: 'target_missing_source', merge: ['missing_source']],
                     [id: 'target_has_duplicate_source', merge: ['111', '111', '112']],
                     [id: 'single_source_merge', merge: ['111']],
                     [id: '1', merge: ['111', '112', '121', '122']],
@@ -46,8 +45,26 @@ nextflow_workflow {
 
             def ids = workflow.out.ch_pairs_merge.collect{it[0]}
             assert !ids.contains('target_has_no_source')
-            assert !ids.contains('target_missing_source')
         }
+    }
+
+    test("Merge missing required sources") {
+        when {
+            workflow {
+                """
+                input[0] = channel.fromList([
+                    [id: '11', merge: ['111', '112']]
+                ])
+                input[1] = channel.fromList([
+                    ['111', '111.pairs']
+                ])
+                """
+            }
+        }
+        then {
+            assert workflow.failed
+        }
+
     }
 
     test("Test getPairsMerge on empty entrypoint channel") {

@@ -43,9 +43,23 @@ workflow getPairsMerge {
         ch_source_target
     )
         | map{ target_id, sources -> 
-            [target_id, sources.collect{ id, pairs -> pairs }.sort()]
+            [target_id, sources.sort()]
+        }
+        | set { ch_pairs_merge_output }
+
+    ch_entrypoints_merge.target
+        | map { [it.id, it.merge]}
+        | join( ch_pairs_merge_output )
+        | map { target_id, required_source_ids, found_sources -> 
+            found_source_ids = found_sources.collect{source_id, data -> source_id}
+            found_source_data = found_sources.collect{source_id, data -> data}
+            missing = required_source_ids - found_source_ids
+            extra = found_source_ids - required_source_ids
+            assert !missing && !extra, "Mismatch between required and expected source ids for merge. Required: ${required_source_ids} Found: ${found_source_ids} Missing: ${missing} Extra: ${extra}"
+            [target_id, found_source_data.sort()]
         }
         | set { ch_pairs_merge }
+    
 
     emit:
     ch_pairs_merge
