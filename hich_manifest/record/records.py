@@ -129,7 +129,6 @@ class PairsMergeAfterDedupSourceRecord(BaseRecord):
     chromsizes: FilePath
     bin_resolutions: Optional[Annotated[list[int], MatrixBinResolutionsValidator]] = DEFAULT_BIN_RESOLUTIONS_FIELD
 
-    config_pairs_merge: ConfigPairsMerge = DEFAULT_CONFIG_PAIRS_MERGE_FIELD
     config_pairs_hic_bin_coarsen_addnorm: ConfigPairsHiCBinCoarsenAddNorm = DEFAULT_CONFIG_PAIRS_HIC_BIN_COARSEN_ADDNORM_FIELD
     config_pairs_cool_bin: ConfigPairsCoolBin = DEFAULT_CONFIG_PAIRS_COOL_BIN_FIELD
     config_cool_coarsen_addnorm: ConfigCoolCoarsenAddNorm = DEFAULT_CONFIG_COOL_COARSEN_ADDNORM_FIELD
@@ -140,6 +139,7 @@ class PairsMergeAfterDedupTargetRecord(BaseRecord):
     chromsizes: FilePath
     bin_resolutions: Optional[Annotated[list[int], MatrixBinResolutionsValidator]] = DEFAULT_BIN_RESOLUTIONS_FIELD
 
+    config_pairs_merge: ConfigPairsMerge = DEFAULT_CONFIG_PAIRS_MERGE_FIELD
     config_pairs_hic_bin_coarsen_addnorm: ConfigPairsHiCBinCoarsenAddNorm = DEFAULT_CONFIG_PAIRS_HIC_BIN_COARSEN_ADDNORM_FIELD
     config_pairs_cool_bin: ConfigPairsCoolBin = DEFAULT_CONFIG_PAIRS_COOL_BIN_FIELD
     config_cool_coarsen_addnorm: ConfigCoolCoarsenAddNorm = DEFAULT_CONFIG_COOL_COARSEN_ADDNORM_FIELD

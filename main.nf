@@ -171,8 +171,12 @@ workflow {
         Need to collect all reads in the list of read IDs to join.
     */
 
+    ch_entrypoints.PAIRS_MERGE_BEFORE_DEDUP_TARGET
+        | map{ [id: it.id, source_ids: it.config_pairs_merge.source_ids]}
+        | set { ch_pairs_merge_before_dedup_target }
+
     getSources(
-        ch_entrypoints.PAIRS_MERGE_BEFORE_DEDUP_TARGET,
+        ch_pairs_merge_before_dedup_target,
         ch_all_pairs_after_select,
         "pairs"
     )
@@ -226,9 +230,13 @@ workflow {
 
     /** Merge reads after dedup
     */
-    
+
+    ch_entrypoints.PAIRS_MERGE_AFTER_DEDUP_TARGET
+        | map{ [id: it.id, source_ids: it.config_pairs_merge.source_ids]}
+        | set { ch_pairs_merge_after_dedup_target }
+
     getSources(
-        ch_entrypoints.PAIRS_MERGE_AFTER_DEDUP_TARGET,
+        ch_pairs_merge_after_dedup_target,
         ch_all_pairs_after_dedup,
         "pairs"
     )

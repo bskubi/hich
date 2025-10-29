@@ -644,6 +644,26 @@
     2000000,
     5000000
    ],
+   "config_pairs_merge": {
+    "source_ids": [
+     "11",
+     "12",
+     "1_before"
+    ],
+    "command_pairtools_merge": {
+     "base_command": "pairtools merge",
+     "opts": {
+      "--output": "${pairs_merged}",
+      "--nproc-in": "${cpus}",
+      "--nproc-out": "${cpus}",
+      "--tmpdir": "."
+     },
+     "flags": [],
+     "args": [
+      "${pairs}"
+     ]
+    }
+   },
    "config_pairs_hic_bin_coarsen_addnorm": {
     "task": "RUN",
     "bin_resolutions": [

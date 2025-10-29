@@ -51,7 +51,7 @@ try:
             id = "1_after",
             chromsizes=chromsizes,
             entrypoint=Entrypoint.PAIRS_MERGE_AFTER_DEDUP_TARGET,
-            config_pairs_merge = ConfigPairsMerge(source_ids=["11", "12", "1_after"])
+            config_pairs_merge = ConfigPairsMerge(source_ids=["11", "12", "1_before"])
         )
     )
     with open("manifest.json", "w") as file:
