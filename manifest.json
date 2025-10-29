@@ -53,7 +53,9 @@
      "flags": [
       "-b"
      ],
-     "args": []
+     "args": [
+      "${bam}"
+     ]
     },
     "command_pairtools_parse2": {
      "base_command": "pairtools parse2",
@@ -67,7 +69,7 @@
      "base_command": "pairtools sort",
      "opts": {
       "--tmpdir": ".",
-      "--nrpoc-in": "${cpus}",
+      "--nproc-in": "${cpus}",
       "--nproc-out": "${cpus}",
       "--output": "${pairs}"
      },
@@ -270,7 +272,9 @@
      "flags": [
       "-b"
      ],
-     "args": []
+     "args": [
+      "${bam}"
+     ]
     },
     "command_pairtools_parse2": {
      "base_command": "pairtools parse2",
@@ -284,7 +288,7 @@
      "base_command": "pairtools sort",
      "opts": {
       "--tmpdir": ".",
-      "--nrpoc-in": "${cpus}",
+      "--nproc-in": "${cpus}",
       "--nproc-out": "${cpus}",
       "--output": "${pairs}"
      },

@@ -89,22 +89,22 @@ workflow {
         | map { [it.id, [file(it.fastq1)], it.fastq2 ? file(it.fastq2) : [], file(it.aligner_index_dir), it.config_fastq_align] }
         | FASTQ_ALIGN
 
-    // /** Ingest BAM files
-    // */
+    /** Ingest BAM files
+    */
     
-    // ch_entrypoints.BAM_PARSE_PAIRS
-    //     | map { [it.id, it.bam] }
-    //     | concat( FASTQ_ALIGN.out.bam )
-    //     | set { ch_data_bam_parse_pairs }
+    ch_entrypoints.BAM_PARSE_PAIRS
+        | map { [it.id, it.bam] }
+        | concat( FASTQ_ALIGN.out.bam )
+        | set { ch_data_bam_parse_pairs }
 
-    // ch_all_records
-    //     | map { [it.id, it.chromsizes, it.config_bam_parse_pairs] }
-    //     | set { ch_config_bam_parse_pairs }
+    ch_all_records
+        | map { [it.id, it.chromsizes, it.config_bam_parse_pairs] }
+        | set { ch_config_bam_parse_pairs }
     
-    // ch_data_bam_parse_pairs
-    //     | join( ch_config_bam_parse_pairs )
-    //     | map{ id, bam, chromsizes, config -> [id, file(bam), file(chromsizes), config]}
-    //     | BAM_PARSE_PAIRS
+    ch_data_bam_parse_pairs
+        | join( ch_config_bam_parse_pairs )
+        | map{ id, bam, chromsizes, config -> [id, file(bam), file(chromsizes), config]}
+        | BAM_PARSE_PAIRS
 
     // /** Label pairs as criteria for selection by PAIRS_SELECT, PAIRS_DEDUP
     // */
