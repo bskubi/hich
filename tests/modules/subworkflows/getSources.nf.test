@@ -4,21 +4,22 @@ nextflow_workflow {
     script "modules/subworkflows/getSources.nf"
     workflow "getSources"
 
-    test("Test getSources on complex") {
+    test("Main getSources test") {
 
         when {
             workflow {
                 """
                 input[0] = channel.fromList([
-                    [id: '11', sources: ['111', '112']],
-                    [id: '12', sources: ['121', '122']],
-                    [id: 'target_has_no_source', sources: []],
-                    [id: 'target_has_duplicate_source', sources: ['111', '111', '112']],
-                    [id: 'single_source_merge', sources: ['111']],
-                    [id: '1', sources: ['111', '112', '121', '122']],
-                    [id: '111', pairs: '111.pairs']
+                    [id: '11', source_ids: ['111', '112']],
+                    [id: '12', source_ids: ['121', '122']],
+                    [id: 'target_has_no_source', source_ids: []],
+                    [id: 'target_has_duplicate_source', source_ids: ['111', '111', '112']],
+                    [id: 'single_source_merge', source_ids: ['111']],
+                    [id: '1', source_ids: ['111', '112', '121', '122']],
+                    
                 ])
                 input[1] = channel.fromList([
+                    ['111', '111.pairs'],
                     ['112', '112.pairs'],
                     ['121', '121.pairs'],
                     ['122', '122.pairs']
@@ -39,12 +40,12 @@ nextflow_workflow {
             ].collect{ [it[0], it[1].sort()] }
 
             assertContainsInAnyOrder(
-                workflow.out.ch_pairs_merge,
+                workflow.out.ch_targets,
                 expected
             )
-            assert workflow.out.ch_pairs_merge.size() == 5
+            assert workflow.out.ch_targets.size() == 5
 
-            def ids = workflow.out.ch_pairs_merge.collect{it[0]}
+            def ids = workflow.out.ch_targets.collect{it[0]}
             assert !ids.contains('target_has_no_source')
         }
     }
@@ -54,7 +55,7 @@ nextflow_workflow {
             workflow {
                 """
                 input[0] = channel.fromList([
-                    [id: '11', sources: ['111', '112']]
+                    [id: '11', source_ids: ['111', '112']]
                 ])
                 input[1] = channel.fromList([
                     ['111', '111.pairs']
@@ -84,7 +85,7 @@ nextflow_workflow {
         }
         then {
             assert workflow.success
-            assert workflow.out.ch_pairs_merge.isEmpty()
+            assert workflow.out.ch_targets.isEmpty()
         }
     }
 
@@ -93,9 +94,7 @@ nextflow_workflow {
             workflow {
                 """
                 input[0] = channel.fromList([
-                    [id: '11', pairs: '11.pairs'],
-                    [id: '12', pairs: '12.pairs'],
-                    [id: '1', sources: ['11', '12']]
+                    [id: '1', source_ids: ['11', '12']]
                 ])
                 input[1] = channel.of()
                 input[2] = "pairs"
@@ -103,9 +102,7 @@ nextflow_workflow {
             }
         }
         then {
-            assert workflow.success
-            assert workflow.out.ch_pairs_merge.contains(['1', ['11.pairs', '12.pairs']])
-            assert workflow.out.ch_pairs_merge.size() == 1
+            assert workflow.failed
         }
     }
 
@@ -121,7 +118,7 @@ nextflow_workflow {
         }
         then {
             assert workflow.success
-            assert workflow.out.ch_pairs_merge.isEmpty()
+            assert workflow.out.ch_targets.isEmpty()
         }
     }
 
