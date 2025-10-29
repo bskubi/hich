@@ -56,7 +56,7 @@ class PairsFilters(BaseModel):
 
         # Require all conditions to pass
         CONDITION = " and ".join([f"({c})" for c in conditions])
-        return CONDITION
+        return f"\"{CONDITION}\""
 
 
 class ConfigPairsSelect(ConfigProcessTaskControl):

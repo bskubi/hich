@@ -12,7 +12,7 @@ workflow getSources {
     */
     ch_entrypoints
         | branch {
-            target: it.sources
+            target: it.source_ids
             source: true
         }
         | set{ ch_entrypoints_merge }

@@ -19,7 +19,7 @@ class ConfigCoolCoarsenAddNorm(ConfigProcessTaskControl):
                     "--out": "${mcool}"
                 },
                 flags = ["--balance"],
-                args = ["${mcool}"]
+                args = ["${cool}"]
             )
         )
     )
