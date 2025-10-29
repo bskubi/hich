@@ -18,34 +18,22 @@ aligner_index_dir = "tests/assets/index/bwa"
 chromsizes = "tests/assets/chromsizes/M129.sizes"
 fragment_index = "tests/assets/fragmentIndex/M129_HindIII.bed"
 
-template = FastqAlignRecord.model_construct(**dict(
+template = FastqAlignRecord(
+    id = "x",
+    fastq1 = fastq1,
+    fastq2 = fastq2,
     entrypoint = Entrypoint.FASTQ_ALIGN,
     aligner_index_dir = aligner_index_dir,
     chromsizes=chromsizes,
     fragment_index = fragment_index,
     bin_resolutions=[1000,2000,5000],
-    config_fastq_align = ConfigFastqAlign(fastq_type=FASTQ_TYPE.PAIRED_END, aligner=BWA.MEM2, aligner_index_prefix="M129"),
+    config_fastq_align = ConfigFastqAlign(fastq_type=FASTQ_TYPE.PAIRED_END, aligner=BWA.MEM, aligner_index_prefix="M129"),
     config_pairs_select = ConfigPairsSelect(
         pairs_filters=PairsFilters(min_dist_ff=1000, min_dist_fr=1000, keep_pair_chroms=PairsFilters.CisTrans.IS_CIS),
     )
-))
+)
 
-try:
-    record1 = template.model_copy(update = dict(id="11", fastq1=fastq1, fastq2=fastq2))
-    record2 = template.model_copy(update = dict(id="12", fastq1=fastq1, fastq2=fastq2))
-    record3 = Record(
-        id = "1_before", 
-        chromsizes=chromsizes, 
-        entrypoint=Entrypoint.PAIRS_MERGE_BEFORE_DEDUP_TARGET, 
-        config_pairs_merge = ConfigPairsMerge(source_ids=["11", "12"])
-    )
-    record4 = Record(
-        id = "1_after",
-        chromsizes=chromsizes,
-        entrypoint=Entrypoint.PAIRS_MERGE_AFTER_DEDUP_TARGET,
-        config_pairs_merge = ConfigPairsMerge(source_ids=["11", "12", "1_after"])
-    )
-    
+try:   
     manifest = Manifest()
     manifest.set_template(template)
     manifest.add_record(dict(id="11", fastq1=fastq1, fastq2=fastq2))

@@ -17,10 +17,33 @@
    ],
    "config_fastq_align": {
     "fastq_type": "PAIRED_END",
-    "aligner": "bwa-mem2 mem",
+    "aligner": "bwa mem",
     "aligner_index_prefix": "M129",
-    "command_align": null,
-    "command_samtools_view": null
+    "command_align": {
+     "base_command": "bwa mem",
+     "opts": {},
+     "flags": [
+      "-S",
+      "-P",
+      "-5",
+      "-M"
+     ],
+     "args": [
+      "${aligner_index_dir}/M129",
+      "${fastq1}",
+      "${fastq2}"
+     ]
+    },
+    "command_samtools_view": {
+     "base_command": "samtools view",
+     "opts": {
+      "-o": "${bam}"
+     },
+     "flags": [
+      "-b"
+     ],
+     "args": []
+    }
    },
    "config_bam_parse_pairs": {
     "chromsizes": "tests/assets/chromsizes/M129.sizes",
@@ -211,10 +234,33 @@
    ],
    "config_fastq_align": {
     "fastq_type": "PAIRED_END",
-    "aligner": "bwa-mem2 mem",
+    "aligner": "bwa mem",
     "aligner_index_prefix": "M129",
-    "command_align": null,
-    "command_samtools_view": null
+    "command_align": {
+     "base_command": "bwa mem",
+     "opts": {},
+     "flags": [
+      "-S",
+      "-P",
+      "-5",
+      "-M"
+     ],
+     "args": [
+      "${aligner_index_dir}/M129",
+      "${fastq1}",
+      "${fastq2}"
+     ]
+    },
+    "command_samtools_view": {
+     "base_command": "samtools view",
+     "opts": {
+      "-o": "${bam}"
+     },
+     "flags": [
+      "-b"
+     ],
+     "args": []
+    }
    },
    "config_bam_parse_pairs": {
     "chromsizes": "tests/assets/chromsizes/M129.sizes",
