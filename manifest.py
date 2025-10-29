@@ -1,5 +1,4 @@
-from hich_manifest.record.records import Record, FastqAlignRecord, PairsMergeBeforeDedupTargetRecord, PairsMergeAfterDedupTargetRecord
-from hich_manifest.record.entrypoints import Entrypoint
+from hich_manifest.manifest.records import FastqAlignRecord, PairsMergeBeforeDedupTargetRecord, PairsMergeAfterDedupTargetRecord, Entrypoint
 from hich_manifest.config.task_control import TaskControl
 from hich_manifest.config.config_fastq_align import ConfigFastqAlign, BWA, BWAMETH, FASTQ_TYPE
 from hich_manifest.config.config_bam_parse_pairs import ConfigBamParsePairs
@@ -8,7 +7,9 @@ from hich_manifest.config.config_pairs_select import ConfigPairsSelect, PairsFil
 from hich_manifest.config.config_pairs_merge import ConfigPairsMerge
 from hich_manifest.config.config_pairs_cool_bin import ConfigPairsCoolBin
 from hich_manifest.config.command import Command
-from hich_manifest.manifest import Manifest
+
+from hich_manifest.manifest.analysis import HiCRepAnalysis
+from hich_manifest.manifest.manifest import Manifest
 import pprint
 from pydantic import ValidationError
 
@@ -17,7 +18,7 @@ fastq2 = "tests/assets/fastq/1k/1k_ERR1413593_2.fastq.gz"
 aligner_index_dir = "tests/assets/index/bwa"
 chromsizes = "tests/assets/chromsizes/M129.sizes"
 fragment_index = "tests/assets/fragmentIndex/M129_HindIII.bed"
-
+bin_resolutions = [50_000, 100_00]
 template = FastqAlignRecord(
     id = "x",
     fastq1 = fastq1,
@@ -26,7 +27,7 @@ template = FastqAlignRecord(
     aligner_index_dir = aligner_index_dir,
     chromsizes=chromsizes,
     fragment_index = fragment_index,
-    bin_resolutions=[1000,2000,5000],
+    bin_resolutions=bin_resolutions,
     config_fastq_align = ConfigFastqAlign(fastq_type=FASTQ_TYPE.PAIRED_END, aligner=BWA.MEM, aligner_index_prefix="M129"),
     config_pairs_select = ConfigPairsSelect(
         pairs_filters=PairsFilters(min_dist_ff=1000, min_dist_fr=1000, keep_pair_chroms=PairsFilters.CisTrans.IS_CIS),
@@ -43,6 +44,7 @@ try:
             id = "1_before", 
             chromsizes=chromsizes, 
             entrypoint=Entrypoint.PAIRS_MERGE_BEFORE_DEDUP_TARGET, 
+            bin_resolutions=bin_resolutions,
             config_pairs_merge = ConfigPairsMerge(source_ids=["11", "12"])
         )
     )
@@ -51,7 +53,16 @@ try:
             id = "1_after",
             chromsizes=chromsizes,
             entrypoint=Entrypoint.PAIRS_MERGE_AFTER_DEDUP_TARGET,
+            bin_resolutions=bin_resolutions,
             config_pairs_merge = ConfigPairsMerge(source_ids=["11", "12", "1_before"])
+        )
+    )
+    manifest.add_analysis(
+        HiCRepAnalysis(
+            id = "hicrep",
+            source_ids = ['11', '12'],
+            resolutions = bin_resolutions,
+            h = [0, 1]
         )
     )
     with open("manifest.json", "w") as file:

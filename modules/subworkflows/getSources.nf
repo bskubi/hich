@@ -5,7 +5,6 @@ workflow getSources {
     take:
     ch_targets
     ch_sources
-    key_data
 
     main:   
     /** Create [source_id, target_id] channel

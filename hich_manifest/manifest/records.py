@@ -1,7 +1,7 @@
+from enum import Enum
 from typing import Literal, Annotated, Union, Optional
 from pydantic import BaseModel, Field, FilePath, DirectoryPath, RootModel
 
-from .entrypoints import Entrypoint
 from ..config.task_control import TaskControl
 from ..config.config_fastq_align import ConfigFastqAlign
 from ..config.config_bam_parse_pairs import ConfigBamParsePairs
@@ -15,6 +15,20 @@ from ..config.config_cool_coarsen_addnorm import ConfigCoolCoarsenAddNorm
 from ..config.config_contact_matrix import MatrixBinResolutionsValidator, DEFAULT_BIN_RESOLUTIONS
 
 from .default_fields import *
+
+class Entrypoint(str, Enum):
+    FASTQ_ALIGN = "FASTQ_ALIGN"
+    BAM_PARSE_PAIRS = "BAM_PARSE_PAIRS"
+    PAIRS_LABEL = "PAIRS_LABEL"
+    PAIRS_SELECT = "PAIRS_SELECT"
+    PAIRS_MERGE_BEFORE_DEDUP_SOURCE = "PAIRS_MERGE_BEFORE_DEDUP_SOURCE"
+    PAIRS_MERGE_BEFORE_DEDUP_TARGET = "PAIRS_MERGE_BEFORE_DEDUP_TARGET"
+    PAIRS_DEDUP = "PAIRS_DEDUP"
+    PAIRS_MERGE_AFTER_DEDUP_SOURCE = "PAIRS_MERGE_AFTER_DEDUP_SOURCE"
+    PAIRS_MERGE_AFTER_DEDUP_TARGET = "PAIRS_MERGE_AFTER_DEDUP_TARGET"
+    PAIRS_BIN_COARSEN_ADDNORM = "PAIRS_BIN_COARSEN_ADDNORM"
+    COOL_COARSEN_ADDNORM = "COOL_COARSEN_ADDNORM"
+
 
 class BaseRecord(BaseModel):
     id: Optional[str] = None
@@ -182,11 +196,3 @@ RecordUnion = Annotated[
     ],
     Field(discriminator="entrypoint")
 ]
-
-class Record(RootModel):
-    root: RecordUnion
-    def __init__(self, **data):
-        super().__init__(root=data)
-    
-    def __getattr__(self, item):
-        return getattr(self.root, item)

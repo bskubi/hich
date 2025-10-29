@@ -36,4 +36,8 @@ class Hub {
     static Closure PairsHicBinCoarsenAddNorm = { id, pairs, chromsizes, config_hic_bin_coarsen_addnorm, cpus, memory ->
         new PairsHicBinCoarsenAddNorm(id, pairs, chromsizes, config_hic_bin_coarsen_addnorm, cpus, memory)
     }
+
+    static Closure MatrixHiCRep = { id, matrix, command_hich_matrix_hicrep ->
+        new MatrixHiCRep(id, matrix, command_hich_matrix_hicrep)
+    }
 }

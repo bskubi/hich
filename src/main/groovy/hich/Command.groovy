@@ -34,7 +34,7 @@ class Command {
             String k_fmt = engine.createTemplate(k).make(bind).toString()
             v = Collection.isInstance(v) ? v : [v]
             v.each { v_i ->
-                String v_fmt = engine.createTemplate(v_i).make(bind).toString()
+                String v_fmt = engine.createTemplate(v_i.toString()).make(bind).toString()
                 command += ["${k_fmt} '${v_fmt}'"]
             }
         }

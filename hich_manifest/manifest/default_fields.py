@@ -1,7 +1,6 @@
 from typing import Literal, Annotated, Union, Optional
 from pydantic import BaseModel, Field, FilePath, DirectoryPath
 
-from .entrypoints import Entrypoint
 from ..config.task_control import TaskControl
 from ..config.config_fastq_align import ConfigFastqAlign
 from ..config.config_bam_parse_pairs import ConfigBamParsePairs

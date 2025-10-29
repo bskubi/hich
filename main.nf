@@ -13,6 +13,7 @@ include { PAIRS_DEDUP } from './modules/local/pairs/pairs_dedup/main.nf'
 include { PAIRS_COOL_BIN } from './modules/local/pairs/pairs_cool_bin/main.nf'
 include { COOL_COARSEN_ADDNORM } from './modules/local/matrix/cool_coarsen_addnorm/main.nf'
 include { PAIRS_HIC_BIN_COARSEN_ADDNORM } from './modules/local/pairs/pairs_hic_bin_coarsen_addnorm/main.nf'
+include { MATRIX_HICREP } from './modules/local/analysis/matrix_hicrep/main.nf'
 include { groupSourcesByTarget } from './modules/subworkflows/groupSourcesByTarget.nf'
 include { getSources } from './modules/subworkflows/getSources.nf'
 
@@ -177,8 +178,7 @@ workflow {
 
     getSources(
         ch_pairs_merge_before_dedup_target,
-        ch_all_pairs_after_select,
-        "pairs"
+        ch_all_pairs_after_select
     )
         | set { ch_data_pairs_merge_before_dedup}
 
@@ -237,8 +237,7 @@ workflow {
 
     getSources(
         ch_pairs_merge_after_dedup_target,
-        ch_all_pairs_after_dedup,
-        "pairs"
+        ch_all_pairs_after_dedup
     )
         | set { ch_data_pairs_merge_after_dedup}
 
@@ -304,9 +303,53 @@ workflow {
             [id, file(pairs), file(chromsizes), config_pairs_hic_bin_coarsen_addnorm]
         }
         | PAIRS_HIC_BIN_COARSEN_ADDNORM
+
+    /** Collect results in various formats useful for analysis
+    */
+
+    COOL_COARSEN_ADDNORM.out.mcool
+        | map { id, mcool -> [id, [mcool: mcool]]}
+        | set { ch_mcool }
     
+    PAIRS_HIC_BIN_COARSEN_ADDNORM.out.hic
+        | map { id, hic -> [id, [hic: hic]]}
+        | set { ch_hic }
+    
+    ch_mcool
+        | concat(ch_hic)
+        | groupTuple
+        | map { id, matrices -> 
+            def m = [id:id]
+            matrices.each { matrix ->
+                m += matrix
+            }
+            m
+        }
+        | set { ch_matrix}
+
     // /** ANALYSIS
     // */
 
-    // hicrep = manifest.analysis.hicrep
+    channel.fromList(manifest.analysis.HICREP)
+        | set { ch_hicrep }
+    
+    ch_matrix
+        | map { [it.id, it.mcool ?: it.hic] }
+        | set { ch_hicrep_sources }
+
+    getSources(
+        ch_hicrep,
+        ch_hicrep_sources
+    )
+        | set { ch_hicrep_targets }
+    
+    ch_hicrep
+        | map { [it.id, it.command_hich_matrix_hicrep]}
+        | set { ch_hicrep_config }
+    
+    ch_hicrep_targets
+        | join( ch_hicrep_config )
+        | map { id, matrix, command -> [id, matrix.collect{file(it)}, command] }
+        | MATRIX_HICREP
+    MATRIX_HICREP.out.scc | view
 }
