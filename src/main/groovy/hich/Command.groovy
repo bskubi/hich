@@ -1,5 +1,6 @@
 package hich
 import groovy.text.SimpleTemplateEngine
+import java.util.Collection
 
 class Command {
     String base_command
@@ -22,14 +23,21 @@ class Command {
 
         command += [engine.createTemplate(this.base_command).make(this.bind).toString()]
 
-        command += (
-            this.opts.findAll{ k, v -> v }
-            .collect { k, v ->
-                String k_fmt = engine.createTemplate(k).make(bind).toString()
-                String v_fmt = engine.createTemplate(v).make(bind).toString()
-                "${k_fmt} '${v_fmt}'"
+        
+        this.opts.findAll{ k, v -> v }
+        .each { k, v ->
+            /** Allow multi-options (i.e. -k val1 -k val2)
+
+            Convert non-collection values to a list. Iterate through list
+            of values and add repeat option for each element.
+            */
+            String k_fmt = engine.createTemplate(k).make(bind).toString()
+            v = Collection.isInstance(v) ? v : [v]
+            v.each { v_i ->
+                String v_fmt = engine.createTemplate(v_i).make(bind).toString()
+                command += ["${k_fmt} '${v_fmt}'"]
             }
-        )
+        }
 
         command += (
             this.flags.findAll()
