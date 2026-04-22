@@ -1,0 +1,3 @@
+ID	sam	indexDir	indexPfx	isInterleaved	dedupGroup	dedupTag
+CEMBA3C_6D3C_R3_P9-2-E22-C3	tests/assets/bam/CEMBA3C_6D3C_R3_P9-2-E22-C3/CEMBA3C_6D3C_R3_P9-2-E22-C3.bam	tests/assets/mm10/index/bwameth/mem	mm10.fa.gz	0	G1	YB
+CEMBA3C_8E3C_R1_P1-1-B11-O13	tests/assets/bam/CEMBA3C_8E3C_R1_P1-1-B11-O13/CEMBA3C_8E3C_R1_P1-1-B11-O13.bam	tests/assets/mm10/index/bwameth/mem	mm10.fa.gz	0	G1	YB

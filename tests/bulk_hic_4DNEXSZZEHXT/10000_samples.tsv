@@ -1,0 +1,2 @@
+ID	fastq1	fastq2	indexDir	indexPfx	isInterleaved
+4DNEXSZZEHXT	tests/assets/fastq/bulk_hic_4DNEXSZZEHXT/10000_4DNFIV3YQDPS.fastq.gz	tests/assets/fastq/bulk_hic_4DNEXSZZEHXT/10000_4DNFI4HE95M6.fastq.gz	tests/assets/ref/hg38/bwa	hg38	0

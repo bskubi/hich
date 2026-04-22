@@ -1,0 +1,4 @@
+#!/bin/bash
+nextflow run . --sampleFile "tests/bulk_hic_4DNEXSZZEHXT/10000_samples.tsv" --3DPairs --configEditSAM tests/snm3C_seq_two_cells/config_edit_sam.py --configExtract3DPairs tests/bulk_hic_4DNEXSZZEHXT/config_extract_3d_pairs.py --genomeReference tests/assets/ref/hg38/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz --chromsizes tests/assets/ref/hg38/hg38.chrom.sizes --addColumns ZD,mapq --useBwaMem -resume \
+&& mkdir -p results/contact-matrix \
+&& hich export text --format 4dn-pairs --cond "chrom1 != '!' and chrom2 != '!'" results/3d_pairs/obs/4DNEXSZZEHXT | hictk load --force --format 4dn --bin-size 100000 --assume-sorted tests/assets/ref/hg38/hg38.chrom.sizes results/contact-matrix/4DNEXSZZEHXT.hic
